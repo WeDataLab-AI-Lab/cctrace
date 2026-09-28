@@ -5,7 +5,7 @@ Claude Code·Codex CLI 세션용 자체 호스팅 텔레메트리
 cctrace는 코딩 에이전트 세션이 실제로 한 일(토큰 사용량, 비용, 도구 호출, 대화 내용)을 직접 운영하는 데이터베이스에 모으고 그 위에 대시보드를 제공한다. 에이전트의 OpenTelemetry 출력으로는 "얼마나"를, 세션 트랜스크립트로는 "무엇을 했나"를 알 수 있다. cctrace는 둘을 모두 수집해 세션 단위로 묶어 둔다.
 
 <div class="diagram">
---8<-- "overview-architecture.ko.svg"
+--8<-- "architecture.ko.svg"
 </div>
 
 ## 데이터 수집 경로

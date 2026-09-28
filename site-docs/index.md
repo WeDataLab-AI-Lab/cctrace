@@ -5,7 +5,7 @@ Self-hosted telemetry for Claude Code and Codex CLI sessions.
 cctrace collects what your coding-agent sessions did — token usage, cost, tool calls, and the conversation itself — into a database you run, and serves a dashboard over it. The agent's OpenTelemetry output answers "how much", the session transcripts answer "what happened"; cctrace ingests both and keeps them joined per session.
 
 <div class="diagram">
---8<-- "overview-architecture.en.svg"
+--8<-- "architecture.en.svg"
 </div>
 
 ## How data gets in

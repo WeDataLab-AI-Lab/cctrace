@@ -26,19 +26,7 @@ Two ingestion paths feed one store, because neither is sufficient alone.
 | **OTEL** | agent's OTLP exporter, gRPC | token counts, cost, metrics | live |
 | **Sync** | session JSONL on disk, HTTP | full conversation, tool calls | periodic |
 
-```
-Claude Code / Codex CLI
-        |
-        |  OTLP (gRPC)          JSONL on disk
-        v                              |
-   +---------+                    +---------+
-   | cctraced|<-------------------| cctrace |   client daemon, tails and
-   |  server |    HTTP /api/sync  |         |   uploads session records
-   +----+----+                    +---------+
-        |
-        v
-   TimescaleDB  ---->  dashboard (Next.js, served by cctraced)
-```
+<img src="site-docs/assets/diagrams/architecture.en.svg" alt="Claude Code and Codex CLI send OTLP telemetry to cctraced, while the cctrace daemon uploads their session JSONL files to the same server. cctraced stores both paths in TimescaleDB with PGMQ and serves the embedded dashboard.">
 
 - **`cctrace`** — client. Runs on each developer machine, watches the agent's
   session directory, uploads records.

@@ -181,3 +181,37 @@ html,
   overflow-x: auto;
 }
 .diagram svg { display: block; width: 100%; height: auto; min-width: 560px; }
+
+/* The architecture SVGs also render as standalone GitHub images, where their
+   own prefers-color-scheme rule applies. These overrides keep an inline copy
+   aligned with Material's manual palette even when it differs from the OS. */
+[data-md-color-scheme="default"] .architecture-diagram {
+  --arch-canvas: #ffffff;
+  --arch-zone: #f7f9fc;
+  --arch-zone-border: #c8d2e1;
+  --arch-node: #ffffff;
+  --arch-node-border: #94a3b8;
+  --arch-focus: #edf4ff;
+  --arch-focus-border: #356fc4;
+  --arch-store: #edf8f3;
+  --arch-store-border: #338363;
+  --arch-ink: #16233a;
+  --arch-muted: #5c6b82;
+  --arch-line: #65758f;
+  --arch-accent: #c95b42;
+}
+[data-md-color-scheme="slate"] .architecture-diagram {
+  --arch-canvas: #0d1117;
+  --arch-zone: #121923;
+  --arch-zone-border: #3a485c;
+  --arch-node: #161e29;
+  --arch-node-border: #627087;
+  --arch-focus: #14243b;
+  --arch-focus-border: #70a5f5;
+  --arch-store: #10271f;
+  --arch-store-border: #63bd94;
+  --arch-ink: #e6edf3;
+  --arch-muted: #a3afbf;
+  --arch-line: #91a0b4;
+  --arch-accent: #ff9b7c;
+}
