@@ -1,0 +1,60 @@
+# TLS termination, as an overlay:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d
+#
+# A separate file rather than a service in the base compose, for two reasons.
+#
+# It is opt-in. Adding Caddy to the base file would move every existing
+# install's ports on the next `docker compose up`, and plain HTTP inside a
+# company network is a legitimate deployment (ADR-9).
+#
+# And the base file's images are local build tags that nothing publishes -- the
+# mirror export asserts exactly that, because a reader who cannot obtain an
+# image cannot start the stack. caddy:2-alpine is pulled, not built, so putting
+# it there would make that assertion false. Here it is true of both files: the
+# base one starts from what the README builds, this one adds an image anyone can
+# pull.
+#
+# Set the three publish addresses to loopback in the server .env before bringing
+# this up, or the plaintext ports stay reachable beside the TLS ones:
+#
+#   HTTP_BIND=127.0.0.1
+#   GRPC_BIND=127.0.0.1
+#   OTEL_HTTP_BIND=127.0.0.1
+#
+# Caddy reaches the app over the compose network, which does not go through
+# those published ports.
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: ${CONTAINER_PREFIX:-cctrace-}caddy
+    restart: unless-stopped
+    depends_on:
+      cctraced:
+        condition: service_healthy
+    ports:
+      # 443 for the dashboard and REST API. The OTLP ports keep their numbers
+      # plus 1000 so a client's endpoint changes scheme and port together rather
+      # than silently hitting the plaintext listener next door.
+      - "${TLS_BIND:-0.0.0.0}:${TLS_HTTP_PORT:-8443}:8443"
+      - "${TLS_BIND:-0.0.0.0}:${TLS_GRPC_PORT:-5317}:5317"
+      - "${TLS_BIND:-0.0.0.0}:${TLS_OTEL_HTTP_PORT:-5318}:5318"
+    environment:
+      # The name clients will use. `tls internal` issues for a bare IP too, so a
+      # deployment with no domain still works -- that is the case this was
+      # measured against (ADR-9).
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:?set CADDY_SITE_ADDRESS in the server .env (a hostname, or the server IP)}
+      # `internal` uses Caddy's own CA: no public DNS, no ACME, works on a LAN.
+      # Set it to `acme` when the name resolves publicly and port 80 is
+      # reachable, and Caddy will obtain a real certificate instead.
+      CADDY_TLS_MODE: ${CADDY_TLS_MODE:-internal}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # The issued certificates and the local CA. Losing this volume means a new
+      # CA, and every client that trusted the old one stops connecting.
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

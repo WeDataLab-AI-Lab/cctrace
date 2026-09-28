@@ -1,0 +1,23 @@
+{
+  "usage_current": {
+    "session_count": 12,
+    "input_tokens": 48000,
+    "output_tokens": 12000,
+    "total_tokens": 60000,
+    "cost_usd": 18.4,
+    "by_model": [{"model": "sonnet", "input_tokens": 48000, "output_tokens": 12000, "total_tokens": 60000}]
+  },
+  "usage_previous": {
+    "session_count": 10,
+    "input_tokens": 41000,
+    "output_tokens": 9000,
+    "total_tokens": 50000,
+    "cost_usd": 15.1,
+    "by_model": [{"model": "sonnet", "input_tokens": 41000, "output_tokens": 9000, "total_tokens": 50000}]
+  },
+  "sessions": [{"session_id": "session-1", "agent": "codex", "model": "sonnet", "cost_usd": 3.1, "input_tokens": 9000, "output_tokens": 1400, "event_count": 45}],
+  "tools": [{"tool_name": "Bash", "use_count": 31, "success_count": 29, "fail_count": 2}],
+  "plugins": [{"command_name": "review", "agent": "claude", "invocation_count": 4, "total_tokens": 12000, "input_tokens": 9000, "output_tokens": 3000}],
+  "skills": [{"skill_name": "test", "agent": "codex", "invoke_type": "explicit", "success_count": 3, "fail_count": 1, "total_count": 4}],
+  "rules": {"items": [{"id": 7, "agent": "codex", "rule_kind": "agents", "rule_scope": "repository", "title": "Project instructions", "current_status": "active", "version_count": 2, "comment_count": 0, "discovered_at": "2026-08-01T00:00:00Z", "last_seen_at": "2026-08-07T00:00:00Z", "updated_at": "2026-08-07T00:00:00Z"}], "total": 1}
+}

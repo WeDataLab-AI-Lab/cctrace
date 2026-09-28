@@ -1,0 +1,158 @@
+# Install the server
+
+Build the two server images from this repository, write the server env file, and start the stack with Docker Compose.
+
+The stack has two containers: `cctraced` (OTLP ingest, sync API, dashboard) and TimescaleDB. Both images are local build tags that no registry publishes, and the compose file sets `pull_policy: never`, so the stack does not start until you have built both.
+
+<div class="diagram">
+--8<-- "server-deployment.en.svg"
+</div>
+
+## Requirements
+
+- Docker with the Compose plugin
+- A clone of this repository; run every command below from the repository root
+
+## 1. Build the images
+
+```console
+$ docker build -t cctrace/timescaledb-pgmq:latest docker/timescaledb-pgmq/
+$ docker build -f deploy/Dockerfile --build-arg UPDATE_SIGNING=optional \
+    -t cctrace/cctraced:latest .
+```
+
+- The first image is TimescaleDB with the pgmq extension.
+- The second builds the dashboard and the `cctraced` binary inside Docker. `UPDATE_SIGNING=optional` builds without an update-signing key; the default, `required`, fails without one.
+- If you set `IMAGE_TAG` or `DB_IMAGE_TAG` in the server env file, build with exactly that tag (`cctrace/cctraced:<IMAGE_TAG>`, `cctrace/timescaledb-pgmq:<DB_IMAGE_TAG>`). Compose does not fall back to a registry.
+
+## 2. Write the server env file
+
+Compose reads its settings from `.env` in the `deploy/` directory (the server env file). `deploy/.env.example` lists every key with comments. The minimum:
+
+```text
+JWT_SECRET=<random string, at least 32 bytes>
+LOGS_DIR=/absolute/path/on/the/host/for/logs
+DB_PASSWORD=<database password>
+```
+
+| Key | Why it is required |
+|-----|--------------------|
+| `JWT_SECRET` | No default. Compose refuses to start without it, and `cctraced` exits if it is shorter than 32 bytes. |
+| `LOGS_DIR` | No default. Compose refuses to start without it. Host directory mounted at `/data/logs` in the container. Create it in advance. |
+| `DB_PASSWORD` | Has a default (`cctrace`) that you should not keep. |
+
+!!! warning "Decide `DB_PASSWORD` before the first start"
+    PostgreSQL applies the password only when the data volume is initialised. Changing `DB_PASSWORD` afterwards leaves the database role on the old password, and `cctraced` restarts in a loop on `password authentication failed`. Recovering means removing the database volume, which deletes all collected data.
+
+Leave `DB_APP_CREDENTIALS` empty. See [Configuration](configuration.md#database) for why.
+
+## 3. Check what the stack exposes
+
+Before the first start, decide which interfaces the ports bind to.
+
+| Port | Default host bind | Purpose |
+|------|-------------------|---------|
+| 8080 | 127.0.0.1 | Dashboard and REST API, including client sync |
+| 4317 | 0.0.0.0 (all interfaces) | OTLP over gRPC |
+| 4318 | 0.0.0.0 (all interfaces) | OTLP over HTTP |
+| 5432 | 127.0.0.1 (fixed) | TimescaleDB |
+
+!!! warning "OTLP listens on all interfaces without TLS"
+    Ports 4317 and 4318 accept telemetry from other machines, and `cctraced` does not terminate TLS. On a network you do not control, set `GRPC_BIND` and `OTEL_HTTP_BIND` to a loopback or private address in the server env file, restrict the ports with a firewall or VPN, or use the [HTTPS overlay](#optional-https-with-caddy).
+
+The dashboard binds to loopback by default. For client machines to sync, they need to reach port 8080: set `HTTP_BIND` to a reachable address, or put a TLS-terminating proxy in front of it. The full port table is in [Ports](../reference/ports.md).
+
+## 4. Start the stack
+
+```console
+$ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
+```
+
+`up -d` returning cleanly means the containers were created, not that the server started. `cctraced` reports configuration errors in its own log.
+
+## 5. Verify
+
+```console
+$ docker compose --env-file deploy/.env -f deploy/docker-compose.yml ps
+$ curl -fsS http://127.0.0.1:8080/api/health
+```
+
+- Both containers should show `Up` with `(healthy)`. The `cctraced` health check probes `/api/version` and has a 30-second start period, so it shows `health: starting` at first.
+- `/api/health` answers with `"status":"ok"` when the server can reach the database, and with HTTP 503 and `"status":"unhealthy"` when it cannot.
+- If `cctraced` is `Restarting`, read its log:
+
+```console
+$ docker compose --env-file deploy/.env -f deploy/docker-compose.yml logs cctraced
+```
+
+## 6. Create the first admin
+
+On a database with no users, `cctraced` prints a one-time setup token in its log:
+
+```text
+[cctraced] initial administrator setup token: <token>
+```
+
+To choose the token yourself, set `CCTRACE_SETUP_TOKEN` in the server env file before the first start. The token stops working once the first admin exists. Continue with [First admin](../dashboard/first-admin.md).
+
+## Optional: HTTPS with Caddy
+
+`deploy/docker-compose.tls.yml` is an opt-in overlay that adds a Caddy container. Caddy terminates TLS for all three listeners and forwards to `cctraced` over the compose network, using `deploy/caddy/Caddyfile`. The base compose file is unchanged, and Caddy's image (`caddy:2-alpine`) is pulled from Docker Hub.
+
+1. In the server env file, move the plaintext ports to loopback and name the server:
+
+    ```text
+    HTTP_BIND=127.0.0.1
+    GRPC_BIND=127.0.0.1
+    OTEL_HTTP_BIND=127.0.0.1
+    CADDY_SITE_ADDRESS=cctrace.company.example
+    ```
+
+    `CADDY_SITE_ADDRESS` is required by the overlay. It can be a hostname or the server's IP address. Without the three bind settings, the plaintext ports stay reachable beside the TLS ones.
+
+2. Start with both compose files:
+
+    ```console
+    $ docker compose --env-file deploy/.env \
+        -f deploy/docker-compose.yml -f deploy/docker-compose.tls.yml up -d
+    ```
+
+| Channel | Plaintext (container) | TLS (host default) |
+|---------|-----------------------|--------------------|
+| Dashboard and REST API | 8080 | 8443 |
+| OTLP gRPC | 4317 | 5317 |
+| OTLP HTTP | 4318 | 5318 |
+
+Clients then use `https://cctrace.company.example:8443` for the dashboard and sync, and port 5317 or 5318 for OTLP.
+
+Codex metrics do not reach the server through this overlay. cctrace derives Codex's metrics endpoint from the profile's OTEL endpoint by changing port 4317 to 4318 only, so an OTEL endpoint on 5317 sends Codex's OTLP/HTTP to 5317, which Caddy forwards to the gRPC listener. See [Codex CLI](../agents/codex.md).
+
+### Certificates
+
+`CADDY_TLS_MODE` defaults to `internal`: Caddy issues certificates from its own CA, which needs no public DNS and works for a bare IP address. Clients must trust that CA. Export it with:
+
+```console
+$ docker compose --env-file deploy/.env \
+    -f deploy/docker-compose.yml -f deploy/docker-compose.tls.yml \
+    exec caddy cat /data/caddy/pki/authorities/local/root.crt > cctrace-ca.crt
+```
+
+The Caddyfile lists where each agent reads a custom CA from:
+
+| Agent | Variable |
+|-------|----------|
+| Claude Code, gRPC exporter | `OTEL_EXPORTER_OTLP_CERTIFICATE` |
+| Claude Code, HTTP exporter | `NODE_EXTRA_CA_CERTS` |
+| Codex | `SSL_CERT_FILE` |
+
+`SSL_CERT_FILE` replaces the trust store instead of adding to it. Concatenate the CA with the system roots, or Codex fails to verify its own API endpoint.
+
+Set `CADDY_TLS_MODE=acme` when the name resolves publicly and port 80 is reachable from the internet. Caddy then obtains a publicly trusted certificate, and clients need no CA configuration.
+
+!!! warning "Keep the `caddy_data` volume"
+    It holds the issued certificates and the internal CA. Removing it creates a new CA, and every client that trusted the old one stops connecting.
+
+## Next steps
+
+- [Configuration](configuration.md): every setting in the server env file
+- [Operations](operations.md): logs, backup, upgrades, retention

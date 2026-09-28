@@ -1,0 +1,53 @@
+<svg viewBox="24 36 914 304" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="getting-started-flow-ko-title getting-started-flow-ko-desc">
+  <title id="getting-started-flow-ko-title">시작하기: 운영자와 개발자 단계</title>
+  <desc id="getting-started-flow-ko-desc">운영자는 이미지 두 개를 빌드하고 deploy/.env를 작성한 뒤 docker compose up -d로 스택을 띄운다. /setup에서 만든 첫 관리자에는 팀이 없으므로, 운영자는 이어서 팀과 cctrace User ID가 있는 사용자 계정을 추가하고 서버 URL과 그 계정을 개발자에게 넘긴다. make build-client로 클라이언트를 빌드해 둔 개발자는 cctrace init을 실행하고 에이전트를 재시작한 뒤 cctrace status와 대시보드로 확인한다.</desc>
+  <defs>
+    <marker id="getting-started-flow-ko-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill: var(--ink-3)"/></marker>
+  </defs>
+
+  <!-- Swimlanes -->
+  <rect x="36" y="48" width="890" height="128" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="52" y="72" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">운영자</text>
+  <rect x="36" y="216" width="890" height="112" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="52" y="240" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">개발자</text>
+
+  <!-- Connectors (drawn before nodes) -->
+  <path d="M 200,124 H 218" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-ko-arrow)"/>
+  <path d="M 342,124 H 360" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-ko-arrow)"/>
+  <path d="M 484,124 H 502" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-ko-arrow)"/>
+  <path d="M 564,160 V 256" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-ko-arrow)"/>
+  <path d="M 200,284 H 502" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-ko-arrow)"/>
+  <path d="M 626,284 H 644" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-ko-arrow)"/>
+  <path d="M 768,284 H 786" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-ko-arrow)"/>
+
+  <!-- Handoff label: mask sits 8px clear of the line -->
+  <rect x="406" y="186" width="150" height="20" rx="3" style="fill: var(--surface-2)"/>
+  <text x="481" y="200" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">서버 URL + 사용자 계정</text>
+
+  <!-- Nodes -->
+  <rect x="52" y="88" width="148" height="72" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="126" y="121" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">이미지 빌드</text>
+  <text x="126" y="139" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">docker build</text>
+  <rect x="218" y="88" width="124" height="72" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="280" y="121" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">환경 설정</text>
+  <text x="280" y="139" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">deploy/.env</text>
+  <rect x="360" y="88" width="124" height="72" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="422" y="121" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">스택 기동</text>
+  <text x="422" y="139" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">compose up -d</text>
+  <rect x="502" y="88" width="124" height="72" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="564" y="112" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">계정 생성</text>
+  <text x="564" y="131" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">/setup 관리자</text>
+  <text x="564" y="148" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">팀·ID 있는 사용자</text>
+  <rect x="52" y="256" width="148" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="126" y="281" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">클라이언트 빌드</text>
+  <text x="126" y="299" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">make build-client</text>
+  <rect x="502" y="256" width="124" height="56" rx="8" style="fill: var(--surface); stroke: var(--ink); stroke-width: 1.5"/>
+  <text x="564" y="281" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">초기화</text>
+  <text x="564" y="299" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">cctrace init</text>
+  <rect x="644" y="256" width="124" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="706" y="281" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">재시작</text>
+  <text x="706" y="299" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">에이전트</text>
+  <rect x="786" y="256" width="124" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="848" y="281" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">확인</text>
+  <text x="848" y="299" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">cctrace status</text>
+</svg>

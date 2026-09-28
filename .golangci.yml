@@ -1,0 +1,39 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - govet
+    - staticcheck
+    - unused
+    - ineffassign
+    - misspell
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      # The module path (see go.mod), so goimports groups our own packages apart
+      # from third-party ones. It read `github.com/<user>/claude-code-trace`
+      # before -- a path this module has never had, which meant the grouping
+      # never applied and the setting quietly did nothing. It also named a
+      # person, which is not something that belongs in a file that ships.
+      local-prefixes:
+        - cctrace
+
+# There were errcheck exclusions here (test files, w.Write on a ResponseWriter).
+# They are gone because errcheck is not in the enable list above: `default: none`
+# means nothing runs unless named, so the rules excluded a linter that never ran.
+#
+# They were also written in v1 syntax (`issues.exclude-rules`, alongside a v1
+# `formatters-settings`) under a `version: "2"` header. `golangci-lint run`
+# ignores keys it does not recognise, so the file looked like it was doing two
+# things it was not -- only `config verify`, which CI now runs, says so.
+#
+# If errcheck is ever enabled, those exclusions have to come back in v2 form,
+# under `linters.exclusions.rules`.
+issues:
+  max-issues-per-linter: 30
+  max-same-issues: 5

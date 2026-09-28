@@ -1,0 +1,54 @@
+name: Docs
+
+# Builds the MkDocs site (mkdocs.yml, site-docs/) with --strict and pushes it to
+# the gh-pages branch. A broken link or a missing page fails here instead of
+# shipping.
+#
+# The site's colours are not in the site: hooks/design_tokens.py reads them from
+# web/app/globals.css at build time, which is why web/app/globals.css is in the
+# path filter below.
+#
+# Deployment uses `mkdocs gh-deploy` rather than the Pages actions so that the
+# only third-party action is the checkout this repository already pins. To
+# publish, enable Pages for the repository with "Deploy from a branch", branch
+# gh-pages, folder / (root).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - mkdocs.yml
+      - requirements-docs.txt
+      - site-docs/**
+      - docs-overrides/**
+      - hooks/**
+      - web/app/globals.css
+      - .github/workflows/docs.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to a commit SHA, not a tag: a tag is mutable.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Install MkDocs
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -r ./requirements-docs.txt
+      # gh-deploy commits to gh-pages. An empty email keeps an address out of
+      # this file; git accepts it and records the author as `docs-bot <>`.
+      - name: Build and push to gh-pages
+        run: |
+          git config user.name docs-bot
+          git config user.email ""
+          .venv/bin/mkdocs gh-deploy --strict --force --no-history

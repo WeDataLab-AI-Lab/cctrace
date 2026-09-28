@@ -1,0 +1,922 @@
+openapi: 3.1.0
+info:
+  title: cctrace Open API
+  version: 1.0.0
+  description: |
+    Read-only session, tool, plugin, skill, rule, log, and usage API for developer automation.
+    Obtain the per-user cct_ token with `cctrace init` or `POST /api/cli/auth`.
+    Dashboard JWT cookies and the global ingestion API_KEY are not accepted.
+servers:
+  - url: http://localhost:8080
+security:
+  - bearerAuth: []
+paths:
+  /api/open/v1/sessions:
+    get:
+      summary: List sessions
+      parameters:
+        - $ref: '#/components/parameters/Since'
+        - $ref: '#/components/parameters/Until'
+        - $ref: '#/components/parameters/ProjectHash'
+        - $ref: '#/components/parameters/ProjectHashes'
+        - $ref: '#/components/parameters/ProfileEmail'
+        - $ref: '#/components/parameters/LoginEmail'
+        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Session list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/SessionOverview'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/sessions/{session_id}:
+    get:
+      summary: Get sanitized session records
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema: {type: string}
+        - $ref: '#/components/parameters/ProfileEmail'
+        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: order
+          in: query
+          schema: {type: string, enum: [asc, desc]}
+      responses:
+        '200':
+          description: Sanitized session records
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/SessionRecord'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/events:
+    get:
+      summary: List time-ranged events
+      parameters:
+        - $ref: '#/components/parameters/Since'
+        - $ref: '#/components/parameters/Until'
+        - $ref: '#/components/parameters/ProjectHash'
+        - $ref: '#/components/parameters/ProjectHashes'
+        - $ref: '#/components/parameters/ProfileEmail'
+        - $ref: '#/components/parameters/LoginEmail'
+        - $ref: '#/components/parameters/UserID'
+        - name: session_id
+          in: query
+          schema: {type: string}
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Sanitized event list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Event'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/metrics:
+    get:
+      summary: List sanitized telemetry metrics
+      parameters:
+        - $ref: '#/components/parameters/Since'
+        - $ref: '#/components/parameters/Until'
+        - $ref: '#/components/parameters/ProfileEmail'
+        - $ref: '#/components/parameters/LoginEmail'
+        - $ref: '#/components/parameters/UserID'
+        - name: metric_name
+          in: query
+          schema: {type: string}
+        - $ref: '#/components/parameters/Agent'
+        - name: model
+          in: query
+          description: Partial model-name match.
+          schema: {type: string}
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Sanitized metric list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Metric'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/tools:
+    get:
+      summary: List tool usage
+      description: >-
+        Uses the last seven days when since and until are omitted. Counts Claude
+        tool_result events plus Codex codex.tool.call metrics, summed per tool name
+        as each agent reports it. Codex counts include calls made inside a code-mode
+        exec script and come only from TUI and VS Code runs; Desktop, codex_cli_rs
+        and `codex exec` send next to none.
+      parameters:
+        - $ref: '#/components/parameters/Since'
+        - $ref: '#/components/parameters/Until'
+        - $ref: '#/components/parameters/ProfileEmail'
+        - $ref: '#/components/parameters/LoginEmail'
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '200':
+          description: Tool usage summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/ToolUsage'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/tools/{tool_name}:
+    get:
+      summary: Get sanitized tool detail
+      description: >-
+        The time series counts Claude and Codex calls as List tool usage does.
+        Failures lists Claude calls only: Codex reports calls as a metric count
+        with no individual call, so it has no failure detail.
+      parameters:
+        - name: tool_name
+          in: path
+          required: true
+          description: URL-encoded tool name.
+          schema: {type: string}
+        - $ref: '#/components/parameters/Since'
+        - $ref: '#/components/parameters/Until'
+        - $ref: '#/components/parameters/ProfileEmail'
+        - $ref: '#/components/parameters/LoginEmail'
+        - $ref: '#/components/parameters/UserID'
+        - name: granularity
+          in: query
+          schema: {type: string, enum: [minute, hour, day, week, month], default: day}
+        - name: failure_limit
+          in: query
+          schema: {type: integer, default: 50, minimum: 1}
+      responses:
+        '200':
+          description: Tool time series and sanitized failures
+          content: {application/json: {schema: {$ref: '#/components/schemas/ToolDetail'}}}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/projects:
+    get:
+      summary: List projects you can filter by
+      description: |
+        Lists the projects visible to the caller. The project_hash values here are the
+        ones the project_hash filter on sessions and events accepts.
+      responses:
+        '200':
+          description: Projects visible to the caller
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ProjectList'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/plugins:
+    get:
+      summary: List plugin usage
+      parameters:
+        - $ref: '#/components/parameters/Since'
+        - $ref: '#/components/parameters/Until'
+        - $ref: '#/components/parameters/ProfileEmail'
+        - $ref: '#/components/parameters/LoginEmail'
+        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/Agent'
+      responses:
+        '200':
+          description: Sanitized plugin usage summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/PluginUsage'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/skills:
+    get:
+      summary: List skill usage
+      parameters:
+        - $ref: '#/components/parameters/Since'
+        - $ref: '#/components/parameters/Until'
+        - $ref: '#/components/parameters/ProfileEmail'
+        - $ref: '#/components/parameters/LoginEmail'
+        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/Agent'
+      responses:
+        '200':
+          description: Sanitized skill usage summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/SkillUsage'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/rules:
+    get:
+      summary: List sanitized rule metadata
+      parameters:
+        - $ref: '#/components/parameters/Agent'
+        - name: status
+          in: query
+          schema: {type: string}
+        - name: query
+          in: query
+          schema: {type: string}
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Paginated rule metadata
+          content: {application/json: {schema: {$ref: '#/components/schemas/RuleList'}}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/rules/{rule_id}:
+    get:
+      summary: Get sanitized rule and version metadata
+      parameters:
+        - name: rule_id
+          in: path
+          required: true
+          schema: {type: integer, format: int64, minimum: 1}
+      responses:
+        '200':
+          description: Sanitized rule detail
+          content: {application/json: {schema: {$ref: '#/components/schemas/RuleDetail'}}}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/usage:
+    get:
+      summary: Aggregate model, token, cost, and work-time usage
+      description: >-
+        Work time is the sum of each matching session's elapsed seconds between its
+        first and last record inside the requested period. Both since and until are
+        required (400 with code unbounded_window otherwise). A project filter is
+        refused with 400 and code unsupported_filter, because cost is aggregated
+        over a source that carries no project_hash.
+      parameters:
+        - name: since
+          in: query
+          required: true
+          description: Inclusive lower time boundary.
+          schema: {type: string, format: date-time}
+        - name: until
+          in: query
+          required: true
+          description: Exclusive upper time boundary.
+          schema: {type: string, format: date-time}
+        - $ref: '#/components/parameters/ProfileEmail'
+        - $ref: '#/components/parameters/LoginEmail'
+        - $ref: '#/components/parameters/UserID'
+        - name: group_by
+          in: query
+          description: >-
+            Return one row per user (key is the profile email), team, or model
+            instead of the overall totals. Unknown values return 400 with code
+            invalid_group_by.
+          schema: {type: string, enum: [user, team, model]}
+      responses:
+        '200':
+          description: Overall and per-model usage totals, or grouped rows when group_by is set
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Usage'
+                  - $ref: '#/components/schemas/UsageGroupList'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/organization-insights:
+    get:
+      summary: Read privacy-preserving instance-wide usage aggregates
+      description: >-
+        Admin-only. Returns no result dimensions until at least five distinct users
+        have activity in the requested window; every returned model and tool also
+        meets that threshold. This endpoint is not an organization tenancy boundary.
+      parameters:
+        - $ref: '#/components/parameters/Since'
+        - $ref: '#/components/parameters/Until'
+      responses:
+        '200':
+          description: Aggregate usage without personal, session, or prompt data
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OrganizationInsights'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/weekly-insights:
+    get:
+      summary: Read the caller's privacy-preserving weekly usage patterns
+      description: Returns only the authenticated caller's aggregate hours, project identifiers, task labels, and tool outcomes. It never returns prompt, response, command, or session content.
+      parameters:
+        - $ref: '#/components/parameters/Since'
+        - $ref: '#/components/parameters/Until'
+        - $ref: '#/components/parameters/Timezone'
+      responses:
+        '200':
+          description: Personal aggregate usage patterns
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/WeeklyInsights'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Active per-user cctrace API token; the global ingestion key is not accepted.
+  parameters:
+    Since:
+      name: since
+      in: query
+      description: Inclusive lower time boundary.
+      schema: {type: string, format: date-time}
+    Until:
+      name: until
+      in: query
+      description: Exclusive upper time boundary.
+      schema: {type: string, format: date-time}
+    Timezone:
+      name: tz
+      in: query
+      description: IANA zone name (e.g. "Asia/Seoul") used to bucket hour-of-day results. Invalid or omitted values default to UTC.
+      schema: {type: string, pattern: '^[A-Za-z/_]+$'}
+    ProjectHash:
+      name: project_hash
+      in: query
+      description: Comma-separated project hashes.
+      schema: {type: string}
+    ProjectHashes:
+      name: project_hashes
+      in: query
+      description: Alias for project_hash; comma-separated project hashes.
+      schema: {type: string}
+    ProfileEmail:
+      name: profile_email
+      in: query
+      description: Admin-only filter; regular-user requests are forced to caller scope.
+      schema: {type: string, format: email}
+    LoginEmail:
+      name: login_email
+      in: query
+      description: Admin-only filter; regular-user requests are forced to caller scope.
+      schema: {type: string, format: email}
+    UserID:
+      name: user_id
+      in: query
+      description: Admin-only filter; regular-user requests are forced to caller scope.
+      schema: {type: string}
+    Agent:
+      name: agent
+      in: query
+      description: Exact agent filter, such as claude or codex.
+      schema: {type: string}
+    Limit:
+      name: limit
+      in: query
+      schema: {type: integer, default: 100, minimum: 1}
+    Offset:
+      name: offset
+      in: query
+      schema: {type: integer, default: 0, minimum: 0}
+  responses:
+    BadRequest:
+      description: Invalid query parameter
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Unauthorized:
+      description: Missing, invalid, or inactive API token
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Forbidden:
+      description: Token owner has no supported API role
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    NotFound:
+      description: Resource missing or outside the token owner's visible scope
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    RateLimited:
+      description: Open API read rate exceeded
+      headers:
+        Retry-After:
+          schema: {type: integer}
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    InternalError:
+      description: Generic internal error without backend details
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+  schemas:
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error: {type: string}
+        code:
+          type: string
+          description: >-
+            Machine-readable reason on some refusals, such as ingestion_token,
+            unbounded_window, unsupported_filter, or invalid_group_by.
+    SessionOverview:
+      type: object
+      additionalProperties: false
+      required: [session_id, start_time, end_time, input_tokens, output_tokens, cost_usd, event_count]
+      properties:
+        session_id: {type: string}
+        user_id: {type: string}
+        model: {type: string}
+        agent: {type: string}
+        project_name:
+          type: string
+          description: Name of the session's project, as /projects lists it. Omitted when the session has no project; the path-derived project_hash is never included.
+        start_time: {type: string, format: date-time}
+        end_time: {type: string, format: date-time}
+        input_tokens: {type: integer, format: int64}
+        output_tokens: {type: integer, format: int64}
+        cost_usd: {type: number, format: double}
+        event_count: {type: integer, format: int64}
+    SessionRecord:
+      type: object
+      additionalProperties: false
+      required: [ts, record_type, kind, tool_call_count]
+      properties:
+        ts: {type: string, format: date-time}
+        session_id: {type: string}
+        record_type:
+          type: string
+          description: >-
+            The agent's own record type, spelled as that agent writes it (Claude
+            user/assistant/system/..., Codex tool_call/tool_output/reasoning/usage/...).
+            Read kind and tool_call_count for values that mean the same for every agent.
+        agent:
+          type: string
+          description: Agent that produced the record, e.g. claude, codex, omo, gjc.
+        kind:
+          type: string
+          enum: [message, tool_call, tool_result, reasoning, hidden]
+          description: >-
+            How the conversation view shows the record, decided by the server for
+            every agent. It is not a tool-call type: Claude, omo and gjc calls sit
+            inside message records, and only Codex stores calls as tool_call records.
+            "hidden" marks bookkeeping, scaffolding and duplicates, including gjc's
+            sibling tool_call rows that repeat calls already on the assistant record.
+        tool_call_count:
+          type: integer
+          description: >-
+            Tool calls this record shows. Summing it over records counts each call
+            exactly once for every agent; hidden duplicates carry 0.
+        tool_name:
+          type: string
+          description: >-
+            Tool of the single invocation or output this record carries (Codex, omo,
+            gjc; collected by newer clients only). Tool input and output are never included.
+        tool_call_id:
+          type: string
+          description: Pairs a tool call record with its output record; same availability as tool_name.
+        model: {type: string}
+        input_tokens: {type: integer}
+        output_tokens: {type: integer}
+        cache_read_tokens: {type: integer}
+        cache_create_tokens: {type: integer}
+        task_type:
+          type: string
+          enum: [planning, testing, debugging, documentation, implementation, drafting, unknown]
+          description: >-
+            Server-derived prompt category; never prompt content. "unknown" means
+            the classifier ran and could not categorize the prompt -- distinct from
+            an empty value, which means classification has not run yet.
+    Event:
+      type: object
+      additionalProperties: false
+      required: [ts, event_name]
+      properties:
+        ts: {type: string, format: date-time}
+        event_name: {type: string}
+        session_id: {type: string}
+        user_id: {type: string}
+        model: {type: string}
+        cost_usd: {type: number, format: double}
+        input_tokens: {type: integer}
+        output_tokens: {type: integer}
+        cache_read_tokens: {type: integer}
+        cache_create_tokens: {type: integer}
+        duration_ms: {type: integer}
+        tool_name: {type: string}
+        tool_decision: {type: string}
+        tool_success: {type: boolean}
+        speed: {type: string}
+    Metric:
+      type: object
+      additionalProperties: false
+      required: [ts, metric_name]
+      properties:
+        ts: {type: string, format: date-time}
+        metric_name: {type: string}
+        session_id: {type: string}
+        user_id: {type: string}
+        model: {type: string}
+        value_double: {type: number, format: double}
+        value_int: {type: integer, format: int64}
+        agent: {type: string}
+    ToolUsage:
+      type: object
+      additionalProperties: false
+      required: [tool_name, use_count, success_count, fail_count]
+      properties:
+        tool_name: {type: string}
+        use_count: {type: integer, format: int64}
+        success_count: {type: integer, format: int64}
+        fail_count: {type: integer, format: int64}
+    ToolTimeBucket:
+      type: object
+      additionalProperties: false
+      required: [date, success_count, fail_count]
+      properties:
+        date: {type: string}
+        success_count: {type: integer, format: int64}
+        fail_count: {type: integer, format: int64}
+    ToolFailure:
+      type: object
+      additionalProperties: false
+      required: [ts, session_id, model]
+      properties:
+        ts: {type: string, format: date-time}
+        session_id: {type: string}
+        model: {type: string}
+        duration_ms: {type: integer}
+    ToolDetail:
+      type: object
+      additionalProperties: false
+      required: [tool_name, timeseries, failures]
+      properties:
+        tool_name: {type: string}
+        timeseries:
+          type: array
+          items: {$ref: '#/components/schemas/ToolTimeBucket'}
+        failures:
+          type: array
+          items: {$ref: '#/components/schemas/ToolFailure'}
+    ProjectList:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/Project'}
+        total: {type: integer}
+    Project:
+      type: object
+      required: [project_hash, updated_at]
+      properties:
+        project_hash:
+          type: string
+          description: >-
+            Filter key accepted by the project_hash parameter. Derived from the
+            session working directory path, so it identifies a location on a
+            machine rather than being an opaque key. Every rune that is not an
+            ASCII letter, digit, or hyphen becomes a hyphen and nothing is
+            trimmed, so an absolute POSIX path keeps a leading hyphen.
+        project_name: {type: string}
+        repository_name: {type: string}
+        updated_at: {type: string, format: date-time}
+    PluginUsage:
+      type: object
+      additionalProperties: false
+      required: [command_name, agent, invocation_count, total_tokens, input_tokens, output_tokens]
+      properties:
+        command_name: {type: string}
+        agent: {type: string}
+        invocation_count: {type: integer, format: int64}
+        total_tokens: {type: integer, format: int64}
+        input_tokens: {type: integer, format: int64}
+        output_tokens: {type: integer, format: int64}
+    SkillUsage:
+      type: object
+      additionalProperties: false
+      required: [skill_name, agent, invoke_type, success_count, fail_count, total_count]
+      properties:
+        skill_name: {type: string}
+        agent: {type: string}
+        invoke_type: {type: string, enum: [explicit, implicit]}
+        success_count: {type: integer, format: int64}
+        fail_count: {type: integer, format: int64}
+        total_count: {type: integer, format: int64}
+    Rule:
+      type: object
+      additionalProperties: false
+      required: [id, agent, rule_kind, rule_scope, title, current_status, version_count, comment_count, discovered_at, last_seen_at, updated_at]
+      properties:
+        id: {type: integer, format: int64}
+        agent: {type: string}
+        rule_kind: {type: string}
+        rule_scope: {type: string}
+        title: {type: string}
+        current_status: {type: string}
+        version_count: {type: integer, format: int64}
+        comment_count: {type: integer, format: int64}
+        discovered_at: {type: string, format: date-time}
+        last_seen_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    RuleVersion:
+      type: object
+      additionalProperties: false
+      required: [id, version_number, size_bytes, change_reason, applies_to, discovered_at]
+      properties:
+        id: {type: integer, format: int64}
+        version_number: {type: integer}
+        size_bytes: {type: integer}
+        change_reason: {type: string}
+        applies_to:
+          type: array
+          items: {type: string}
+        discovered_at: {type: string, format: date-time}
+    RuleList:
+      type: object
+      additionalProperties: false
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/Rule'}
+        total: {type: integer, format: int64}
+    RuleDetail:
+      type: object
+      additionalProperties: false
+      required: [rule, versions]
+      properties:
+        rule: {$ref: '#/components/schemas/Rule'}
+        versions:
+          type: array
+          items: {$ref: '#/components/schemas/RuleVersion'}
+    UsageModel:
+      type: object
+      additionalProperties: false
+      required: [model, input_tokens, output_tokens, total_tokens]
+      properties:
+        model: {type: string}
+        input_tokens: {type: integer, format: int64}
+        output_tokens: {type: integer, format: int64}
+        total_tokens: {type: integer, format: int64}
+    Usage:
+      type: object
+      additionalProperties: false
+      required: [session_count, cost_usd, input_tokens, output_tokens, total_tokens, work_time_seconds, by_model]
+      properties:
+        session_count: {type: integer, format: int64}
+        cost_usd: {type: number, format: double, description: Summed per request over the same window and scope.}
+        input_tokens: {type: integer, format: int64}
+        output_tokens: {type: integer, format: int64}
+        total_tokens: {type: integer, format: int64}
+        work_time_seconds: {type: integer, format: int64}
+        by_model:
+          type: array
+          items: {$ref: '#/components/schemas/UsageModel'}
+    UsageGroup:
+      type: object
+      additionalProperties: false
+      required: [key, cost_usd, input_tokens, output_tokens, total_tokens, request_count]
+      properties:
+        key: {type: string, description: 'The group_by value: profile email, team name, or model.'}
+        cost_usd: {type: number, format: double}
+        input_tokens: {type: integer, format: int64}
+        output_tokens: {type: integer, format: int64}
+        total_tokens: {type: integer, format: int64}
+        request_count: {type: integer, format: int64}
+    UsageGroupList:
+      type: object
+      additionalProperties: false
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/UsageGroup'}
+        total: {type: integer}
+    OrganizationModelInsight:
+      type: object
+      additionalProperties: false
+      required: [model, contributor_count, input_tokens, output_tokens, cost_usd]
+      properties:
+        model: {type: string}
+        contributor_count: {type: integer, format: int64, minimum: 5}
+        input_tokens: {type: integer, format: int64}
+        output_tokens: {type: integer, format: int64}
+        cost_usd: {type: number, format: double}
+    OrganizationToolInsight:
+      type: object
+      additionalProperties: false
+      required: [tool_name, contributor_count, use_count, success_count, fail_count]
+      properties:
+        tool_name: {type: string}
+        contributor_count: {type: integer, format: int64, minimum: 5}
+        use_count: {type: integer, format: int64}
+        success_count: {type: integer, format: int64}
+        fail_count: {type: integer, format: int64}
+    OrganizationInsights:
+      type: object
+      additionalProperties: false
+      required: [available, minimum_users]
+      properties:
+        available: {type: boolean}
+        active_users: {type: integer, format: int64, minimum: 5}
+        minimum_users: {type: integer, format: int64, const: 5}
+        models:
+          type: array
+          items: {$ref: '#/components/schemas/OrganizationModelInsight'}
+        tools:
+          type: array
+          items: {$ref: '#/components/schemas/OrganizationToolInsight'}
+        tasks:
+          type: array
+          items: {$ref: '#/components/schemas/OrganizationTaskInsight'}
+        hours:
+          type: array
+          items: {$ref: '#/components/schemas/OrganizationHourInsight'}
+        projects:
+          type: array
+          items: {$ref: '#/components/schemas/OrganizationProjectInsight'}
+        bottlenecks:
+          type: array
+          items: {$ref: '#/components/schemas/OrganizationBottleneckInsight'}
+        typed_turn_count:
+          type: integer
+          format: int64
+          description: >-
+            Every typed prompt org-wide in the window, classified or not. Not
+            gated by minimum_users -- a single aggregate carries no more
+            re-identification risk than active_users.
+    OrganizationTaskInsight:
+      type: object
+      additionalProperties: false
+      required: [task_type, contributor_count, prompt_count]
+      properties:
+        task_type: {type: string}
+        contributor_count: {type: integer, format: int64, minimum: 5}
+        prompt_count: {type: integer, format: int64}
+    OrganizationHourInsight:
+      type: object
+      additionalProperties: false
+      required: [hour, contributor_count, session_count]
+      properties:
+        hour: {type: integer, minimum: 0, maximum: 23}
+        contributor_count: {type: integer, format: int64, minimum: 5}
+        session_count: {type: integer, format: int64}
+    OrganizationProjectInsight:
+      type: object
+      additionalProperties: false
+      required: [project_hash, project_hashes, contributor_count, session_count, total_tokens]
+      properties:
+        project_hash: {type: string, description: Opaque shared-project identifier; kept for compatibility.}
+        project_hashes:
+          type: array
+          items: {type: string}
+          description: Every path-derived hash of the canonical repository identity (for example a main checkout and its worktrees).
+        contributor_count: {type: integer, format: int64, minimum: 5}
+        session_count: {type: integer, format: int64}
+        total_tokens: {type: integer, format: int64}
+    OrganizationBottleneckInsight:
+      type: object
+      additionalProperties: false
+      required: [tool_name, contributor_count, use_count, fail_count]
+      properties:
+        tool_name: {type: string}
+        contributor_count: {type: integer, format: int64, minimum: 5}
+        use_count: {type: integer, format: int64}
+        fail_count: {type: integer, format: int64}
+    WeeklyInsights:
+      type: object
+      additionalProperties: false
+      required: [hours, projects, tasks, tools, typed_turn_count, agent_sessions, segment_count, uncovered_session_count, excluded_record_count, collapsed_timeline_sessions]
+      properties:
+        agent_sessions:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [agent, session_count]
+            properties:
+              agent: {type: string}
+              session_count: {type: integer, format: int64}
+        segment_count:
+          type: integer
+          format: int64
+          description: Number of caller-scoped task segments starting in [since, until).
+        uncovered_session_count:
+          type: integer
+          format: int64
+          description: Visible caller sessions with records in [since, until) and no caller-scoped task segment anywhere in history.
+        excluded_record_count:
+          type: integer
+          format: int64
+          description: How many of the caller's own records the exclusion views hid in [since, until). Zero means nothing of theirs was excluded, not that no exclusion exists.
+        hours:
+          type: array
+          items: {$ref: '#/components/schemas/WeeklyInsightHour'}
+        projects:
+          type: array
+          items: {$ref: '#/components/schemas/WeeklyInsightProject'}
+        tasks:
+          type: array
+          items: {$ref: '#/components/schemas/WeeklyInsightTask'}
+        tools:
+          type: array
+          items: {$ref: '#/components/schemas/WeeklyInsightTool'}
+          description: >-
+            Claude tool_result events plus Codex codex.tool.call metrics, summed per
+            tool name as each agent reports it. Codex counts include calls made inside
+            a code-mode exec script and come only from TUI and VS Code runs; Desktop,
+            codex_cli_rs and `codex exec` send next to none.
+        typed_turn_count:
+          type: integer
+          format: int64
+          description: >-
+            Every typed prompt in the window, classified or not. The denominator
+            tasks' counts are a subset of -- compare against the sum of tasks'
+            prompt_count to see what fraction is actually categorized.
+        collapsed_timeline_sessions:
+          type: integer
+          format: int64
+          description: >-
+            Sessions whose records all share effectively one timestamp. Their hour
+            buckets reflect when the file was written, not when the work happened.
+    WeeklyInsightHour:
+      type: object
+      additionalProperties: false
+      required: [hour, session_count]
+      properties:
+        hour: {type: integer, minimum: 0, maximum: 23}
+        session_count: {type: integer, format: int64}
+    WeeklyInsightProject:
+      type: object
+      additionalProperties: false
+      required: [project_hash, project_hashes, project_name, session_count, total_tokens]
+      properties:
+        project_hash: {type: string, description: Representative hash kept for older clients.}
+        project_hashes:
+          type: array
+          items: {type: string}
+          description: Every path-derived hash of the canonical repository identity; use this instead of project_hash.
+        project_name: {type: string}
+        session_count: {type: integer, format: int64}
+        total_tokens: {type: integer, format: int64}
+    WeeklyInsightTask:
+      type: object
+      additionalProperties: false
+      required: [task_type, prompt_count]
+      properties:
+        task_type: {type: string}
+        prompt_count: {type: integer, format: int64}
+    WeeklyInsightTool:
+      type: object
+      additionalProperties: false
+      required: [tool_name, use_count, fail_count]
+      properties:
+        tool_name: {type: string}
+        use_count: {type: integer, format: int64}
+        fail_count: {type: integer, format: int64}

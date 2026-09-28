@@ -1,0 +1,53 @@
+<svg viewBox="24 36 914 304" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="getting-started-flow-en-title getting-started-flow-en-desc">
+  <title id="getting-started-flow-en-title">Getting started: operator and developer steps</title>
+  <desc id="getting-started-flow-en-desc">The operator builds the two images, writes deploy/.env and starts the stack with docker compose up -d. The first admin created at /setup has no team, so the operator then adds a user account with a Team and a cctrace User ID, and hands the server URL and that account to the developer. The developer, who has built the client with make build-client, runs cctrace init, restarts the agent and checks cctrace status and the dashboard.</desc>
+  <defs>
+    <marker id="getting-started-flow-en-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill: var(--ink-3)"/></marker>
+  </defs>
+
+  <!-- Swimlanes -->
+  <rect x="36" y="48" width="890" height="128" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="52" y="72" font-size="12" font-family="'JetBrains Mono', monospace" letter-spacing="0.06em" style="fill: var(--ink-3)">OPERATOR</text>
+  <rect x="36" y="216" width="890" height="112" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="52" y="240" font-size="12" font-family="'JetBrains Mono', monospace" letter-spacing="0.06em" style="fill: var(--ink-3)">DEVELOPER</text>
+
+  <!-- Connectors (drawn before nodes) -->
+  <path d="M 200,124 H 218" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-en-arrow)"/>
+  <path d="M 342,124 H 360" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-en-arrow)"/>
+  <path d="M 484,124 H 502" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-en-arrow)"/>
+  <path d="M 564,160 V 256" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-en-arrow)"/>
+  <path d="M 200,284 H 502" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-en-arrow)"/>
+  <path d="M 626,284 H 644" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-en-arrow)"/>
+  <path d="M 768,284 H 786" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#getting-started-flow-en-arrow)"/>
+
+  <!-- Handoff label: mask sits 8px clear of the line -->
+  <rect x="360" y="186" width="196" height="20" rx="3" style="fill: var(--surface-2)"/>
+  <text x="458" y="200" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">server URL + user account</text>
+
+  <!-- Nodes -->
+  <rect x="52" y="88" width="148" height="72" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="126" y="121" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Build images</text>
+  <text x="126" y="139" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">docker build</text>
+  <rect x="218" y="88" width="124" height="72" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="280" y="121" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Configure</text>
+  <text x="280" y="139" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">deploy/.env</text>
+  <rect x="360" y="88" width="124" height="72" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="422" y="121" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Start stack</text>
+  <text x="422" y="139" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">compose up -d</text>
+  <rect x="502" y="88" width="124" height="72" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="564" y="112" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Create users</text>
+  <text x="564" y="131" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">/setup admin</text>
+  <text x="564" y="148" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">user + team + ID</text>
+  <rect x="52" y="256" width="148" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="126" y="281" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Build client</text>
+  <text x="126" y="299" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">make build-client</text>
+  <rect x="502" y="256" width="124" height="56" rx="8" style="fill: var(--surface); stroke: var(--ink); stroke-width: 1.5"/>
+  <text x="564" y="281" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Initialize</text>
+  <text x="564" y="299" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">cctrace init</text>
+  <rect x="644" y="256" width="124" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="706" y="281" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Restart</text>
+  <text x="706" y="299" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">the agent</text>
+  <rect x="786" y="256" width="124" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="848" y="281" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Verify</text>
+  <text x="848" y="299" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">cctrace status</text>
+</svg>

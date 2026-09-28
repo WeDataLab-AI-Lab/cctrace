@@ -1,0 +1,36 @@
+data/
+web/node_modules/
+web/.next/
+internal/web/dist/
+
+# Environment
+.env
+.venv/
+
+# macOS
+.DS_Store
+
+# Compiled binaries (root only, not cmd/ source dirs)
+/cctrace
+/cctraced
+/cctrace-linux
+/inject-test-profiles
+/dist/
+
+# Logs
+cctraced-log.txt
+
+# Build-time default endpoints — differ per deployment, never committed.
+# Template: deploy/local-defaults.env.example
+deploy/local-defaults.env
+
+# Update signing keys — never committed
+*.der
+*.pem
+*.key
+*.p8
+cctrace-update-*
+
+# MkDocs build output
+/site/
+__pycache__/

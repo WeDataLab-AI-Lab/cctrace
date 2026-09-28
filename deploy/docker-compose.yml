@@ -1,0 +1,151 @@
+# Host paths, port numbers and app publish addresses are configured in the
+# server .env (see deploy/.env.example), without editing this exported file.
+# HTTP defaults to loopback; OTLP defaults to all interfaces for remote ingest.
+# The database publish address remains fixed to loopback.
+#
+# LOGS_DIR is required and has no default. Without it the container does not
+# start -- failing to boot beats losing the logs with the container.
+#
+# CONTAINER_PREFIX exists so a host that already runs cctrace can bring up a
+# second stack; the fixed names would collide on `docker compose up`.
+services:
+  timescaledb:
+    # DB_IMAGE_TAG, not IMAGE_TAG: the two images are built independently.
+    # push.sh --skip-db sends only the app, so tying the database to the app
+    # tag would point compose at a database image that was never sent, and
+    # pull_policy: never turns that into a stack that does not start.
+    # push.sh records this in the server .env only on a deploy that actually
+    # built and sent the database image.
+    image: cctrace/timescaledb-pgmq:${DB_IMAGE_TAG:-latest}
+    pull_policy: never
+    container_name: ${CONTAINER_PREFIX:-cctrace}-timescaledb
+    restart: unless-stopped
+    # Docker's default /dev/shm is 64MB, and PostgreSQL parallel workers exchange
+    # results through it. The by-model dashboard queries exceed that on a real
+    # data set and every chart 500s with
+    #   could not resize shared memory segment ...: No space left on device (53100)
+    # which reads as "slow", not as an error: the client retries and the chart
+    # never arrives. The host disk is irrelevant — that message is about tmpfs.
+    #
+    # This only takes effect when the container is CREATED, so an existing
+    # deployment needs `up -d --force-recreate timescaledb`.
+    shm_size: 1gb
+    environment:
+      POSTGRES_USER: cctrace
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-cctrace}
+      # Read by initdb/10-app-role.sh on first initialisation only.
+      DB_APP_CREDENTIALS: ${DB_APP_CREDENTIALS:-}
+      POSTGRES_DB: cctrace
+      # initdb otherwise writes `trust` for the unix socket and 127.0.0.1, so
+      # anyone inside the container is the superuser without a password (#26).
+      # Read on first initialisation only; an existing volume is converted by
+      # scripts/migrate-pg-hba-scram.sh. psql inside the container then needs
+      # PGPASSWORD="$POSTGRES_PASSWORD" -- see docs/guides/guide-deployment.md.
+      POSTGRES_INITDB_ARGS: --auth-local=scram-sha-256 --auth-host=scram-sha-256
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - tsdb_data:/var/lib/postgresql/data
+      # Runs only when the data volume is empty -- the entrypoint skips this
+      # directory on an existing cluster. An already-deployed database gets the
+      # application role from scripts/migrate-db-app-role.sh instead, which also
+      # moves object ownership (#26).
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    # pg_isready only asks whether the server accepts connections, so it reported
+    # healthy while cctraced crash-looped on password authentication failed --
+    # the operator saw "DB is fine, the app is broken". This authenticates.
+    #
+    # The host has to be the container's own non-loopback address: a cluster
+    # initialised before POSTGRES_INITDB_ARGS above grants `trust` to local and
+    # 127.0.0.1 until scripts/migrate-pg-hba-scram.sh runs, and a loopback probe
+    # there passes with any password and would check nothing.
+    healthcheck:
+      test: ["CMD-SHELL", "PGPASSWORD=$${POSTGRES_PASSWORD} psql -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\" -h \"$$(hostname -i | awk '{print $$1}')\" -c 'select 1' > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      # First boot initialises the cluster; without this the auth probe fails
+      # during init and the stack is declared unhealthy before it ever started.
+      start_period: 60s
+
+  cctraced:
+    image: cctrace/cctraced:${IMAGE_TAG:-latest}
+    pull_policy: never
+    container_name: ${CONTAINER_PREFIX:-cctrace}-cctraced
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    environment:
+      # One variable holding <user>:<password>, not two. With a separate user and
+      # password an operator can set half of them, and compose renders a URL that
+      # pairs the bootstrap user with the application password -- which fails to
+      # authenticate, or worse, silently keeps the superuser connection when the
+      # two passwords happen to match. There is no half state here.
+      #
+      # Unset means the bootstrap superuser, so a deployment keeps working until
+      # scripts/migrate-db-app-role.sh has run. That default is the thing being
+      # fixed: a superuser connection turns an application flaw into command
+      # execution inside the container (#26).
+      DATABASE_URL: postgres://${DB_APP_CREDENTIALS:-cctrace:${DB_PASSWORD:-cctrace}}@timescaledb:5432/cctrace?sslmode=disable
+      CCTRACE_SETUP_TOKEN: ${CCTRACE_SETUP_TOKEN:-}
+      CCTRACE_MAX_SYNC_BODY_BYTES: ${CCTRACE_MAX_SYNC_BODY_BYTES:-}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}
+      API_KEY: ${API_KEY:-}
+      CCTRACE_ALLOWED_ORIGINS: ${CCTRACE_ALLOWED_ORIGINS:-}
+      CCTRACE_AI_ENABLED_DEFAULT: ${CCTRACE_AI_ENABLED_DEFAULT:-${CCTRACE_AI_ENABLED:-}}
+      CCTRACE_AI_RUNTIME_DEFAULT: ${CCTRACE_AI_RUNTIME_DEFAULT:-${CCTRACE_AI_RUNTIME:-}}
+      CCTRACE_AI_MODEL_DEFAULT: ${CCTRACE_AI_MODEL_DEFAULT:-${CCTRACE_AI_MODEL:-}}
+      CCTRACE_AI_REASONING_EFFORT_DEFAULT: ${CCTRACE_AI_REASONING_EFFORT_DEFAULT:-${CCTRACE_AI_REASONING_EFFORT:-}}
+      CCTRACE_AI_OPENAI_MODEL_DEFAULT: ${CCTRACE_AI_OPENAI_MODEL_DEFAULT:-${CCTRACE_AI_OPENAI_MODEL:-}}
+      CCTRACE_AI_CLAUDE_MODEL_DEFAULT: ${CCTRACE_AI_CLAUDE_MODEL_DEFAULT:-${CCTRACE_AI_CLAUDE_MODEL:-}}
+      CCTRACE_AI_NVIDIA_MODEL_DEFAULT: ${CCTRACE_AI_NVIDIA_MODEL_DEFAULT:-${CCTRACE_AI_NVIDIA_MODEL:-}}
+      CCTRACE_AI_LITELLM_BASE_URL_DEFAULT: ${CCTRACE_AI_LITELLM_BASE_URL_DEFAULT:-${CCTRACE_AI_LITELLM_BASE_URL:-}}
+      CCTRACE_AI_LITELLM_MODEL_DEFAULT: ${CCTRACE_AI_LITELLM_MODEL_DEFAULT:-${CCTRACE_AI_LITELLM_MODEL:-}}
+      CCTRACE_AI_NVIDIA_API_KEY: ${CCTRACE_AI_NVIDIA_API_KEY:-}
+      CCTRACE_AI_LITELLM_API_KEY: ${CCTRACE_AI_LITELLM_API_KEY:-}
+      CCTRACE_AI_OPENAI_API_KEY: ${CCTRACE_AI_OPENAI_API_KEY:-}
+      CCTRACE_AI_ANTHROPIC_API_KEY: ${CCTRACE_AI_ANTHROPIC_API_KEY:-}
+      # The zone a weekly AI report fires in for a user who saved none and has
+      # no report yet. The binary's own default is UTC; users here are in Korea.
+      CCTRACE_AI_DEFAULT_TZ: ${CCTRACE_AI_DEFAULT_TZ:-Asia/Seoul}
+      CCTRACE_SECRETS_KEY: ${CCTRACE_SECRETS_KEY:-}
+      GRPC_PORT: "4317"
+      HTTP_PORT: "8080"
+      HTTP_OTEL_PORT: "4318"
+      WAL_DIR: /data/buffer-wal
+    # The process binds its listeners only after migrations finish, and a
+    # migration can be held off by a lock another session holds. Until then the
+    # container is "Up" with its published ports answering nothing, which reads
+    # as healthy to anyone watching docker ps. This probe is what turns that
+    # wait into a visible state. wget is busybox's, already in the alpine base.
+    #
+    # /api/version, not /api/health, on purpose. The question a container probe
+    # has to answer is "did this finish starting", and /api/version answers it
+    # from memory. /api/health additionally counts both pgmq queues with an
+    # unbounded count(*), so probing it every 10s would add ~17k of those a day
+    # to the production database -- and would report a busy server as unhealthy
+    # exactly when its queues are deepest, which is the wrong way round. Reach
+    # for /api/health by hand when you want the database's opinion.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8080/api/version > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      # A healthy boot is a few seconds. A boot that is still migrating shows
+      # unhealthy, which is accurate -- it is not serving. What it is waiting for
+      # is in the log within 15s either way.
+      start_period: 30s
+    ports:
+      - "${HTTP_BIND:-127.0.0.1}:${HTTP_PORT:-8080}:8080"
+      - "${GRPC_BIND:-0.0.0.0}:${GRPC_PORT:-4317}:4317"
+      - "${OTEL_HTTP_BIND:-0.0.0.0}:${OTEL_HTTP_PORT:-4318}:4318"
+    volumes:
+      - wal_data:/data/buffer-wal
+      - ${LOGS_DIR:?set LOGS_DIR in the server .env (e.g. /data/logs-host-path)}:/data/logs
+
+volumes:
+  tsdb_data:
+  wal_data:

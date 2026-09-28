@@ -1,0 +1,57 @@
+<svg viewBox="28 36 904 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="overview-architecture-ko-title overview-architecture-ko-desc">
+  <title id="overview-architecture-ko-title">cctrace가 에이전트 세션을 수집하는 방식</title>
+  <desc id="overview-architecture-ko-desc">Claude Code와 Codex CLI는 OTLP 텔레메트리를 cctraced 서버로 직접 보낸다. 두 에이전트의 세션 JSONL 파일은 같은 머신의 cctrace 클라이언트가 읽어 HTTP로 cctraced에 업로드한다. cctraced는 둘 다 TimescaleDB에 저장하고 대시보드를 제공한다.</desc>
+  <defs>
+    <marker id="overview-architecture-ko-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill: var(--ink-3)"/></marker>
+  </defs>
+
+  <!-- Boundaries -->
+  <rect x="40" y="48" width="412" height="296" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="56" y="72" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">개발자 머신</text>
+  <rect x="508" y="48" width="412" height="296" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="524" y="72" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">서버 · Docker Compose</text>
+
+  <!-- Connectors (drawn before nodes) -->
+  <path d="M 214,112 H 532" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#overview-architecture-ko-arrow)"/>
+  <path d="M 214,140 H 330 V 232" style="fill: none; stroke: var(--ink-3); stroke-width: 1.2; stroke-dasharray: 4 3" marker-end="url(#overview-architecture-ko-arrow)"/>
+  <path d="M 214,260 H 286" style="fill: none; stroke: var(--ink-3); stroke-width: 1.2; stroke-dasharray: 4 3" marker-end="url(#overview-architecture-ko-arrow)"/>
+  <path d="M 139,288 V 316 H 607 V 288" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#overview-architecture-ko-arrow)"/>
+  <path d="M 436,260 H 532" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#overview-architecture-ko-arrow)"/>
+  <path d="M 682,116 H 730" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#overview-architecture-ko-arrow)"/>
+  <path d="M 682,260 H 730" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#overview-architecture-ko-arrow)"/>
+
+  <!-- Arrow labels: masks sit 6px clear of their line -->
+  <rect x="356" y="86" width="84" height="20" rx="3" style="fill: var(--surface-2)"/>
+  <text x="398" y="100" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">OTLP gRPC</text>
+  <rect x="338" y="174" width="54" height="20" rx="3" style="fill: var(--surface-2)"/>
+  <text x="365" y="188" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">JSONL</text>
+  <rect x="444" y="290" width="84" height="20" rx="3" style="fill: var(--surface-2)"/>
+  <text x="486" y="304" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">OTLP HTTP</text>
+  <rect x="442" y="234" width="84" height="20" rx="3" style="fill: var(--surface-2)"/>
+  <text x="484" y="248" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">/api/sync</text>
+
+  <!-- Nodes -->
+  <rect x="64" y="88" width="150" height="56" rx="8" style="fill: var(--agent-claude-soft); stroke: var(--agent-claude)"/>
+  <text x="139" y="113" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Claude Code</text>
+  <text x="139" y="131" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">에이전트</text>
+
+  <rect x="64" y="232" width="150" height="56" rx="8" style="fill: var(--agent-codex-soft); stroke: var(--agent-codex)"/>
+  <text x="139" y="257" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Codex CLI</text>
+  <text x="139" y="275" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">에이전트</text>
+
+  <rect x="286" y="232" width="150" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="361" y="257" font-size="17" font-weight="600" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink)">cctrace</text>
+  <text x="361" y="275" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">클라이언트 데몬</text>
+
+  <rect x="532" y="88" width="150" height="200" rx="8" style="fill: var(--surface); stroke: var(--ink); stroke-width: 1.5"/>
+  <text x="607" y="182" font-size="17" font-weight="600" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink)">cctraced</text>
+  <text x="607" y="200" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">서버</text>
+
+  <rect x="730" y="88" width="166" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="813" y="113" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">TimescaleDB</text>
+  <text x="813" y="131" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">저장소</text>
+
+  <rect x="730" y="232" width="166" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="813" y="257" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">대시보드</text>
+  <text x="813" y="275" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">cctraced가 제공</text>
+</svg>

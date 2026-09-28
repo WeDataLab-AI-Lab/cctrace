@@ -1,0 +1,70 @@
+<svg viewBox="28 36 910 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="server-deployment-en-title server-deployment-en-desc">
+  <title id="server-deployment-en-title">Server deployment: published ports and services</title>
+  <desc id="server-deployment-en-desc">On the server host, docker compose runs cctraced and TimescaleDB. cctraced publishes OTLP gRPC 4317 and OTLP HTTP 4318 on all interfaces (0.0.0.0) and HTTP 8080 on loopback (127.0.0.1) by default; TimescaleDB publishes 5432 on loopback only. Claude Code sends OTLP gRPC to 4317 and Codex sends OTLP HTTP to 4318; the cctrace client uploads sessions and the browser loads the dashboard over HTTP 8080, which clients on other machines reach only after HTTP_BIND is changed or through the TLS proxy. The optional TLS overlay adds a Caddy service publishing 8443, 5317 and 5318, which proxies to cctraced over the compose network.</desc>
+  <defs>
+    <marker id="server-deployment-en-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill: var(--ink-3)"/></marker>
+  </defs>
+
+  <!-- Boundaries -->
+  <rect x="40" y="48" width="170" height="356" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="56" y="72" font-size="12" font-family="'JetBrains Mono', monospace" letter-spacing="0.06em" style="fill: var(--ink-3)">CLIENT MACHINES</text>
+  <rect x="234" y="48" width="692" height="356" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="250" y="72" font-size="12" font-family="'JetBrains Mono', monospace" letter-spacing="0.06em" style="fill: var(--ink-3)">SERVER HOST</text>
+  <rect x="430" y="84" width="480" height="308" rx="10" style="fill: none; stroke: var(--border-strong)"/>
+  <text x="446" y="106" font-size="12" font-family="'JetBrains Mono', monospace" letter-spacing="0.06em" style="fill: var(--ink-3)">DOCKER COMPOSE</text>
+
+  <!-- Connectors (drawn before nodes) -->
+  <path d="M 194,140 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-en-arrow)"/>
+  <path d="M 194,208 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-en-arrow)"/>
+  <path d="M 194,292 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-en-arrow)"/>
+  <path d="M 194,364 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-en-arrow)"/>
+  <path d="M 398,140 H 466" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-en-arrow)"/>
+  <path d="M 398,208 H 466" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-en-arrow)"/>
+  <path d="M 398,328 H 466" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-en-arrow)"/>
+  <path d="M 606,162 H 724" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-en-arrow)"/>
+  <path d="M 724,334 H 606" style="fill: none; stroke: var(--ink-3); stroke-width: 1.2; stroke-dasharray: 4 3" marker-end="url(#server-deployment-en-arrow)"/>
+
+  <!-- Arrow label: mask sits 8px clear of its line -->
+  <rect x="638" y="306" width="54" height="20" rx="3" style="fill: var(--surface-2)"/>
+  <text x="665" y="320" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">proxy</text>
+
+  <!-- Clients -->
+  <rect x="56" y="112" width="138" height="56" rx="8" style="fill: var(--agent-claude-soft); stroke: var(--agent-claude)"/>
+  <text x="125" y="137" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Claude Code</text>
+  <text x="125" y="155" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">agent</text>
+  <rect x="56" y="180" width="138" height="56" rx="8" style="fill: var(--agent-codex-soft); stroke: var(--agent-codex)"/>
+  <text x="125" y="205" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Codex CLI</text>
+  <text x="125" y="223" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">agent</text>
+  <rect x="56" y="264" width="138" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="125" y="289" font-size="17" font-weight="600" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink)">cctrace</text>
+  <text x="125" y="307" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">session sync</text>
+  <rect x="56" y="336" width="138" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="125" y="361" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Browser</text>
+  <text x="125" y="379" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">dashboard</text>
+
+  <!-- Published ports (default bind addresses) -->
+  <rect x="258" y="112" width="140" height="56" rx="8" style="fill: var(--canvas); stroke: var(--border-strong)"/>
+  <text x="328" y="137" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">OTLP gRPC</text>
+  <text x="328" y="155" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:4317 · 0.0.0.0</text>
+  <rect x="258" y="180" width="140" height="56" rx="8" style="fill: var(--canvas); stroke: var(--border-strong)"/>
+  <text x="328" y="205" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">OTLP HTTP</text>
+  <text x="328" y="223" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:4318 · 0.0.0.0</text>
+  <rect x="258" y="268" width="140" height="120" rx="8" style="fill: var(--canvas); stroke: var(--border-strong)"/>
+  <text x="328" y="302" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">HTTP</text>
+  <text x="328" y="324" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:8080</text>
+  <text x="328" y="346" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">127.0.0.1</text>
+  <text x="328" y="366" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">set HTTP_BIND</text>
+
+  <!-- Compose services -->
+  <rect x="466" y="128" width="140" height="248" rx="8" style="fill: var(--surface); stroke: var(--ink); stroke-width: 1.5"/>
+  <text x="536" y="246" font-size="17" font-weight="600" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink)">cctraced</text>
+  <text x="536" y="264" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">server</text>
+  <rect x="724" y="128" width="162" height="68" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="805" y="153" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">TimescaleDB</text>
+  <text x="805" y="171" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">store</text>
+  <text x="805" y="189" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">127.0.0.1:5432</text>
+  <rect x="724" y="300" width="162" height="76" rx="8" style="fill: var(--surface); stroke: var(--border-strong); stroke-dasharray: 4 3"/>
+  <text x="805" y="325" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Caddy</text>
+  <text x="805" y="343" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">optional TLS</text>
+  <text x="805" y="363" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:8443 :5317 :5318</text>
+</svg>

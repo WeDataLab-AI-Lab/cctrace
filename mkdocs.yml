@@ -1,0 +1,113 @@
+site_name: cctrace
+site_description: Self-hosted telemetry for Claude Code and Codex CLI sessions.
+docs_dir: site-docs
+strict: true
+
+theme:
+  name: material
+  custom_dir: docs-overrides
+  language: en
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    scheme: default
+    primary: custom
+    accent: custom
+  features:
+    - navigation.sections
+    - navigation.footer
+    - navigation.top
+    - toc.follow
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+
+extra:
+  generator: false
+
+hooks:
+  - hooks/design_tokens.py
+
+extra_css:
+  - assets/cctrace.css
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: ko
+          name: 한국어
+          build: true
+          nav_translations:
+            Overview: 개요
+            Install: 설치
+            Configuration: 설정
+            Operations: 운영
+            Connect: 연결
+            Profiles: 프로필
+            Sync daemon: 동기화 데몬
+            Reset and uninstall: 초기화와 제거
+            GJC and OMO: GJC와 OMO
+            First admin: 첫 관리자
+            Users: 사용자
+            Pages: 페이지
+            CLI: CLI
+            Server environment: 서버 환경변수
+            Ports: 포트
+            Privacy: 개인정보
+            Getting started: 시작하기
+            Server: 서버
+            Client: 클라이언트
+            Agents: 에이전트
+            Dashboard: 대시보드
+            Reference: 레퍼런스
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: [site-docs/assets/diagrams]
+      check_paths: true
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Overview: index.md
+  - Getting started: getting-started.md
+  - Server:
+      - Install: server/install.md
+      - Configuration: server/configuration.md
+      - Operations: server/operations.md
+  - Client:
+      - Install: client/install.md
+      - Connect: client/setup.md
+      - Profiles: client/profiles.md
+      - Sync daemon: client/sync.md
+      - Reset and uninstall: client/uninstall.md
+  - Agents:
+      - Claude Code: agents/claude-code.md
+      - Codex CLI: agents/codex.md
+      - GJC and OMO: agents/gjc-omo.md
+  - Dashboard:
+      - First admin: dashboard/first-admin.md
+      - Users: dashboard/users.md
+      - Pages: dashboard/pages.md
+  - Reference:
+      - CLI: reference/cli.md
+      - Server environment: reference/server-env.md
+      - Ports: reference/ports.md
+      - Privacy: reference/privacy.md

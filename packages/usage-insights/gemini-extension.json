@@ -1,0 +1,5 @@
+{
+  "name": "usage-insights",
+  "version": "0.2.0",
+  "description": "Read-only cctrace usage and workflow analysis"
+}

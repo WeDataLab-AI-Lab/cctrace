@@ -1,0 +1,25 @@
+.git
+web/node_modules
+# Local dev overrides must never reach the production bundle. The image now
+# builds the dashboard itself, so this is the only thing keeping them out.
+web/.env*
+deploy/.env
+deploy/local-defaults.env
+web/.next
+data/
+*.md
+docs/
+scripts/*
+!scripts/sign-update-manifest.go
+tests/
+.omc/
+.claude*
+.codex/
+
+# 업데이트 서명 키 — 빌드 컨텍스트 반입 금지.
+# 개인 키는 deploy/Dockerfile 의 BuildKit secret(update_signing_key)으로만 전달.
+*.der
+*.pem
+*.key
+*.p8
+cctrace-update-*

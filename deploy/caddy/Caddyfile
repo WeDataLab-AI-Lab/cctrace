@@ -1,0 +1,48 @@
+# TLS termination in front of cctraced (ADR-9). Used by
+# deploy/docker-compose.tls.yml; cctraced itself keeps speaking plain HTTP and
+# plain gRPC on the compose network.
+#
+# CADDY_TLS_MODE is `internal` by default: Caddy issues from its own CA, which
+# needs no public DNS and works for a bare IP address. Clients then have to
+# trust that CA, and each one reads it from a different variable:
+#
+#   Claude Code, grpc   OTEL_EXPORTER_OTLP_CERTIFICATE
+#   Claude Code, http   NODE_EXTRA_CA_CERTS
+#   Codex               SSL_CERT_FILE
+#
+# SSL_CERT_FILE REPLACES the trust store rather than adding to it. A bundle that
+# contains only this CA makes Codex fail to verify api.openai.com; concatenate
+# it with the system roots.
+#
+# Export the CA with:
+#   docker compose exec caddy cat /data/caddy/pki/authorities/local/root.crt
+#
+# Set CADDY_TLS_MODE=acme when the name resolves publicly and port 80 is
+# reachable from the internet, and Caddy obtains a real certificate instead --
+# no client-side trust configuration needed at all.
+{
+	admin off
+}
+
+# Dashboard and REST API.
+{$CADDY_SITE_ADDRESS}:8443 {
+	tls {$CADDY_TLS_MODE}
+	log
+	reverse_proxy cctraced:8080
+}
+
+# OTLP over gRPC. h2c because the upstream speaks cleartext HTTP/2 -- without it
+# Caddy would offer HTTP/1.1 to a listener that only understands h2, and the
+# client sees a connection that opens and then stalls.
+{$CADDY_SITE_ADDRESS}:5317 {
+	tls {$CADDY_TLS_MODE}
+	log
+	reverse_proxy h2c://cctraced:4317
+}
+
+# OTLP over HTTP.
+{$CADDY_SITE_ADDRESS}:5318 {
+	tls {$CADDY_TLS_MODE}
+	log
+	reverse_proxy cctraced:4318
+}

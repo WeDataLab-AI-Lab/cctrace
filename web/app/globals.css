@@ -1,0 +1,382 @@
+@import "tailwindcss";
+
+/* 화이트모드 전용: dark: 변형을 .dark 클래스 기반으로 고정해
+   prefers-color-scheme: dark 환경에서 shadcn 컴포넌트가 다크로 새는 것을 차단. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 13" 노트북의 제약은 폭이 아니라 세로다. 브라우저 크롬을 뺀 뷰포트가 750~830px
+   대이고, 큰 모니터는 그 위다. 폭으로 나누면 큰 모니터에서 창을 낮게 쓸 때 놓친다.
+   900px 은 사용자 스크린샷에서 역산한 추정 기준선이지 실측이 아니다 -- 13"에서
+   window.innerHeight 를 재면 확정할 수 있다. */
+@custom-variant short (@media (max-height: 900px));
+
+/* ============================================================
+   cctrace — design tokens ("instrument panel")
+   Vendor-neutral · cool white · data-first  (DESIGN.md v0602)
+   ============================================================ */
+:root {
+  /* ---- Cool neutral base (NO warm ivory) ---- */
+  --canvas:        #F6F7F9;
+  --surface:       #FFFFFF;
+  --surface-2:     #FBFCFD;
+  --surface-sunk:  #F1F3F6;
+
+  --border:        #E6E8EC;
+  --border-subtle: #EEF0F3;
+  --border-strong: #D6DAE0;
+
+  /* ---- Cool ink hierarchy ---- */
+  --ink:   #0F1419;
+  --ink-2: #5B6370;
+  --ink-3: #8A909C;
+  --ink-4: #AEB3BD;
+
+  /* ---- Brand accent — single signal indigo ---- */
+  /* Chrome, not data. The data palette now runs 25 danger / 39 Claude / 75 warning
+     / 130 gjc / 152 success / 182 compat / 232 Codex / 300 omo — there is no empty
+     hue left for a saturated selection colour to occupy, and the violet this used
+     to be sat 15 degrees from omo. A near-neutral cannot collide with any of them,
+     which is the only property a selection colour actually needs. It also matches
+     the cctrace mark, which is black. (Was #5B5BD6; these are the values the
+     data-accent="mono" variant already carried.) */
+  --accent:       #2B313B;
+  --accent-hover: #1A1F27;
+  --accent-soft:  #EDEFF2;
+  --accent-ink:   #FFFFFF;
+  --accent-ring:  rgba(43, 49, 59, 0.28);
+
+  /* stable accent swatches (for the appearance picker dots — independent of data-accent) */
+  --swatch-indigo: #5B5BD6;
+  --swatch-teal:   #0EA5A5;
+  --swatch-mono:   #2B313B;
+
+  /* ---- Agent palette — equal-weight (OKLCH, matched chroma) ----
+         Hue follows each tool's own accent where the tool has one; L and C are
+         held near-constant across the set so no agent reads as louder than
+         another, and so every one of them survives the dark theme.
+
+         claude 39  — Anthropic's coral, rgb(215,119,87). Claude Code's own theme
+                      table names it: {claude:"rgb(215,119,87)", claudeShimmer:...}.
+                      oklch(0.67 0.129 39). It was 47/0.160, a close approximation
+                      that nothing in particular chose.
+         codex  232 — Codex's accent. openai/codex codex-rs/tui/src/style.rs uses
+                      Color::Cyan on dark terminals and rgb(0,95,135) only as the
+                      darkened variant for light ones; the bright cyan is the colour
+                      the tool actually reads as. Capri, oklch(0.76 0.153 232). It is
+                      lighter than the rest of this palette on purpose — the darkened
+                      #005F87 (oklch 0.46) matches the set's weight but not the tool.
+                      It was 300 (purple), which matched nothing.
+         omo    300 — moved off 230 when codex arrived at 236: six degrees apart is
+                      the same colour to a reader scanning a chart. This is the slot
+                      codex vacated, and is a placeholder in the sense that claude's
+                      and codex's hues are not — if omo publishes an accent, it wins.
+         gjc    130, compat 182 — unchanged. ---- */
+  --agent-claude:      oklch(0.67 0.129 39);
+  --agent-claude-soft: oklch(0.95 0.035 39);
+  --agent-codex:       oklch(0.76 0.153 232);
+  --agent-codex-soft:  oklch(0.95 0.040 232);
+  --agent-compat:      oklch(0.62 0.115 182);
+  --agent-compat-soft: oklch(0.95 0.035 182);
+  --agent-gjc:         oklch(0.60 0.140 130);
+  --agent-gjc-soft:    oklch(0.95 0.035 130);
+  --agent-omo:         oklch(0.58 0.160 300);
+  --agent-omo-soft:    oklch(0.95 0.035 300);
+  /* weekly: the server's AI report runs, not a harness a person ran. Hue 85 sits
+     clear of every agent hue and of the user palette's nearest slot (--cat-3, 72). */
+  --agent-weekly:      oklch(0.64 0.120 85);
+  --agent-weekly-soft: oklch(0.95 0.035 85);
+
+  /* ---- Fable — flagship hybrid: solid anchor for chart fills/tooltips,
+         gradient for badges/dots and <defs>-based SVG fills.
+         g1–g3 stops are the single source for both the CSS gradient and
+         SVG <linearGradient> stops (never put linear-gradient() in fill).
+
+         The sweep is centred on Anthropic's coral (hue 39, see --agent-claude)
+         rather than crossing into pink as it used to: a flagship may be the
+         loudest thing in its family, but it has to stay in the family, or the
+         one model everyone looks at is the one that does not look like its
+         vendor. g1 warms toward amber, g3 deepens toward red — both sides of
+         the brand hue, neither leaving it. ---- */
+  --model-fable:      oklch(0.57 0.145 39);
+  --model-fable-soft: oklch(0.95 0.035 39);
+
+  /* ---- Astra — GPT-6 flagship: Codex-capri anchor, one tier deeper than Sol. ---- */
+  /* Astra replaced Sol as the Codex flagship (2026-09, gpt-6-astra: $10/$50 vs
+     gpt-5.6-sol's $4/$20 — a step up, not a lateral release). One flat colour,
+     deepest in the capri ramp (hue 232, see --agent-codex) — a tier below Sol's
+     former anchor lightness, the same step size the ramp already uses between
+     Terra (0.65) and Sol (0.55). Sol keeps its shade in the ramp as raw OKLCH
+     (see modelShade in colors.ts) rather than a token: only the true flagship
+     gets one, same as Opus not holding a token on the Claude side. */
+  --model-astra:      oklch(0.46 0.130 232);
+  --model-astra-soft: oklch(0.95 0.040 232);
+
+  /* ---- Categorical data viz (colorblind-safe 8) ---- */
+  --cat-1: oklch(0.58 0.16 265);
+  --cat-2: oklch(0.64 0.12 195);
+  --cat-3: oklch(0.74 0.14 72);
+  --cat-4: oklch(0.62 0.18 18);
+  --cat-5: oklch(0.66 0.14 150);
+  --cat-6: oklch(0.58 0.16 312);
+  --cat-7: oklch(0.70 0.10 232);
+  --cat-8: oklch(0.76 0.13 112);
+
+  /* ---- Semantic ---- */
+  /* base = dot/fill/icon on light bg · -soft = tint bg · -strong = legible text on -soft */
+  --success:        oklch(0.62 0.13 152);
+  --success-soft:   oklch(0.95 0.04 152);
+  --success-strong: oklch(0.46 0.11 152);
+  --danger:         oklch(0.585 0.19 25);
+  --danger-soft:    oklch(0.95 0.045 25);
+  --danger-strong:  oklch(0.48 0.17 25);
+  --warning:        oklch(0.74 0.14 75);
+  --warning-soft:   oklch(0.95 0.05 75);
+  --warning-strong: oklch(0.52 0.10 75);
+
+  /* ---- Radius ---- */
+  --radius: 0.625rem; /* 10px — shadcn base (= --r-md) */
+  --r-xs: 5px;
+  --r-sm: 7px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  /* ---- Shadow (cool, restrained) ---- */
+  --sh-xs:  0 1px 2px rgba(16, 20, 25, 0.04);
+  --sh-sm:  0 1px 2px rgba(16, 20, 25, 0.05), 0 1px 3px rgba(16, 20, 25, 0.04);
+  --sh-md:  0 2px 4px rgba(16, 20, 25, 0.05), 0 6px 16px rgba(16, 20, 25, 0.07);
+  --sh-pop: 0 8px 28px rgba(16, 20, 25, 0.14), 0 2px 6px rgba(16, 20, 25, 0.08);
+
+  /* ---- Layout ---- */
+  --pad-card: 20px;
+  --sidebar-w: 220px;
+
+  /* ===== shadcn/ui semantic aliases — re-pointed to cctrace tokens ===== */
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-ink);
+  --secondary: var(--surface-sunk);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-sunk);
+  --muted-foreground: var(--ink-3);
+  --destructive: var(--danger);
+  --input: var(--border);
+  --ring: var(--accent);
+}
+
+/* accent variants (tweak).
+   indigo needs a rule of its own now: it used to be the :root default and was
+   selectable only by falling through to it. When the default became neutral, a
+   picker set to indigo would have silently rendered as mono — the option would
+   still be there, still highlighted, and do nothing. */
+:root[data-accent="indigo"] {
+  --accent: #5B5BD6; --accent-hover: #4B4BC4; --accent-soft: #ECECFB; --accent-ink: #FFFFFF; --accent-ring: rgba(91, 91, 214, 0.30);
+}
+:root[data-accent="mono"] {
+  --accent: #2B313B; --accent-hover: #1A1F27; --accent-soft: #EDEFF2; --accent-ink: #FFFFFF; --accent-ring: rgba(43, 49, 59, 0.28);
+}
+:root[data-accent="teal"] {
+  --accent: #0EA5A5; --accent-hover: #0C8E8E; --accent-soft: #E2F6F5; --accent-ring: rgba(14, 165, 165, 0.30);
+}
+
+/* agent-tone variant (tweak): same hues, lower chroma */
+:root[data-agenttone="muted"] {
+  --agent-claude: oklch(0.65 0.065 39);  --agent-claude-soft: oklch(0.95 0.02 39);
+  --agent-codex:  oklch(0.74 0.075 232); --agent-codex-soft:  oklch(0.95 0.025 232);
+  --agent-compat: oklch(0.60 0.06 182);  --agent-compat-soft: oklch(0.95 0.02 182);
+  --agent-gjc:    oklch(0.59 0.07 130);  --agent-gjc-soft:    oklch(0.95 0.02 130);
+  --agent-omo:    oklch(0.57 0.08 300);  --agent-omo-soft:    oklch(0.95 0.02 300);
+  --agent-weekly: oklch(0.62 0.06 85);   --agent-weekly-soft: oklch(0.95 0.02 85);
+  --model-fable:  oklch(0.57 0.118 39);   --model-fable-soft:  oklch(0.95 0.02 39);
+  --model-astra:  oklch(0.46 0.104 232);  --model-astra-soft:  oklch(0.95 0.025 232);
+}
+
+@theme inline {
+  /* shadcn semantic surfaces */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  /* shadcn "accent" = muted hover surface (NOT the brand indigo) */
+  --color-accent: var(--surface-sunk);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ---- cctrace utilities ---- */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-sunk: var(--surface-sunk);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+
+  /* brand accent (indigo) exposed as `brand` to avoid the shadcn `accent` collision */
+  --color-brand: var(--accent);
+  --color-brand-hover: var(--accent-hover);
+  --color-brand-soft: var(--accent-soft);
+  --color-brand-ink: var(--accent-ink);
+  --color-accent-indigo: var(--swatch-indigo);
+  --color-accent-teal: var(--swatch-teal);
+  --color-accent-mono: var(--swatch-mono);
+
+  /* agent palette */
+  --color-agent-claude: var(--agent-claude);
+  --color-agent-claude-soft: var(--agent-claude-soft);
+  --color-agent-codex: var(--agent-codex);
+  --color-agent-codex-soft: var(--agent-codex-soft);
+  --color-agent-compat: var(--agent-compat);
+  --color-agent-compat-soft: var(--agent-compat-soft);
+  --color-agent-gjc: var(--agent-gjc);
+  --color-agent-gjc-soft: var(--agent-gjc-soft);
+  --color-agent-omo: var(--agent-omo);
+  --color-agent-omo-soft: var(--agent-omo-soft);
+  --color-agent-weekly: var(--agent-weekly);
+  --color-agent-weekly-soft: var(--agent-weekly-soft);
+  --color-model-fable: var(--model-fable);
+  --color-model-fable-soft: var(--model-fable-soft);
+  --color-model-astra: var(--model-astra);
+  --color-model-astra-soft: var(--model-astra-soft);
+
+  /* categorical */
+  --color-cat-1: var(--cat-1);
+  --color-cat-2: var(--cat-2);
+  --color-cat-3: var(--cat-3);
+  --color-cat-4: var(--cat-4);
+  --color-cat-5: var(--cat-5);
+  --color-cat-6: var(--cat-6);
+  --color-cat-7: var(--cat-7);
+  --color-cat-8: var(--cat-8);
+
+  /* semantic */
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-strong: var(--success-strong);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-strong: var(--danger-strong);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-strong: var(--warning-strong);
+
+  /* radius scale (shadcn-derived) */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* fonts (wired via next/font in layout.tsx) */
+  --font-sans: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv05" 1, "ss01" 1;
+}
+
+/* every number aligns */
+.tnum, table, .metric, .mono, .font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection { background: var(--accent-soft); }
+
+/* scrollbar — quiet */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+  background: #D7DBE1;
+  border-radius: 99px;
+  border: 3px solid var(--canvas);
+}
+*::-webkit-scrollbar-thumb:hover { background: #C2C7CF; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* focus ring */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+/* Recharts marks the chart <svg>/layers focusable (tabindex=0). The default 2px/2px
+   accent ring paints an oversized box that reads as a selectable overlay, so drop it
+   on pointer focus but keep a compact ring for keyboard focus (WCAG 2.4.7). */
+.recharts-wrapper :focus:not(:focus-visible) { outline: none; }
+.recharts-wrapper :focus-visible { outline-width: 1px; outline-offset: 1px; }
+
+/* Menu rows take focus on hover, not just on tab, so the 2px accent ring follows the
+   pointer down the list and reads as a heavy box drawn around whatever the cursor
+   happens to be over. Inside a menu the row's own highlight already says where you
+   are -- the ring adds nothing and takes the calm out of the list.
+   Keyboard focus keeps a ring, drawn inset and soft so it reads as "here" rather
+   than as a border: the row is flush against its neighbours, and an offset ring
+   would overlap them (WCAG 2.4.7 still satisfied -- the indicator is visible and
+   has contrast against both the row and the menu). */
+[data-slot='dropdown-menu-item']:focus-visible,
+[data-slot='dropdown-menu-item']:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 1.5px var(--border-strong);
+}
+[data-slot='dropdown-menu-item']:hover:not(:focus-visible) { box-shadow: none; }
+
+/* A filter row that scrolls sideways instead of pushing its neighbours onto the
+   next line. The mask is applied per edge from scroll position (see
+   ScrollFadeRow) so it never claims there is more to see when there is not.
+   The scrollbar is hidden because the fades already carry that message and a
+   horizontal bar under a row of pills reads as a divider. */
+.scroll-fade-row { scrollbar-width: none; -ms-overflow-style: none; }
+.scroll-fade-row::-webkit-scrollbar { display: none; }
+.scroll-fade-row[data-fade-start][data-fade-end] {
+  mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+}
+.scroll-fade-row[data-fade-start]:not([data-fade-end]) {
+  mask-image: linear-gradient(to right, transparent 0, #000 24px);
+}
+.scroll-fade-row[data-fade-end]:not([data-fade-start]) {
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+}
+
+/* motion — short, functional only */
+@keyframes cctracePop { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes cctraceSpin { to { transform: rotate(360deg); } }
+@keyframes cctracePageFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes cctraceBar { 0%, 100% { transform: scaleY(0.3); opacity: 0.45; } 50% { transform: scaleY(1); opacity: 1; } }
+.page-fade { animation: cctracePageFade 0.22s ease both; }
+.cctrace-bar { animation: cctraceBar 0.9s ease-in-out infinite; transform-origin: bottom; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-fade { animation: none; }
+  .cctrace-bar { animation: none; opacity: 0.6; }
+}

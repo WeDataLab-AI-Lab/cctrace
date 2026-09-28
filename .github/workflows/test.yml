@@ -1,0 +1,87 @@
+name: Test
+
+# Deliberately minimal. The private repository is billed for every GitHub-hosted
+# minute, so CI is a last line, not the first: the full verification (vet, lint,
+# unit, integration, harness contract, mirror gate) runs locally before a push
+# via `make pre-pr` (see deploy/Makefile.internal and .githooks/pre-push).
+#
+# This job is a Linux build + vet + test smoke check on the PR head. It is not
+# a required status check. No `push` trigger: the merge result is what the PR
+# already ran. `concurrency` cancels a superseded run when a branch is pushed
+# again, so one PR cannot stack several runs.
+#
+# "unit" in the step name is historical. The package list includes
+# internal/store and the runner has Docker, so containertest does not take its
+# skip path -- the container-backed tests actually run here. That Linux DB
+# coverage is worth keeping: the machine that runs pre-pr is macOS.
+#
+# Windows/macOS matrix removed with #540: macOS bills at 10x and Windows at 2x,
+# and together they were over half the cost of a run. Windows is not covered
+# by pre-pr either -- the developer machine that runs it is macOS, not
+# Windows (#657 found this the hard way: 25 Windows-only failures went
+# unnoticed until manually run). windows-flake-hunt.yml gives Windows an
+# on-demand run instead of routine coverage.
+
+on:
+  pull_request:
+    branches: [develop]
+
+concurrency:
+  group: test-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Build, vet, unit (ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      # Actions are pinned to a commit SHA, not a tag. A major tag like `v4` is
+      # mutable: upstream moves it, and a compromised or simply changed action
+      # then runs here with `contents: read` on this repository. The trailing
+      # comment carries the human-readable version the SHA stood for.
+      #
+      # To move a pin, resolve the tag and replace both the SHA and the comment:
+      #
+      #   gh api repos/<owner>/<repo>/commits/<tag> --jq '.sha'
+      #
+      # The other workflows in this directory pin the same way; this comment is
+      # the one copy of the procedure, so update a pin there by the same command
+      # rather than restating the rule next to it.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Create embed placeholder
+        run: mkdir -p internal/web/dist && touch internal/web/dist/.gitkeep
+
+      - name: Build
+        run: go build ./...
+
+      - name: Verify version injection
+        run: |
+          mkdir -p dist
+          go build -ldflags "-X main.version=$(git describe --tags --always 2>/dev/null || echo dev-ci)" -o dist/cctrace ./cmd/cctrace
+          VERSION=$(./dist/cctrace --version 2>&1)
+          echo "Built version: $VERSION"
+          echo "$VERSION" | grep -v " dev$" || (echo "ERROR: version injection failed, got 'dev'" && exit 1)
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test scope check
+        run: make test-scope-check
+
+      # -timeout 은 패키지별 상한이다. 이 목록에는 internal/store 가 들어 있고,
+      # ubuntu 러너에는 Docker 가 있으므로 containertest 의 skip 경로를 타지 않고
+      # 실제로 컨테이너를 띄운다 -- 이 잡은 이름과 달리 Linux DB 스위트를 돌고 있다.
+      # 실측(2026-09-11, 성공한 run 6 개): internal/store 104.3s / 113.9s / 114.1s /
+      # 115.3s / 117.4s / 118.3s. 120s 한도에 1.7s 남은 상태였고, store 테스트를
+      # 추가한 PR 3 건이 `panic: test timed out after 2m0s` 로 잘렸다 -- 단언이
+      # 깨진 것이 아니라 실행 시간보다 낮은 행 감지 상한에 잘린 것이다.
+      # test-integration 과 같은 300s 로 맞춘다. 같은 스위트에 같은 상한이고,
+      # 통과하는 run 의 청구 시간은 바뀌지 않는다(상한이지 대기가 아니다).
+      - name: Unit Tests
+        run: go test -count=1 -timeout 300s ./internal/... ./cmd/...
