@@ -8,6 +8,10 @@ cctrace는 코딩 에이전트 세션이 실제로 한 일(토큰 사용량, 비
 --8<-- "architecture.ko.svg"
 </div>
 
+![cctrace 대시보드 Overview 페이지: 요약 카드 4개와 사용자별로 쌓은 분 단위 비용 추이 차트](assets/screenshots/40-overview.png){ loading=lazy }
+
+위 대시보드는 데모 서버 위의 가상 5인 팀이며 실제 운영 데이터가 아니다. 페이지별 설명은 [대시보드 페이지](dashboard/pages.md) 참고.
+
 ## 데이터 수집 경로
 
 한쪽만으로는 부족해서 두 경로가 하나의 저장소로 모인다.

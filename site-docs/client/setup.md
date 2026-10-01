@@ -26,6 +26,8 @@ cctrace init
 | `Enable session log sync? (y/n)` | `y` (default) installs the Claude Code hooks that start the sync daemon. `n` leaves telemetry on and session logs off. |
 | `Create a read token for analysis commands` | Only needed for the read commands, which are under active development. `n` is fine. |
 
+![Terminal showing cctrace init prompts and a successful connection, including Codex detection](../assets/screenshots/31-cctrace-init.png){ loading=lazy }
+
 An empty endpoint is not accepted. If an endpoint is plain `http://` to an address outside loopback and private ranges, `init` warns that transcripts or telemetry will cross the network unencrypted. It does not refuse.
 
 After authentication, `init` checks for other agents and asks about each one it finds:
@@ -72,6 +74,8 @@ cctrace status
 | `OPTIONS` | Whether session log sync is on, and any redaction that is on |
 | `NAMED PROFILES` | Each named profile, when you run `status` without `--profile` |
 | `QUOTA` | Claude plan usage windows, fetched from Anthropic's usage API with the local Claude Code login. Unavailable on a machine that is not signed in to Claude Code; this does not affect collection. |
+
+![Terminal showing cctrace status with OTEL connected and sync enabled](../assets/screenshots/32-cctrace-status.png){ loading=lazy }
 
 `status` exits with code 1 when there is no profile and code 2 when the OTEL endpoint is unreachable. Use `cctrace status --profile work` for a named profile.
 

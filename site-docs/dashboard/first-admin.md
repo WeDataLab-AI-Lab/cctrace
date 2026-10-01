@@ -18,6 +18,8 @@ The generated token appears on this line:
 [cctraced] initial administrator setup token: <token>
 ```
 
+![Terminal showing the cctraced log line with the initial administrator setup token, redacted](../assets/screenshots/02-server-setup-token.png){ loading=lazy }
+
 With the Docker Compose stack from [Install the server](../server/install.md), read it with:
 
 ```console
@@ -38,7 +40,11 @@ If the server cannot count users at startup, it logs `[cctraced] setup disabled:
     | Name | Display name |
     | Password, Confirm Password | At least 8 characters |
 
+    ![First admin setup form filled in with the setup token, email, name, and password](../assets/screenshots/10-setup-form.png){ loading=lazy }
+
 3. Select **Create Admin Account**. The server creates the account with the `admin` role, signs you in, and opens the dashboard.
+
+    ![Dashboard Overview page shown immediately after the first admin account is created](../assets/screenshots/11-admin-created.png){ loading=lazy }
 
 Once one user exists, `/setup` redirects to `/login` and the server answers further setup requests with `setup already completed`.
 
@@ -54,6 +60,8 @@ The page shows the token message for every HTTP 403, including a refusal by the 
 ## Sign in
 
 Go to `/login`, enter your email and password, and select **Sign In**.
+
+![Dashboard sign-in page with the email field filled in](../assets/screenshots/12-login.png){ loading=lazy }
 
 | Message | Cause |
 |---|---|

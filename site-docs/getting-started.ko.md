@@ -30,14 +30,14 @@ docker build -f deploy/Dockerfile --build-arg UPDATE_SIGNING=optional \
 
 ## 3. 필수 값 설정
 
-`deploy` 디렉터리에 `.env` 파일 생성. `JWT_SECRET`와 `LOGS_DIR`는 기본값이 없어 없으면 스택이 시작되지 않음. `DB_PASSWORD`는 비워 두면 `cctrace`로 대체되므로 직접 지정.
+예제 env 파일을 복사한 뒤 3개 키만 고친다. `JWT_SECRET`와 `LOGS_DIR`는 기본값이 없어 없으면 스택이 시작되지 않고, `DB_PASSWORD`는 그대로 두면 안 되는 자리 표시 값으로 채워져 있다.
 
 ```console
-$ cat > deploy/.env <<'EOF'
-JWT_SECRET=<random string, at least 32 bytes>
-LOGS_DIR=/absolute/path/on/the/host/for/logs
-DB_PASSWORD=<database password>
-EOF
+$ cp deploy/.env.example deploy/.env
+$ jwt_secret=$(openssl rand -hex 32) && sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=${jwt_secret}|" deploy/.env
+$ db_password=$(openssl rand -hex 20) && sed -i.bak "s|^DB_PASSWORD=.*|DB_PASSWORD=${db_password}|" deploy/.env
+$ LOGS_DIR=/absolute/path/on/the/host/for/logs && mkdir -p "$LOGS_DIR" && sed -i.bak "s|^LOGS_DIR=.*|LOGS_DIR=${LOGS_DIR}|" deploy/.env
+$ rm deploy/.env.bak
 ```
 
 !!! warning "첫 기동 전에 `DB_PASSWORD` 확정"
@@ -53,6 +53,8 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml ps
 $ curl -fsS http://127.0.0.1:8080/api/health
 ```
 
+![docker compose ps로 두 컨테이너가 healthy 상태이고 curl로 /api/health 확인에 성공한 터미널](assets/screenshots/01-server-compose-ps.png){ loading=lazy }
+
 잘못된 값은 `up -d` 시점에는 드러나지 않고 서버 시작 시점에 실패. `cctraced`가 `Up`이 아니라 재시작 중이면 로그 확인:
 
 ```console
@@ -61,7 +63,10 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml logs cctrac
 
 ## 5. 첫 관리자 생성
 
-1. 같은 로그에서 `[cctraced] initial administrator setup token: ...` 줄의 설정 토큰 확인. 토큰을 직접 정하려면 첫 기동 전에 `.env` 파일에 `CCTRACE_SETUP_TOKEN` 지정
+1. 같은 로그에서 `[cctraced] initial administrator setup token:` 줄의 설정 토큰 확인. 토큰을 직접 정하려면 첫 기동 전에 `.env` 파일에 `CCTRACE_SETUP_TOKEN` 지정
+
+    ![cctraced 로그에 찍힌 최초 관리자 설정 토큰 줄(토큰 값 가림)](assets/screenshots/02-server-setup-token.png){ loading=lazy }
+
 2. `http://127.0.0.1:8080` 접속. 사용자가 없으면 대시보드가 `/setup`으로 이동
 3. 설정 토큰, 이메일, 이름, 8자 이상의 비밀번호 입력
 
@@ -73,8 +78,13 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml logs cctrac
 
 1. **Users > Management**(`/users`)에서 **Add User** 선택
 2. 다른 이메일, 이름, **Team**, **cctrace User ID**(예: `alice`) 입력. 역할은 `user` 유지
+
+    ![새 사용자 정보를 입력한 Add User 대화상자](assets/screenshots/22-add-user-dialog.png){ loading=lazy }
+
 3. 대화상자에 표시되는 임시 비밀번호 복사
 4. 로그아웃 후 새 계정과 임시 비밀번호로 로그인, 이동되는 **Settings** 페이지에서 새 비밀번호 설정
+
+    ![임시 비밀번호로 로그인해 비밀번호 변경이 강제된 Settings 화면](assets/screenshots/24-forced-password-change.png){ loading=lazy }
 
 임시 비밀번호를 바꾸기 전에는 `cctrace init`이 거부. 자세한 내용은 [사용자](dashboard/users.md).
 
@@ -85,7 +95,9 @@ $ make build-client
 $ sudo cp dist/cctrace /usr/local/bin/cctrace
 ```
 
-`make build-client`는 현재 플랫폼용 바이너리를 `dist` 디렉터리에 빌드. 복사를 건너뛰면 `cctrace`가 `PATH`에 없을 때 `cctrace init`이 `/usr/local/bin`(macOS·Linux)으로 설치를 제안. 자세한 내용은 [클라이언트 설치](client/install.md).
+`make build-client`는 현재 플랫폼용 바이너리를 `dist` 디렉터리에 빌드. 복사를 건너뛰면 `cctrace`가 `PATH`에 없을 때 `cctrace init`이 `/usr/local/bin`(macOS·Linux)으로 설치를 제안.
+
+빌드에는 Go가 필요하다. 서버에 네트워크로 닿는 머신이라면 Go 툴체인 없이 서버에서 맞는 바이너리를 내려받아도 된다. [클라이언트 설치](client/install.md#download-from-your-own-server) 참고.
 
 ## 8. 클라이언트 연결
 
@@ -103,6 +115,8 @@ $ cctrace init
 | Temporary password | 6단계에서 설정한 새 비밀번호 |
 | Enable session log sync? | `y` |
 
+![cctrace init 프롬프트와 Codex 감지를 포함한 연결 성공 터미널](assets/screenshots/31-cctrace-init.png){ loading=lazy }
+
 `init`은 프로필을 `~/.cctrace/profile.json`에 저장하고 OTEL 환경 변수(4317로 gRPC)와 동기화 훅을 `~/.claude/settings.json`에 적용한다. 이어서 분석 명령용 읽기 토큰 생성을 제안한다. 수집에는 불필요하므로 `n` 응답 가능. `~/.codex`가 있으면 Codex 세션 동기화도 제안하고 Codex의 OTLP/HTTP exporter를 4318 포트로 설정([Codex CLI](agents/codex.md) 참조). 자세한 내용은 [연결](client/setup.md).
 
 ## 9. 에이전트 재시작
@@ -119,8 +133,12 @@ $ cctrace sync
 $ cctrace status
 ```
 
+![OTEL 연결과 동기화 활성화 상태를 보여주는 cctrace status 터미널](assets/screenshots/32-cctrace-status.png){ loading=lazy }
+
 `SERVER` 섹션의 `OTEL status:   [OK] connected`, `PATHS` 섹션의 `Settings:` 줄 끝 `(applied)` 확인. OTEL 엔드포인트에 닿지 않으면 종료 코드 2.
 
-짧은 Claude Code 세션을 하나 실행한 뒤 `http://127.0.0.1:8080/sessions` 접속. 동기화가 끝나면 세션이 표시됨.
+짧은 Claude Code 세션을 하나 실행한 뒤 `http://127.0.0.1:8080/sessions` 접속. 동기화가 끝나면 세션이 표시됨 — 단, 이 페이지의 기본값인 **Interactive** 필터에는 사람이 입력한 세션만 보임. `claude -p`처럼 기계가 구동한 세션은 **Headless** 세션이므로 **Headless**나 **All**로 바꿔야 보임. [대시보드 페이지](dashboard/pages.md) 참고.
+
+![Claude Code 세션이 동기화되어 표시된 대시보드 Sessions 화면](assets/screenshots/71-arrival-sessions.png){ loading=lazy }
 
 표시되지 않으면 [동기화 데몬](client/sync.md)과 [운영](server/operations.md) 참조.

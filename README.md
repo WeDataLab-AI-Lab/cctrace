@@ -10,6 +10,10 @@ serves a dashboard over it. Nothing leaves the machines you run it on.
 > **Status:** early. The server API and the database schema still change between
 > releases. Pin a version if you depend on either.
 
+<img src="site-docs/assets/screenshots/40-overview.png" alt="cctrace dashboard Overview page: four summary cards and a per-minute cost trend chart stacked by user" width="100%">
+
+The dashboard above is a fictitious five-person team on a demo server, not a real deployment.
+
 ## Why
 
 Coding agents emit OpenTelemetry, but the useful questions ("what did this
@@ -104,10 +108,12 @@ Two values have no default and the stack will not start without them. A third
 has a default that you should not keep:
 
 ```sh
-cat > deploy/.env <<'EOF'
-JWT_SECRET=<random string, at least 32 bytes>
+jwt_secret=$(openssl rand -hex 32)
+db_password=$(openssl rand -hex 20)
+cat > deploy/.env <<EOF
+JWT_SECRET=${jwt_secret}
 LOGS_DIR=/absolute/path/on/the/host/for/logs
-DB_PASSWORD=<database password>
+DB_PASSWORD=${db_password}
 EOF
 
 # requires: docker

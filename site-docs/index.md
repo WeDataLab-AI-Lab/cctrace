@@ -8,6 +8,10 @@ cctrace collects what your coding-agent sessions did — token usage, cost, tool
 --8<-- "architecture.en.svg"
 </div>
 
+![cctrace dashboard Overview page: four summary cards and a per-minute cost trend chart stacked by user](assets/screenshots/40-overview.png){ loading=lazy }
+
+The dashboard above is a fictitious five-person team on a demo server, not a real deployment. See [Dashboard pages](dashboard/pages.md) for a page-by-page tour.
+
 ## How data gets in
 
 Two ingestion paths feed one store, because neither is sufficient alone.

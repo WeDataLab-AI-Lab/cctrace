@@ -26,7 +26,7 @@ make build-client
 ??? note "팀 배포용 기본 엔드포인트"
     `cctrace init`은 서버의 sync 엔드포인트와 OTEL 엔드포인트를 묻는다. 나눠 줄 바이너리에 이 프롬프트의 기본값을 넣으려면 `deploy/local-defaults.env.example`을 같은 디렉터리에 local-defaults.env 라는 이름으로 복사하고 `DEFAULT_SYNC_ENDPOINT`, `DEFAULT_OTEL_ENDPOINT`를 채운 뒤 다시 빌드한다. 이 파일이 없으면 프롬프트가 빈 값으로 시작하고 사용자가 두 주소를 직접 입력한다. 이 파일은 `make`만 읽는다. 서버 이미지가 제공하는 바이너리(아래)에는 대신 `docker build`에 `--build-arg DEFAULT_SYNC_ENDPOINT=...`, `--build-arg DEFAULT_OTEL_ENDPOINT=...`를 넘긴다.
 
-## 내 서버에서 내려받기
+## 내 서버에서 내려받기 {#download-from-your-own-server}
 
 [서버 설치](../server/install.md)에서 빌드한 서버 이미지는 클라이언트도 함께 크로스 컴파일해 서버에서 제공한다. 서버에 닿는 머신이라면 빌드 대신 내려받을 수 있다.
 
@@ -38,10 +38,10 @@ make build-client
 | Linux, ARM64 | `/downloads/cctrace-linux-arm64` |
 | Windows, x86-64 | `/downloads/cctrace-windows-amd64.exe` |
 
-이 경로는 `cctrace init`에서 sync 엔드포인트로 쓰는 주소(포트 포함)에서 제공된다. 아래 `<sync endpoint>`를 그 주소로 바꾼다.
+이 경로는 `cctrace init`에서 sync 엔드포인트로 쓰는 주소(포트 포함)에서 제공된다. 아래 `<sync endpoint>`를 그 주소로, `<platform>`을 위 표에서 자신의 플랫폼에 맞는 파일명 접미사(예: `linux-amd64`)로 바꾼다.
 
 ```console
-$ curl -fL -o cctrace "<sync endpoint>/downloads/cctrace-darwin-arm64"
+$ curl -fL -o cctrace "<sync endpoint>/downloads/cctrace-<platform>"
 $ chmod +x cctrace
 ```
 
@@ -51,11 +51,15 @@ $ chmod +x cctrace
 
 ## PATH 등록
 
-`cctrace init` 실행 전에 바이너리를 계속 둘 위치로 옮겨 둔다. `init`이 쓰는 Claude Code 훅은 실행한 바이너리의 절대 경로를 그대로 기록하므로, `dist/`의 바이너리로 실행하면 훅이 체크아웃 안을 계속 가리킨다. 나중에 바이너리를 옮겼다면 새 위치에서 `cctrace env apply`로 훅을 다시 쓴다.
+`cctrace init` 실행 전에 바이너리를 계속 둘 위치로 옮겨 둔다. `init`이 쓰는 Claude Code 훅은 실행한 바이너리의 절대 경로를 그대로 기록하므로, `dist/`나 내려받은 디렉터리의 바이너리로 실행하면 훅이 그 경로를 계속 가리킨다. 나중에 바이너리를 옮겼다면 새 위치에서 `cctrace env apply`로 훅을 다시 쓴다.
+
+빌드했다면 바이너리는 `dist/cctrace`, 내려받았다면 `curl`을 실행한 디렉터리의 `cctrace`다.
 
 ```console
-$ sudo cp dist/cctrace /usr/local/bin/cctrace
+$ sudo cp dist/cctrace /usr/local/bin/cctrace   # make build-client로 빌드한 경우
+$ sudo cp ./cctrace /usr/local/bin/cctrace      # 서버에서 내려받은 경우
 $ cctrace --version
+cctrace version dev
 ```
 
 이 단계를 건너뛰면 `init`이 대신 제안한다. `init` 종료 시점에 `cctrace`가 `PATH`에 없으면 다음을 묻는다.

@@ -38,10 +38,10 @@ The server image built in [Server install](../server/install.md) also cross-comp
 | Linux, ARM64 | `/downloads/cctrace-linux-arm64` |
 | Windows, x86-64 | `/downloads/cctrace-windows-amd64.exe` |
 
-The paths are served at the address you use as the sync endpoint in `cctrace init`, including its port. Replace `<sync endpoint>` below with that address:
+The paths are served at the address you use as the sync endpoint in `cctrace init`, including its port. Replace `<sync endpoint>` below with that address, and `<platform>` with your platform's filename suffix from the table above (for example `linux-amd64`):
 
 ```console
-$ curl -fL -o cctrace "<sync endpoint>/downloads/cctrace-darwin-arm64"
+$ curl -fL -o cctrace "<sync endpoint>/downloads/cctrace-<platform>"
 $ chmod +x cctrace
 ```
 
@@ -51,11 +51,15 @@ These binaries are built with version `dev` unless the server image was built wi
 
 ## Put it on PATH
 
-Put the binary where it will stay before you run `cctrace init`. The Claude Code hooks that `init` writes call the binary by the absolute path it was run from, so a hook written while running the binary in `dist/` keeps pointing into your checkout. If you move the binary later, run `cctrace env apply` from the new location to rewrite the hooks.
+Put the binary where it will stay before you run `cctrace init`. The Claude Code hooks that `init` writes call the binary by the absolute path it was run from, so a hook written while running it from `dist/` or from your download directory keeps pointing there. If you move the binary later, run `cctrace env apply` from the new location to rewrite the hooks.
+
+If you built it, the binary is `dist/cctrace`; if you downloaded it, it is `cctrace` in the directory you ran `curl` from:
 
 ```console
-$ sudo cp dist/cctrace /usr/local/bin/cctrace
+$ sudo cp dist/cctrace /usr/local/bin/cctrace   # built with make build-client
+$ sudo cp ./cctrace /usr/local/bin/cctrace      # downloaded from the server
 $ cctrace --version
+cctrace version dev
 ```
 
 If you skip this, `init` offers to do it. When `cctrace init` finishes and `cctrace` is not on `PATH`, it asks:

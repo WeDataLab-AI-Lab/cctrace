@@ -14,6 +14,9 @@
 ## 사용자 추가 {#add-a-user}
 
 1. **Users**(`/users`)를 열고 **Management** 탭 선택. 관리자에게만 보임
+
+    ![관리자 한 명만 있는 Users Management 탭](../assets/screenshots/20-user-management.png){ loading=lazy }
+
 2. **Add User**를 누르고 모든 필드 입력. 하나라도 비면 서버가 거부
 
     | 필드 | 값 |
@@ -24,7 +27,11 @@
     | Team | 팀 이름. 팀이 없는 계정은 `cctrace init` 실패. `/setup`으로 만든 관리자는 **Edit**으로 팀을 넣기 전까지 팀이 없음 |
     | cctrace User ID | 짧은 식별자. 예: `alice`. `cctrace init`에서 입력하는 값. 이미 수신된 텔레메트리의 사용자 ID를 후보로 제시 |
 
+    ![새 사용자 정보를 입력한 Add User 대화상자](../assets/screenshots/22-add-user-dialog.png){ loading=lazy }
+
 3. 대화상자에 **Temporary Password**가 한 번만 표시됨. cctrace 사용자 ID와 함께 당사자에게 전달
+
+    ![관리자와 새로 추가한 사용자가 함께 표시된 Users Management 탭](../assets/screenshots/23-user-list.png){ loading=lazy }
 
 | 오류 | 원인 |
 |---|---|
@@ -35,7 +42,12 @@
 
 1. 당사자가 `/login`에서 이메일과 임시 비밀번호로 로그인
 2. 비밀번호를 바꾸기 전까지 대시보드는 모든 페이지를 `/settings`로 보내고 다른 메뉴는 비활성
+
+    ![임시 비밀번호로 로그인해 비밀번호 변경이 강제된 Settings 화면](../assets/screenshots/24-forced-password-change.png){ loading=lazy }
+
 3. **Change Password**에서 새 비밀번호(8자 이상) 설정
+
+    ![비밀번호 변경을 마친 뒤의 Settings 화면](../assets/screenshots/25-password-changed.png){ loading=lazy }
 
 임시 비밀번호가 남아 있는 동안 서버는 `cctrace init` 인증을 거부한다. `init`은 `please change your password on the dashboard before authenticating`으로 멈춘다. 변경 후 [연결](../client/setup.md)로 진행.
 
@@ -58,6 +70,8 @@
 | **Reset Password** | 새 임시 비밀번호 발급, 한 번만 표시. 다음 로그인 때 다시 변경해야 하고 그 전까지 `cctrace init` 거부. 기존 업로드 토큰의 수집은 계속됨 |
 | **Revoke API Token** | 계정에 토큰이 있을 때 표시. 업로드 토큰을 포함한 계정의 모든 토큰 삭제. `cctrace init`을 다시 실행할 때까지 클라이언트 전송 중단 |
 | **Clear Collected Data** | 계정 이메일로 저장된 텔레메트리와 세션 레코드 삭제. 되돌릴 수 없음 |
+
+![Team과 cctrace User ID를 입력한 관리자 Edit User 대화상자](../assets/screenshots/21-edit-admin.png){ loading=lazy }
 
 계정을 삭제하는 작업은 없다. 대신 비활성화한다.
 

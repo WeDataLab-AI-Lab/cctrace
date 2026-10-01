@@ -27,19 +27,26 @@ $ docker build -f deploy/Dockerfile --build-arg UPDATE_SIGNING=optional \
 
 ## 2. 서버 env 파일 작성
 
-Compose는 `deploy/` 디렉터리의 `.env`(서버 env 파일)에서 설정을 읽는다. 모든 키와 설명은 `deploy/.env.example`에 있다. 최소 구성:
+Compose는 `deploy/` 디렉터리의 `.env`(서버 env 파일)에서 설정을 읽는다. 예제 파일을 복사한 뒤 아래 3개 키만 고친다. 나머지 키는 기본값과 설명 주석 그대로 둔다.
 
-```text
-JWT_SECRET=<random string, at least 32 bytes>
-LOGS_DIR=/absolute/path/on/the/host/for/logs
-DB_PASSWORD=<database password>
+```console
+$ cp deploy/.env.example deploy/.env
 ```
 
 | 키 | 필수인 이유 |
 |----|-------------|
-| `JWT_SECRET` | 기본값 없음. 없으면 Compose가 시작 거부, 32바이트 미만이면 `cctraced` 종료 |
+| `JWT_SECRET` | 그대로 둘 기본값 없음. 없으면 Compose가 시작 거부, 32바이트 미만이면 `cctraced` 종료. `openssl rand -hex 32`로 생성 |
 | `LOGS_DIR` | 기본값 없음. 없으면 Compose가 시작 거부. 컨테이너의 `/data/logs`에 마운트되는 호스트 디렉터리. 미리 생성 권장 |
-| `DB_PASSWORD` | 기본값(`cctrace`)이 있으나 그대로 두면 안 됨 |
+| `DB_PASSWORD` | `change-me-strong-password` 자리 표시 값이 기본값이며 그대로 두면 안 됨. `openssl rand -hex 20`으로 생성 |
+
+`deploy/.env`의 3개 키는 에디터로 고치거나, 명령줄에서 바로 바꾼다.
+
+```console
+$ jwt_secret=$(openssl rand -hex 32) && sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=${jwt_secret}|" deploy/.env
+$ db_password=$(openssl rand -hex 20) && sed -i.bak "s|^DB_PASSWORD=.*|DB_PASSWORD=${db_password}|" deploy/.env
+$ LOGS_DIR=/absolute/path/on/the/host/for/logs && mkdir -p "$LOGS_DIR" && sed -i.bak "s|^LOGS_DIR=.*|LOGS_DIR=${LOGS_DIR}|" deploy/.env
+$ rm deploy/.env.bak
+```
 
 !!! warning "`DB_PASSWORD`는 첫 시작 전에 결정"
     PostgreSQL은 데이터 볼륨을 처음 초기화할 때만 비밀번호를 적용한다. 이후 `DB_PASSWORD`를 바꾸면 DB 역할은 옛 비밀번호로 남고 `cctraced`는 `password authentication failed`로 재시작을 반복한다. 복구하려면 DB 볼륨을 지워야 하는데 그러면 수집한 데이터가 모두 삭제된다.
@@ -77,6 +84,8 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml ps
 $ curl -fsS http://127.0.0.1:8080/api/health
 ```
 
+![docker compose ps로 두 컨테이너가 healthy 상태이고 curl로 /api/health 확인에 성공한 터미널](../assets/screenshots/01-server-compose-ps.png){ loading=lazy }
+
 - 두 컨테이너 모두 `Up`과 `(healthy)` 표시가 정상. `cctraced` 헬스 체크는 `/api/version`을 확인하며 시작 유예가 30초라 처음에는 `health: starting` 표시
 - `/api/health` 응답: DB에 연결되면 `"status":"ok"`, 연결되지 않으면 HTTP 503과 `"status":"unhealthy"`
 - `cctraced`가 `Restarting`이면 로그 확인:
@@ -92,6 +101,8 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml logs cctrac
 ```text
 [cctraced] initial administrator setup token: <token>
 ```
+
+![cctraced 로그에 찍힌 최초 관리자 설정 토큰 줄(토큰 값 가림)](../assets/screenshots/02-server-setup-token.png){ loading=lazy }
 
 토큰을 직접 정하려면 첫 시작 전에 서버 env 파일에 `CCTRACE_SETUP_TOKEN`을 지정한다. 첫 관리자가 생성되면 토큰은 무효가 된다. 이어서 [첫 관리자](../dashboard/first-admin.md)로 진행한다.
 

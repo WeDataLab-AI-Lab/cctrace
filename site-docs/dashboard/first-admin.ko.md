@@ -18,6 +18,8 @@
 [cctraced] initial administrator setup token: <token>
 ```
 
+![cctraced 로그에 찍힌 최초 관리자 설정 토큰 줄(토큰 값 가림)](../assets/screenshots/02-server-setup-token.png){ loading=lazy }
+
 [서버 설치](../server/install.md)의 Docker Compose 스택에서는 다음으로 확인.
 
 ```console
@@ -38,7 +40,11 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml logs cctrac
     | Name | 표시 이름 |
     | Password, Confirm Password | 8자 이상 |
 
+    ![설정 토큰·이메일·이름·비밀번호를 입력한 첫 관리자 생성 폼](../assets/screenshots/10-setup-form.png){ loading=lazy }
+
 3. **Create Admin Account** 선택. `admin` 역할 계정 생성 후 로그인 상태로 대시보드 열림
+
+    ![첫 관리자 계정 생성 직후의 대시보드 Overview 화면](../assets/screenshots/11-admin-created.png){ loading=lazy }
 
 사용자가 한 명이라도 생기면 `/setup`은 `/login`으로 넘어가고 이후 셋업 요청에는 서버가 `setup already completed`로 응답한다.
 
@@ -54,6 +60,8 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml logs cctrac
 ## 로그인 {#sign-in}
 
 `/login`에서 이메일과 비밀번호를 넣고 **Sign In** 선택.
+
+![이메일을 입력한 대시보드 로그인 화면](../assets/screenshots/12-login.png){ loading=lazy }
 
 | 메시지 | 원인 |
 |---|---|

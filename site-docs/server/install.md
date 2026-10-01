@@ -27,19 +27,26 @@ $ docker build -f deploy/Dockerfile --build-arg UPDATE_SIGNING=optional \
 
 ## 2. Write the server env file
 
-Compose reads its settings from `.env` in the `deploy/` directory (the server env file). `deploy/.env.example` lists every key with comments. The minimum:
+Compose reads its settings from `.env` in the `deploy/` directory (the server env file). Copy the example file, then edit the 3 keys below; every other key keeps a working default and its explanatory comment:
 
-```text
-JWT_SECRET=<random string, at least 32 bytes>
-LOGS_DIR=/absolute/path/on/the/host/for/logs
-DB_PASSWORD=<database password>
+```console
+$ cp deploy/.env.example deploy/.env
 ```
 
 | Key | Why it is required |
 |-----|--------------------|
-| `JWT_SECRET` | No default. Compose refuses to start without it, and `cctraced` exits if it is shorter than 32 bytes. |
+| `JWT_SECRET` | No default value worth keeping. Compose refuses to start without it, and `cctraced` exits if it is shorter than 32 bytes. Generate one with `openssl rand -hex 32`. |
 | `LOGS_DIR` | No default. Compose refuses to start without it. Host directory mounted at `/data/logs` in the container. Create it in advance. |
-| `DB_PASSWORD` | Has a default (`cctrace`) that you should not keep. |
+| `DB_PASSWORD` | Ships with the placeholder `change-me-strong-password`, which you should not keep. Generate one with `openssl rand -hex 20`. |
+
+Edit the 3 keys in `deploy/.env` with your editor, or in place from the command line:
+
+```console
+$ jwt_secret=$(openssl rand -hex 32) && sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=${jwt_secret}|" deploy/.env
+$ db_password=$(openssl rand -hex 20) && sed -i.bak "s|^DB_PASSWORD=.*|DB_PASSWORD=${db_password}|" deploy/.env
+$ LOGS_DIR=/absolute/path/on/the/host/for/logs && mkdir -p "$LOGS_DIR" && sed -i.bak "s|^LOGS_DIR=.*|LOGS_DIR=${LOGS_DIR}|" deploy/.env
+$ rm deploy/.env.bak
+```
 
 !!! warning "Decide `DB_PASSWORD` before the first start"
     PostgreSQL applies the password only when the data volume is initialised. Changing `DB_PASSWORD` afterwards leaves the database role on the old password, and `cctraced` restarts in a loop on `password authentication failed`. Recovering means removing the database volume, which deletes all collected data.
@@ -77,6 +84,8 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml ps
 $ curl -fsS http://127.0.0.1:8080/api/health
 ```
 
+![Terminal showing docker compose ps with both containers healthy and a successful curl to /api/health](../assets/screenshots/01-server-compose-ps.png){ loading=lazy }
+
 - Both containers should show `Up` with `(healthy)`. The `cctraced` health check probes `/api/version` and has a 30-second start period, so it shows `health: starting` at first.
 - `/api/health` answers with `"status":"ok"` when the server can reach the database, and with HTTP 503 and `"status":"unhealthy"` when it cannot.
 - If `cctraced` is `Restarting`, read its log:
@@ -92,6 +101,8 @@ On a database with no users, `cctraced` prints a one-time setup token in its log
 ```text
 [cctraced] initial administrator setup token: <token>
 ```
+
+![Terminal showing the cctraced log line with the initial administrator setup token, redacted](../assets/screenshots/02-server-setup-token.png){ loading=lazy }
 
 To choose the token yourself, set `CCTRACE_SETUP_TOKEN` in the server env file before the first start. The token stops working once the first admin exists. Continue with [First admin](../dashboard/first-admin.md).
 

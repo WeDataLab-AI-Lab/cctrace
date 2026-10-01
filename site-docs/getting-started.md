@@ -30,14 +30,14 @@ docker build -f deploy/Dockerfile --build-arg UPDATE_SIGNING=optional \
 
 ## 3. Set the required values
 
-Create a `.env` file in the `deploy` directory. `JWT_SECRET` and `LOGS_DIR` have no default and the stack does not start without them. `DB_PASSWORD` falls back to `cctrace` if unset; set your own.
+Copy the example env file, then edit 3 keys: `JWT_SECRET` and `LOGS_DIR` have no default and the stack does not start without them; `DB_PASSWORD` ships with a placeholder you should not keep.
 
 ```console
-$ cat > deploy/.env <<'EOF'
-JWT_SECRET=<random string, at least 32 bytes>
-LOGS_DIR=/absolute/path/on/the/host/for/logs
-DB_PASSWORD=<database password>
-EOF
+$ cp deploy/.env.example deploy/.env
+$ jwt_secret=$(openssl rand -hex 32) && sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=${jwt_secret}|" deploy/.env
+$ db_password=$(openssl rand -hex 20) && sed -i.bak "s|^DB_PASSWORD=.*|DB_PASSWORD=${db_password}|" deploy/.env
+$ LOGS_DIR=/absolute/path/on/the/host/for/logs && mkdir -p "$LOGS_DIR" && sed -i.bak "s|^LOGS_DIR=.*|LOGS_DIR=${LOGS_DIR}|" deploy/.env
+$ rm deploy/.env.bak
 ```
 
 !!! warning "Decide `DB_PASSWORD` before the first start"
@@ -53,6 +53,8 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml ps
 $ curl -fsS http://127.0.0.1:8080/api/health
 ```
 
+![Terminal showing docker compose ps with both containers healthy and a successful curl to /api/health](assets/screenshots/01-server-compose-ps.png){ loading=lazy }
+
 A bad value fails at server startup, not at `up -d`. If `cctraced` is restarting rather than `Up`, read its logs:
 
 ```console
@@ -61,7 +63,10 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml logs cctrac
 
 ## 5. Create the first admin
 
-1. Find the setup token in the same logs, on the line `[cctraced] initial administrator setup token: ...`. To choose the token yourself, set `CCTRACE_SETUP_TOKEN` in the `.env` file before the first start.
+1. Find the setup token in the same logs, on the line `[cctraced] initial administrator setup token:`. To choose the token yourself, set `CCTRACE_SETUP_TOKEN` in the `.env` file before the first start.
+
+    ![Terminal showing the cctraced log line with the initial administrator setup token, redacted](assets/screenshots/02-server-setup-token.png){ loading=lazy }
+
 2. Open `http://127.0.0.1:8080`. With no users yet, the dashboard sends you to `/setup`.
 3. Enter the setup token, your email, name, and a password of at least 8 characters.
 
@@ -73,8 +78,13 @@ The token stops working once the first admin exists. Details: [First admin](dash
 
 1. On **Users > Management** (`/users`), select **Add User**.
 2. Enter another email, a name, a **Team**, and a **cctrace User ID** such as `alice`. Keep the role `user`.
+
+    ![Add User dialog filled in for a new user](assets/screenshots/22-add-user-dialog.png){ loading=lazy }
+
 3. Copy the temporary password the dialog shows.
 4. Sign out, sign in as the new account with the temporary password, and set a new password on the **Settings** page the dashboard sends you to.
+
+    ![Settings page forcing a password change for a new account with a temporary password](assets/screenshots/24-forced-password-change.png){ loading=lazy }
 
 `cctrace init` refuses the temporary password until it is changed. Details: [Users](dashboard/users.md).
 
@@ -85,7 +95,9 @@ $ make build-client
 $ sudo cp dist/cctrace /usr/local/bin/cctrace
 ```
 
-`make build-client` builds for the current platform into the `dist` directory. If you skip the copy, `cctrace init` offers to install itself into `/usr/local/bin` (macOS and Linux) when it is not on your `PATH`. Details: [Client install](client/install.md).
+`make build-client` builds for the current platform into the `dist` directory. If you skip the copy, `cctrace init` offers to install itself into `/usr/local/bin` (macOS and Linux) when it is not on your `PATH`.
+
+Building needs Go. If your machine can instead reach the server over the network, download the matching binary from it and skip the Go toolchain entirely: see [Client install](client/install.md#download-from-your-own-server).
 
 ## 8. Connect the client
 
@@ -103,6 +115,8 @@ Answer the prompts:
 | Temporary password | the new password you set in step 6 |
 | Enable session log sync? | `y` |
 
+![Terminal showing cctrace init prompts and a successful connection, including Codex detection](assets/screenshots/31-cctrace-init.png){ loading=lazy }
+
 `init` writes the profile to `~/.cctrace/profile.json` and applies the OTEL environment (gRPC to 4317) and the sync hooks to `~/.claude/settings.json`. It then offers a read token for the analysis commands; collection does not need it, so you can answer `n`. If `~/.codex` exists, it also offers Codex session sync and writes Codex's OTLP/HTTP exporter to port 4318 (see [Codex CLI](agents/codex.md)). Details: [Connect](client/setup.md).
 
 ## 9. Restart the agent
@@ -119,8 +133,12 @@ $ cctrace sync
 $ cctrace status
 ```
 
+![Terminal showing cctrace status with OTEL connected and sync enabled](assets/screenshots/32-cctrace-status.png){ loading=lazy }
+
 Check the `SERVER` section for `OTEL status:   [OK] connected`, and the `PATHS` section for `Settings:` ending in `(applied)`. The command exits with status 2 when the OTEL endpoint is unreachable.
 
-Then run a short Claude Code session and open `http://127.0.0.1:8080/sessions`. The session appears there once it has synced.
+Then run a short Claude Code session and open `http://127.0.0.1:8080/sessions`. The session appears there once it has synced -- under the **Interactive** filter, which is the page's default, for an ordinary session with human turns. A machine-driven session (for example one started with `claude -p`) is a **Headless** session instead; switch to **Headless** or **All** to see it. See [Dashboard pages](dashboard/pages.md).
+
+![Dashboard Sessions page showing a Claude Code session that has synced](assets/screenshots/71-arrival-sessions.png){ loading=lazy }
 
 If something does not show up, see [Sync daemon](client/sync.md) and [Operations](server/operations.md).

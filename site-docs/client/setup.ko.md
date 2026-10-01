@@ -26,6 +26,8 @@ cctrace init
 | `Enable session log sync? (y/n)` | `y`(기본)는 동기화 데몬을 띄우는 Claude Code 훅 설치. `n`은 텔레메트리만 켜고 세션 로그는 끔 |
 | `Create a read token for analysis commands` | 개발 중인 조회 명령 전용. `n`으로 충분 |
 
+![cctrace init 프롬프트와 Codex 감지를 포함한 연결 성공 터미널](../assets/screenshots/31-cctrace-init.png){ loading=lazy }
+
 빈 엔드포인트는 받지 않는다. 루프백·사설 대역 밖으로 가는 평문 `http://` 엔드포인트면 대화 기록이나 텔레메트리가 암호화 없이 네트워크를 지난다는 경고를 출력한다. 거부하지는 않는다.
 
 인증 뒤에는 다른 에이전트를 찾고 발견한 것마다 묻는다.
@@ -72,6 +74,8 @@ cctrace status
 | `OPTIONS` | 세션 로그 동기화 활성 여부, 켜진 가림(redaction) 옵션 |
 | `NAMED PROFILES` | `--profile` 없이 실행 시 이름 있는 프로필 목록 |
 | `QUOTA` | 로컬 Claude Code 로그인으로 Anthropic 사용량 API에서 조회한 Claude 요금제 사용량 구간. Claude Code에 로그인하지 않은 머신에서는 표시 불가, 수집과는 무관 |
+
+![OTEL 연결과 동기화 활성화 상태를 보여주는 cctrace status 터미널](../assets/screenshots/32-cctrace-status.png){ loading=lazy }
 
 종료 코드: 프로필 없음 1, OTEL 엔드포인트 도달 불가 2. 이름 있는 프로필은 `cctrace status --profile work`.
 
