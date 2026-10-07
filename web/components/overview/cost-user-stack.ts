@@ -1,5 +1,6 @@
 import { agentOf } from '@/lib/colors';
 import { modelLabel, shortModel } from '@/lib/model-label';
+import { compareModelLabels } from '@/lib/model-order';
 import type { ModelDatum } from './overview-helpers';
 
 interface CostUserStackRow {
@@ -74,14 +75,6 @@ const claudeTierRank = (key: string): number => {
   return 4;
 };
 
-const codexTierRank = (key: string): number => {
-  const model = key.toLowerCase();
-  if (model.includes('gpt-5.6-sol')) return 0;
-  if (model.includes('gpt-5.6-terra')) return 1;
-  if (model.includes('gpt-5.6-luna')) return 2;
-  return 3;
-};
-
 const modelVersion = (key: string): number => {
   const model = key.toLowerCase();
   const match = model.match(/gpt[-_ ]?(\d+(?:\.\d+)?)/) ?? model.match(/\bo(\d+(?:\.\d+)?)/) ?? model.match(/(\d+(?:\.\d+)?)/);
@@ -103,8 +96,7 @@ const sortCostUserStackKeys = (keys: string[]): string[] => [...keys].sort((a, b
     const versionDiff = modelVersion(b) - modelVersion(a);
     if (versionDiff !== 0) return versionDiff;
 
-    const tierDiff = codexTierRank(a) - codexTierRank(b);
-    if (tierDiff !== 0) return tierDiff;
+    return compareModelLabels(a, b);
   }
 
   const versionDiff = modelVersion(b) - modelVersion(a);

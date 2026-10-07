@@ -147,7 +147,7 @@ func TestSegmentsSeparateCallEvidenceFromOutcomeEvidence(t *testing.T) {
 	ctx := context.Background()
 	enableSegmentFacts(t, s)
 
-	base := time.Date(2026, 9, 14, 9, 0, 0, 0, time.UTC)
+	base := recentDay(18).Add(9 * time.Hour)
 	records := codexToolCallSession("ev-codex", base)
 	records = append(records,
 		&SessionRecord{Ts: base, SessionID: "ev-claude", RecordType: "user", Agent: "claude",

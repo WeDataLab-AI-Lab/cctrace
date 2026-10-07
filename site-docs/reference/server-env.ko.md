@@ -14,7 +14,7 @@
 | `JWT_SECRET` | env 파일 | 없음(필수) | 대시보드 세션 서명 키, 32바이트 이상 |
 | `LOGS_DIR` | env 파일 | 없음(필수) | 접근 로그용 호스트 디렉터리, `/data/logs`에 마운트 |
 | `DB_PASSWORD` | env 파일 | `cctrace` | DB 슈퍼유저 비밀번호, 최초 초기화 때만 적용 |
-| `DB_APP_CREDENTIALS` | env 파일 | 비어 있음 | 비슈퍼유저 역할의 `<user>:<password>`. 비워 둘 것 |
+| `DB_APP_CREDENTIALS` | env 파일 | 비어 있음 | `cctraced`가 접속할 비슈퍼유저 역할의 `<user>:<password>`, 최초 초기화 때만 역할 생성. 비우면 슈퍼유저로 접속 |
 | `DB_PORT` | env 파일 | `5432` | TimescaleDB 호스트 포트, 127.0.0.1에 바인드 |
 | `HTTP_BIND` | env 파일 | 127.0.0.1 | 대시보드·REST API 호스트 주소 |
 | `GRPC_BIND` | env 파일 | 0.0.0.0 | OTLP gRPC 호스트 주소 |

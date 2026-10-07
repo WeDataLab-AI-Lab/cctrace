@@ -17,7 +17,7 @@ func TestUsageHourlyRollupMatchesRaw(t *testing.T) {
 
 	// Two hours, two models, two users, two agents: enough for the GROUP BY to
 	// have something to get wrong, and small enough to read in a failure message.
-	base := time.Date(2026, 3, 1, 10, 0, 0, 0, time.UTC)
+	base := recentDay(61).Add(10 * time.Hour)
 	var events []*OtelEvent
 	for i := range 8 {
 		events = append(events, &OtelEvent{
@@ -87,7 +87,7 @@ func TestUsageHourlyRollupRefreshIsIdempotent(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	base := time.Date(2026, 3, 2, 8, 0, 0, 0, time.UTC)
+	base := recentDay(60).Add(8 * time.Hour)
 	if err := s.InsertEvents(ctx, []*OtelEvent{{
 		Ts: base, EventName: "api_request", SessionID: "sess-idem", UserID: "u1",
 		LoginEmail: "a@x.test", Agent: "claude", BillingProvider: "anthropic",
@@ -123,7 +123,7 @@ func TestUsageHourlyRollupWindowLeavesOlderBucketsAlone(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	old := time.Date(2026, 3, 3, 1, 0, 0, 0, time.UTC)
+	old := recentDay(59).Add(time.Hour)
 	recent := old.Add(48 * time.Hour)
 	if err := s.InsertEvents(ctx, []*OtelEvent{{
 		Ts: old, EventName: "api_request", SessionID: "s-old", UserID: "u1",
@@ -172,7 +172,7 @@ func TestUsageHourlyRollupDoesNotMultiplyOnRepeatedProjectHash(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	base := time.Date(2026, 3, 4, 5, 0, 0, 0, time.UTC)
+	base := recentDay(58).Add(5 * time.Hour)
 	if err := s.InsertSessionRecords(ctx, []*SessionRecord{
 		{Ts: base, SessionID: "s-multi", ProjectHash: "hash-old", RecordType: "user"},
 		{Ts: base.Add(time.Minute), SessionID: "s-multi", ProjectHash: "hash-new", RecordType: "user"},
@@ -228,7 +228,7 @@ func TestUsageHourlyRollupBucketsAreUTCHours(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	ts := time.Date(2026, 3, 1, 10, 45, 0, 0, time.UTC)
+	ts := recentDay(61).Add(10*time.Hour + 45*time.Minute)
 	if err := s.InsertEvents(ctx, []*OtelEvent{{
 		Ts: ts, EventName: "api_request", SessionID: "sess-utc", UserID: "u1",
 		Model: "opus 5", Agent: "claude", BillingProvider: "anthropic", CostUSD: ptrFloat(1),

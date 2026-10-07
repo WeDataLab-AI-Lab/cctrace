@@ -44,6 +44,14 @@ describe('compareModelLabels', () => {
     ]);
   });
 
+  it('keeps GPT tier order Astra → Sol → Terra → Luna within one version', () => {
+    expect(sorted([
+      'gpt-6-luna', 'gpt-6-terra', 'gpt-6-sol', 'gpt-6-astra',
+    ])).toEqual([
+      'gpt-6-astra', 'gpt-6-sol', 'gpt-6-terra', 'gpt-6-luna',
+    ]);
+  });
+
   // claude 티어는 세대를 가로지르는 제품군이고 codex 티어는 한 세대 안의 변종이라,
   // 어느 쪽이 먼저인지가 계열마다 다르다.
   it('claude 는 티어가 버전보다 먼저고 codex 는 그 반대다', () => {

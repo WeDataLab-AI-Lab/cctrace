@@ -1,9 +1,12 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -38,11 +41,98 @@ func TestEnvOr_EmptyEnvUsesFallback(t *testing.T) {
 }
 
 func TestValidateAuthConfigurationRequiresProductionSecrets(t *testing.T) {
-	if err := validateAuthConfiguration(""); err == nil {
+	if err := validateAuthConfiguration("", ""); err == nil {
 		t.Fatal("expected missing JWT secret to fail validation")
 	}
-	if err := validateAuthConfiguration("jwt"); err != nil {
+	if err := validateAuthConfiguration("jwt", ""); err != nil {
 		t.Fatalf("configured dashboard auth: %v", err)
+	}
+}
+
+// deploy/.env.example shipped this JWT_SECRET; anyone holding it can sign an
+// admin token, and with CCTRACE_SECRETS_KEY empty it is also the sealing key.
+const publishedJWTExample = "change-me-at-least-32-bytes-long-secret-key"
+
+func TestValidateAuthConfigurationRefusesPublishedExampleSecrets(t *testing.T) {
+	random := make([]byte, 32)
+	if _, err := rand.Read(random); err != nil {
+		t.Fatal(err)
+	}
+	randomSecret := hex.EncodeToString(random) // what `openssl rand -hex 32` prints
+
+	for _, tc := range []struct {
+		name, jwtSecret, secretsKey string
+		mention                     []string
+		omit                        []string
+	}{
+		{
+			name:      "JWT_SECRET, sealing key falls back to it",
+			jwtSecret: publishedJWTExample, secretsKey: "",
+			mention: []string{"JWT_SECRET", "openssl rand -hex 32", "session", "Admin > AI"},
+		},
+		{
+			name:      "JWT_SECRET, sealing key set separately",
+			jwtSecret: publishedJWTExample, secretsKey: randomSecret,
+			mention: []string{"JWT_SECRET", "openssl rand -hex 32", "session"},
+			omit:    []string{"Admin > AI"},
+		},
+		{
+			name:      "CCTRACE_SECRETS_KEY set to it",
+			jwtSecret: randomSecret, secretsKey: publishedJWTExample,
+			mention: []string{"CCTRACE_SECRETS_KEY", "openssl rand -hex 32", "Admin > AI"},
+			omit:    []string{"JWT_SECRET", "session"},
+		},
+		{
+			name:      "both set to it",
+			jwtSecret: publishedJWTExample, secretsKey: publishedJWTExample,
+			mention: []string{"JWT_SECRET", "session", "CCTRACE_SECRETS_KEY", "Admin > AI"},
+			omit:    []string{"CCTRACE_SECRETS_KEY is empty"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateAuthConfiguration(tc.jwtSecret, tc.secretsKey)
+			if err == nil {
+				t.Fatal("published example secret passed validation")
+			}
+			msg := err.Error()
+			if strings.Contains(msg, publishedJWTExample) {
+				t.Errorf("error repeats the secret: %q", msg)
+			}
+			for _, want := range tc.mention {
+				if !strings.Contains(msg, want) {
+					t.Errorf("error does not mention %q: %q", want, msg)
+				}
+			}
+			for _, unwanted := range tc.omit {
+				if strings.Contains(msg, unwanted) {
+					t.Errorf("error mentions %q, which does not apply: %q", unwanted, msg)
+				}
+			}
+		})
+	}
+
+	// A quoted .env value or `set -a; . ./.env` keeps the padding, and the key
+	// is the raw bytes, so a padded copy signs tokens just as well.
+	for _, padded := range []string{
+		publishedJWTExample + "\r", publishedJWTExample + "\n", publishedJWTExample + " ",
+		publishedJWTExample + "\t", " " + publishedJWTExample,
+	} {
+		if validateAuthConfiguration(padded, "") == nil {
+			t.Errorf("JWT_SECRET %q passed validation", padded)
+		}
+		if validateAuthConfiguration(randomSecret, padded) == nil {
+			t.Errorf("CCTRACE_SECRETS_KEY %q passed validation", padded)
+		}
+	}
+
+	for _, ok := range [][2]string{
+		{randomSecret, ""},
+		{randomSecret, randomSecret},
+		{"test-jwt-secret-that-is-at-least-32-bytes-long", ""},
+	} {
+		if err := validateAuthConfiguration(ok[0], ok[1]); err != nil {
+			t.Errorf("unpublished secret refused: %v", err)
+		}
 	}
 }
 

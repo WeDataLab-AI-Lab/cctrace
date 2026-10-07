@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+// backoffBaseUnit is the first retry delay; attempt n waits n^2 of it. It is a
+// var only so tests that have to watch a real backoff elapse can shorten it --
+// TestWatchReleasesTheLockAfterASustainedStall needs a second failing pass, and
+// at 5s that was one of the two slowest tests in cmd/cctrace. Production never
+// assigns to it.
+var backoffBaseUnit = 5 * time.Second
+
 type backoffState struct {
 	consecutive int
 	nextRetry   time.Time
@@ -12,7 +19,7 @@ type backoffState struct {
 
 func (b *backoffState) recordFailure() {
 	b.consecutive++
-	base := time.Duration(b.consecutive*b.consecutive) * 5 * time.Second
+	base := time.Duration(b.consecutive*b.consecutive) * backoffBaseUnit
 	if base > 5*time.Minute {
 		base = 5 * time.Minute
 	}

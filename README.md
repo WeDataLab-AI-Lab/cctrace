@@ -190,8 +190,12 @@ decide deliberately:
 - **Redaction** — privacy settings control what conversation content is stored.
 - **Excluded accounts** — accounts whose data is hidden from all aggregates.
 
-There is no telemetry to any third party, and no outbound network call other
-than the client talking to the server you configured.
+No telemetry goes to a third party. Beyond the server you configure, the
+client queries Anthropic's usage API with the local Claude Code login to
+read plan limits, and the server downloads OpenAI's public pricing and
+changelog pages to price Codex usage. The weekly AI report feature, once an
+admin enables it, sends data to the AI provider it is configured with; it
+is under active development and not documented here.
 
 ## Repository layout
 

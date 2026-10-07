@@ -48,7 +48,7 @@ func TestSessionOverviewRollupRefreshScopedIsolation(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 26, 9, 0, 0, 0, time.UTC)
+	ts := recentDay(37).Add(9 * time.Hour)
 
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -84,7 +84,7 @@ func TestSessionOverviewRollupRefreshFullRebuild(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 26, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(37).Add(10 * time.Hour)
 	if _, err := s.pool.Exec(ctx, `INSERT INTO otel_events (ts, event_name, session_id)
 		VALUES ($1, 'api_request', 'full-source')`, ts); err != nil {
 		t.Fatal(err)
@@ -141,7 +141,7 @@ func TestSessionOverviewRollupRefreshExcludesDeletedSession(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 26, 12, 0, 0, 0, time.UTC)
+	ts := recentDay(37).Add(12 * time.Hour)
 	if _, err := s.pool.Exec(ctx, `INSERT INTO otel_events (ts, event_name, session_id)
 		VALUES ($1, 'api_request', 'deleted-refresh')`, ts); err != nil {
 		t.Fatal(err)

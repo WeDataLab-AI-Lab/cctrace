@@ -42,7 +42,7 @@ func TestSegmentFactsPickUpToolEventsThatArriveLate(t *testing.T) {
 	ctx := context.Background()
 	enableSegmentFacts(t, s)
 
-	base := time.Date(2026, 8, 24, 9, 0, 0, 0, time.UTC)
+	base := recentDay(39).Add(9 * time.Hour)
 	if err := s.InsertSessionRecords(ctx, []*SessionRecord{
 		{Ts: base, SessionID: "late-otel", RecordType: "user", Agent: "claude",
 			ProjectHash: "proj-a", ProfileEmail: "u@example.com", UUID: "l1", Raw: str("start")},
@@ -95,7 +95,7 @@ func TestLateOTELReconcilerFollowsArrivalNotTimestamp(t *testing.T) {
 	ctx := context.Background()
 	enableSegmentFacts(t, s)
 
-	recent := time.Date(2026, 8, 24, 9, 0, 0, 0, time.UTC)
+	recent := recentDay(39).Add(9 * time.Hour)
 	stale := recent.AddDate(0, 0, -30)
 
 	if err := s.InsertSessionRecords(ctx, []*SessionRecord{
@@ -149,7 +149,7 @@ func TestLateOTELReconcilerIsIdleWhenNothingArrived(t *testing.T) {
 	ctx := context.Background()
 	enableSegmentFacts(t, s)
 
-	base := time.Date(2026, 8, 24, 9, 0, 0, 0, time.UTC)
+	base := recentDay(39).Add(9 * time.Hour)
 	if err := s.InsertSessionRecords(ctx, []*SessionRecord{
 		{Ts: base, SessionID: "idle-ses", RecordType: "user", Agent: "claude",
 			ProjectHash: "proj-a", ProfileEmail: "u@example.com", UUID: "i1", Raw: str("x")},

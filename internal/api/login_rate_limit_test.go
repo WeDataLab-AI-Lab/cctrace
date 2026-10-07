@@ -11,6 +11,11 @@ import (
 func TestLoginRateLimits(t *testing.T) {
 	for _, path := range []string{"/api/auth/login", "/api/cli/auth", "/api/cli/read-token"} {
 		t.Run(path, func(t *testing.T) {
+			// Each subtest builds its own server, so the three 1.1s refill waits
+			// overlap instead of adding up. The wait itself is real: the limiter
+			// refills from the wall clock at 1 rps, and probing it early would
+			// spend the token being waited for.
+			t.Parallel()
 			srv := newTestServer(&mockStore{}, nil)
 			request := func() *httptest.ResponseRecorder {
 				rec := httptest.NewRecorder()

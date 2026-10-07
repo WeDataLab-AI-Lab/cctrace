@@ -190,7 +190,7 @@ func TestListUnpricedModels_flatRateMatchFoldsAgentCase(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	ts := time.Date(2026, 8, 5, 9, 0, 0, 0, time.UTC)
+	ts := recentDay(58).Add(9 * time.Hour)
 	if _, err := s.pool.Exec(ctx, `
 		INSERT INTO otel_events (ts, event_name, agent, model, cost_usd, input_tokens, output_tokens)
 		VALUES ($1, 'test_usage', 'Codex', 'mixed-case-agent-model', 0, 500, 50)`, ts); err != nil {

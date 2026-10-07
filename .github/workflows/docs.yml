@@ -15,7 +15,7 @@ name: Docs
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - mkdocs.yml
       - requirements-docs.txt

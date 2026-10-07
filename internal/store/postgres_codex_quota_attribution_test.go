@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var codexQuotaBase = time.Date(2026, 8, 28, 9, 0, 0, 0, time.UTC)
+var codexQuotaBase = recentDay(35).Add(9 * time.Hour)
 
 // codexRec is one seeded session_records row. login_email_source and
 // account_id_source are stamped after the insert because nothing on the write

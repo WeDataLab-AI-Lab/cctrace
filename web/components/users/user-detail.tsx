@@ -22,6 +22,10 @@ interface UserDetailProps {
   modelFilter?: string;
   modelCategory?: ModelCategory;
   userId?: string;
+  /** false 면 세션 쿼리를 보내지 않고 안내 문구만 표시 (#799) */
+  canViewSessions: boolean;
+  /** true 면 서버가 정한 본인 범위의 세션이 카드와 무관하게 온다 — 카드의 프로필·계정 필터는 적용되지 않는다 (#809) */
+  sessionsAcrossProfiles?: boolean;
 }
 
 interface ModelBreakdownRow {
@@ -32,7 +36,7 @@ interface ModelBreakdownRow {
   color: string;
 }
 
-const UserDetail = ({ email, avatarColor, displayName, viewMode, filterAccount, modelFilter, modelCategory, userId }: UserDetailProps) => {
+const UserDetail = ({ email, avatarColor, displayName, viewMode, filterAccount, modelFilter, modelCategory, userId, canViewSessions, sessionsAcrossProfiles = false }: UserDetailProps) => {
   // Date.now() 기반 값은 매 렌더 변동(=queryKey 흔들림→refetch 루프)을 막기 위해 1회만 계산.
   const [since30d] = useState(() => daysAgo(30));
   const [now] = useState(() => Date.now());
@@ -65,6 +69,7 @@ const UserDetail = ({ email, avatarColor, displayName, viewMode, filterAccount, 
       limit: 5,
     }),
     refetchInterval: POLL_NORMAL,
+    enabled: canViewSessions,
   });
 
   // Aggregate model data into breakdown with percentages
@@ -161,7 +166,12 @@ const UserDetail = ({ email, avatarColor, displayName, viewMode, filterAccount, 
 
       <section className="space-y-2">
         <h4 className="text-[13px] font-semibold text-ink">Recent Sessions</h4>
-        {uniqueSessions.length === 0 ? (
+        {canViewSessions && sessionsAcrossProfiles && (
+          <p className="text-[11px] text-ink-3">서버가 정한 본인 범위의 세션을 표시합니다. 이 카드의 프로필·계정 필터는 적용되지 않습니다.</p>
+        )}
+        {!canViewSessions ? (
+          <p className="text-sm text-ink-3">다른 사용자의 세션은 볼 수 없습니다</p>
+        ) : uniqueSessions.length === 0 ? (
           <p className="text-sm text-ink-3">No sessions</p>
         ) : (
           <div>

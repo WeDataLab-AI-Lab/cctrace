@@ -46,7 +46,7 @@ func TestSessionOverviewRollup_LoginBackfillRefreshesTouchedSession(t *testing.T
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 14, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(49).Add(10 * time.Hour)
 	in := 50
 	if err := s.InsertSessionRecords(ctx, []*SessionRecord{{Ts: ts, SessionID: "backfill-rollup", ProfileEmail: "p@example.com", InputTokens: &in, UUID: "r1", Raw: []byte(`{}`)}}); err != nil {
 		t.Fatal(err)

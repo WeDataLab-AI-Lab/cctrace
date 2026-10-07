@@ -298,7 +298,7 @@ func main() {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	setupTokenEnv := os.Getenv("CCTRACE_SETUP_TOKEN")
 	cookieSecure := os.Getenv("COOKIE_SECURE") == "1"
-	if err := validateAuthConfiguration(jwtSecret); err != nil {
+	if err := validateAuthConfiguration(jwtSecret, os.Getenv("CCTRACE_SECRETS_KEY")); err != nil {
 		log.Fatal(err)
 	}
 
@@ -816,7 +816,8 @@ func main() {
 	// JSONL carries tokens but no cost, so cost is imputed from codex_model_rates.
 	// That table used to be hand-edited in migrations.go and drifted -- one model
 	// was seeded at five times its real price, another was missing and therefore
-	// billed at $0. This reads the published table daily instead.
+	// billed at $0. Confirm the published table at boot/daily, with at most three
+	// accelerated five-minute checks per newly seen raw model in this process.
 	//
 	// A price change adds a dated row rather than replacing one, because OpenAI
 	// cuts prices and history has to stay billed at what it actually cost. See
@@ -826,66 +827,17 @@ func main() {
 	// move a few times a year, the fetch leaves the process to reach the network,
 	// and a slow or hanging source must not delay the imputed-cost rebuild.
 	go func() {
-		sync := func() {
-			rates, source, err := codexrates.Fetch(ctx)
-			if err != nil {
-				log.Printf("[codex-rates] fetch: %v", err)
-				return
-			}
-			// Fail closed: a table that does not pass the gate leaves every existing
-			// rate alone. A stale price costs less than a corrupted one, which would
-			// reprice all Codex history on the next rebuild.
-			if err := codexrates.Accept(rates); err != nil {
-				log.Printf("[codex-rates] rejected %d rows from %s: %v", len(rates), source, err)
-				return
-			}
-			// When did each changed price take effect? The changelog answers that and
-			// nothing else -- no price is ever read out of its prose, so a broken
-			// changelog parser can only misdate a change by a few days, never
-			// misprice one. Failing to reach it at all is not a reason to skip the
-			// sync: every change then takes effect today, which leaves history alone.
-			observed := time.Now().UTC()
-			effective := map[string]time.Time{}
-			entries, err := codexrates.FetchChangelog(ctx)
-			if err != nil {
-				log.Printf("[codex-rates] changelog unavailable, dating any change from today: %v", err)
-			} else {
-				undated := 0
-				for model := range rates {
-					d, ok := codexrates.EffectiveDate(entries, model, observed)
-					effective[model] = d
-					if !ok {
-						undated++
-					}
-				}
-				log.Printf("[codex-rates] changelog: %d entries, %d of %d models undated", len(entries), undated, len(rates))
-			}
-			changed, err := pg.UpsertCodexModelRates(ctx, rates, effective, source)
-			if err != nil {
-				log.Printf("[codex-rates] upsert: %v", err)
-				return
-			}
-			if changed == 0 {
-				return
-			}
-			log.Printf("[codex-rates] %d of %d rates changed (source %s); repricing codex cost", changed, len(rates), source)
-			// The incremental codex refresh only sees rows newer than the table, so a
-			// price change would otherwise apply to future rows only.
-			if err := pg.RefreshCodexImputedCost(ctx); err != nil {
-				log.Printf("[codex-rates] reprice: %v", err)
-			}
+		sync := &codexRatesSync{
+			now:       time.Now,
+			missing:   pg.ListUnpricedCodexModelKeys,
+			fetch:     codexrates.Fetch,
+			changelog: codexrates.FetchChangelog,
+			upsert:    pg.UpsertCodexModelRatesAt,
+			reprice:   pg.RefreshCodexImputedCost,
 		}
-		sync()
-		ticker := time.NewTicker(24 * time.Hour)
+		ticker := time.NewTicker(5 * time.Minute)
 		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				sync()
-			}
-		}
+		sync.run(ctx, ticker.C)
 	}()
 
 	// Timescale retention jobs delete chunks asynchronously, outside store write
@@ -1289,11 +1241,37 @@ func main() {
 	metricsSpiller.Close()
 }
 
-func validateAuthConfiguration(jwtSecret string) error {
+// publishedSecrets were handed out as examples, so anyone can sign a dashboard
+// token or derive the API-key sealing key with them. Exact values only: a
+// pattern would also refuse secrets nobody published. Checked with surrounding
+// whitespace trimmed, because a quoted .env value or `set -a; . ./.env` keeps
+// it and the padded copy is just as public.
+var publishedSecrets = map[string]bool{
+	// JWT_SECRET in deploy/.env.example since the first Docker deploy,
+	// exported to the mirror with that file.
+	"change-me-at-least-32-bytes-long-secret-key": true,
+}
+
+// validateAuthConfiguration takes CCTRACE_SECRETS_KEY too: it seals the API
+// keys registered in Admin > AI and falls back to JWT_SECRET when empty.
+func validateAuthConfiguration(jwtSecret, secretsKey string) error {
 	if jwtSecret == "" {
 		return fmt.Errorf("JWT_SECRET is required")
 	}
-	return nil
+	var errs []error
+	if publishedSecrets[strings.TrimSpace(jwtSecret)] {
+		msg := "JWT_SECRET is a published example value: anyone can sign dashboard tokens with it, admin ones included. " +
+			"Replace it with a random value (openssl rand -hex 32); that ends every dashboard session"
+		if _, source := aireport.SecretsSource(secretsKey, jwtSecret); source == aireport.KeySourceJWTSecret {
+			msg += ", and because CCTRACE_SECRETS_KEY is empty, API keys registered in Admin > AI were sealed with it and must be registered again"
+		}
+		errs = append(errs, errors.New(msg))
+	}
+	if publishedSecrets[strings.TrimSpace(secretsKey)] {
+		errs = append(errs, errors.New("CCTRACE_SECRETS_KEY is a published example value: anyone can derive the key that seals API keys registered in Admin > AI. "+
+			"Replace it with a random value (openssl rand -hex 32), then register those keys again in Admin > AI"))
+	}
+	return errors.Join(errs...)
 }
 
 func authenticatedOTLPHandler(next http.Handler, authenticator *auth.Authenticator) http.Handler {

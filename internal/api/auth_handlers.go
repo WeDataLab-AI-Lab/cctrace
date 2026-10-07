@@ -59,7 +59,7 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 12)
+	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), passwordHashCost)
 	if err != nil {
 		writeErr(w, err)
 		return
@@ -699,7 +699,7 @@ func (s *Server) handleChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.NewPassword), 12)
+	hash, err := bcrypt.GenerateFromPassword([]byte(body.NewPassword), passwordHashCost)
 	if err != nil {
 		writeErr(w, err)
 		return

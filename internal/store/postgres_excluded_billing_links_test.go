@@ -514,6 +514,10 @@ func TestRecomputeDoesNotBlockDashboardReads(t *testing.T) {
 		t.Fatalf("acquire: %v", err)
 	}
 	defer conn.Release()
+	// The connection goes back to the shared pool: a session-level SET left on it
+	// would reach whichever test draws it next (TestMigrateLeavesNoLockTimeoutOnPooledConnections
+	// failed under -shuffle=66 that way). Deferred after Release's defer, so it runs first.
+	defer func() { _, _ = conn.Exec(context.Background(), `RESET lock_timeout`) }()
 	if _, err := conn.Exec(ctx, `SET lock_timeout = '1s'`); err != nil {
 		t.Fatalf("set lock_timeout: %v", err)
 	}

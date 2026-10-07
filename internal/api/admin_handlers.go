@@ -178,7 +178,7 @@ func (s *Server) handleCreateDashboardUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(tempPass), 12)
+	hash, err := bcrypt.GenerateFromPassword([]byte(tempPass), passwordHashCost)
 	if err != nil {
 		writeErr(w, err)
 		return
@@ -313,7 +313,7 @@ func (s *Server) handleResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(tempPass), 12)
+	hash, err := bcrypt.GenerateFromPassword([]byte(tempPass), passwordHashCost)
 	if err != nil {
 		writeErr(w, err)
 		return

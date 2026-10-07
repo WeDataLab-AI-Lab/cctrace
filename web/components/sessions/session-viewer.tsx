@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2, Settings } from 'lucide-react';
 import { fetchAppVersionInfo } from '@/lib/api';
 import { formatCctraceVersion, formatClaudeCodeVersion } from '@/lib/version-display';
+import { agentLabel } from '@/lib/agent-label';
 import type { SessionOverview } from '@/lib/types';
 import { needsAccountNotice, projectLabel } from './session-utils';
 import { SessionDetail } from './session-detail';
@@ -24,6 +25,15 @@ interface SessionViewerProps {
   /** Called after a delete so the list can drop the row and clear the selection. */
   onDeleted?: (sessionId: string) => void;
 }
+
+// claude_version 은 Claude Code 전용 이름이지만 Codex 세션도 같은 컬럼에 버전이 실릴 수 있다.
+// 서버는 agent 가 비면 'claude' 로 읽으므로(COALESCE) 여기서도 같게 읽는다. Claude 만 버전이
+// 비었을 때 '—' 를 보이고, 그 외 에이전트는 모르는 버전을 '—' 로 채우지 않고 생략한다.
+const harnessLabel = (session: SessionOverview): string => {
+  const agent = session.agent || 'claude';
+  if (agent === 'claude') return `${agentLabel(agent)} ${formatClaudeCodeVersion(session.claude_version)}`;
+  return session.claude_version ? `${agentLabel(agent)} ${session.claude_version}` : agentLabel(agent);
+};
 
 const SessionViewer = ({ session, mode, onNavigate, scrollAnchor, scrollFromTs, onDeleted }: SessionViewerProps) => {
   const { isAdmin } = useAuth();
@@ -79,7 +89,7 @@ const SessionViewer = ({ session, mode, onNavigate, scrollAnchor, scrollFromTs, 
           <span className="hidden shrink-0 text-[11px] text-ink-3 sm:inline">
             cctrace {formatCctraceVersion(session.cctrace_version, appVersionInfo.session_record_version_since)}
             {' · '}
-            Claude Code {formatClaudeCodeVersion(session.claude_version)}
+            {harnessLabel(session)}
           </span>
         )}
         {needsAccountNotice(session) && (

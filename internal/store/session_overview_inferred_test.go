@@ -35,7 +35,7 @@ func TestInferSurfacesInferredOnSessionOverview(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 20, 9, 46, 23, 0, time.UTC)
+	base := recentDay(43).Add(9*time.Hour + 46*time.Minute + 23*time.Second)
 
 	seedInference(t, s,
 		inferSeed{

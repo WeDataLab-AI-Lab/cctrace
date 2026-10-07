@@ -70,7 +70,7 @@ func TestPgStore_ExcludeAccount_hidesAccountAcrossDashboard(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 6, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(57).Add(10 * time.Hour)
 	since, until := ts.Add(-time.Hour), ts.Add(time.Hour)
 
 	seedTwoAccounts(t, s, ts)
@@ -207,7 +207,7 @@ func TestPgStore_CleanupOrphanSessionRecords_keepsExcludedAccountRows(t *testing
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 6, 11, 0, 0, 0, time.UTC)
+	ts := recentDay(57).Add(11 * time.Hour)
 
 	seedTwoAccounts(t, s, ts)
 	if _, err := s.ExcludeAccount(ctx, excludedAccount, "personal account", "admin@example.com"); err != nil {
@@ -249,7 +249,7 @@ func TestExclusionLeavesUnrelatedOverviewRowsUntouched(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 6, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(57).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: ts, EventName: "api_request", SessionID: "bystander", LoginEmail: "bystander@example.test",
@@ -292,7 +292,7 @@ func TestSessionHiddenThroughItsOtelRowsLeavesAndReturns(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 6, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(57).Add(10 * time.Hour)
 	const addr = "personal@example.test"
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{

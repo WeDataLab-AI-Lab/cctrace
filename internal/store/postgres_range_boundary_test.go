@@ -20,8 +20,8 @@ func TestRangeBoundaryIsHalfOpen(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	since := time.Date(2026, 8, 1, 0, 0, 0, 0, time.UTC)
-	until := time.Date(2026, 8, 2, 0, 0, 0, 0, time.UTC)
+	since := recentDay(20)
+	until := since.AddDate(0, 0, 1)
 
 	inside := since.Add(time.Hour)
 	ok := true

@@ -108,7 +108,7 @@ func TestTaskSegmentFacts_AggregatesToolsCommandsAndTokens(t *testing.T) {
 		t.Fatalf("clear fact marker: %v", err)
 	}
 
-	base := time.Date(2026, 8, 24, 10, 0, 0, 0, time.UTC)
+	base := recentDay(39).Add(10 * time.Hour)
 
 	// Tool events are OTEL, delivered on a separate ingest path from session_records
 	// sync, and the fact table is only recomputed on session_records writes (the
@@ -156,7 +156,7 @@ func TestTaskSegmentFacts_ActivityTypeReflectsToolEvidence(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 24, 18, 0, 0, 0, time.UTC)
+	base := recentDay(39).Add(18 * time.Hour)
 
 	// s-ops: three Bash calls, no writes, no failures -- near-pure shell.
 	if err := s.InsertEvents(ctx, []*OtelEvent{
@@ -261,7 +261,10 @@ func TestPgStore_MigrateDoesNotWaitForTaskSegmentFactsBackfill(t *testing.T) {
 	if err := lockTaskSegmentFacts(ctx, blocker, false); err != nil {
 		t.Fatalf("hold fact backfill lock: %v", err)
 	}
-	migrateCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	// A hang detector, not a speed check: the lock above is never released while
+	// Migrate runs, so a Migrate that waits on it waits until this deadline. A full
+	// migration takes ~0.4s on a quiet machine and 4-9s under heavy CPU load.
+	migrateCtx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 	if err := s.Migrate(migrateCtx); err != nil {
 		t.Fatalf("Migrate waited for task segment fact data repair: %v", err)

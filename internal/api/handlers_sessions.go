@@ -176,8 +176,9 @@ func (s *Server) handleCountSessionOverview(w http.ResponseWriter, r *http.Reque
 	// with no known account" instead of just showing a smaller list. Only computed
 	// when an account filter is actually narrowing the view.
 	//
-	// Skipped for restricted users: their scope IS the account filter, so removing
-	// it to count unattributed sessions would count other people's sessions too.
+	// Skipped for restricted users: their scope is pinned by user_id (or profile_email
+	// in legacy mode), not by an account filter, so removing the account filter to count
+	// unattributed sessions would count other people's sessions too.
 	unattributed := 0
 	if loginEmail != "" && !restricted {
 		unattributed, err = s.store.CountSessionOverviews(r.Context(), store.SessionOverviewFilter{

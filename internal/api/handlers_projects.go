@@ -16,8 +16,8 @@ func (s *Server) handleListProjects(w http.ResponseWriter, r *http.Request) {
 		Agent:       r.URL.Query().Get("agent"),
 		FoldLineage: r.URL.Query().Get("assembled") == "1",
 	}
-	// A restricted user's own scope overwrites what the query asked for, so a filter
-	// can only narrow it, never widen it.
+	// role=user: the scope is pinned to the caller's user_id and the query's
+	// login_email is discarded, so an account filter can neither widen nor narrow it (#811).
 	if user, ok := auth.UserFromContext(r.Context()); ok && user.Role == "user" {
 		f.ProfileEmail, f.LoginEmail, f.UserID = s.resolveUserAccessParams(user)
 	}

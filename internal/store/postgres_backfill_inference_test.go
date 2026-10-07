@@ -87,7 +87,7 @@ func TestInferFillsOtelLessSessionFromUserTimeline(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 20, 9, 46, 23, 0, time.UTC)
+	base := recentDay(43).Add(9*time.Hour + 46*time.Minute + 23*time.Second)
 
 	seedInference(t, s, inferSeed{
 		user: "u-ocean",
@@ -124,7 +124,7 @@ func TestInferPrefersExcludedAccountAcrossBoundary(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	base := recentDay(42).Add(10 * time.Hour)
 	mid := base.Add(time.Hour)
 	end := base.Add(2 * time.Hour)
 
@@ -189,7 +189,7 @@ func TestInferLeavesRecordsBeforeFirstObservationBlank(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 22, 10, 0, 0, 0, time.UTC)
+	base := recentDay(41).Add(10 * time.Hour)
 
 	seedInference(t, s, inferSeed{
 		user:   "u-edge",
@@ -225,7 +225,7 @@ func TestInferNeverOverwritesAnExistingAttribution(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 23, 10, 0, 0, 0, time.UTC)
+	base := recentDay(40).Add(10 * time.Hour)
 
 	seedInference(t, s, inferSeed{
 		user:   "u-kept",
@@ -255,7 +255,7 @@ func TestInferDoesNotCrossUsers(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 24, 10, 0, 0, 0, time.UTC)
+	base := recentDay(39).Add(10 * time.Hour)
 
 	seedInference(t, s,
 		inferSeed{
@@ -290,7 +290,7 @@ func TestPreviewInferMatchesTheUpdate(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 25, 10, 0, 0, 0, time.UTC)
+	base := recentDay(38).Add(10 * time.Hour)
 	mid := base.Add(time.Hour)
 
 	seedInference(t, s,
@@ -357,8 +357,8 @@ func TestInferSinceBoundsTheScan(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	old := time.Date(2026, 5, 1, 10, 0, 0, 0, time.UTC)
-	recent := time.Date(2026, 8, 26, 10, 0, 0, 0, time.UTC)
+	old := recentDay(60).Add(10 * time.Hour)
+	recent := recentDay(10).Add(10 * time.Hour)
 
 	seedInference(t, s,
 		inferSeed{
@@ -408,7 +408,7 @@ func TestInferBoundedPassKeepsPreSinceAccountSwitch(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	since := time.Date(2026, 8, 27, 10, 0, 0, 0, time.UTC)
+	since := recentDay(36).Add(10 * time.Hour)
 
 	seedInference(t, s, inferSeed{
 		user: "u-bounded-switch",
@@ -448,7 +448,7 @@ func TestInferRefreshesSessionOverviewRollups(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 27, 10, 0, 0, 0, time.UTC)
+	base := recentDay(36).Add(10 * time.Hour)
 
 	seedInference(t, s, inferSeed{
 		user:   "u-roll",
@@ -488,7 +488,7 @@ func TestInferTiebreakStopsAtTheLastObservation(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 28, 10, 0, 0, 0, time.UTC)
+	base := recentDay(35).Add(10 * time.Hour)
 
 	seedInference(t, s, inferSeed{
 		user: "u-run",
@@ -531,7 +531,7 @@ func TestInferPrefersExcludedAccountOnSimultaneousObservations(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 29, 10, 0, 0, 0, time.UTC)
+	base := recentDay(34).Add(10 * time.Hour)
 
 	seedInference(t, s,
 		inferSeed{
@@ -584,7 +584,7 @@ func TestBackfillRejudgesAnInferredGuessButNotAnObservation(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 30, 10, 0, 0, 0, time.UTC)
+	base := recentDay(33).Add(10 * time.Hour)
 
 	// The user's timeline says wrong@; the quiet session itself says nothing yet.
 	seedInference(t, s, inferSeed{
@@ -668,7 +668,7 @@ func TestUnattributedCountDropsInferredSessions(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 31, 10, 0, 0, 0, time.UTC)
+	base := recentDay(32).Add(10 * time.Hour)
 
 	seedInference(t, s, inferSeed{
 		user:   "u-list",
@@ -727,7 +727,7 @@ func TestInferSkipsCodexRecords(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 26, 10, 0, 0, 0, time.UTC)
+	base := recentDay(37).Add(10 * time.Hour)
 
 	seedInference(t, s, inferSeed{
 		user:   "u-mixed",
@@ -765,7 +765,7 @@ func TestInferTreatsEmptyAgentAsClaude(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 26, 11, 0, 0, 0, time.UTC)
+	base := recentDay(37).Add(11 * time.Hour)
 
 	seedInference(t, s, inferSeed{
 		user:   "u-legacy",
@@ -794,7 +794,7 @@ func TestPreviewInferReportsCodexRows(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 26, 12, 0, 0, 0, time.UTC)
+	base := recentDay(37).Add(12 * time.Hour)
 
 	seedInference(t, s, inferSeed{
 		user:   "u-preview",

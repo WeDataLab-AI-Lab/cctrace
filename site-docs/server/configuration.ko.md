@@ -25,7 +25,7 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
 
 | 키 | 기본값 | 의미 |
 |----|--------|------|
-| `JWT_SECRET` | 없음 | 대시보드 세션 서명 키. 32바이트 이상. 없으면 Compose가 시작 거부, 짧으면 `cctraced`가 `JWT secret must be at least 32 bytes`로 종료 |
+| `JWT_SECRET` | 없음 | 대시보드 세션 서명 키. 32바이트 이상. 없으면 Compose가 시작 거부, 짧으면 `cctraced`가 `JWT secret must be at least 32 bytes`로, `deploy/.env.example`에 있던 예시 값이면 `JWT_SECRET is a published example value`로 종료 |
 | `LOGS_DIR` | 없음 | `cctraced` 컨테이너의 `/data/logs`에 마운트되는 호스트 디렉터리. 없으면 Compose가 시작 거부. [운영](operations.md#logs) 참조 |
 
 ## 데이터베이스 {#database}
@@ -33,13 +33,43 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
 | 키 | 기본값 | 의미 |
 |----|--------|------|
 | `DB_PASSWORD` | `cctrace` | `cctrace` DB 슈퍼유저 비밀번호. DB 볼륨 최초 초기화 때만 적용. 첫 시작 전에 지정 |
-| `DB_APP_CREDENTIALS` | 비어 있음 | `cctraced`용 비슈퍼유저 역할의 `<user>:<password>`. 비워 둘 것(아래 참조) |
+| `DB_APP_CREDENTIALS` | 비어 있음 | `cctraced`용 비슈퍼유저 역할의 `<user>:<password>`. 첫 시작 전에 지정(아래 참조) |
 | `DB_PORT` | `5432` | TimescaleDB 호스트 포트. 항상 127.0.0.1에 바인드 |
 
 Compose는 이 값들로 `cctraced`의 `DATABASE_URL`을 만든다. `DB_APP_CREDENTIALS`가 비어 있으면 `cctraced`는 `cctrace` 계정과 `DB_PASSWORD`로 접속한다.
 
-!!! note "이 저장소에서의 `DB_APP_CREDENTIALS`"
-    compose 파일은 compose 파일 옆의 `initdb` 디렉터리를 초기화 스크립트 위치로 마운트한다. 그 스크립트가 첫 시작 때 `DB_APP_CREDENTIALS`의 역할을 만든다. 이 스크립트는 이 저장소에 포함되어 있지 않다. 역할을 직접 만들지 않고 `DB_APP_CREDENTIALS`를 지정하면 `cctraced`가 인증에 실패한다.
+!!! note "`DB_APP_CREDENTIALS` 적용 방식"
+    DB 볼륨이 비어 있는 첫 시작 때 `deploy/initdb/10-app-role.sh`가 `DB_APP_CREDENTIALS`의 역할을 `NOSUPERUSER NOCREATEROLE NOCREATEDB`로 만들고, `cctraced`는 그 역할로 접속한다. 이 키가 비어 있으면 `cctraced`는 `cctrace` 슈퍼유저로 접속하며, 그러면 서버의 결함이 `COPY ... FROM PROGRAM`을 거쳐 DB 컨테이너 안에서 명령을 실행할 수 있다.
+
+    역할 이름은 `cctrace`(슈퍼유저)일 수 없고 `pg_`로 시작할 수 없으며, `A-Za-z0-9_`만 쓸 수 있고, 63바이트 이하여야 한다. 비밀번호는 `openssl rand -hex 20`처럼 URL에 안전한 문자로만 만든다. compose가 이 값을 연결 URL에 그대로 넣으므로 `/`, `#`, `?`, `%`가 들어가면 `cctraced`가 URL을 해석하지 못하고, 그 해석 오류에 비밀번호 일부가 들어간다.
+
+### 역할이 만들어지지 않았을 때 {#if-the-role-was-not-created}
+
+값의 형식이 틀렸거나 역할을 만들 수 없으면 스크립트는 `timescaledb` 로그에 `[initdb]` 접두사로 이유를 출력하고 역할 생성을 건너뛴다. DB 초기화는 그대로 끝난다. `cctraced`는 여전히 `DB_APP_CREDENTIALS`의 계정 정보로 접속하므로, 그 이름과 비밀번호의 역할이 생길 때까지 인증에 실패한다.
+
+`DB_APP_CREDENTIALS`를 비워도 `cctraced`는 동작하지만 슈퍼유저로 접속하고, 그때 만드는 테이블은 슈퍼유저 소유가 되어 DB가 다음 절의 상황이 된다. `cctraced`가 한 번도 접속하지 못했다면 DB에 그 객체가 하나도 없으므로, 아래 둘 중 하나로 역할을 추가할 수 있다.
+
+1. 서버 env 파일의 값을 고친다. DB 컨테이너를 다시 만들어 새 값을 보게 하고, `ps`에서 `timescaledb`가 `(healthy)`가 될 때까지 기다린 뒤 그 안에서 스크립트를 다시 실행하고, 나머지 스택을 시작한다.
+
+    ```console
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d timescaledb
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml \
+        exec timescaledb sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" sh /docker-entrypoint-initdb.d/10-app-role.sh'
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
+    ```
+
+    역할이 만들어지면 스크립트가 `[initdb] created <name> (NOSUPERUSER)`를 출력한다.
+
+2. 아직 수집한 데이터가 없다면 볼륨을 지우고, 서버 env 파일의 값을 고친 뒤 다시 시작한다. 빈 볼륨에서 스크립트가 다시 실행된다.
+
+    ```console
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml down -v
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
+    ```
+
+### 이미 사용 중인 DB {#databases-already-in-use}
+
+이 스크립트는 데이터 볼륨이 비어 있을 때만 실행된다. 이미 초기화된 DB에서는 실행되지 않으므로, 그 상태에서 `DB_APP_CREDENTIALS`를 지정하면 `cctraced`가 존재하지 않는 역할로 접속한다. 역할을 직접 만드는 것만으로는 부족하다. 슈퍼유저가 이미 만든 객체의 소유권도 그 역할이 가져야 하며, 그렇지 않으면 부팅 마이그레이션이 `must be owner`로 실패한다. 이 저장소에는 그 전환 도구가 포함되어 있지 않다. `DB_APP_CREDENTIALS`를 비워 두면 기존 배포는 계속 슈퍼유저로 접속한다.
 
 ## 네트워크 {#network}
 

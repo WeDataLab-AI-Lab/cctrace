@@ -20,6 +20,40 @@ describe('formatTrendTick', () => {
   });
 });
 
+describe('formatTrendTick with full ISO timestamps (period label)', () => {
+  // sinceTs/untilTs are UTC ISO strings; labels follow the local calendar like the minute label.
+  const iso = (...args: [number, number, number, number, number]) => new Date(...args).toISOString();
+
+  it('shows day and week as local MM-DD, not a raw ISO slice', () => {
+    const ts = iso(2026, 8, 1, 8, 38);
+    expect(formatTrendTick('day', ts)).toBe('09-01');
+    expect(formatTrendTick('week', ts)).toBe('09-01');
+  });
+
+  it('shows month as local YYYY-MM', () => {
+    expect(formatTrendTick('month', iso(2026, 8, 1, 8, 38))).toBe('2026-09');
+  });
+
+  it('keeps minute and hour on local clock parts', () => {
+    const ts = iso(2026, 8, 1, 15, 32);
+    expect(formatTrendTick('minute', ts)).toBe('15:32');
+    expect(formatTrendTick('hour', ts)).toBe('09/01 15h');
+  });
+
+  it('follows the local date across midnight and month boundaries', () => {
+    expect(formatTrendTick('day', iso(2026, 8, 1, 0, 30))).toBe('09-01');
+    expect(formatTrendTick('day', iso(2026, 7, 31, 23, 30))).toBe('08-31');
+    expect(formatTrendTick('month', iso(2026, 8, 1, 0, 30))).toBe('2026-09');
+    expect(formatTrendTick('month', iso(2026, 7, 31, 23, 30))).toBe('2026-08');
+  });
+
+  it('leaves date-only axis keys unchanged', () => {
+    expect(formatTrendTick('day', '2026-12-31')).toBe('12-31');
+    expect(formatTrendTick('week', '2026-01-05')).toBe('01-05');
+    expect(formatTrendTick('month', '2026-12-01')).toBe('2026-12');
+  });
+});
+
 describe('trendTickInterval', () => {
   it('shares Cost Trend minute spacing with Subscription Burn', () => {
     expect(trendTickInterval('minute', 181)).toBe(15);

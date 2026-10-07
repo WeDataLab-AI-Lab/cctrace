@@ -14,7 +14,7 @@ Every server setting covered by this guide, in one table. Details and caveats ar
 | `JWT_SECRET` | env file | none (required) | Dashboard session signing key, at least 32 bytes |
 | `LOGS_DIR` | env file | none (required) | Host directory mounted at `/data/logs` for the access log |
 | `DB_PASSWORD` | env file | `cctrace` | Database superuser password, applied at first initialisation only |
-| `DB_APP_CREDENTIALS` | env file | empty | `<user>:<password>` of a non-superuser role; leave empty |
+| `DB_APP_CREDENTIALS` | env file | empty | `<user>:<password>` of the non-superuser role `cctraced` connects as, created at first initialisation only; empty connects as the superuser |
 | `DB_PORT` | env file | `5432` | Host port for TimescaleDB, bound to 127.0.0.1 |
 | `HTTP_BIND` | env file | 127.0.0.1 | Host address for the dashboard and REST API |
 | `GRPC_BIND` | env file | 0.0.0.0 | Host address for OTLP gRPC |

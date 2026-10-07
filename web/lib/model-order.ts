@@ -15,25 +15,18 @@ const AGENT_RANK: Record<string, number> = { claude: 0, codex: 1, gjc: 2, omo: 3
 
 // 계열별 티어 사다리. 없는 계열은 전부 동률이라 버전·사전순으로 내려간다.
 //
-// codex 사다리는 codex_model_rates 의 단가 순서와 같다 — sol 5.00 > terra 2.50 >
-// luna 1.00. 셋 다 gpt-5.6 이라 버전으로는 갈리지 않고, 사전순은 luna 를 sol 앞에
-// 세워 비싼 모델이 가운데 오는 순서가 됐다.
-//
-// gpt-6-astra 는 여기 없다 — codex 는 버전이 티어보다 먼저라(TIER_BEFORE_VERSION 참조),
-// 세대 번호(6 > 5.x)만으로 이미 sol을 포함한 모든 gpt-5.x 앞에 선다. 같은 세대(gpt-6.x)
-// 안에 티어가 갈리는 두 번째 모델이 나오기 전까지는 넣을 필요가 없다.
+// Codex tiers use the rate order — Astra > Sol > Terra > Luna — within each version.
 const TIERS: Record<string, string[]> = {
   claude: ['fable', 'opus', 'sonnet', 'haiku'],
-  codex: ['sol', 'terra', 'luna'],
+  codex: ['astra', 'sol', 'terra', 'luna'],
 };
 
 // 티어 이름이 없는 라벨(gpt-5.4 같은 세대 기본 모델)은 named 티어 뒤, mini 앞이다.
 // mini 를 사다리에 넣으면 gpt-5.4-mini 가 gpt-5.4 보다 앞서게 된다.
 const isMini = (label: string): boolean => label.toLowerCase().includes('mini');
 
-// 티어가 버전보다 먼저인 계열. Claude 의 fable·opus·sonnet·haiku 는 세대를 가로지르는
-// 제품군이라 티어로 먼저 묶이지만, codex 의 sol·terra·luna 는 한 세대(gpt-5.6) 안의
-// 변종이라 세대가 먼저다 — 티어를 먼저 보면 gpt-5.6-luna 가 gpt-5.5 뒤로 밀린다.
+// Claude tiers are product families across versions. Codex tiers are variants within each
+// version, so version ranks first — otherwise gpt-5.6-luna would fall behind gpt-5.5.
 const TIER_BEFORE_VERSION = new Set(['claude']);
 
 const isOthers = (label: string): boolean => {

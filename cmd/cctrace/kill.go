@@ -12,7 +12,9 @@ import (
 // killGraceWait bounds how long the command waits for the sync lock to come
 // free after signalling. It is short on purpose: the process has already been
 // signalled, so this measures the OS reaping it, not the daemon winding down.
-const killGraceWait = 5 * time.Second
+// It is a var so the test for the branch that gives up can reach that branch
+// without spending the full grace period; production never assigns to it.
+var killGraceWait = 5 * time.Second
 
 var (
 	syncLockFreeFn = isSyncLockFree

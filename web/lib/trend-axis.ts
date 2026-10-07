@@ -9,7 +9,9 @@ type TrendTickInterval = number | 'preserveStartEnd';
  * before applying the shared label rules.
  */
 const formatTrendTick = (granularity: TrendGranularity, value: string | number): string => {
-  if (typeof value === 'string') {
+  // Date-only bucket keys (YYYY-MM-DD) are sliced as-is. A full ISO timestamp (the
+  // period label's sinceTs/untilTs, UTC) falls through to local calendar parts.
+  if (typeof value === 'string' && !value.includes('T')) {
     if (granularity === 'day' || granularity === 'week') return value.slice(5);
     if (granularity === 'month') return value.slice(0, 7);
   }

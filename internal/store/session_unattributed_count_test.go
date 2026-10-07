@@ -15,7 +15,7 @@ func TestCountUnattributedSessions(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 7, 27, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(36).Add(10 * time.Hour)
 
 	// attributed: OTEL present, account known.
 	// unattributed-1/2: JSONL only, no account anywhere.
@@ -72,7 +72,7 @@ func TestUnattributedIgnoresPendingBackfill(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 7, 28, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(35).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: ts, EventName: "api_request", SessionID: "pending", LoginEmail: "one@example.com"},

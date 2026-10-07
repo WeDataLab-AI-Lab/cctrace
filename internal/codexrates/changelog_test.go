@@ -73,6 +73,17 @@ func TestParseChangelog(t *testing.T) {
 	}
 }
 
+func TestEffectiveDate_TC21GPT61PublishedRelease(t *testing.T) {
+	entries, err := ParseChangelog([]byte("## September, 2026\n\n### Sep 29\n\nFeature · Model: gpt-6.1-sol · API: v1/responses\n\nReleased GPT-6.1 Sol.\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	date, known := EffectiveDate(entries, "gpt-6.1-sol", day(2026, time.September, 30))
+	if !known || !date.Equal(day(2026, time.September, 29)) {
+		t.Fatalf("release = %v (%v), want 2026-09-29 true", date, known)
+	}
+}
+
 func TestEffectiveDate(t *testing.T) {
 	entries, err := ParseChangelog([]byte(readFixture(t, "changelog.md")))
 	if err != nil {

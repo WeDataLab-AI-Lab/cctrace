@@ -43,7 +43,7 @@ func TestTrendReadsMatchBetweenRollupAndRaw(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	base := time.Date(2026, 3, 2, 0, 0, 0, 0, time.UTC)
+	base := recentMonday(8)
 	seedTrendEvents(t, s, base)
 
 	since := base.Add(-time.Hour)
@@ -157,7 +157,7 @@ func TestTrendReadsMatchOnBoundsOffTheHour(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	base := time.Date(2026, 3, 2, 0, 0, 0, 0, time.UTC)
+	base := recentMonday(8)
 	seedTrendEvents(t, s, base)
 	var inUntilEdges []*OtelEvent
 	for _, d := range []time.Duration{5*time.Hour + 5*time.Minute, 19*time.Hour + 5*time.Minute} {

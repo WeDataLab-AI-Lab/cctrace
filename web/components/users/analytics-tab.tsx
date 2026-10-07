@@ -11,11 +11,12 @@ import type { ModelCategory } from '@/lib/colors';
 import { FilterBar } from '@/components/common/filter-bar';
 import { CollectingLoader } from '@/components/common/collecting-loader';
 import type { ViewMode } from '@/components/common/trend-chart';
+import { useAuth } from '@/components/common/auth-context';
 import { useAccount } from '@/components/common/account-context';
 import { usePendingAction, type PendingAction } from '@/components/common/pending-action-context';
 import { Input } from '@/components/ui/input';
 import type { CostSummary, ModelStat } from '@/lib/types';
-import { AVATAR_COLORS, daysAgo, resolveDisplayName, userKey } from './user-utils';
+import { AVATAR_COLORS, canViewUserSessions, daysAgo, resolveDisplayName, userKey } from './user-utils';
 import { UserCard, type UserCardStats } from './user-card';
 import { UserDetail } from './user-detail';
 import { MergeDialog } from './merge-dialog';
@@ -46,6 +47,7 @@ const AnalyticsTab = ({ isAdmin }: AnalyticsTabProps) => {
   // Date.now() 기반 값은 매 렌더 변동(=queryKey 흔들림→refetch 루프)을 막기 위해 1회만 계산.
   const [since] = useState(() => daysAgo(30));
   const { selectedAccount } = useAccount();
+  const { user: me } = useAuth();
 
   const { data, isLoading } = useQuery<CostSummary[]>({
     queryKey: ['cost-by-user', since, selectedAccount],
@@ -251,6 +253,8 @@ const AnalyticsTab = ({ isAdmin }: AnalyticsTabProps) => {
                   modelFilter={modelFilter}
                   modelCategory={modelCategory}
                   userId={user.user_id || undefined}
+                  canViewSessions={canViewUserSessions(me, user)}
+                  sessionsAcrossProfiles={me?.role === 'user'}
                 />
               )}
             </Fragment>

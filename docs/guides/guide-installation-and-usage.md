@@ -9,6 +9,7 @@ Covers Claude Code Trace from installation through the full administrator and en
 ### Prerequisites
 
 - Docker + Docker Compose
+- `openssl` (generates the secrets in step 4 below)
 - Ports: 4317 (gRPC), 4318 (HTTP/OTLP), 5432 (PostgreSQL, localhost only), 8080 (dashboard/API)
 
 ### Install
@@ -41,12 +42,14 @@ docker build -t cctrace/timescaledb-pgmq:latest docker/timescaledb-pgmq/
 docker build -f deploy/Dockerfile --build-arg UPDATE_SIGNING=optional \
   -t cctrace/cctraced:latest .
 
-# 4) Write the required environment file (no defaults -- startup fails without it)
-cat > deploy/.env <<'EOF'
-JWT_SECRET=<random string, at least 32 bytes>
-DB_PASSWORD=<database password>
-LOGS_DIR=/absolute/path/on/the/host/for/logs
-EOF
+# 4) Copy the example env file, then set the three required keys.
+#    Copying keeps every other key and its comment; writing the file from
+#    scratch drops them. `sed -i.bak` works with both BSD (macOS) and GNU sed.
+cp deploy/.env.example deploy/.env
+jwt_secret=$(openssl rand -hex 32) && sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=${jwt_secret}|" deploy/.env
+db_password=$(openssl rand -hex 20) && sed -i.bak "s|^DB_PASSWORD=.*|DB_PASSWORD=${db_password}|" deploy/.env
+LOGS_DIR=/absolute/path/on/the/host/for/logs && mkdir -p "$LOGS_DIR" && sed -i.bak "s|^LOGS_DIR=.*|LOGS_DIR=${LOGS_DIR}|" deploy/.env
+rm deploy/.env.bak
 
 # 5) Start
 docker compose --env-file deploy/.env \
@@ -89,7 +92,7 @@ Services that come up:
 
 First access is `http://127.0.0.1:8080` on the server host, or the HTTPS reverse proxy URL; the administrator account creation flow is §2 below.
 
-To change ports, add `HTTP_PORT`, `GRPC_PORT`, `OTEL_HTTP_PORT`, and `DB_PORT` to the env file created above (see `deploy/.env.example`).
+To change ports, edit `HTTP_PORT`, `GRPC_PORT`, `OTEL_HTTP_PORT`, and `DB_PORT` in `deploy/.env` (copied from `deploy/.env.example` above).
 
 > The internal operations procedure for shipping images to a remote server and managing signing keys is out of scope here and lives in a separate deployment document.
 
@@ -309,9 +312,11 @@ Open `http://127.0.0.1:8080` in a browser on the server host, or use the HTTPS p
 
 > This is available **exactly once**. The setup token is invalid after the first administrator is created. Later visits go to the login page.
 
+The account created at `/setup` has no team and no `cctrace_user_id`, so it cannot pass `cctrace init`: the CLI signs in with `cctrace_user_id`, and init stops with `validation failed` when the team is empty. To send data from your own machine as this administrator, open **Users** → **Management**, select **Edit** in the account's row menu, and fill in **Team** and **cctrace User ID** first.
+
 ### 2-2. Creating user accounts
 
-Dashboard → **Users** → **Add User**:
+Dashboard → **Users** → **Management** → **Add User**:
 
 ```
 Required:
@@ -370,10 +375,10 @@ Read APIs require this cookie too. The per-user token (`cct_...`) issued by `cct
 
 | Task | How |
 |------|-----|
-| Edit details | Select from the list → change name/role |
+| Edit details | **Management** tab → row menu → **Edit** → change name, team, role, or cctrace User ID |
 | Reset password | **Reset Password** → issues a new temporary password |
 | Revoke API token | **Revoke Token** → deletes the user's API token |
-| Deactivate | Clear `is_active` → login is blocked |
+| Deactivate | **Management** tab → row menu → **Deactivate** → login is blocked |
 
 ### 2-4. The administrator dashboard
 
@@ -429,9 +434,10 @@ Windows is `/downloads/cctrace-windows-amd64.exe`. For the combinations provided
 **Building from source.**
 
 ```bash
-# build from source
-make build
+# build for the current platform
+make build-client
 # -> produces dist/cctrace
+sudo cp dist/cctrace /usr/local/bin/cctrace
 
 # or go install
 go install ./cmd/cctrace
@@ -440,11 +446,13 @@ go install ./cmd/cctrace
 export PATH=$PATH:$(go env GOPATH)/bin
 ```
 
+`make build` is not the client build: it also builds `cctraced`, needs the dashboard build output, and makes a macOS universal binary with `lipo`, so it fails outside macOS. `make build-linux` and `make build-windows` cross-compile into `dist/`.
+
 When installing an administrator-provided binary, use trusted HTTPS or a separate managed channel. Do not download over external plaintext HTTP.
 
-A `make build` artifact gets the update signing public key injected as its trust root **when the repository carries one**, giving it the same signature verification a release has. A public distribution does not carry that key, so this applies only where an administrator supplies it. Running `go build` or `go install` directly injects nothing, so those builds return `update public key is not configured`.
+A `make build-client` artifact (like every client target in the Makefile) gets the update signing public key injected as its trust root **when the repository carries one**, giving it the same signature verification a release has. A public distribution does not carry that key, so this applies only where an administrator supplies it. Running `go build` or `go install` directly injects nothing, so those builds return `update public key is not configured`.
 
-> **Self-update does not work in a distribution without the public key.** Without it, `make build` warns `UPDATE_PUBLIC_KEY is empty`, the server image has to be built with `UPDATE_SIGNING=optional`, and that build generates no signing manifests under `/downloads`. The client never skips manifest verification, so updating is **structurally impossible**. The self-update description below applies to signed release builds. Elsewhere, upgrades happen by the administrator distributing a new binary.
+> **Self-update does not work in a distribution without the public key.** Without it, `make build` warns `UPDATE_PUBLIC_KEY is empty` (`make build-client` builds without a warning), the server image has to be built with `UPDATE_SIGNING=optional`, and that build generates no signing manifests under `/downloads`. The client never skips manifest verification, so updating is **structurally impossible**. The self-update description below applies to signed release builds. Elsewhere, upgrades happen by the administrator distributing a new binary.
 
 Self-update:
 
@@ -1251,6 +1259,7 @@ JWT cookie check:
 | With a shared key | yes | 32+ bytes | OTEL/sync protected by API_KEY or per-user tokens + dashboard protected by JWT |
 | Missing JWT_SECRET | either | no | Server refuses to start |
 | JWT_SECRET too short | either | under 32 bytes | Server refuses to start |
+| JWT_SECRET is the published example | either | the value `deploy/.env.example` shipped | Server refuses to start |
 
 HTTP OTLP and gRPC OTLP share one Bearer authentication policy. `/v1/logs` and `/v1/metrics` HTTP request bodies are capped at 16 MiB. Trace export does not hide that storage is unsupported: it returns HTTP 501 or gRPC `Unimplemented`.
 
@@ -1348,6 +1357,7 @@ Deletion runs asynchronously in a TimescaleDB background job. Shortening retenti
 | `up -d` succeeded but the dashboard does not open | A misconfiguration has cctraced in a restart loop. Compose only reports as far as container creation, so it looks successful | Check for `Restarting` with `docker compose ps`, then read `docker compose logs cctraced` |
 | Log shows `JWT secret must be at least 32 bytes, got N` | `JWT_SECRET` is too short | Replace with a random string of 32+ bytes and restart |
 | Log shows `JWT_SECRET is required` | `JWT_SECRET` is unset | Add it to `.env` and restart |
+| Log shows `JWT_SECRET is a published example value` | `JWT_SECRET` is the value `deploy/.env.example` shipped, which anyone can sign dashboard tokens with | Replace it with `openssl rand -hex 32` and restart. Every dashboard user signs in again, and if `CCTRACE_SECRETS_KEY` is empty (the default), API keys registered in Admin > AI must be registered again |
 | Log shows `password authentication failed for user "cctrace"` (SQLSTATE 28P01) | `DB_PASSWORD` was changed after the first start. Postgres keeps the password from the initial volume setup | See **Recovering the DB password** below |
 | The DB container is `unhealthy` and the health log says `password authentication failed` | Same cause | Same fix |
 | Startup refused with a `LOGS_DIR` error | A required value is unset | Set an absolute host path in `.env` |
@@ -1392,7 +1402,7 @@ The DB container's healthcheck runs `select 1` **with authentication**. A mismat
 | `cctrace status` shows `[!] N files skipped at first sync` | Session files that already existed at the first sync are not collected up to that point (deliberate, so history from before installation is not backfilled). Running `cctrace init` inside a session puts that session in this category | Expected; no action needed. **Everything is collected from the next session on.** What already passed cannot be recovered |
 | The beginning of the first session is missing from the dashboard / the session is absent from the Interactive list | Same cause. When the first human-typed turn is lost, the session is classified as automated and drops out of the default filter | Switch the session list filter to All. Later sessions classify correctly |
 | "Server unreachable" | Wrong server address or a closed port | Check `curl http://localhost:8080/api/health` |
-| "Invalid credentials" | Wrong user_id or password | Confirm the user_id and temporary password with an administrator |
+| "Invalid credentials" | Wrong user_id or password | Confirm the user_id with an administrator. Enter the password you set on the dashboard, not the temporary one (§3-2) |
 | "Warning: profile X also uses this Claude directory" | Several profiles share one .claude directory | Point each profile at a different Claude home |
 | "Claude config directory conflict" | A named profile uses the same directory as another profile | Choose a different Claude home during setup |
 

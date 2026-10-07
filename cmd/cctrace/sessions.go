@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"strconv"
@@ -50,6 +51,21 @@ func sessionsCmd() *cobra.Command {
 	return cmd
 }
 
+// warnForeignProfile flags records whose profile_email differs from --user. A
+// role=user token is scoped to its own records and the server drops the
+// requested profile_email without saying so (#810), so the CLI says it instead.
+func warnForeignProfile(w io.Writer, want string, records []sessionRecord) {
+	if want == "" {
+		return
+	}
+	for _, r := range records {
+		if r.ProfileEmail != want {
+			fmt.Fprintf(w, "경고: 요청한 --user %s 와 다른 프로필의 기록이 포함됨: 일반 사용자 토큰은 본인 세션만 볼 수 있어 --user 가 적용되지 않을 수 있다\n", want)
+			return
+		}
+	}
+}
+
 func runSessions(profileEmail, sessionID string, limit int, jsonOutput bool) error {
 	if !profile.Exists() {
 		fmt.Fprintln(os.Stderr, "  No profile found. Run 'cctrace init' first.")
@@ -88,14 +104,19 @@ func runSessions(profileEmail, sessionID string, limit int, jsonOutput bool) err
 		return err
 	}
 
+	var records []sessionRecord
+	parseErr := json.Unmarshal(body, &records)
+	if parseErr == nil {
+		warnForeignProfile(os.Stderr, profileEmail, records)
+	}
+
 	if jsonOutput {
 		fmt.Println(string(body))
 		return nil
 	}
 
-	var records []sessionRecord
-	if err := json.Unmarshal(body, &records); err != nil {
-		return fmt.Errorf("parse response: %w", err)
+	if parseErr != nil {
+		return fmt.Errorf("parse response: %w", parseErr)
 	}
 
 	fmt.Printf("=== Session Records (last %d) ===\n", limit)

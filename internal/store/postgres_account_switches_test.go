@@ -14,7 +14,7 @@ func TestAccountSwitchStats(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 7, 25, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(30).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		// u1: one session holding two accounts -> a real mid-session switch.
@@ -80,7 +80,7 @@ func TestAccountSwitchStatsRespectsExclusion(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 7, 26, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(29).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: ts, EventName: "api_request", UserID: "u1", SessionID: "s1", LoginEmail: "one@example.com"},

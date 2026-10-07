@@ -14,7 +14,7 @@ func TestSessionAccountSegments_splitsAtTheSwitch(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 12, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(51).Add(10 * time.Hour)
 
 	in, out := 100, 10
 	ev := func(email string, at time.Time) *OtelEvent {
@@ -59,7 +59,7 @@ func TestSessionAccountSegments_singleAccountYieldsOne(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 13, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(50).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: ts, EventName: "api_request", SessionID: "s1", Agent: "claude", LoginEmail: "one@example.com"},
@@ -151,7 +151,7 @@ func TestSessionAccountSegments_returnToAccountIsANewSegment(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 16, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(47).Add(10 * time.Hour)
 
 	ev := func(email string, at time.Time) *OtelEvent {
 		return &OtelEvent{Ts: at, EventName: "api_request", SessionID: "rt", Agent: "claude", LoginEmail: email}

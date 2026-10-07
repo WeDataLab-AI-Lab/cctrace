@@ -37,6 +37,18 @@ import (
 // The returned count is the rows inserted, which is the caller's trigger for
 // repricing codex_imputed_cost.
 func (s *PgStore) UpsertCodexModelRates(ctx context.Context, rates map[string]codexrates.Rate, effective map[string]time.Time, source string) (int, error) {
+	return s.upsertCodexModelRates(ctx, rates, effective, source, nil)
+}
+
+// UpsertCodexModelRatesAt pins every conservative date fallback to the day this
+// table was observed. A DB retry after midnight must not date the same accepted
+// price differently. The observation is not an inferred official effective date.
+func (s *PgStore) UpsertCodexModelRatesAt(ctx context.Context, rates map[string]codexrates.Rate, effective map[string]time.Time, source string, observed time.Time) (int, error) {
+	observed = observed.UTC()
+	return s.upsertCodexModelRates(ctx, rates, effective, source, &observed)
+}
+
+func (s *PgStore) upsertCodexModelRates(ctx context.Context, rates map[string]codexrates.Rate, effective map[string]time.Time, source string, observed *time.Time) (int, error) {
 	if len(rates) == 0 {
 		return 0, nil
 	}
@@ -60,7 +72,7 @@ func (s *PgStore) UpsertCodexModelRates(ctx context.Context, rates map[string]co
 			eff = &d
 		}
 		var inserted int
-		if err := tx.QueryRow(ctx, upsertCodexRateSQL, prefix, r.Input, r.Output, r.CacheRead, eff, source).Scan(&inserted); err != nil {
+		if err := tx.QueryRow(ctx, upsertCodexRateSQL, prefix, r.Input, r.Output, r.CacheRead, eff, source, observed).Scan(&inserted); err != nil {
 			return 0, err
 		}
 		changed += inserted
@@ -93,9 +105,9 @@ WITH latest AS (
 			AND l.output_rate = $3::float8
 			AND l.cache_read_rate = $4::float8) AS unchanged,
 		CASE
-			WHEN $5::date IS NULL THEN CURRENT_DATE
+			WHEN $5::date IS NULL THEN COALESCE($7::date, CURRENT_DATE)
 			WHEN l.effective_from IS NULL OR $5::date > l.effective_from THEN $5::date
-			ELSE CURRENT_DATE
+			ELSE COALESCE($7::date, CURRENT_DATE)
 		END AS effective_from
 	FROM (SELECT 1) one LEFT JOIN latest l ON TRUE
 ), confirmed AS (

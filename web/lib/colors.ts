@@ -25,6 +25,9 @@ export function agentOf(model: string): Agent {
   return 'compat';
 }
 
+const gptTier = (model: string): string | undefined =>
+  model.match(/\bgpt-\d+(?:\.\d+)*-(astra|sol|terra|luna)\b/)?.[1];
+
 /**
  * Per-model shade within the agent's hue. Better model → deeper (darker, more
  * saturated). Unknown tiers fall back to the agent's mid shade (never gray).
@@ -50,14 +53,14 @@ function modelShade(model: string): string {
       if (m.includes('haiku')) return 'oklch(0.80 0.068 39)'; // lightest
       return 'oklch(0.73 0.096 39)'; // sonnet / claude mid — brand hue, muted for fills
     case 'codex':
-      // Astra is the GPT-6 flagship: deepest in the capri ramp, above Sol.
+      // Astra is the flagship tier: deepest in the capri ramp, above Sol.
       // Hue 232 throughout — Codex's own accent, see --agent-codex.
-      if (m.includes('gpt-6-astra')) return 'var(--model-astra)';
+      if (gptTier(m) === 'astra') return 'var(--model-astra)';
       // Sol was the flagship anchor before Astra; it keeps its former depth as a
       // raw shade, now the deepest one in the ramp below Astra's token.
-      if (m.includes('gpt-5.6-sol')) return 'oklch(0.55 0.135 232)';
-      if (m.includes('gpt-5.6-terra')) return 'oklch(0.65 0.122 232)';
-      if (m.includes('gpt-5.6-luna')) return 'oklch(0.77 0.099 232)';
+      if (gptTier(m) === 'sol') return 'oklch(0.55 0.135 232)';
+      if (gptTier(m) === 'terra') return 'oklch(0.65 0.122 232)';
+      if (gptTier(m) === 'luna') return 'oklch(0.77 0.099 232)';
       if (m.includes('mini')) return 'oklch(0.75 0.101 232)';
       if (m.includes('gpt-5.5') || m.includes('gpt-5-codex')) return 'oklch(0.63 0.125 232)';
       if (m.includes('gpt-5.4')) return 'oklch(0.66 0.120 232)';
@@ -78,10 +81,10 @@ export function isFable(model: string): boolean {
   return model.toLowerCase().includes('fable');
 }
 
-/** True for the GPT-6 Astra flagship tier. */
+/** True for the Astra tier across GPT versions, including the bare "astra" label. */
 export function isAstra(model: string): boolean {
   const m = model.toLowerCase();
-  return m.includes('gpt-6-astra') || m === 'astra';
+  return gptTier(m) === 'astra' || m === 'astra';
 }
 
 /** True for OpenAI o-series reasoning models (o1, o3, o4-mini, …). */

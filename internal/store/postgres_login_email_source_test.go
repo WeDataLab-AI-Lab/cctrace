@@ -110,7 +110,7 @@ func TestBackfillSessionRecordLoginEmailStampsOtel(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 14, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(49).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: ts, EventName: "api_request", SessionID: "has-otel", LoginEmail: "one@example.com"},

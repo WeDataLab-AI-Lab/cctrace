@@ -25,7 +25,7 @@ const sessionId = (s: SessionOverview): string => s.session_id;
 
 export default function SessionsPage() {
   const qc = useQueryClient();
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [search, setSearch] = useState('');
   // Selection is an id, not a snapshot object: the polled list is the single source of the
   // values, so the viewer header refreshes with the list card instead of freezing at the
@@ -48,7 +48,15 @@ export default function SessionsPage() {
   const [lastKnown, setLastKnown] = useState<Map<string, SessionOverview>>(new Map());
   // The display order the user is looking at. Frozen against polling; values are not.
   const [committedIds, setCommittedIds] = useState<string[]>([]);
-  const { selectedAccount } = useAccount();
+  const { selectedAccount: pickedAccount } = useAccount();
+  // The server pins a role=user session list to the caller's own user_id and drops
+  // login_email (#811), and the header says so instead of showing chips. A selection made
+  // on another screen is still in AccountContext; sending it here would narrow the project
+  // chart (which applies login_email as sent) under a header claiming every account shows.
+  // Keyed on role === 'user' like the header: the server allows only admin|user, so a missing
+  // user (the dashboard layout does not mount this page before auth settles) is never read as
+  // restricted.
+  const selectedAccount = user?.role === 'user' ? '' : pickedAccount;
 
   const [selectedProject, setSelectedProject] = useState<ProjectSelection | null>(null);
   // Arriving from a link elsewhere (the weekly report's project list) with

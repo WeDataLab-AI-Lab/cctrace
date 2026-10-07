@@ -20,12 +20,14 @@ func TestPgStore_ToolTimeSeries_Timezone(t *testing.T) {
 	ctx := context.Background()
 
 	ok := true
-	// 2026-08-18 00:30 KST == 2026-08-17 15:30 UTC. The two readings disagree on
+	kstDay := recentDay(30)
+	// 00:30 KST on kstDay == 15:30 UTC the day before. The two readings disagree on
 	// the day, which is exactly what a user in Seoul sees as a misplaced bar.
-	kstEarly := time.Date(2026, 8, 17, 15, 30, 0, 0, time.UTC)
-	// 2026-08-18 20:00 KST == 2026-08-18 11:00 UTC. Same KST day as kstEarly,
+	kstEarly := kstDay.Add(-8*time.Hour - 30*time.Minute)
+	// 20:00 KST on kstDay == 11:00 UTC the same day. Same KST day as kstEarly,
 	// so a correct KST bucketing collapses both into one bar.
-	kstLate := time.Date(2026, 8, 18, 11, 0, 0, 0, time.UTC)
+	kstLate := kstDay.Add(11 * time.Hour)
+	wantDate := kstDay.Format("2006-01-02")
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: kstEarly, EventName: "tool_result", SessionID: "s1", ToolName: "Bash", ToolSuccess: &ok},
@@ -34,8 +36,8 @@ func TestPgStore_ToolTimeSeries_Timezone(t *testing.T) {
 		t.Fatalf("InsertEvents: %v", err)
 	}
 
-	since := time.Date(2026, 8, 1, 0, 0, 0, 0, time.UTC)
-	until := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
+	since := kstDay.AddDate(0, 0, -10)
+	until := kstDay.AddDate(0, 0, 10)
 
 	got, err := s.ToolTimeSeries(ctx, "Bash", since, until, "", "", "", "day", "Asia/Seoul")
 	if err != nil {
@@ -46,10 +48,10 @@ func TestPgStore_ToolTimeSeries_Timezone(t *testing.T) {
 		for i, b := range got {
 			dates[i] = b.Date
 		}
-		t.Fatalf("buckets = %v, want one KST day (2026-08-18)", dates)
+		t.Fatalf("buckets = %v, want one KST day (%s)", dates, wantDate)
 	}
-	if got[0].Date != "2026-08-18" {
-		t.Fatalf("bucket date = %q, want 2026-08-18 (KST)", got[0].Date)
+	if got[0].Date != wantDate {
+		t.Fatalf("bucket date = %q, want %s (KST)", got[0].Date, wantDate)
 	}
 	if got[0].SuccessCount != 2 {
 		t.Fatalf("success count = %d, want 2", got[0].SuccessCount)
@@ -64,21 +66,24 @@ func TestPgStore_ToolTimeSeries_EmptyTimezoneIsUTC(t *testing.T) {
 	ctx := context.Background()
 
 	ok := true
+	// 15:30 UTC: late enough that a KST reading would already be the next day.
+	reading := recentDay(30).Add(-8*time.Hour - 30*time.Minute)
+	wantDate := reading.Format("2006-01-02")
 	if err := s.InsertEvents(ctx, []*OtelEvent{
-		{Ts: time.Date(2026, 8, 17, 15, 30, 0, 0, time.UTC), EventName: "tool_result", SessionID: "s1", ToolName: "Bash", ToolSuccess: &ok},
+		{Ts: reading, EventName: "tool_result", SessionID: "s1", ToolName: "Bash", ToolSuccess: &ok},
 	}); err != nil {
 		t.Fatalf("InsertEvents: %v", err)
 	}
 
 	got, err := s.ToolTimeSeries(ctx, "Bash",
-		time.Date(2026, 8, 1, 0, 0, 0, 0, time.UTC),
-		time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC),
+		reading.AddDate(0, 0, -10),
+		reading.AddDate(0, 0, 10),
 		"", "", "", "day", "")
 	if err != nil {
 		t.Fatalf("ToolTimeSeries: %v", err)
 	}
-	if len(got) != 1 || got[0].Date != "2026-08-17" {
-		t.Fatalf("got %+v, want single 2026-08-17 bucket (UTC)", got)
+	if len(got) != 1 || got[0].Date != wantDate {
+		t.Fatalf("got %+v, want single %s bucket (UTC)", got, wantDate)
 	}
 }
 
@@ -90,7 +95,7 @@ func TestPgStore_ToolsIncludeCodexToolCallMetric(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	at := time.Date(2026, 8, 18, 3, 0, 0, 0, time.UTC)
+	at := recentDay(30).Add(3 * time.Hour)
 	ok, failed := true, false
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: at, EventName: "tool_result", SessionID: "s1", UserID: "u1", ToolName: "shell", ToolSuccess: &ok},

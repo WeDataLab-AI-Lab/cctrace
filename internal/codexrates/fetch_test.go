@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -40,6 +41,23 @@ func TestFetch_PrefersMarkdown(t *testing.T) {
 		t.Errorf("source = %q, want openai-md", source)
 	}
 	wantRate(t, rates, "gpt-6-astra", 10, 50, 1)
+}
+
+// Captured official standard-pricing row, 2026-09-30. Keep the newer Sol's
+// cached-input price distinct from gpt-6-sol ($0.20).
+func TestFetch_TC21GPT61PublishedStandardRate(t *testing.T) {
+	md := strings.Replace(readFixture(t, "pricing.md"), "| gpt-6-astra |",
+		"| gpt-6.1-sol | $2.00 | $0.10 | $2.50 | $10.00 | $4.00 | $0.20 | $5.00 | $15.00 |\n| gpt-6-astra |", 1)
+	srv := serve(t, func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte(md)) })
+	point(t, srv)
+	rates, source, err := Fetch(context.Background())
+	if err != nil || source != "openai-md" {
+		t.Fatalf("Fetch = %s, %v", source, err)
+	}
+	if err := Accept(rates); err != nil {
+		t.Fatal(err)
+	}
+	wantRate(t, rates, "gpt-6.1-sol", 2, 10, .1)
 }
 
 // The markdown endpoint is one URL away from being retired; the HTML page's

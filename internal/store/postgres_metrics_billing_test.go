@@ -194,7 +194,7 @@ func TestVisibleMetricsJudgesAccountlessCodexRowsByMinute(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 	const profile = "person@example.test"
-	base := time.Date(2026, 9, 18, 10, 0, 0, 0, time.UTC)
+	base := recentDay(14).Add(10 * time.Hour)
 	record := func(at time.Duration, uuid, account string) *SessionRecord {
 		return &SessionRecord{Ts: base.Add(at), SessionID: "s-" + account, UUID: uuid, RecordType: "usage",
 			UserID: "person", ProfileEmail: profile, Agent: "codex", BillingProvider: "openai", AccountID: account}
@@ -273,7 +273,7 @@ func TestVisibleMetricsMinuteDecisionIgnoresProfileCase(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 9, 18, 10, 0, 0, 0, time.UTC)
+	base := recentDay(14).Add(10 * time.Hour)
 	if err := s.InsertSessionRecords(ctx, []*SessionRecord{{Ts: base, SessionID: "s-personal", UUID: "personal-1",
 		RecordType: "usage", UserID: "person", ProfileEmail: "Person@Example.test", Agent: "codex",
 		BillingProvider: "openai", AccountID: "acct-personal"}}); err != nil {

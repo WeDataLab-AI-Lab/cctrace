@@ -1,5 +1,46 @@
 import { describe, expect, it } from 'vitest';
-import { matchAgentScope, userColor, userSeriesColorMap } from './colors';
+import { isAstra, matchAgentScope, modelColor, userColor, userSeriesColorMap } from './colors';
+
+describe('modelColor', () => {
+  it('assigns the established four shades to GPT-6 tiers', () => {
+    expect([
+      modelColor('gpt-6-astra'),
+      modelColor('gpt-6-sol'),
+      modelColor('gpt-6-terra'),
+      modelColor('gpt-6-luna'),
+    ]).toEqual([
+      'var(--model-astra)',
+      'oklch(0.55 0.135 232)',
+      'oklch(0.65 0.122 232)',
+      'oklch(0.77 0.099 232)',
+    ]);
+  });
+
+  it('keeps the GPT-5.6 Sol, Terra, and Luna shades', () => {
+    expect([
+      modelColor('gpt-5.6-sol'),
+      modelColor('gpt-5.6-terra'),
+      modelColor('gpt-5.6-luna'),
+    ]).toEqual([
+      'oklch(0.55 0.135 232)',
+      'oklch(0.65 0.122 232)',
+      'oklch(0.77 0.099 232)',
+    ]);
+  });
+
+  it('matches named tiers in later GPT versions and keeps the untiered fallback', () => {
+    expect(modelColor('gpt-6.1-sol')).toBe('oklch(0.55 0.135 232)');
+    expect(modelColor('gpt-6.1-terra')).toBe('oklch(0.65 0.122 232)');
+    expect(modelColor('gpt-6.1-luna')).toBe('oklch(0.77 0.099 232)');
+    expect(modelColor('gpt-6.1-astra')).toBe('var(--model-astra)');
+    expect(modelColor('gpt-6.1')).toBe('oklch(0.80 0.105 232)');
+  });
+
+  it('recognizes versioned Astra consistently with its model color', () => {
+    expect(isAstra('gpt-6.1-astra')).toBe(true);
+    expect(isAstra('gpt-6.1-sol')).toBe(false);
+  });
+});
 
 describe('matchAgentScope', () => {
   it('keeps weekly report usage out of the other scope', () => {

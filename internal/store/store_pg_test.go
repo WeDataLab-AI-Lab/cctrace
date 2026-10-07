@@ -162,6 +162,27 @@ func acquireTestStore(t *testing.T) *PgStore {
 	return pgShared
 }
 
+// recentDay is 00:00 UTC, daysAgo days before today. otel_events and otel_metrics
+// drop chunks older than 90 days, and a retention job can run in the middle of a
+// test (ReconcileRetention and Migrate add the policy without an initial_start, which
+// schedules an immediate run; forceRetention defers its first run by a day), so a
+// test that writes to them at a fixed past date ends up with rows the job deletes
+// from under it -- the date was recent when the test was written and is not now.
+// Keep daysAgo between 3 and 80: past the 48h usage-rollup refresh window, inside
+// the retention window.
+func recentDay(daysAgo int) time.Time {
+	return time.Now().UTC().Truncate(24*time.Hour).AddDate(0, 0, -daysAgo)
+}
+
+// recentMonday is the Monday weeksAgo weeks before this week's, 00:00 UTC, for tests
+// whose buckets are weeks. Keep weeksAgo between 1 and 11: the Monday that far back
+// is at most 11*7+6 = 83 days ago, which is the retention edge for 12.
+func recentMonday(weeksAgo int) time.Time {
+	today := recentDay(0)
+	sinceMonday := (int(today.Weekday()) + 6) % 7
+	return today.AddDate(0, 0, -sinceMonday-7*weeksAgo)
+}
+
 // truncateTables empties every table a test can leave rows in.
 //
 // It no longer issues TRUNCATE. The reset runs before almost every test (~490
@@ -402,7 +423,7 @@ func TestPgStore_UsageAggregatesByModelAndOwner(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	start := time.Date(2026, 8, 1, 10, 0, 0, 0, time.UTC)
+	start := recentDay(27).Add(10 * time.Hour)
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: start, EventName: "api_request", SessionID: "alice-1", UserID: "alice", Model: "sonnet", InputTokens: ptrInt(10), OutputTokens: ptrInt(4)},
 		{Ts: start.Add(90 * time.Second), EventName: "api_request", SessionID: "alice-1", UserID: "alice", Model: "opus", InputTokens: ptrInt(6), OutputTokens: ptrInt(2)},

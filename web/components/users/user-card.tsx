@@ -125,9 +125,9 @@ const UserCard = ({
               shortName
             )}
           </div>
-          {user.profile_email && <div className="text-[11px] text-ink-2 truncate">{user.profile_email}</div>}
+          {user.profile_email && <div className="text-[11px] text-ink-2 truncate" title={user.profile_email}>{user.profile_email}</div>}
           {(user.login_emails ?? []).map((le) => (
-            <div key={le} className="text-[10px] text-ink-3 truncate">{le}</div>
+            <div key={le} className="text-[10px] text-ink-3 truncate" title={le}>{le}</div>
           ))}
           {unconfigured && !user.profile_email && (
             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-warning-soft text-warning-strong border border-warning/40">

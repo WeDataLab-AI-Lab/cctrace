@@ -20,6 +20,10 @@ func TestRequestBodyBoundaryMeasurement(t *testing.T) {
 		{"ascii", "a"}, {"quote", `\"`}, {"backslash", `\\`}, {"control", `\u0001`}, {"html", "<"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			// Five independent 16MB encodings. The race detector instruments every
+			// byte touched, which turned 1.5s of work into 20s -- the second
+			// largest cost in the whole unit suite. Nothing here is shared.
+			t.Parallel()
 			prefix := `{"type":"user","timestamp":"2026-09-09T00:00:00Z","uuid":"fixed","sessionId":"`
 			suffix := `","message":{"role":"user","content":"hello"}}`
 			n := (jsonlscan.MaxLineBytes - 1 - len(prefix) - len(suffix)) / len(tc.token)
@@ -42,6 +46,7 @@ func TestRequestBodyBoundaryMeasurement(t *testing.T) {
 func TestProjectRuleBoundaryMeasurement(t *testing.T) {
 	for _, token := range []string{"a", "\"", "\\", "\x01", "<"} {
 		t.Run(fmt.Sprintf("byte-%02x", token[0]), func(t *testing.T) {
+			t.Parallel()
 			dir := t.TempDir()
 			if err := os.WriteFile(filepath.Join(dir, "CLAUDE.md"), []byte(strings.Repeat(token, 1<<20)), 0600); err != nil {
 				t.Fatal(err)

@@ -77,7 +77,10 @@ func forceRetention(t *testing.T, s *PgStore, table string, days *int) {
 		t.Fatalf("forceRetention remove %s: %v", table, err)
 	}
 	if days != nil {
-		if _, err := s.pool.Exec(ctx, `SELECT add_retention_policy($1, drop_after => make_interval(days => $2))`, table, *days); err != nil {
+		// initial_start in the future: a new policy's job otherwise runs on its own
+		// within a second and drops the >days chunks that the next test inserts
+		// (RetentionPreviewAxis). Tests that need a run call run_job explicitly.
+		if _, err := s.pool.Exec(ctx, `SELECT add_retention_policy($1, drop_after => make_interval(days => $2), initial_start => now() + interval '1 day')`, table, *days); err != nil {
 			t.Fatalf("forceRetention add %s: %v", table, err)
 		}
 	}

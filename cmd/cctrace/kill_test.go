@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 // useKillTestHome points the profile directory at a temp dir so a test never
@@ -127,6 +128,7 @@ func diagnoseSurvivingFile(path string) string {
 // stop happened that did not.
 func TestRunKillReportsAProcessThatSurvives(t *testing.T) {
 	useKillTestHome(t)
+	useShortKillGrace(t)
 	writeKillTestRuntime(t, "", 4242)
 	syncLockFreeFn = func(string) (bool, error) { return false, nil }
 	killProcessFn = func(int) error { return nil }
@@ -196,4 +198,14 @@ func TestClearSyncBookkeepingStaysSilentWhenFilesAreAlreadyGone(t *testing.T) {
 	if stderr != "" {
 		t.Fatalf("stderr %q, want nothing reported for files that were never there", stderr)
 	}
+}
+
+// useShortKillGrace keeps the give-up branch reachable without waiting out the
+// production grace period. What is asserted is that the branch reports, not how
+// long it waited first.
+func useShortKillGrace(t *testing.T) {
+	t.Helper()
+	previous := killGraceWait
+	killGraceWait = 20 * time.Millisecond
+	t.Cleanup(func() { killGraceWait = previous })
 }

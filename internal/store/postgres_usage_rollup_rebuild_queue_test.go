@@ -28,7 +28,14 @@ func TestMigrateDoesNotLockAnUpToDateRebuildQueue(t *testing.T) {
 		t.Fatalf("hold the queue row: %v", err)
 	}
 
-	restore := shrinkMigrateBudget(t, s, 300*time.Millisecond, 1, 10*time.Millisecond)
+	// Several attempts, not one: the lock wait covers every table Migrate touches,
+	// and a transient lock conflict on a session_records chunk (e.g. autovacuum, or
+	// a lock held by another test on the same DB) blocks CREATE INDEX there. A retry
+	// rides that out; the queue lock held above does not release, so a Migrate that
+	// waited on it fails every attempt. Only conflicts that clear within ~6s
+	// (20 x 300ms) are absorbed; why autovacuum is not cancelled sooner (the 300ms
+	// lock_timeout is under the default 1s deadlock_timeout) is an unmeasured hypothesis.
+	restore := shrinkMigrateBudget(t, s, 300*time.Millisecond, 20, 10*time.Millisecond)
 	defer restore()
 	if err := s.Migrate(ctx); err != nil {
 		t.Errorf("Migrate waited on the rebuild queue while a rebuild held it: %v", err)

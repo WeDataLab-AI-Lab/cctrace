@@ -24,7 +24,7 @@ func TestListSessionOverviews_reportsAccountCount(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 2, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(28).Add(10 * time.Hour)
 
 	in, out := 100, 10
 	ev := func(sid, email string, at time.Time) *OtelEvent {
@@ -66,7 +66,7 @@ func TestListSessionOverviews_accountCountDoesNotDoubleCountClaude(t *testing.T)
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 3, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(60).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: ts, EventName: "api_request", SessionID: "s1", LoginEmail: "one@example.com", Agent: "claude"},
@@ -130,7 +130,7 @@ func TestListSessionOverviews_representativeAccountIsTheDominantOne(t *testing.T
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 5, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(58).Add(10 * time.Hour)
 
 	big, small, out := 10_000, 10, 1
 	if err := s.InsertEvents(ctx, []*OtelEvent{

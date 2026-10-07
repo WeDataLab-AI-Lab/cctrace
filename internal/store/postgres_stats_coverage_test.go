@@ -49,7 +49,7 @@ func TestCoverageGapStats_excludedAccountLeavesBothSides(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	start := time.Date(2026, 8, 24, 9, 0, 0, 0, time.UTC)
+	start := recentDay(39).Add(9 * time.Hour)
 
 	seedCoverageAccount(t, s, "team@x.test", "acct-team", 40, 1000, start)
 	seedCoverageAccount(t, s, "personal@x.test", "acct-personal", 40, 1000, start)
@@ -88,7 +88,7 @@ func TestCoverageGapStats_scopesToOneLoginEmail(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	start := time.Date(2026, 8, 24, 9, 0, 0, 0, time.UTC)
+	start := recentDay(39).Add(9 * time.Hour)
 
 	seedCoverageAccount(t, s, "a@x.test", "acct-a", 40, 1000, start)
 	seedCoverageAccount(t, s, "b@x.test", "acct-b", 40, 1000, start)

@@ -100,8 +100,8 @@ func TestImputedCostUsesTheWeekTheRowFallsIn(t *testing.T) {
 	truncateTables(t, s)
 
 	const model = "claude-sonnet-5"
-	july := time.Date(2026, 7, 6, 12, 0, 0, 0, time.UTC)    // Monday
-	august := time.Date(2026, 8, 24, 12, 0, 0, 0, time.UTC) // Monday, after the cut
+	july := recentMonday(10).Add(12 * time.Hour)
+	august := recentMonday(5).Add(12 * time.Hour)
 	seedBilledWeek(t, s, model, july, 3.0/1e6)
 	seedBilledWeek(t, s, model, august, 2.0/1e6)
 
@@ -142,12 +142,12 @@ func TestLateArrivingHistoryStillGetsItsOwnBucket(t *testing.T) {
 	truncateTables(t, s)
 
 	const model = "claude-opus-5"
-	recent := time.Date(2026, 9, 7, 12, 0, 0, 0, time.UTC) // Monday
+	recent := recentMonday(2).Add(12 * time.Hour)
 	seedBilledWeek(t, s, model, recent, 50.0/1e6)
 	refreshRates(t, s)
 
 	// Now the backfill lands: older by timestamp, newer by arrival.
-	old := time.Date(2026, 6, 1, 12, 0, 0, 0, time.UTC) // Monday
+	old := recentMonday(8).Add(12 * time.Hour)
 	seedBilledWeek(t, s, model, old, 5.0/1e6)
 	if err := s.InsertSessionRecords(context.Background(), []*SessionRecord{
 		offlineAssistant("off-old", model, old.Add(2*time.Hour), 1000, 100, 2000, 500),
@@ -174,7 +174,7 @@ func TestAnEarlierWeekIsUnaffectedByALaterOne(t *testing.T) {
 	truncateTables(t, s)
 
 	const model = "claude-opus-5"
-	old := time.Date(2026, 6, 1, 12, 0, 0, 0, time.UTC)
+	old := recentMonday(8).Add(12 * time.Hour)
 	seedBilledWeek(t, s, model, old, 5.0/1e6)
 	if err := s.InsertSessionRecords(context.Background(), []*SessionRecord{
 		offlineAssistant("off-old", model, old.Add(2*time.Hour), 1000, 100, 2000, 500),
@@ -184,7 +184,7 @@ func TestAnEarlierWeekIsUnaffectedByALaterOne(t *testing.T) {
 	refreshRates(t, s)
 	before, _ := imputedRow(t, s, "off-old")
 
-	seedBilledWeek(t, s, model, time.Date(2026, 9, 7, 12, 0, 0, 0, time.UTC), 50.0/1e6)
+	seedBilledWeek(t, s, model, recentMonday(2).Add(12*time.Hour), 50.0/1e6)
 	refreshRates(t, s)
 
 	after, _ := imputedRow(t, s, "off-old")
@@ -202,11 +202,11 @@ func TestOfflineMonthWithNoBilledTrafficCarriesTheNearestWeek(t *testing.T) {
 	truncateTables(t, s)
 
 	const model = "claude-opus-4-6"
-	june := time.Date(2026, 6, 1, 12, 0, 0, 0, time.UTC)
+	june := recentMonday(8).Add(12 * time.Hour)
 	seedBilledWeek(t, s, model, june, 5.0/1e6)
 	if err := s.InsertSessionRecords(context.Background(), []*SessionRecord{
-		offlineAssistant("off-march", model, time.Date(2026, 3, 20, 9, 0, 0, 0, time.UTC), 1000, 100, 2000, 500),
-		offlineAssistant("off-july", model, time.Date(2026, 7, 20, 9, 0, 0, 0, time.UTC), 1000, 100, 2000, 500),
+		offlineAssistant("off-march", model, june.AddDate(0, 0, -73), 1000, 100, 2000, 500),
+		offlineAssistant("off-july", model, june.AddDate(0, 0, 49), 1000, 100, 2000, 500),
 	}); err != nil {
 		t.Fatal(err)
 	}

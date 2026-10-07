@@ -54,6 +54,7 @@ func (s *Server) enforceProjectRuleAccess(w http.ResponseWriter, r *http.Request
 // When useUserIDAccessControl is enabled and CctraceUserID is set, filters by userID only.
 // When CctraceUserID is empty, returns sentinel values — user sees no data until admin sets it.
 // When flag is disabled, falls back to legacy profile_email behavior.
+// loginEmail is always "" here: a role=user caller's query login_email is replaced, not intersected (#811).
 // Callers relying on this: CostByTeam takes no loginEmail argument, so group_by=team
 // scoping is correct only because every branch below returns "" for it. If that ever
 // changes, CostByTeam must gain the parameter first -- otherwise a non-admin reads

@@ -25,7 +25,7 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
 
 | Key | Default | Meaning |
 |-----|---------|---------|
-| `JWT_SECRET` | none | Signing key for dashboard sessions. At least 32 bytes. Compose refuses to start without it; `cctraced` exits on a shorter value with `JWT secret must be at least 32 bytes`. |
+| `JWT_SECRET` | none | Signing key for dashboard sessions. At least 32 bytes. Compose refuses to start without it; `cctraced` exits on a shorter value with `JWT secret must be at least 32 bytes`, and on the value `deploy/.env.example` shipped with `JWT_SECRET is a published example value`. |
 | `LOGS_DIR` | none | Host directory mounted at `/data/logs` in the `cctraced` container. Compose refuses to start without it. See [Operations](operations.md#logs). |
 
 ## Database
@@ -33,13 +33,43 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
 | Key | Default | Meaning |
 |-----|---------|---------|
 | `DB_PASSWORD` | `cctrace` | Password of the `cctrace` database superuser. Applied only when the database volume is first initialised. Set it before the first start. |
-| `DB_APP_CREDENTIALS` | empty | `<user>:<password>` of a non-superuser role for `cctraced`. Leave it empty (see below). |
+| `DB_APP_CREDENTIALS` | empty | `<user>:<password>` of a non-superuser role for `cctraced`. Set it before the first start (see below). |
 | `DB_PORT` | `5432` | Host port for TimescaleDB. Always bound to 127.0.0.1. |
 
 Compose builds `DATABASE_URL` for `cctraced` from these values. With `DB_APP_CREDENTIALS` empty, `cctraced` connects as `cctrace` with `DB_PASSWORD`.
 
-!!! note "`DB_APP_CREDENTIALS` in this repository"
-    The compose file mounts an init directory, `initdb` next to the compose file, whose script creates the role named in `DB_APP_CREDENTIALS` on first start. That script is not part of this repository. If you set `DB_APP_CREDENTIALS` without creating the role yourself, `cctraced` cannot authenticate.
+!!! note "How `DB_APP_CREDENTIALS` takes effect"
+    On the first start, while the database volume is empty, `deploy/initdb/10-app-role.sh` creates the role named in `DB_APP_CREDENTIALS` as `NOSUPERUSER NOCREATEROLE NOCREATEDB`, and `cctraced` connects as that role. With the key empty, `cctraced` connects as the `cctrace` superuser, and a flaw in the server can then run commands inside the database container through `COPY ... FROM PROGRAM`.
+
+    The role name must not be `cctrace` (the superuser) or start with `pg_`, may contain only `A-Za-z0-9_`, and must be at most 63 bytes. Generate the password with only URL-safe characters, for example `openssl rand -hex 20`: compose writes it into the connection URL as it is, so `/`, `#`, `?` or `%` in it leave `cctraced` unable to parse the URL, and that parse error contains part of the password.
+
+### If the role was not created
+
+When the value is malformed or the role cannot be created, the script prints the reason in the `timescaledb` log, prefixed `[initdb]`, and skips the role; the database still finishes initialising. `cctraced` still connects with the credentials in `DB_APP_CREDENTIALS`, so it fails to authenticate until a role with that name and password exists.
+
+Clearing `DB_APP_CREDENTIALS` also gets `cctraced` running, but as the superuser, and the tables it then creates belong to the superuser, which puts the database in the situation of the next section. As long as `cctraced` has never connected, the database holds none of its objects, and either of these adds the role instead:
+
+1. Fix the value in the server env file. Recreate the database container so it sees the new value, wait for `timescaledb` to show `(healthy)` in `ps`, run the script again inside it, then start the rest of the stack:
+
+    ```console
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d timescaledb
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml \
+        exec timescaledb sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" sh /docker-entrypoint-initdb.d/10-app-role.sh'
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
+    ```
+
+    The script prints `[initdb] created <name> (NOSUPERUSER)` once the role exists.
+
+2. If nothing has been collected yet, remove the volumes, fix the value in the server env file, and start again. The script runs again on the empty volume.
+
+    ```console
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml down -v
+    $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
+    ```
+
+### Databases already in use
+
+The script runs only while the data volume is empty. On a database that is already initialised it does not run, so setting `DB_APP_CREDENTIALS` there points `cctraced` at a role that does not exist. Creating the role by hand is not enough: it must also own the objects the superuser already created, or the boot migration fails with `must be owner`. This repository does not include a tool for that conversion. With `DB_APP_CREDENTIALS` left empty, an existing deployment keeps connecting as the superuser.
 
 ## Network
 

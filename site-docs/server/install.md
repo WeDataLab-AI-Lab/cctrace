@@ -51,7 +51,14 @@ $ rm deploy/.env.bak
 !!! warning "Decide `DB_PASSWORD` before the first start"
     PostgreSQL applies the password only when the data volume is initialised. Changing `DB_PASSWORD` afterwards leaves the database role on the old password, and `cctraced` restarts in a loop on `password authentication failed`. Recovering means removing the database volume, which deletes all collected data.
 
-Leave `DB_APP_CREDENTIALS` empty. See [Configuration](configuration.md#database) for why.
+Set `DB_APP_CREDENTIALS` before the first start as well. With `<user>:<password>` there, the first start creates a non-superuser role and `cctraced` connects as it; left empty, `cctraced` connects as the database superuser. The role is created only on the first start, and its name must not be `cctrace`. Generate the password with `openssl rand -hex 20`, as for `DB_PASSWORD`: compose writes it into a connection URL as it is, and `/`, `#`, `?` or `%` in it break that URL.
+
+```console
+$ app_password=$(openssl rand -hex 20) && sed -i.bak "s|^DB_APP_CREDENTIALS=.*|DB_APP_CREDENTIALS=cctrace_app:${app_password}|" deploy/.env
+$ rm deploy/.env.bak
+```
+
+See [Configuration](configuration.md#database) for the other name rules, for what to do if the first start does not create the role, and for databases already in use.
 
 ## 3. Check what the stack exposes
 

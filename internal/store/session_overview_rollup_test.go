@@ -11,7 +11,7 @@ func TestPgStore_SessionOverviewRollup_matchesLiveAggregation(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 10, 12, 0, 0, 0, time.UTC)
+	ts := recentDay(53).Add(12 * time.Hour)
 	one, two := 100, 20
 
 	if _, err := s.pool.Exec(ctx, `INSERT INTO projects (agent, project_hash, project_name, updated_at)
@@ -78,7 +78,7 @@ func TestPgStore_SessionOverviewRollup_hasReadYourWrite(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 11, 12, 0, 0, 0, time.UTC)
+	ts := recentDay(52).Add(12 * time.Hour)
 	in, out := 40, 2
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{{Ts: ts, EventName: "api_request", SessionID: "fresh", LoginEmail: "fresh@example.com", InputTokens: &in, OutputTokens: &out}}); err != nil {
@@ -152,7 +152,10 @@ func TestPgStore_Migrate_doesNotWaitForSessionOverviewBackfill(t *testing.T) {
 	if err := lockSessionOverviewMaintenance(ctx, blocker, false); err != nil {
 		t.Fatalf("hold maintenance lock: %v", err)
 	}
-	migrateCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	// A hang detector, not a speed check: the lock above is never released while
+	// Migrate runs, so a Migrate that waits on it waits until this deadline. A full
+	// migration takes ~0.4s on a quiet machine and 4-9s under heavy CPU load.
+	migrateCtx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 	if err := s.Migrate(migrateCtx); err != nil {
 		t.Fatalf("Migrate waited for the blocked rollup backfill: %v", err)
@@ -201,7 +204,7 @@ func TestPgStore_SessionOverviewRollup_backfillsExactlyOnce(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 12, 12, 0, 0, 0, time.UTC)
+	ts := recentDay(51).Add(12 * time.Hour)
 	if _, err := s.pool.Exec(ctx, `DELETE FROM schema_backfills WHERE name = $1`, sessionOverviewRollupBackfill); err != nil {
 		t.Fatalf("clear marker: %v", err)
 	}

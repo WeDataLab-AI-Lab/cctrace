@@ -20,7 +20,7 @@ func TestSegmentsReportWhetherToolUseWasMeasuredAtAll(t *testing.T) {
 	ctx := context.Background()
 	enableSegmentFacts(t, s)
 
-	base := time.Date(2026, 8, 24, 9, 0, 0, 0, time.UTC)
+	base := recentDay(39).Add(9 * time.Hour)
 	mk := func(session, uuid1, uuid2 string) []*SessionRecord {
 		return []*SessionRecord{
 			{Ts: base, SessionID: session, RecordType: "user", Agent: "claude",

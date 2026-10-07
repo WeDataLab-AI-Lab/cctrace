@@ -15,6 +15,7 @@ import { currentWeekId, formatWeekLabel, isFutureWeek, parseWeekId, shiftWeek, w
 import { weeklyQueryKey, WEEKLY_STALE_TIME } from '@/lib/weekly-query';
 import { cn } from '@/lib/utils';
 import { CODEX_TOOL_SCOPE } from '@/lib/codex-tool-scope';
+import { agentLabel } from '@/lib/agent-label';
 import { useAuth } from '@/components/common/auth-context';
 
 const numberFormat = new Intl.NumberFormat('en-US');
@@ -82,13 +83,6 @@ const weekHref = (weekId: string): string => `/weekly?week=${weekId}`;
  *  malformed or future one -- so the address stays a way back to this screen. */
 const weekRedirect = (param: string | null, weekId: string): string | null =>
   param === null || param === weekId ? null : weekHref(weekId);
-
-const AGENT_LABELS: Record<string, string> = {
-  claude: 'Claude Code',
-  codex: 'Codex',
-};
-
-const agentLabel = (agent: string): string => AGENT_LABELS[agent] ?? agent;
 
 const RuleTag = () => (
   <span className="rounded-[var(--r-xs)] bg-surface-sunk px-1.5 py-0.5 text-[11px] font-semibold tracking-[0.05em] text-ink-3">

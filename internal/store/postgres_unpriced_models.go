@@ -42,6 +42,28 @@ func NormalizeFlatRateKey(agent, model string) (string, string) {
 	return strings.ToLower(strings.TrimSpace(agent)), strings.TrimSpace(model)
 }
 
+// Keep the row predicate separate from the admin's volume aggregation so a
+// narrower reader can use the same definition without reading unified_events.
+const unpricedModelPredicateSQL = `
+	(e.cost_usd IS NULL OR e.cost_usd = 0)
+	AND (COALESCE(e.input_tokens,0) > 0 OR COALESCE(e.output_tokens,0) > 0
+		OR (lower(COALESCE(e.agent,'')) = 'codex' AND COALESCE(e.cache_read_tokens,0) > 0))
+	-- A published free rate is still a rate; only dates applicable to this row
+	-- count. Keep other providers' existing cost/token semantics unchanged.
+	AND (lower(COALESCE(e.agent,'')) <> 'codex' OR NOT EXISTS (
+		SELECT 1 FROM codex_model_rates r
+		WHERE lower(COALESCE(e.model,'')) LIKE r.model_prefix || '%'
+			AND r.effective_from <= e.ts::date
+	))
+	AND NOT EXISTS (
+		SELECT 1 FROM flat_rate_models f
+		WHERE f.agent = lower(COALESCE(e.agent,'')) AND f.model = COALESCE(e.model,'')
+	)`
+
+func unpricedModelPredicate(alias string) string {
+	return strings.ReplaceAll(unpricedModelPredicateSQL, "e.", alias+".")
+}
+
 // ListUnpricedModels reads unified_events rather than visible_events: a missing
 // rate is a property of the model, and an excluded account's usage of it is the
 // same evidence. Only aggregates leave this function -- no session or account.
@@ -53,16 +75,7 @@ func (s *PgStore) ListUnpricedModels(ctx context.Context) ([]UnpricedModel, erro
 			COALESCE(sum(e.cache_read_tokens),0)::bigint,
 			min(e.ts), max(e.ts)
 		FROM unified_events e
-		WHERE (e.cost_usd IS NULL OR e.cost_usd = 0)
-			AND (COALESCE(e.input_tokens,0) > 0 OR COALESCE(e.output_tokens,0) > 0)
-			AND NOT EXISTS (
-				-- f.agent is always lowercase (NormalizeFlatRateKey folds it before a
-				-- mark is stored). Every producer of e.agent already writes lowercase
-				-- too, so this fold changes nothing in practice; it's defense against
-				-- the day one doesn't.
-				SELECT 1 FROM flat_rate_models f
-				WHERE f.agent = lower(COALESCE(e.agent,'')) AND f.model = COALESCE(e.model,'')
-			)
+		WHERE `+unpricedModelPredicate("e")+`
 		GROUP BY 1, 2
 		-- An ORDER BY ordinal is only a column reference when it is a lone integer
 		-- literal; "4 + 5" is the expression 9, not a reference to the 9th select-list

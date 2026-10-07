@@ -33,7 +33,7 @@ func clearLoginEmailHistoryBackfillMarker(t *testing.T, s *PgStore) {
 func seedLoginEmailHistoryBackfill(t *testing.T, s *PgStore, suffix string, observed int) {
 	t.Helper()
 	ctx := context.Background()
-	base := time.Date(2026, 8, 25, 10, 0, 0, 0, time.UTC)
+	base := recentDay(38).Add(10 * time.Hour)
 	events := []*OtelEvent{
 		{Ts: base, EventName: "api_request", SessionID: "timeline-" + suffix, UserID: "quiet-user-" + suffix, LoginEmail: "inferred@example.com"},
 	}
@@ -401,7 +401,7 @@ func TestLoginEmailHistoryInferencePhaseSkipsCodex(t *testing.T) {
 	truncateTables(t, s)
 	clearLoginEmailHistoryBackfillMarker(t, s)
 	ctx := context.Background()
-	base := time.Date(2026, 8, 25, 10, 0, 0, 0, time.UTC)
+	base := recentDay(38).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: base, EventName: "api_request", SessionID: "timeline-codex", UserID: "mixed-user", LoginEmail: "user-a@example.com"},

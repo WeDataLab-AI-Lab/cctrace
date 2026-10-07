@@ -134,6 +134,24 @@ describe('cost user stack data', () => {
     ]);
   });
 
+  it('orders GPT-6 tiers Astra, Sol, Terra, Luna in the user stack legend', () => {
+    const result = buildCostUserStackData({
+      viewMode: 'cost',
+      nameMap: {},
+      rows: ['gpt-6-luna', 'gpt-6-terra', 'gpt-6-sol', 'gpt-6-astra'].map((model) => ({
+        user_id: 'user-a',
+        model,
+        agent: 'codex',
+        billing_provider: 'openai',
+        total_cost: 1,
+        total_input_tokens: 10,
+        total_output_tokens: 10,
+      })),
+    });
+
+    expect(result.stackKeys).toEqual(['gpt-6-astra', 'gpt-6-sol', 'gpt-6-terra', 'gpt-6-luna']);
+  });
+
   it('keeps compatible models as their own slice instead of Others', () => {
     const result = buildCostModelData({
       viewMode: 'cost',

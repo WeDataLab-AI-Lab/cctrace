@@ -12,7 +12,7 @@ func TestPgStore_WeeklyInsightsReturnsOnlyCallerAggregates(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	now := time.Date(2026, 8, 19, 14, 0, 0, 0, time.UTC)
+	now := recentDay(44).Add(14 * time.Hour)
 	if err := s.UpsertProject(ctx, "claude", "weekly-project", "weekly-report", "", "", "", "", time.Time{}); err != nil {
 		t.Fatalf("UpsertProject: %v", err)
 	}
@@ -436,7 +436,7 @@ func TestWeeklyInsights_ToolsIncludeCodexToolCallMetric(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	now := time.Date(2026, 8, 19, 14, 0, 0, 0, time.UTC)
+	now := recentDay(44).Add(14 * time.Hour)
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: now, EventName: "tool_result", UserID: "caller", ProfileEmail: "caller@example.com", ToolName: "Bash", ToolSuccess: ptrBool(true)},
 	}); err != nil {
@@ -478,7 +478,7 @@ func TestWeeklyInsights_ToolsScopeByProfileEmailAndWindow(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	now := time.Date(2026, 8, 19, 14, 0, 0, 0, time.UTC)
+	now := recentDay(44).Add(14 * time.Hour)
 	since, until := now.Add(-time.Minute), now.Add(time.Hour)
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: now, EventName: "tool_result", UserID: "some-id", ProfileEmail: "caller@example.com", ToolName: "Read", ToolSuccess: ptrBool(true)},

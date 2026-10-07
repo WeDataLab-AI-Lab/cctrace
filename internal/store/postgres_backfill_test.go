@@ -15,7 +15,7 @@ func TestPgStore_BackfillSessionRecordLoginEmail(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 7, 20, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(34).Add(10 * time.Hour)
 
 	// A=single login, C=single login, D intentionally absent from otel.
 	if err := s.InsertEvents(ctx, []*OtelEvent{
@@ -102,7 +102,7 @@ func TestPgStore_BackfillSessionRecordLoginEmail_manySessions(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 7, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(33).Add(10 * time.Hour)
 
 	var events []*OtelEvent
 	var records []*SessionRecord

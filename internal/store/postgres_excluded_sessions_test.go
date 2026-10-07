@@ -24,7 +24,7 @@ func TestPgStore_ExcludedSessions_removalRecomputes_sharedSessionStaysHidden(t *
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 6, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(57).Add(10 * time.Hour)
 
 	const accountA = "a@example.com"
 	const accountB = "b@example.com"
@@ -123,7 +123,7 @@ func TestPgStore_RefreshExcludedSessionsIncremental_picksUpNewSessions(t *testin
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 6, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(57).Add(10 * time.Hour)
 
 	const account = "hidden@example.com"
 	if _, err := s.ExcludeAccount(ctx, account, "r", "admin@example.com"); err != nil {
@@ -177,7 +177,7 @@ func TestPgStore_Migrate_backfillGuardDoesNotRerunOnEmptyResult(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 18, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(45).Add(10 * time.Hour)
 
 	const account = "guard-empty@example.com"
 	// Insert the exclusion directly, not via ExcludeAccount: that call already
@@ -248,7 +248,7 @@ func TestPgStore_RefreshExcludedSessionsIncremental_catchesDelayedArrival(t *tes
 	}
 
 	// Advance the watermark past a "recent" event.
-	recentTs := time.Date(2026, 8, 18, 12, 0, 0, 0, time.UTC)
+	recentTs := recentDay(45).Add(12 * time.Hour)
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: recentTs, EventName: "api_request", SessionID: "recent-session", LoginEmail: account, UserID: "u"},
 	}); err != nil {

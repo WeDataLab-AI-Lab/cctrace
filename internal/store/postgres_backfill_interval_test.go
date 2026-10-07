@@ -19,7 +19,7 @@ func TestBackfillSplitsMidSessionAccountSwitch(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	base := time.Date(2026, 7, 22, 10, 0, 0, 0, time.UTC)
+	base := recentDay(32).Add(10 * time.Hour)
 	switchAt := base.Add(2 * time.Hour)
 
 	// OTEL is the ground truth: account "one" until switchAt, "two" after.
@@ -90,7 +90,7 @@ func TestBackfillBoundedPassKeepsPreSinceAccountSwitch(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	since := time.Date(2026, 8, 20, 10, 0, 0, 0, time.UTC)
+	since := recentDay(43).Add(10 * time.Hour)
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: since.Add(-2 * time.Hour), EventName: "api_request", SessionID: "bounded-switch", LoginEmail: "one@example.com"},
 		{Ts: since.Add(-time.Hour), EventName: "api_request", SessionID: "bounded-switch", LoginEmail: "two@example.com"},
@@ -127,7 +127,7 @@ func TestBackfillLeavesOtelLessSessionBlank(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 7, 23, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(31).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: ts, EventName: "api_request", SessionID: "has-otel", LoginEmail: "one@example.com"},
@@ -160,8 +160,8 @@ func TestBackfillSinceBoundsTheScan(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	old := time.Date(2026, 5, 1, 10, 0, 0, 0, time.UTC)
-	recent := time.Date(2026, 7, 24, 10, 0, 0, 0, time.UTC)
+	old := recentDay(60).Add(10 * time.Hour)
+	recent := recentDay(30).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: old, EventName: "api_request", SessionID: "old-sess", LoginEmail: "one@example.com"},

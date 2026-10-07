@@ -80,6 +80,8 @@ const Header = () => {
   const { selectedAccount, setSelectedAccount } = useAccount();
   const { selectedAgent, setSelectedAgent } = useAgent();
   const { user, logout } = useAuth();
+  // The server pins a role=user session list to the caller's own scope (#811), so chips there do nothing.
+  const pinnedToOwnAccount = user?.role === 'user' && pathname === '/sessions';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { data: accounts = [] } = useQuery<string[]>({
@@ -116,7 +118,17 @@ const Header = () => {
       <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-2 md:justify-end md:gap-4">
         {showScopeFilters && (
         <>
-        {accounts && accounts.length > 1 && (
+        {accounts && accounts.length > 1 && pinnedToOwnAccount && (
+          // On the session list the server pins a role=user request to the caller's own
+          // user_id and drops login_email (#811), so pills here would do nothing. Say what
+          // the view is. Other analytics handlers apply login_email as sent, so they keep
+          // the pills below.
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="shrink-0 text-[11px] font-medium text-ink-3">Account</span>
+            <span className="text-[11px] text-ink-3">세션 목록은 본인 계정 전체 기준입니다</span>
+          </div>
+        )}
+        {accounts && accounts.length > 1 && !pinnedToOwnAccount && (
           // flex-1 so the group claims the width of the line it wrapped onto, and
           // min-w-0 so it is allowed to be narrower than its pills. Without both the
           // row sizes itself to its contents and runs off the edge instead of

@@ -160,7 +160,7 @@ func TestAIWeekAggregateReportsOutcomeObservedCalls(t *testing.T) {
 	ctx := context.Background()
 	enableSegmentFacts(t, s)
 
-	base := time.Date(2026, 9, 14, 9, 0, 0, 0, time.UTC)
+	base := recentDay(18).Add(9 * time.Hour)
 	// The events land first: a fact counts the OTEL that exists when the session
 	// record that builds it is written.
 	if err := s.InsertEvents(ctx, []*OtelEvent{

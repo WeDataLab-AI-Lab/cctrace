@@ -15,7 +15,7 @@ func TestPreviewBackfillReportsBlastRadius(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 10, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(53).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: ts, EventName: "api_request", SessionID: "fillable", LoginEmail: "one@example.com"},
@@ -75,8 +75,8 @@ func TestPreviewBackfillHonoursSince(t *testing.T) {
 	truncateTables(t, s)
 	ctx := context.Background()
 
-	old := time.Date(2026, 5, 1, 10, 0, 0, 0, time.UTC)
-	recent := time.Date(2026, 8, 11, 10, 0, 0, 0, time.UTC)
+	old := recentDay(60).Add(10 * time.Hour)
+	recent := recentDay(10).Add(10 * time.Hour)
 
 	if err := s.InsertEvents(ctx, []*OtelEvent{
 		{Ts: old, EventName: "api_request", SessionID: "old-sess", LoginEmail: "one@example.com"},

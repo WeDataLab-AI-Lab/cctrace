@@ -85,6 +85,7 @@ func syncStallServer(t *testing.T, status int) *httptest.Server {
 // backfills everything (the real one sent a 21.6MB session on its first pass).
 func TestWatchReleasesTheLockAfterASustainedStall(t *testing.T) {
 	useTempSyncHome(t)
+	useShortBackoff(t)
 	useStallExitAfter(t, 0)
 	srv := syncStallServer(t, http.StatusInternalServerError)
 	claudeDir, ackPath := stallWatchProfile(t, srv.URL)
@@ -227,4 +228,14 @@ func bodyLimitHoldRecorded() bool {
 		}
 	}
 	return false
+}
+
+// useShortBackoff shortens the retry schedule for tests that have to let a real
+// backoff elapse before the next pass runs. The delay is not what they assert;
+// at the production 5s base, waiting for it was the whole cost of the test.
+func useShortBackoff(t *testing.T) {
+	t.Helper()
+	previous := backoffBaseUnit
+	backoffBaseUnit = 5 * time.Millisecond
+	t.Cleanup(func() { backoffBaseUnit = previous })
 }

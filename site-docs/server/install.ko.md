@@ -51,7 +51,14 @@ $ rm deploy/.env.bak
 !!! warning "`DB_PASSWORD`는 첫 시작 전에 결정"
     PostgreSQL은 데이터 볼륨을 처음 초기화할 때만 비밀번호를 적용한다. 이후 `DB_PASSWORD`를 바꾸면 DB 역할은 옛 비밀번호로 남고 `cctraced`는 `password authentication failed`로 재시작을 반복한다. 복구하려면 DB 볼륨을 지워야 하는데 그러면 수집한 데이터가 모두 삭제된다.
 
-`DB_APP_CREDENTIALS`는 비워 둔다. 이유는 [설정](configuration.md#database) 참조.
+`DB_APP_CREDENTIALS`도 첫 시작 전에 지정한다. `<user>:<password>`를 넣으면 첫 시작 때 비슈퍼유저 역할이 만들어지고 `cctraced`가 그 역할로 접속한다. 비워 두면 `cctraced`는 DB 슈퍼유저로 접속한다. 역할은 첫 시작 때만 만들어지며 이름은 `cctrace`일 수 없다. 비밀번호는 `DB_PASSWORD`처럼 `openssl rand -hex 20`으로 만든다. compose가 이 값을 연결 URL에 그대로 넣으므로 `/`, `#`, `?`, `%`가 들어가면 URL이 깨진다.
+
+```console
+$ app_password=$(openssl rand -hex 20) && sed -i.bak "s|^DB_APP_CREDENTIALS=.*|DB_APP_CREDENTIALS=cctrace_app:${app_password}|" deploy/.env
+$ rm deploy/.env.bak
+```
+
+나머지 이름 규칙, 첫 시작에서 역할이 만들어지지 않았을 때의 조치, 이미 사용 중인 DB의 경우는 [설정](configuration.md#database) 참조.
 
 ## 3. 노출 범위 확인
 

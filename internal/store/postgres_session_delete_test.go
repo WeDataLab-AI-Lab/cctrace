@@ -82,7 +82,7 @@ func TestPgStore_DeleteSession_hidesImmediatelyWithoutDeletingRows(t *testing.T)
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	if countVisible(t, s, "doomed") == 0 {
@@ -116,7 +116,7 @@ func TestPgStore_SweepDeletedSessions_reclaimsRows(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
@@ -159,7 +159,7 @@ func TestPgStore_RecomputeExcludedSessions_keepsTombstones(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
@@ -177,7 +177,7 @@ func TestPgStore_DeleteSession_rejectsEmptySessionID(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	if _, err := s.DeleteSession(ctx, "", "admin@example.com", "", false, false); err == nil {
@@ -199,7 +199,7 @@ func TestPgStore_DeleteSession_tombstoneSurvivesResync(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
@@ -229,7 +229,7 @@ func TestPgStore_DeleteSession_blockProjectAndPurge(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	res, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "personal", true, true)
@@ -325,7 +325,7 @@ func TestPgStore_SessionOwner(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	email, userID, err := s.SessionOwner(ctx, "kept")
@@ -386,7 +386,7 @@ func TestPgStore_DeleteSession_purgeTakesTheProjectsOtherSessions(t *testing.T) 
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	// A sibling in the same project, plus one in another project that must survive.
@@ -501,7 +501,7 @@ func TestPgStore_ListSessionOverviews_dropsDeletedSessionsWithEvents(t *testing.
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	inList := func() map[string]bool {
@@ -542,7 +542,7 @@ func TestPgStore_SweepDeletedSessions_marksSwept(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	seedTwoSessions(t, s, time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC))
+	seedTwoSessions(t, s, recentDay(42).Add(10*time.Hour))
 
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
 		t.Fatalf("DeleteSession: %v", err)
@@ -564,7 +564,7 @@ func TestPgStore_VerifyDeletedSessions_requeuesTombstoneWithSurvivingRows(t *tes
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
@@ -663,7 +663,7 @@ func TestPgStore_StrictDeletionSweepsAuthoritativeTargetsAndIsolatesAccountData(
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 26, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(37).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 	seedStrictDeletionTargets(t, s, ts, "doomed")
 	seedStrictDeletionTargets(t, s, ts.Add(time.Millisecond), "kept")
@@ -711,7 +711,7 @@ func TestPgStore_PostSweepWritersCannotResurrectStrictTargets(t *testing.T) {
 	truncateTables(t, s)
 	clearLoginEmailHistoryBackfillMarker(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 26, 10, 30, 0, 0, time.UTC)
+	ts := recentDay(37).Add(10*time.Hour + 30*time.Minute)
 	seedTwoSessions(t, s, ts)
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
 		t.Fatalf("DeleteSession: %v", err)
@@ -764,7 +764,7 @@ func TestPgStore_ConcurrentSweepClaimsOnceAndWriterCannotResurrect(t *testing.T)
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 26, 11, 0, 0, 0, time.UTC)
+	ts := recentDay(37).Add(11 * time.Hour)
 	seedTwoSessions(t, s, ts)
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
 		t.Fatalf("DeleteSession: %v", err)
@@ -844,7 +844,7 @@ func TestPgStore_DeleteCancelsHistoryStagingAndRestartExcludesTombstone(t *testi
 	truncateTables(t, s)
 	clearLoginEmailHistoryBackfillMarker(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 26, 12, 0, 0, 0, time.UTC)
+	ts := recentDay(37).Add(12 * time.Hour)
 	seedTwoSessions(t, s, ts)
 	if err := s.InsertEvents(ctx, []*OtelEvent{{Ts: ts.Add(time.Second), EventName: "api_request",
 		SessionID: "doomed", UserID: "u-1", LoginEmail: "private@example.com"}}); err != nil {
@@ -928,7 +928,7 @@ func TestPgStore_VerifierUsesEveryStrictTarget(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 26, 13, 0, 0, 0, time.UTC)
+	ts := recentDay(37).Add(13 * time.Hour)
 	seedTwoSessions(t, s, ts)
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
 		t.Fatalf("DeleteSession: %v", err)
@@ -960,7 +960,7 @@ func TestPgStore_DeleteSession_reDeleteClearsSweptAt(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)
 	ctx := context.Background()
-	ts := time.Date(2026, 8, 21, 10, 0, 0, 0, time.UTC)
+	ts := recentDay(42).Add(10 * time.Hour)
 	seedTwoSessions(t, s, ts)
 
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
