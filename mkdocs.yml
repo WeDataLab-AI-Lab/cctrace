@@ -1,5 +1,9 @@
 site_name: cctrace
 site_description: Self-hosted telemetry for Claude Code and Codex CLI sessions.
+# The address is not written here. The docs workflow derives it from the
+# repository it runs in and passes it as SITE_URL. Without it the language
+# switcher links point at the domain root and 404 on a project site.
+site_url: !ENV [SITE_URL, ""]
 docs_dir: site-docs
 strict: true
 

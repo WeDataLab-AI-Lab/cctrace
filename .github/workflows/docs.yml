@@ -47,8 +47,15 @@ jobs:
           .venv/bin/pip install -r ./requirements-docs.txt
       # gh-deploy commits to gh-pages. An empty email keeps an address out of
       # this file; git accepts it and records the author as `docs-bot <>`.
+      #
+      # SITE_URL is derived from the repository this runs in, so the address is
+      # never written into a file and a fork gets its own. mkdocs.yml reads it;
+      # without it the language switcher links point at the domain root and 404
+      # on a project site. The Pages host is the owner name in lower case.
       - name: Build and push to gh-pages
         run: |
           git config user.name docs-bot
           git config user.email ""
+          owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+          export SITE_URL="https://${owner}.github.io/${GITHUB_REPOSITORY#*/}/"
           .venv/bin/mkdocs gh-deploy --strict --force --no-history
