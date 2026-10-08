@@ -1,10 +1,14 @@
 package codexlog
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"cctrace/internal/jsonlscan"
 )
 
 func writeCodexFile(t *testing.T, lines []string) string {
@@ -559,6 +563,47 @@ func TestScanMetadata_Originator(t *testing.T) {
 				t.Errorf("Originator = %q, want %q", meta.Originator, tc.want)
 			}
 		})
+	}
+}
+
+// HeadOriginator answers from the line that opens the file and from nothing
+// after it: it exists so a caller resuming deep in a large rollout can learn
+// the originator without reading the rollout.
+func TestHeadOriginator(t *testing.T) {
+	const turn = `{"type":"turn_context","timestamp":"2026-08-06T06:08:46.000Z","payload":{"cwd":"/p"}}`
+	execMeta := `{"type":"session_meta","timestamp":"2026-08-06T06:08:45.000Z","payload":{"id":"a","cwd":"/p","originator":"codex_exec"}}`
+	cases := []struct {
+		name  string
+		lines []string
+		want  string
+	}{
+		{"session_meta with an originator", []string{execMeta, turn}, "codex_exec"},
+		{"child session_meta of a fork", []string{
+			`{"type":"session_meta","timestamp":"2026-08-06T06:08:45.000Z","payload":{"id":"child","forked_from_id":"parent","thread_source":"subagent","originator":"codex_exec"}}`,
+			`{"type":"session_meta","timestamp":"2026-08-06T06:08:45.000Z","payload":{"id":"parent","thread_source":"user","originator":"codex-tui"}}`,
+		}, "codex_exec"},
+		{"session_meta without one", []string{`{"type":"session_meta","timestamp":"2026-08-06T06:08:45.000Z","payload":{"id":"a","cwd":"/p"}}`, turn}, ""},
+		{"old format", []string{`{"type":"message","role":"user","content":[{"type":"input_text","text":"hello"}]}`}, ""},
+		{"session_meta that is not the first line", []string{turn, execMeta}, ""},
+		{"originator on a line that is not a session_meta", []string{`{"type":"turn_context","timestamp":"2026-08-06T06:08:45.000Z","payload":{"cwd":"/p","originator":"codex_exec"}}`}, ""},
+		{"not json", []string{"not json", execMeta}, ""},
+		{"oversized first line", []string{strings.Repeat("x", jsonlscan.MaxLineBytes+1), execMeta}, ""},
+		{"empty file", nil, ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := HeadOriginator(context.Background(), writeCodexFile(t, tc.lines))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != tc.want {
+				t.Errorf("HeadOriginator = %q, want %q", got, tc.want)
+			}
+		})
+	}
+
+	if _, err := HeadOriginator(context.Background(), filepath.Join(t.TempDir(), "missing.jsonl")); err == nil {
+		t.Error("HeadOriginator of a missing file returned no error")
 	}
 }
 

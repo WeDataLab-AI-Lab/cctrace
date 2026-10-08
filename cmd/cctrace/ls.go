@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -48,7 +49,11 @@ func lsCmd() *cobra.Command {
 			if endpoint == "" {
 				return fmt.Errorf("no sync endpoint configured; run 'cctrace init' to set one")
 			}
-			return runLs(endpoint, openAPIToken(p), d, project, limit, asJSON, nil)
+			client, err := serverClient(p.Server.CACertFile, 0)
+			if err != nil {
+				return err
+			}
+			return runLs(client, endpoint, openAPIToken(p), d, project, limit, asJSON, nil)
 		},
 	}
 	cmd.Flags().StringVar(&window, "since", "7d", "Time window (7d, 24h, 90m)")
@@ -69,7 +74,7 @@ type lsSession struct {
 	EventCount   int64   `json:"event_count"`
 }
 
-func runLs(endpoint, token string, window time.Duration, project string, limit int, asJSON bool, out io.Writer) error {
+func runLs(client *http.Client, endpoint, token string, window time.Duration, project string, limit int, asJSON bool, out io.Writer) error {
 	if limit < 1 {
 		return fmt.Errorf("--limit must be at least 1")
 	}
@@ -85,7 +90,7 @@ func runLs(endpoint, token string, window time.Duration, project string, limit i
 		q.Set("project_hash", project)
 	}
 
-	raw, err := fetchJSON(endpoint+"/api/open/v1/sessions?"+q.Encode(), token)
+	raw, err := fetchJSON(client, endpoint+"/api/open/v1/sessions?"+q.Encode(), token)
 	if err != nil {
 		return err
 	}

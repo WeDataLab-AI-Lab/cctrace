@@ -43,16 +43,32 @@ func ScanFile(path string, fromOffset int64) (records []*Record, newOffset int64
 }
 
 func ScanFileContext(ctx context.Context, path string, fromOffset int64) (records []*Record, newOffset int64, err error) {
+	records, newOffset, _, err = ScanFileWithSkips(ctx, path, fromOffset)
+	return records, newOffset, err
+}
+
+// SkippedSpan is the byte range of one line a scan passed over without
+// yielding a record because it was longer than jsonlscan.MaxLineBytes.
+type SkippedSpan struct {
+	Start, End int64
+}
+
+// ScanFileWithSkips is ScanFileContext that also reports, in file order, the
+// oversized lines it skipped. A skipped line is not just a missing record: it
+// may have been the one where the session's cwd changed, so a caller that
+// carries the cwd from one record to the next has to know the chain is broken
+// there.
+func ScanFileWithSkips(ctx context.Context, path string, fromOffset int64) (records []*Record, newOffset int64, skipped []SkippedSpan, err error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, fromOffset, err
+		return nil, fromOffset, nil, err
 	}
 	defer f.Close()
 
 	newOffset = fromOffset
 	if fromOffset > 0 {
 		if _, err := f.Seek(fromOffset, io.SeekStart); err != nil {
-			return nil, fromOffset, err
+			return nil, fromOffset, nil, err
 		}
 	}
 
@@ -61,11 +77,12 @@ func ScanFileContext(ctx context.Context, path string, fromOffset int64) (record
 		lineBytes, consumed, complete, readErr := jsonlscan.ReadLine(ctx, reader)
 		if errors.Is(readErr, jsonlscan.ErrLineTooLong) {
 			log.Printf("[sessionlog] %s: skipping oversized jsonl line (%d bytes) at offset %d", path, consumed, newOffset)
+			skipped = append(skipped, SkippedSpan{Start: newOffset, End: newOffset + consumed})
 			newOffset += consumed
 			continue
 		}
 		if readErr != nil && readErr != io.EOF {
-			return records, newOffset, readErr
+			return records, newOffset, skipped, readErr
 		}
 		if complete {
 			line := bytes.TrimRight(lineBytes, "\r\n")
@@ -73,6 +90,7 @@ func ScanFileContext(ctx context.Context, path string, fromOffset int64) (record
 				var r Record
 				if jsonErr := json.Unmarshal(line, &r); jsonErr == nil {
 					r.RawLine = append([]byte(nil), line...)
+					r.Offset = newOffset
 					records = append(records, &r)
 				}
 			}
@@ -82,5 +100,5 @@ func ScanFileContext(ctx context.Context, path string, fromOffset int64) (record
 			break
 		}
 	}
-	return records, newOffset, err
+	return records, newOffset, skipped, err
 }

@@ -90,7 +90,7 @@ func (s *CodexSyncer) reenrichFile(ctx context.Context, filePath string) (int, e
 		projectHash = projectHashFromPath(filePath)
 	}
 	projectName := projecthash.NameFromPath(cwd)
-	gitMeta := gitctx.Resolve(cwd)
+	gitMeta := s.freshGitMeta(cwd)
 	if !gitctx.AllowsRepository(gitMeta.RepositoryID, s.collectPrefixes) {
 		return 0, nil
 	}

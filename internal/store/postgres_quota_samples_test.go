@@ -430,3 +430,34 @@ func TestInsertQuotaSamples_keepsSourceSession(t *testing.T) {
 		t.Errorf("live reading carried source %q, want empty", by["acct-2"])
 	}
 }
+
+// The ingest handler accepts 5,000 readings per request, but one INSERT of that
+// many rows binds 75,000 parameters and the Postgres extended protocol stops at
+// 65,535. A request the handler let through then failed in the store, the
+// client held its offset for a retry, and the same readings failed again on
+// every pass.
+func TestInsertQuotaSamples_batchBeyondOneStatement(t *testing.T) {
+	s := acquireTestStore(t)
+	truncateTables(t, s)
+	ctx := context.Background()
+
+	const total = 5000
+	batch := make([]*QuotaSample, total)
+	for i := range batch {
+		batch[i] = sampleAt(i, "acct-1", "session")
+	}
+	n, err := s.InsertQuotaSamples(ctx, batch)
+	if err != nil {
+		t.Fatalf("insert %d rows: %v", total, err)
+	}
+	if n != total {
+		t.Errorf("inserted %d, want %d", n, total)
+	}
+	var stored int
+	if err := s.pool.QueryRow(ctx, `SELECT count(*) FROM quota_samples`).Scan(&stored); err != nil {
+		t.Fatalf("count: %v", err)
+	}
+	if stored != total {
+		t.Errorf("stored %d rows, want %d", stored, total)
+	}
+}

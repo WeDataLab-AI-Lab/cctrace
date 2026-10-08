@@ -1,12 +1,14 @@
 package main
 
 import (
+	"crypto/x509"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"cctrace/internal/codexlog"
 	"cctrace/internal/envgen"
@@ -128,7 +130,22 @@ func runConfigSet(profileName string, key, value string) error {
 		}
 	}
 
+	if key == "server.ca_cert_file" {
+		// What was stored, not what was typed: "~" expanded and made absolute.
+		value = p.Server.CACertFile
+	}
 	fmt.Printf("  %s = %s\n", key, value)
+	if key == "server.ca_cert_file" || key == "server.protocol" || key == "server.endpoint" {
+		noteClaudeProtocolOverride(os.Stdout, p)
+	}
+	if key == "server.ca_cert_file" {
+		// The sync daemon builds its HTTP client once, at start, so a running one
+		// keeps the CA it started with. There is no reload; say how to apply it.
+		fmt.Println("  A running sync daemon keeps the CA it started with. Restart it to apply this:")
+		fmt.Println("  'cctrace sync --stop', then start it again as usual (the next Claude Code")
+		fmt.Println("  session starts it, or 'cctrace sync --daemon').")
+		fmt.Println("  Codex's [otel] block is rewritten with the new CA when sync next starts.")
+	}
 	return nil
 }
 
@@ -158,6 +175,7 @@ func flattenProfile(p *profile.Profile) []setting {
 		{"server.protocol", strOr(p.Server.Protocol, "grpc")},
 		{"server.auth_token", mask(p.Server.AuthToken)},
 		{"server.read_token", mask(p.Server.ReadToken)},
+		{"server.ca_cert_file", strOr(p.Server.CACertFile, "(system roots)")},
 		{"options.sync_enabled", strconv.FormatBool(p.Options.SyncEnabled)},
 		{"options.redact_user_prompts", strconv.FormatBool(p.Options.RedactUserPrompts)},
 		{"options.redact_tool_details", strconv.FormatBool(p.Options.RedactToolDetails)},
@@ -201,6 +219,12 @@ func setProfileField(p *profile.Profile, key, value string) error {
 		p.Server.AuthToken = value
 	case "server.read_token":
 		p.Server.ReadToken = value
+	case "server.ca_cert_file":
+		path, err := normalizeCACertFile(value)
+		if err != nil {
+			return err
+		}
+		p.Server.CACertFile = path
 	case "options.sync_enabled":
 		b, err := strconv.ParseBool(value)
 		if err != nil {
@@ -296,9 +320,42 @@ func setProfileField(p *profile.Profile, key, value string) error {
 		}
 		p.Options.OmoDirs = dirs
 	default:
-		return fmt.Errorf("unknown key: %s\nAvailable keys: user.id, user.name, user.email, user.team, server.endpoint, server.sync_endpoint, server.protocol, server.auth_token, server.read_token, options.sync_enabled, options.redact_user_prompts, options.redact_tool_details, options.codex_sync_enabled, options.gjc_sync_enabled, options.omo_sync_enabled, options.metrics_export_interval, options.logs_export_interval, options.collect_repository_prefixes, options.exclude_accounts, options.codex_dirs, options.gjc_dirs, options.omo_dirs", key)
+		return fmt.Errorf("unknown key: %s\nAvailable keys: user.id, user.name, user.email, user.team, server.endpoint, server.sync_endpoint, server.protocol, server.auth_token, server.read_token, server.ca_cert_file, options.sync_enabled, options.redact_user_prompts, options.redact_tool_details, options.codex_sync_enabled, options.gjc_sync_enabled, options.omo_sync_enabled, options.metrics_export_interval, options.logs_export_interval, options.collect_repository_prefixes, options.exclude_accounts, options.codex_dirs, options.gjc_dirs, options.omo_dirs", key)
 	}
 	return nil
+}
+
+// normalizeCACertFile checks a server.ca_cert_file value and returns the path to
+// store. An empty value clears the setting.
+//
+// The path is "~"-expanded and made absolute because it is read later by other
+// processes -- the sync daemon, Claude Code, Codex -- none of which start in the
+// directory the user typed it in. The file must already hold a PEM certificate:
+// a wrong path stored here would surface only as a TLS failure on every channel,
+// long after the command that caused it.
+func normalizeCACertFile(value string) (string, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return "", nil
+	}
+	// The path is echoed to the terminal and written into Claude Code's and
+	// Codex's configuration; a control character is never a file name someone
+	// meant, and printed back it can rewrite the line it appears on.
+	if strings.IndexFunc(trimmed, unicode.IsControl) >= 0 {
+		return "", fmt.Errorf("ca cert file %q contains a control character", trimmed)
+	}
+	path, err := filepath.Abs(codexlog.ExpandHome(trimmed))
+	if err != nil {
+		return "", fmt.Errorf("ca cert file %s: %w", trimmed, err)
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("ca cert file: %w", err)
+	}
+	if !x509.NewCertPool().AppendCertsFromPEM(raw) {
+		return "", fmt.Errorf("ca cert file %s holds no PEM certificate", path)
+	}
+	return path, nil
 }
 
 // parseHomeDirs parses the comma-separated value of an extra-home-directories

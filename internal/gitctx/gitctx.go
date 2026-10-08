@@ -4,15 +4,22 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"net"
 	"net/url"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 )
 
-const commandTimeout = 2 * time.Second
+// commandTimeout bounds one git command. Var, not const, so tests that run a
+// fake git can widen it: starting a freshly written script under a loaded test
+// run can take longer than the bound, and a test that times out would pass or
+// fail for the wrong reason.
+var commandTimeout = 2 * time.Second
 
 // Context describes repository metadata for a working directory.
 type Context struct {
@@ -35,28 +42,56 @@ type Context struct {
 	Branch             string
 }
 
+// ErrUncertain marks a lookup that did not hear git's answer about the
+// directory: git timed out or was killed, could not start, or failed in a way
+// that says nothing about whether cwd is a repository (a broken gitfile,
+// permission denied, dubious ownership). The Context returned with it is the
+// same local fallback Resolve returns, and is not a fact about cwd.
+var ErrUncertain = errors.New("git lookup uncertain")
+
 // Resolve reads Git metadata for cwd. It returns best-effort values and never
 // shells out outside the provided cwd/root.
 func Resolve(cwd string) Context {
+	ctx, _ := ResolveChecked(cwd)
+	return ctx
+}
+
+// ResolveChecked is Resolve that also reports whether the identity it returns
+// can be trusted. It returns the same Context as Resolve in every case, and an
+// error wrapping ErrUncertain when the repository root or origin lookup failed
+// for a reason a later lookup might not repeat. A definitive answer -- not a
+// repository, no origin, cwd missing or not a directory, git not installed --
+// returns a nil error even though its identity is a local fallback.
+func ResolveChecked(cwd string) (Context, error) {
 	cwd = strings.TrimSpace(cwd)
 	if cwd == "" {
-		return Context{}
+		return Context{}, nil
 	}
 
 	ctx := Context{}
 
-	root, ok := runGit(cwd, "rev-parse", "--show-toplevel")
-	if !ok || root == "" {
+	top := runGitResult(cwd, "rev-parse", "--show-toplevel")
+	root := top.out
+	if !top.ok || root == "" {
 		// git not detected — do NOT expose cwd basename (may contain client/project PII).
 		// Emit hash-only id so the record is still groupable without leaking the path.
 		ctx.RepositoryID = anonymousLocalID(cwd)
 		ctx.RepositoryIDSource = "fallback"
-		return ctx
+		if !top.ok && !rootLookupDefinitive(top) {
+			return ctx, uncertainLookup("rev-parse --show-toplevel", top)
+		}
+		return ctx, nil
 	}
 
+	var err error
 	ctx.RepositoryRoot = root
 	ctx.RepositoryName = filepath.Base(root)
-	rawRemote, _ := runGit(root, "remote", "get-url", "origin")
+	origin := runGitResult(root, "remote", "get-url", "origin")
+	// Exit 2 is git's "no such remote": a repository without an origin.
+	if !origin.ok && origin.exitCode != 2 {
+		err = uncertainLookup("remote get-url origin", origin)
+	}
+	rawRemote := origin.out
 	// Strip embedded credentials before the URL is ever stored or transmitted.
 	ctx.GitRemoteURL = SanitizeRemoteURL(rawRemote)
 	ctx.RepositoryID = NormalizeRemoteURL(rawRemote)
@@ -70,7 +105,46 @@ func Resolve(cwd string) Context {
 	ctx.RepoSubpath, ctx.RepoSubpathPresent = runGit(cwd, "rev-parse", "--show-prefix")
 	ctx.CommitSHA, _ = runGit(root, "rev-parse", "HEAD")
 	ctx.Branch, _ = runGit(root, "branch", "--show-current")
-	return ctx
+	return ctx, err
+}
+
+// rootLookupDefinitive reports whether a failed --show-toplevel is git's answer
+// about the directory rather than a failure to ask. Only these are: git is not
+// installed, discovery found no repository ("not a git repository (or any ..."),
+// the directory is a bare repository or inside .git, or it is gone or is not a
+// directory. The gitfile form "not a git repository: <gitdir>" is deliberately
+// not one of them: it is a broken worktree or submodule, which a remount or
+// repair brings back.
+//
+// It is given the command's outcome and nothing else. A cwd on a hung network
+// mount is what makes git time out, and a stat of that cwd from this process
+// has no deadline: it would stop the sync pass, and every agent's collection
+// behind it. So a missing cwd is read from git's own stderr (stable, because
+// git runs under LC_ALL=C), and a command that did not exit on its own is
+// uncertain before its stderr is looked at. The messages are matched at the
+// start and end of a line, where the quoted path cannot reach.
+func rootLookupDefinitive(r gitRun) bool {
+	if r.notFound {
+		return true
+	}
+	if r.exitCode != 128 {
+		return false
+	}
+	for _, line := range strings.Split(r.stderr, "\n") {
+		switch {
+		case strings.HasPrefix(line, "fatal: not a git repository (or any"),
+			line == "fatal: this operation must be run in a work tree":
+			return true
+		case strings.HasPrefix(line, "fatal: cannot change to "):
+			return strings.HasSuffix(line, ": No such file or directory") ||
+				strings.HasSuffix(line, ": Not a directory")
+		}
+	}
+	return false
+}
+
+func uncertainLookup(step string, r gitRun) error {
+	return fmt.Errorf("%w: git %s exited %d", ErrUncertain, step, r.exitCode)
 }
 
 // NormalizeRemoteURL returns a stable host/path repository id without schemes,
@@ -228,12 +302,38 @@ func cleanRepoID(host, path string) string {
 	return host + "/" + path
 }
 
+// gitRun is the outcome of one git command, with enough of the failure kept to
+// tell "git answered" from "git could not be asked".
+type gitRun struct {
+	out      string
+	ok       bool
+	exitCode int    // -1 when git did not exit on its own (killed, timed out, not started)
+	stderr   string // trimmed; empty on success
+	notFound bool   // the git executable is not installed
+}
+
 func runGit(cwd string, args ...string) (string, bool) {
+	r := runGitResult(cwd, args...)
+	return r.out, r.ok
+}
+
+func runGitResult(cwd string, args ...string) gitRun {
 	ctx, cancel := context.WithTimeout(context.Background(), commandTimeout)
 	defer cancel()
-	out, err := exec.CommandContext(ctx, "git", append([]string{"-C", cwd}, args...)...).Output()
-	if err != nil {
-		return "", false
+	cmd := exec.CommandContext(ctx, "git", append([]string{"-C", cwd}, args...)...)
+	// Appended, not replacing the environment: HOME and the git config it points
+	// at carry safe.directory. LC_ALL=C keeps stderr untranslated, so a failure
+	// can be told apart by its text.
+	cmd.Env = append(os.Environ(), "LC_ALL=C")
+	out, err := cmd.Output()
+	if err == nil {
+		return gitRun{out: strings.TrimSpace(string(out)), ok: true}
 	}
-	return strings.TrimSpace(string(out)), true
+	r := gitRun{exitCode: -1, notFound: errors.Is(err, exec.ErrNotFound)}
+	var ee *exec.ExitError
+	if errors.As(err, &ee) {
+		r.exitCode = ee.ExitCode()
+		r.stderr = strings.TrimSpace(string(ee.Stderr))
+	}
+	return r
 }

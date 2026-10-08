@@ -151,7 +151,7 @@ func TestReachabilityWordingNamesTheProber(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	got := checkHTTPHealth(srv.URL)
+	got := checkHTTPHealth(srv.URL, "")
 	if got != "[OK] 이 프로세스에서는 서버에 닿습니다" {
 		t.Errorf("checkHTTPHealth = %q", got)
 	}

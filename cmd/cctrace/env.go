@@ -70,6 +70,9 @@ func applyDefaultProfile() error {
 	if err != nil {
 		return fmt.Errorf("load default profile: %w", err)
 	}
+	if err := checkStoredCACertFile(p); err != nil {
+		return err
+	}
 	if err := envgen.ApplyToClaudeSettings(p); err != nil {
 		return fmt.Errorf("apply default profile: %w", err)
 	}
@@ -82,6 +85,9 @@ func applyNamedProfile(name string) error {
 	p, err := profile.LoadNamed(name)
 	if err != nil {
 		return fmt.Errorf("load profile %q: %w", name, err)
+	}
+	if err := checkStoredCACertFile(p); err != nil {
+		return fmt.Errorf("profile %q: %w", name, err)
 	}
 	if err := envgen.ApplyToClaudeSettings(p); err != nil {
 		return fmt.Errorf("apply profile %q: %w", name, err)

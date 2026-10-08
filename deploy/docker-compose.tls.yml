@@ -45,8 +45,9 @@ services:
       # measured against (ADR-9).
       CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:?set CADDY_SITE_ADDRESS in the server .env (a hostname, or the server IP)}
       # `internal` uses Caddy's own CA: no public DNS, no ACME, works on a LAN.
-      # Set it to `acme` when the name resolves publicly and port 80 is
-      # reachable, and Caddy will obtain a real certificate instead.
+      # Set it to an ACME account email address when the name resolves
+      # publicly and port 80 is reachable, and Caddy will obtain a real
+      # certificate instead. Not the word `acme` -- Caddy refuses to start on it.
       CADDY_TLS_MODE: ${CADDY_TLS_MODE:-internal}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro

@@ -31,13 +31,12 @@ The section cctrace writes looks like this:
 metrics_exporter = { otlp-http = { endpoint = "http://cctrace.company.example:4318/v1/metrics", protocol = "binary", headers = { Authorization = "Bearer <upload token>", X-Cctrace-Codex-Account = "<account id>" } } }
 ```
 
-- The endpoint is derived from the profile's OTEL endpoint: port 4317 becomes 4318, and the path becomes `/v1/metrics`. Codex sends over OTLP/HTTP, not gRPC.
+- The endpoint is derived from the profile's OTEL endpoint: port 4317 becomes 4318 (5317 becomes 5318 for the TLS overlay), and the path becomes `/v1/metrics`. Codex sends over OTLP/HTTP, not gRPC.
 - Only a metrics exporter is configured. cctrace sets up no OTEL log export for Codex.
 - `X-Cctrace-Codex-Account` carries the Codex billing account id from `<Codex home>/auth.json`, so the server can apply billing-account exclusions to Codex metrics. It is left out when the account is unknown and rewritten by the sync when the account changes. Codex reads the new section when it restarts.
-- Codex sends no metrics to an `https://` endpoint and reports no error. `init`, the Codex patch and the sync print a `[!]` warning whenever they write such an endpoint. Use plain `http://` on port 4318.
+- With `server.ca_cert_file` set, the exporter gets `tls = { ca-certificate = "<file>" }`. Codex needs it to reach an `https://` endpoint whose certificate comes from a private CA: without it Codex sends no metrics and reports no error. `init`, the Codex patch and the sync print a `[!]` warning when they write an `https://` endpoint with no CA set. Whether Codex reaches an `https://` endpoint with a publicly trusted certificate and no CA set was not measured.
 - cctrace manages the whole section and may add further headers to it. Any existing `[otel]` section, in inline or table form, is replaced. The rest of the file is kept. The file is replaced atomically and written with mode 0600.
-- Codex metrics do not reach the server through the TLS overlay described in [Server install](../server/install.md). cctrace derives Codex's endpoint by mapping port 4317 to 4318 only, so an OTEL endpoint on 5317 sends Codex's OTLP/HTTP to the gRPC listener. Editing the section by hand does not help: the next sync rewrites it.
-- On each sync run the section is compared with what the current profile would produce and rewritten if it differs, for example after you change the OTEL endpoint with `cctrace config set`.
+- On each sync run the section is compared with what the current profile would produce and rewritten if it differs, for example after you change the OTEL endpoint or `server.ca_cert_file` with `cctrace config set`. A `tls` table added by hand is removed when the profile has no CA.
 
 ## Session files
 

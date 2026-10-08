@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
@@ -42,7 +43,11 @@ func eventsCmd() *cobra.Command {
 			if endpoint == "" {
 				return fmt.Errorf("no sync endpoint configured; run 'cctrace init' to set one")
 			}
-			return runEvents(endpoint, openAPIToken(p), sessionID, limit, asJSON, nil)
+			client, err := serverClient(p.Server.CACertFile, 0)
+			if err != nil {
+				return err
+			}
+			return runEvents(client, endpoint, openAPIToken(p), sessionID, limit, asJSON, nil)
 		},
 	}
 	cmd.Flags().StringVar(&sessionID, "session", "", "Session id (required)")
@@ -52,7 +57,7 @@ func eventsCmd() *cobra.Command {
 	return cmd
 }
 
-func runEvents(endpoint, token, sessionID string, limit int, asJSON bool, out io.Writer) error {
+func runEvents(client *http.Client, endpoint, token, sessionID string, limit int, asJSON bool, out io.Writer) error {
 	if sessionID == "" {
 		return fmt.Errorf("--session is required; find one with 'cctrace ls'")
 	}
@@ -66,7 +71,7 @@ func runEvents(endpoint, token, sessionID string, limit int, asJSON bool, out io
 	q.Set("session_id", sessionID)
 	q.Set("limit", strconv.Itoa(limit))
 
-	raw, err := fetchJSON(endpoint+"/api/open/v1/events?"+q.Encode(), token)
+	raw, err := fetchJSON(client, endpoint+"/api/open/v1/events?"+q.Encode(), token)
 	if err != nil {
 		return err
 	}

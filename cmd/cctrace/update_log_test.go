@@ -70,7 +70,7 @@ func TestOneShotUpdateFailureReachesSyncLog(t *testing.T) {
 	client := syncer.NewClient(server.URL, "", version)
 
 	closeLog := installDaemonLog("")
-	applyUpdateIfAvailable(context.Background(), client, server.URL, "")
+	applyUpdateIfAvailable(context.Background(), client, "", server.URL, "")
 	closeLog()
 
 	if got := readSyncLog(t); !strings.Contains(got, "update:") {

@@ -21,7 +21,7 @@ func TestLsReadsOpenAPIAndSendsWindow(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	if err := runLs(srv.URL, "tok", 24*3600*1e9, "", 20, true, nil); err != nil {
+	if err := runLs(http.DefaultClient, srv.URL, "tok", 24*3600*1e9, "", 20, true, nil); err != nil {
 		t.Fatalf("runLs: %v", err)
 	}
 	if gotPath != "/api/open/v1/sessions" {
@@ -44,7 +44,7 @@ func TestLsTableShowsCost(t *testing.T) {
 	defer srv.Close()
 
 	var out strings.Builder
-	if err := runLs(srv.URL, "tok", 24*3600*1e9, "", 20, false, &out); err != nil {
+	if err := runLs(http.DefaultClient, srv.URL, "tok", 24*3600*1e9, "", 20, false, &out); err != nil {
 		t.Fatalf("runLs: %v", err)
 	}
 	got := out.String()
@@ -66,7 +66,7 @@ func TestLsHintsWhenPageIsFull(t *testing.T) {
 	defer srv.Close()
 
 	var out strings.Builder
-	if err := runLs(srv.URL, "tok", 24*3600*1e9, "", 2, false, &out); err != nil {
+	if err := runLs(http.DefaultClient, srv.URL, "tok", 24*3600*1e9, "", 2, false, &out); err != nil {
 		t.Fatalf("runLs: %v", err)
 	}
 	if !strings.Contains(out.String(), "raise --limit") {
@@ -81,7 +81,7 @@ func TestLsSurfacesAPIRefusal(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	err := runLs(srv.URL, "cli-token", 24*3600*1e9, "", 20, true, nil)
+	err := runLs(http.DefaultClient, srv.URL, "cli-token", 24*3600*1e9, "", 20, true, nil)
 	if err == nil || !strings.Contains(err.Error(), "cctrace auth read") {
 		t.Fatalf("error = %v, want the command that creates a read token", err)
 	}
@@ -100,13 +100,13 @@ func TestLsSendsProjectFilter(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	if err := runLs(srv.URL, "tok", 24*3600*1e9, "-users-me-repo", 20, true, nil); err != nil {
+	if err := runLs(http.DefaultClient, srv.URL, "tok", 24*3600*1e9, "-users-me-repo", 20, true, nil); err != nil {
 		t.Fatalf("runLs: %v", err)
 	}
 	if !strings.Contains(gotQuery, "project_hash=-users-me-repo") {
 		t.Errorf("query %q missing project_hash", gotQuery)
 	}
-	if err := runLs(srv.URL, "tok", 24*3600*1e9, "", 20, true, nil); err != nil {
+	if err := runLs(http.DefaultClient, srv.URL, "tok", 24*3600*1e9, "", 20, true, nil); err != nil {
 		t.Fatalf("runLs: %v", err)
 	}
 	if strings.Contains(gotQuery, "project_hash") {
@@ -122,10 +122,10 @@ func TestLsAndEventsRejectNonPositiveLimit(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	if err := runLs(srv.URL, "tok", 24*3600*1e9, "", 0, false, nil); err == nil || !strings.Contains(err.Error(), "--limit") {
+	if err := runLs(http.DefaultClient, srv.URL, "tok", 24*3600*1e9, "", 0, false, nil); err == nil || !strings.Contains(err.Error(), "--limit") {
 		t.Errorf("ls err = %v", err)
 	}
-	if err := runEvents(srv.URL, "tok", "ses-1", -1, false, nil); err == nil || !strings.Contains(err.Error(), "--limit") {
+	if err := runEvents(http.DefaultClient, srv.URL, "tok", "ses-1", -1, false, nil); err == nil || !strings.Contains(err.Error(), "--limit") {
 		t.Errorf("events err = %v", err)
 	}
 }

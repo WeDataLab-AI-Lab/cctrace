@@ -143,7 +143,7 @@ To choose the token yourself, set `CCTRACE_SETUP_TOKEN` in the server env file b
 
 Clients then use `https://cctrace.company.example:8443` for the dashboard and sync, and port 5317 or 5318 for OTLP.
 
-Codex metrics do not reach the server through this overlay. cctrace derives Codex's metrics endpoint from the profile's OTEL endpoint by changing port 4317 to 4318 only, so an OTEL endpoint on 5317 sends Codex's OTLP/HTTP to 5317, which Caddy forwards to the gRPC listener. See [Codex CLI](../agents/codex.md).
+Codex sends OTLP/HTTP, so cctrace derives its metrics endpoint from the profile's OTEL endpoint by changing port 5317 to 5318, as it changes 4317 to 4318. With an internal CA, Codex also needs that CA in its configuration; see below and [Codex CLI](../agents/codex.md).
 
 ### Certificates
 
@@ -155,17 +155,25 @@ $ docker compose --env-file deploy/.env \
     exec caddy cat /data/caddy/pki/authorities/local/root.crt > cctrace-ca.crt
 ```
 
-The Caddyfile lists where each agent reads a custom CA from:
+Copy the file to each client machine and give it to cctrace once. `cctrace init` asks for it when an endpoint is `https://`, or set it directly:
 
-| Agent | Variable |
-|-------|----------|
-| Claude Code, gRPC exporter | `OTEL_EXPORTER_OTLP_CERTIFICATE` |
-| Claude Code, HTTP exporter | `NODE_EXTRA_CA_CERTS` |
-| Codex | `SSL_CERT_FILE` |
+```console
+$ cctrace config set server.ca_cert_file ~/cctrace-ca.crt
+```
 
-`SSL_CERT_FILE` replaces the trust store instead of adding to it. Concatenate the CA with the system roots, or Codex fails to verify its own API endpoint.
+Give it even if the CA is already in the OS keychain; whether the keychain alone is enough for Claude Code and Codex was not tested. Each client takes its CA from a different place, and cctrace writes the one file to each:
 
-Set `CADDY_TLS_MODE=acme` when the name resolves publicly and port 80 is reachable from the internet. Caddy then obtains a publicly trusted certificate, and clients need no CA configuration.
+| Client | Where it reads the CA | Who sets it |
+|--------|-----------------------|-------------|
+| cctrace | system roots plus `server.ca_cert_file` | cctrace |
+| Claude Code | `NODE_EXTRA_CA_CERTS` in its settings file, with the exporter on http/protobuf to 5318 ([why](../agents/claude-code.md#private-ca)) | cctrace |
+| Codex | `tls = { ca-certificate = "..." }` in its `[otel]` section | cctrace |
+
+A running sync daemon keeps the CA it started with; restart it after setting or clearing the CA (`cctrace sync --stop`, then start it as usual). Codex's section is rewritten when sync next starts. See [Set up the client](../client/setup.md).
+
+The initial `curl` download of the client binary does not use this setting; add `--cacert cctrace-ca.crt` to it. See [Install the client](../client/install.md).
+
+Set `CADDY_TLS_MODE` to an ACME account email address (for example `ops@example.com`) when the name resolves publicly and port 80 is reachable from the internet — the word `acme` itself makes Caddy refuse to start. Caddy then obtains a publicly trusted certificate, and cctrace and Claude Code need no CA configuration. Codex against a public certificate without `server.ca_cert_file` was not measured.
 
 !!! warning "Keep the `caddy_data` volume"
     It holds the issued certificates and the internal CA. Removing it creates a new CA, and every client that trusted the old one stops connecting.

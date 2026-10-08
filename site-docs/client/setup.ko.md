@@ -21,6 +21,7 @@ cctrace init
 |---|---|
 | `Sync endpoint` | 서버의 HTTP 주소. 예: `https://cctrace.company.example`. 스킴 없는 `host:port`에는 `http://` 자동 부착 |
 | `OTEL endpoint` | 서버의 OTLP gRPC 주소. 예: `http://cctrace.company.example:4317` |
+| `CA certificate file (PEM)` | 두 엔드포인트 중 하나라도 `https://`일 때만 묻는다. [서버 설치](../server/install.md#certificates)에서 내보낸 것 같은 사설 CA 루트 인증서. OS 키체인이 이미 그 CA를 신뢰해도 지정한다. Claude Code는 `NODE_EXTRA_CA_CERTS`에서(http/protobuf 전송, [Claude Code](../agents/claude-code.md#private-ca) 참고), Codex는 자체 설정에서 CA를 받고 cctrace가 이 파일로 둘 다 쓴다. 키체인만으로 충분한지는 시험하지 않았다. 공인 인증서면 비워 둔다(cctrace는 시스템 루트를 유지, Codex는 시험하지 않음). 저장된 CA를 지우려면 `none` 입력. 두 엔드포인트가 모두 `http://`이면 묻지 않고 지운다. `server.ca_cert_file`로 저장 |
 | `User ID` | cctrace 사용자 ID. 이메일을 입력하면 `@` 뒤는 제거 |
 | `Temporary password` | 현재 대시보드 비밀번호(첫 로그인 후 바꾼 것). 입력 숨김, 3회 시도 |
 | `Enable session log sync? (y/n)` | `y`(기본)는 동기화 데몬을 띄우는 Claude Code 훅 설치. `n`은 텔레메트리만 켜고 세션 로그는 끔 |
@@ -28,7 +29,7 @@ cctrace init
 
 ![cctrace init 프롬프트와 Codex 감지를 포함한 연결 성공 터미널](../assets/screenshots/31-cctrace-init.png){ loading=lazy }
 
-빈 엔드포인트는 받지 않는다. 루프백·사설 대역 밖으로 가는 평문 `http://` 엔드포인트면 대화 기록이나 텔레메트리가 암호화 없이 네트워크를 지난다는 경고를 출력한다. 거부하지는 않는다.
+빈 엔드포인트는 받지 않는다. 이 머신(`localhost`나 루프백 주소)이 아닌 곳으로 가는 평문 `http://` 엔드포인트면 대화 기록이나 텔레메트리가 암호화 없이 네트워크를 지난다는 경고를 출력한다. 사설·링크로컬 주소도 경고한다. 거부하지는 않는다.
 
 인증 뒤에는 다른 에이전트를 찾고 발견한 것마다 묻는다.
 
@@ -118,12 +119,15 @@ cctrace config set options.codex_sync_enabled true
 
 `config set`은 프로필을 저장한 뒤 Claude 설정 파일을 다시 쓴다. 엔드포인트·사용자 정보·옵션 변경은 다음 Claude Code 세션부터 반영. 불리언 값은 `true` 또는 `false`.
 
+`server.ca_cert_file`은 두 가지가 다르다. 실행 중인 동기화 데몬은 시작할 때의 CA를 계속 쓰므로, 지정하거나 해제한 뒤에는 데몬을 다시 시작한다. `cctrace sync --stop` 후 평소대로 시작(다음 Claude Code 세션이 시작하거나 `cctrace sync --daemon`). Codex `[otel]` 섹션은 `config set`이 아니라 다음 동기화 시작 때 새 CA로 다시 쓰인다. 명령이 두 안내를 모두 출력한다.
+
 ```text
 user.id, user.name, user.email, user.team
 server.endpoint                     OTEL 엔드포인트
 server.sync_endpoint                sync(HTTP) 엔드포인트
 server.protocol                     Claude Code의 OTLP 프로토콜 (기본 grpc)
 server.auth_token                   init이 발급받은 업로드 토큰
+server.ca_cert_file                 서버 인증서를 발급한 사설 CA(PEM). ""로 해제
 options.sync_enabled                세션 로그 동기화 켜기/끄기
 options.redact_user_prompts         업로드 전 대화 텍스트(프롬프트와 응답) 대체
 options.redact_tool_details         업로드 전 도구 인자와 결과 제거

@@ -45,7 +45,7 @@ $ curl -fL -o cctrace "<sync endpoint>/downloads/cctrace-<platform>"
 $ chmod +x cctrace
 ```
 
-내려받기는 HTTPS 또는 신뢰할 수 있는 네트워크에서만.
+내려받기는 HTTPS 또는 신뢰할 수 있는 네트워크에서만. 서버 인증서가 사설 CA([서버 설치](../server/install.md#certificates)의 Caddy `tls internal` 기본값)에서 나왔다면 `curl`은 아직 그 CA를 신뢰하지 않으므로 `--cacert cctrace-ca.crt`를 붙인다.
 
 서버 이미지를 `--build-arg VERSION=...` 없이 빌드했다면 이 바이너리의 버전은 `dev`. `cctrace --version`은 `dev`를 출력하고 `cctrace status`는 개발 빌드로 표시한다. 이 저장소에서 빌드한 다른 클라이언트와 마찬가지로 스스로 갱신하지 않는다.
 

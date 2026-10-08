@@ -18,8 +18,8 @@ These variables are set under `env`:
 | `OTEL_METRICS_EXPORTER` | `otlp` |
 | `OTEL_LOGS_EXPORTER` | `otlp` |
 | `OTEL_METRICS_INCLUDE_ACCOUNT_UUID` | `1` |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | the profile's protocol, `grpc` by default |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | the profile's OTEL endpoint |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | the profile's protocol, `grpc` by default; http/protobuf with a private CA (below) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | the profile's OTEL endpoint; with a private CA, its OTLP/HTTP port (below) |
 | `OTEL_EXPORTER_OTLP_HEADERS` | `Authorization=Bearer <upload token>` |
 | `OTEL_METRIC_EXPORT_INTERVAL` | `60000` by default (`options.metrics_export_interval`) |
 | `OTEL_LOGS_EXPORT_INTERVAL` | `5000` by default (`options.logs_export_interval`) |
@@ -28,6 +28,7 @@ These variables are set under `env`:
 | `OTEL_BSP_MAX_EXPORT_BATCH_SIZE` | `512` |
 | `OTEL_BSP_EXPORT_TIMEOUT` | `30000` |
 | `OTEL_RESOURCE_ATTRIBUTES` | the profile's user ID, name, email, and team, URL-escaped (example below) |
+| `NODE_EXTRA_CA_CERTS` | `server.ca_cert_file`, only with a private CA (below) |
 
 ```text
 OTEL_RESOURCE_ATTRIBUTES=user.id=alice,user.name=Alice%20Doe,user.profile.email=alice@example.com,user.team=platform
@@ -35,7 +36,23 @@ OTEL_RESOURCE_ATTRIBUTES=user.id=alice,user.name=Alice%20Doe,user.profile.email=
 
 An attribute is left out when the profile field is empty.
 
-cctrace owns these keys. If you had set any of them yourself, `init` overwrites it and `reset` removes it.
+cctrace owns these keys. If you had set any of them yourself, `init` overwrites it and `reset` removes it. `NODE_EXTRA_CA_CERTS` is the exception, because it is often already set for a company proxy: cctrace records the value it writes in the `cctrace` object and changes or removes only that value. A value you set yourself stays, and if it differs from `server.ca_cert_file`, `init` and `config set` keep it and print both paths; put both CAs in one PEM file to use them together.
+
+### Private CA
+
+When the profile has `server.ca_cert_file` and the OTEL endpoint is `https://`, cctrace sends Claude Code over http/protobuf to the OTLP/HTTP port beside the gRPC one (4317 to 4318, 5317 to 5318) and sets `NODE_EXTRA_CA_CERTS` to the CA file. server.protocol stays as stored, and `init` and `config set` print one line saying so. Without a CA, or on plain `http://`, nothing changes.
+
+The reason is a measurement with Claude Code 2.1.291 on macOS against a server certificate from a private CA:
+
+| Protocol | CA given through | Result |
+|---|---|---|
+| `grpc` | `OTEL_EXPORTER_OTLP_CERTIFICATE` (settings or process env) | TLS handshake aborted: CA not trusted |
+| `grpc` | `NODE_EXTRA_CA_CERTS` (settings or process env) | same failure |
+| http/protobuf | `OTEL_EXPORTER_OTLP_CERTIFICATE` (settings env) | same failure |
+| http/protobuf | `NODE_EXTRA_CA_CERTS` (process env) | metrics and logs arrived |
+| http/protobuf | `NODE_EXTRA_CA_CERTS` (settings env) | metrics and logs arrived |
+
+Whether `grpc` trusts a CA installed in the OS keychain was not measured.
 
 ## Session hooks
 

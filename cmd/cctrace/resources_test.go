@@ -19,7 +19,7 @@ func TestResourceCommandsReadOpenAPIWithWindow(t *testing.T) {
 			defer srv.Close()
 
 			var out strings.Builder
-			if err := runOpenAPIResource(srv.URL, "read-token", resource, 7*24*time.Hour, "codex", "", "", 100, true, &out); err != nil {
+			if err := runOpenAPIResource(http.DefaultClient, srv.URL, "read-token", resource, 7*24*time.Hour, "codex", "", "", 100, true, &out); err != nil {
 				t.Fatalf("runOpenAPIResource: %v", err)
 			}
 			if path != "/api/open/v1/"+resource {
@@ -56,7 +56,7 @@ func TestRulesCommandDoesNotInventATimeFilter(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	if err := runOpenAPIResource(srv.URL, "tok", "rules", 0, "codex", "active", "lint", 25, true, nil); err != nil {
+	if err := runOpenAPIResource(http.DefaultClient, srv.URL, "tok", "rules", 0, "codex", "active", "lint", 25, true, nil); err != nil {
 		t.Fatalf("runOpenAPIResource: %v", err)
 	}
 	for _, forbidden := range []string{"since=", "until="} {

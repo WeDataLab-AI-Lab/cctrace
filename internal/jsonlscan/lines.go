@@ -7,7 +7,10 @@ import (
 	"io"
 )
 
-const MaxLineBytes = 16 * 1024 * 1024
+// MaxLineBytes is the longest line ReadLine returns. Var, not const, so a test
+// of what follows a skipped line can make a line oversized without writing
+// 16MiB of it.
+var MaxLineBytes = 16 * 1024 * 1024
 
 var ErrLineTooLong = errors.New("jsonl line exceeds maximum size")
 

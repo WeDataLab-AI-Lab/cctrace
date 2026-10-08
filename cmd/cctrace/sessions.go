@@ -98,8 +98,12 @@ func runSessions(profileEmail, sessionID string, limit int, jsonOutput bool) err
 	q.Set("limit", strconv.Itoa(limit))
 	u.RawQuery = q.Encode()
 
+	client, err := serverClient(p.Server.CACertFile, 0)
+	if err != nil {
+		return err
+	}
 	// The dashboard routes refuse the upload token, like the Open API (#702).
-	body, err := fetchJSON(u.String(), openAPIToken(p))
+	body, err := fetchJSON(client, u.String(), openAPIToken(p))
 	if err != nil {
 		return err
 	}

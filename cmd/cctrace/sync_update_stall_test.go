@@ -76,7 +76,10 @@ func TestNewSyncClient_sendsTheUpdateStall(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := newSyncClient(&profile.Profile{}, server.URL, "v0.7.14", "")
+	client, err := newSyncClient(&profile.Profile{}, server.URL, "v0.7.14", "")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// When
 	if _, err := client.Send(context.Background(), "claude", stallTestProfileEmail, "u", "hash", "proj",

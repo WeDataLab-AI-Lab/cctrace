@@ -26,16 +26,22 @@ const rechartsCapture = vi.hoisted(() => ({
   bars: [] as CapturedProps[],
   tooltips: [] as CapturedProps[],
   legends: [] as CapturedProps[],
+  axes: [] as CapturedProps[],
+  containers: [] as CapturedProps[],
   rectangleCalls: 0,
 }));
 
 vi.mock('recharts', () => {
-  const renderChildren = ({ children }: { children?: ReactNode }) => createElement('g', null, children);
-
-  const ResponsiveContainer = renderChildren;
+  const ResponsiveContainer = ({ children, ...props }: { children?: ReactNode; [key: string]: unknown }) => {
+    rechartsCapture.containers.push(props);
+    return createElement('div', { 'data-testid': 'responsive-container' }, children);
+  };
   const CartesianGrid = () => null;
   const XAxis = () => null;
-  const YAxis = () => null;
+  const YAxis = (props: CapturedProps) => {
+    rechartsCapture.axes.push(props);
+    return null;
+  };
 
   const BarChart = ({
     children,
@@ -113,6 +119,8 @@ const reset_recharts_capture = (): void => {
   rechartsCapture.bars.length = 0;
   rechartsCapture.tooltips.length = 0;
   rechartsCapture.legends.length = 0;
+  rechartsCapture.axes.length = 0;
+  rechartsCapture.containers.length = 0;
   rechartsCapture.rectangleCalls = 0;
 };
 
@@ -292,7 +300,7 @@ describe('UserStackChart stack-level rounding', () => {
       modelColor('gpt-5.5'),
       modelColor('Others'),
     ]);
-    expect(rechartsCapture.legends).toHaveLength(1);
+    expect(rechartsCapture.legends).toHaveLength(0);
     const costTooltip = render_captured_tooltip('cost');
     expect(costTooltip).toContain('gpt-5.6-sol : $2.00');
     expect(costTooltip).toContain('gpt-5.5 : $3.00');
@@ -307,4 +315,29 @@ describe('UserStackChart stack-level rounding', () => {
   };
 
   it('[TC-381-009] preserves model colors and view-specific tooltip format', test_legend_and_tooltip_keep_model_colors_and_view_format);
+
+  it.each(['cost', 'token'] as const)('[TC-839-001] shows every user in %s mode with a separate wrapping legend', (viewMode) => {
+    const longModel = 'ocx-claude2-openrouter--deepseek~sdeepseek-v4.1-flash';
+    const keys = ['opus 5.5', 'gpt-6.1-sol', longModel];
+    const data = Array.from({ length: 9 }, (_, index) => ({ name: `user-${index}`, [longModel]: index + 1 }));
+    const html = render_chart(viewMode, data, keys);
+
+    expect(rechartsCapture.axes[0]?.interval).toBe(0);
+    expect(rechartsCapture.containers[0]?.height).toBeGreaterThanOrEqual(data.length * 40);
+    expect(rechartsCapture.legends).toHaveLength(0);
+    const legendHtml = html.split('</svg></div>')[1] ?? '';
+    for (const key of keys) {
+      expect(legendHtml).toContain(key);
+      expect(legendHtml).toContain(`fill="${modelColor(key)}"`);
+    }
+    expect(html).toContain('max-w-full');
+    expect(html).toContain('[overflow-wrap:anywhere]');
+    assert_bar_keys_and_stack(keys);
+    assert_chart_data(data);
+  });
+
+  it('[TC-839-002] hides the model legend while loading or empty', () => {
+    expect(render_chart('cost', tinyCostData, ['legend-model'], true)).not.toContain('legend-model');
+    expect(render_chart('token', [], ['legend-model'])).not.toContain('legend-model');
+  });
 });

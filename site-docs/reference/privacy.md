@@ -25,7 +25,7 @@ Collected data goes to the server you configured and into its TimescaleDB databa
 
 The weekly AI report feature, when enabled, sends data to the AI provider it is configured with. It is under active development and is not documented here.
 
-Clients warn, but do not refuse, when an endpoint is plain `http://` outside loopback and private address ranges. Put the server behind TLS before clients connect over a network you do not control; see [Install the server](../server/install.md#optional-https-with-caddy).
+Clients warn, but do not refuse, when an endpoint is plain `http://` to anything but the same machine (loopback), private addresses included. Put the server behind TLS before clients connect over a network you do not control; see [Install the server](../server/install.md#optional-https-with-caddy).
 
 ## Who can see what
 

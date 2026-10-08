@@ -43,11 +43,11 @@ func TestSendProjectRulesParksAfterSendFailure(t *testing.T) {
 	s := New(nil, "user@example.invalid", "u1", &syncer.State{}, syncer.NewClient(srv.URL, "token", ""), nil)
 	meta := gitctx.Context{RepositoryRoot: ruleRepo(t), RepositoryID: "github.com/org/repo"}
 
-	if err := s.sendProjectRules(context.Background(), "proj", "name", meta); err == nil {
+	if err := s.sendProjectRules(context.Background(), "proj", "name", meta, ""); err == nil {
 		t.Fatal("expected the send failure to be reported")
 	}
 	// Same repository, same pass: this is what a second session file does.
-	if err := s.sendProjectRules(context.Background(), "proj", "name", meta); err != nil {
+	if err := s.sendProjectRules(context.Background(), "proj", "name", meta, ""); err != nil {
 		t.Fatalf("second attempt should be suppressed, got %v", err)
 	}
 
@@ -81,17 +81,17 @@ func TestSendProjectRulesHonoursRetryAfter(t *testing.T) {
 	s := New(nil, "user@example.invalid", "u1", &syncer.State{}, syncer.NewClient(srv.URL, "token", ""), nil)
 	meta := gitctx.Context{RepositoryRoot: ruleRepo(t), RepositoryID: "github.com/org/repo"}
 
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 
 	// Past the ordinary repository TTL but well inside the server's window.
 	advance(5 * time.Minute)
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 	if got := hits.Load(); got != 1 {
 		t.Fatalf("%d requests inside Retry-After, want 1", got)
 	}
 
 	advance(time.Hour)
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 	if got := hits.Load(); got != 2 {
 		t.Fatalf("%d requests after Retry-After elapsed, want 2", got)
 	}
@@ -104,15 +104,15 @@ func TestSendProjectRulesUsesRuleScanTTLWithoutRetryAfter(t *testing.T) {
 	s := New(nil, "user@example.invalid", "u1", &syncer.State{}, syncer.NewClient(srv.URL, "token", ""), nil)
 	meta := gitctx.Context{RepositoryRoot: ruleRepo(t), RepositoryID: "github.com/org/repo"}
 
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 	advance(ruleScanTTL / 2)
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 	if got := hits.Load(); got != 1 {
 		t.Fatalf("%d requests inside the TTL, want 1", got)
 	}
 
 	advance(ruleScanTTL)
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 	if got := hits.Load(); got != 2 {
 		t.Fatalf("%d requests after the TTL, want 2", got)
 	}
@@ -133,15 +133,15 @@ func TestSendProjectRulesParksForbiddenLongerThanScanTTL(t *testing.T) {
 	s := New(nil, "user@example.invalid", "u1", &syncer.State{}, syncer.NewClient(srv.URL, "token", ""), nil)
 	meta := gitctx.Context{RepositoryRoot: ruleRepo(t), RepositoryID: "github.com/org/repo"}
 
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 	advance(ruleScanTTL * 2)
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 	if got := hits.Load(); got != 1 {
 		t.Fatalf("%d requests after twice the scan TTL, want 1 -- forbidden must park longer", got)
 	}
 
 	advance(syncer.RuleForbiddenTTL)
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 	if got := hits.Load(); got != 2 {
 		t.Fatalf("%d requests after the forbidden TTL, want 2 -- the park must expire", got)
 	}
@@ -169,7 +169,7 @@ func TestForbiddenIsRecordedInStateAndClearedOnSuccess(t *testing.T) {
 	s := New(nil, "user@example.invalid", "u1", st, syncer.NewClient(srv.URL, "token", ""), nil)
 	meta := gitctx.Context{RepositoryRoot: ruleRepo(t), RepositoryID: "github.com/org/repo"}
 
-	_ = s.sendProjectRules(context.Background(), "proj", "name", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", "name", meta, "")
 	if len(st.RulesDenied) == 0 {
 		t.Fatal("the refusal left no record, so nothing outlives the process to report it")
 	}
@@ -183,7 +183,7 @@ func TestForbiddenIsRecordedInStateAndClearedOnSuccess(t *testing.T) {
 	defer ok.Close()
 	s2 := New(nil, "user@example.invalid", "u1", st, syncer.NewClient(ok.URL, "token", ""), nil)
 	advance(syncer.RuleForbiddenTTL)
-	if err := s2.sendProjectRules(context.Background(), "proj", "name", meta); err != nil {
+	if err := s2.sendProjectRules(context.Background(), "proj", "name", meta, ""); err != nil {
 		t.Fatalf("accepted send failed: %v", err)
 	}
 	if len(st.RulesDenied) != 0 {

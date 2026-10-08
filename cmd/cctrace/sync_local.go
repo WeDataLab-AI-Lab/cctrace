@@ -150,7 +150,7 @@ func autoMigrateCodex(p *profile.Profile, profileName string, otelEndpoint strin
 	}
 	// Once per run: every home written here got the same endpoint.
 	if wrote {
-		warnCodexHTTPSEndpoint(otelEndpoint)
+		warnCodexHTTPSEndpoint(otelEndpoint, p.Server.CACertFile)
 	}
 }
 
@@ -177,7 +177,7 @@ func healExtraCodexHomes(p *profile.Profile, otelEndpoint string, keepHomeToken 
 		if dir == defaultDir || skipSymlinkedCodexConfig(dir) {
 			continue
 		}
-		result, err := codexconfig.HealExistingOtelBlock(dir, otelEndpoint, p.Server.AuthToken, keepHomeToken)
+		result, err := codexconfig.HealExistingOtelBlock(dir, otelEndpoint, p.Server.AuthToken, p.Server.CACertFile, keepHomeToken)
 		if err == nil && keepHomeToken && (result == codexconfig.HealWritten || result == codexconfig.HealUnchanged) {
 			if token := codexconfig.OtelBearerToken(dir); token != "" && token != p.Server.AuthToken {
 				fmt.Printf("  [codex] %s/config.toml 의 토큰이 현재 프로필과 다릅니다. 토큰을 재발급했다면 'cctrace init' 으로 갱신하세요.\n", dir)
@@ -221,7 +221,7 @@ func migrateDefaultCodexHome(p *profile.Profile, profileName string, otelEndpoin
 	}
 
 	if p.Options.CodexSyncEnabled {
-		if changed, err := codexconfig.EnsureOtelBlock(codexDir, otelEndpoint, p.Server.AuthToken); err != nil {
+		if changed, err := codexconfig.EnsureOtelBlock(codexDir, otelEndpoint, p.Server.AuthToken, p.Server.CACertFile); err != nil {
 			fmt.Fprintf(os.Stderr, "  [codex] config self-heal: %v\n", err)
 		} else if changed {
 			fmt.Println("  [codex] config.toml otel 블록을 현재 형식으로 정리했습니다.")
@@ -229,7 +229,7 @@ func migrateDefaultCodexHome(p *profile.Profile, profileName string, otelEndpoin
 		}
 		return false
 	}
-	if err := codexconfig.WriteOtelBlock(codexDir, otelEndpoint, p.Server.AuthToken); err != nil {
+	if err := codexconfig.WriteOtelBlock(codexDir, otelEndpoint, p.Server.AuthToken, p.Server.CACertFile); err != nil {
 		fmt.Fprintf(os.Stderr, "  [codex-migrate] write config.toml: %v\n", err)
 		return false
 	}

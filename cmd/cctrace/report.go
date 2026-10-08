@@ -60,6 +60,10 @@ func runReport(since time.Duration, asJSON bool) error {
 
 	// The dashboard routes refuse the upload token, like the Open API (#702).
 	token := openAPIToken(p)
+	client, err := serverClient(p.Server.CACertFile, 0)
+	if err != nil {
+		return err
+	}
 
 	var byUser []*store.CostSummary
 	var byTeam []*store.CostSummary
@@ -70,7 +74,7 @@ func runReport(since time.Duration, asJSON bool) error {
 	g := new(errgroup.Group)
 
 	g.Go(func() error {
-		raw, err := fetchJSON(endpoint+"/api/cost/by-user?"+queryStr, token)
+		raw, err := fetchJSON(client, endpoint+"/api/cost/by-user?"+queryStr, token)
 		if err != nil {
 			return fmt.Errorf("cost/by-user: %w", err)
 		}
@@ -79,7 +83,7 @@ func runReport(since time.Duration, asJSON bool) error {
 	})
 
 	g.Go(func() error {
-		raw, err := fetchJSON(endpoint+"/api/cost/by-team?"+queryStr, token)
+		raw, err := fetchJSON(client, endpoint+"/api/cost/by-team?"+queryStr, token)
 		if err != nil {
 			return fmt.Errorf("cost/by-team: %w", err)
 		}
@@ -88,7 +92,7 @@ func runReport(since time.Duration, asJSON bool) error {
 	})
 
 	g.Go(func() error {
-		raw, err := fetchJSON(endpoint+"/api/tools?"+queryStr, token)
+		raw, err := fetchJSON(client, endpoint+"/api/tools?"+queryStr, token)
 		if err != nil {
 			return fmt.Errorf("tools: %w", err)
 		}
@@ -123,7 +127,9 @@ func runReport(since time.Duration, asJSON bool) error {
 	return nil
 }
 
-func fetchJSON(rawURL, token string) ([]byte, error) {
+// fetchJSON takes the client from its caller because the client carries the
+// profile's CA, and this function never sees the profile.
+func fetchJSON(client *http.Client, rawURL, token string) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodGet, rawURL, nil)
 	if err != nil {
 		return nil, err
@@ -132,7 +138,7 @@ func fetchJSON(rawURL, token string) ([]byte, error) {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}

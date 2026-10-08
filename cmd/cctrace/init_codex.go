@@ -27,14 +27,14 @@ func offerCodexSync(ir *inputReader, p *profile.Profile, profileName string) {
 	if !enabled {
 		return
 	}
-	if err := codexconfig.WriteOtelBlock(codexlog.DefaultCodexDir(), p.Server.Endpoint, p.Server.AuthToken); err != nil {
+	if err := codexconfig.WriteOtelBlock(codexlog.DefaultCodexDir(), p.Server.Endpoint, p.Server.AuthToken, p.Server.CACertFile); err != nil {
 		fmt.Fprintf(os.Stderr, "  Warning: Codex OTEL config: %v\n", err)
 		return
 	}
 	fmt.Println("  [OK] Codex OTEL configured (~/.codex/config.toml)")
 	// Explicit init replaces a stale token in extra homes; sync only names it.
 	healExtraCodexHomes(p, p.Server.Endpoint, false)
-	warnCodexHTTPSEndpoint(p.Server.Endpoint)
+	warnCodexHTTPSEndpoint(p.Server.Endpoint, p.Server.CACertFile)
 }
 
 // runCodexPatch updates only the Codex-related parts of an existing profile.
@@ -51,6 +51,9 @@ func runCodexPatch(p *profile.Profile, isNamed bool, profileName string) error {
 	if p.Server.Endpoint == "" {
 		return fmt.Errorf("existing profile has no OTEL endpoint; run 'cctrace init' with full re-setup")
 	}
+	if err := checkStoredCACertFile(p); err != nil {
+		return err
+	}
 
 	fmt.Println()
 	fmt.Println("  Patching Codex integration...")
@@ -59,7 +62,7 @@ func runCodexPatch(p *profile.Profile, isNamed bool, profileName string) error {
 	setCodexSync(p, true)
 	p.UpdatedAt = time.Now().UTC()
 
-	if err := codexconfig.WriteOtelBlock(codexDir, p.Server.Endpoint, p.Server.AuthToken); err != nil {
+	if err := codexconfig.WriteOtelBlock(codexDir, p.Server.Endpoint, p.Server.AuthToken, p.Server.CACertFile); err != nil {
 		return fmt.Errorf("write codex config.toml: %w", err)
 	}
 	// Explicit init replaces a stale token in extra homes; sync only names it.
@@ -77,7 +80,7 @@ func runCodexPatch(p *profile.Profile, isNamed bool, profileName string) error {
 
 	fmt.Printf("  [OK] Codex sync enabled in profile.\n")
 	fmt.Printf("  [OK] Codex OTEL configured (%s/config.toml)\n", codexDir)
-	warnCodexHTTPSEndpoint(p.Server.Endpoint)
+	warnCodexHTTPSEndpoint(p.Server.Endpoint, p.Server.CACertFile)
 	fmt.Println()
 	fmt.Println("  Run 'cctrace sync' to start collecting Codex sessions.")
 	return nil

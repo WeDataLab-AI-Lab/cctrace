@@ -63,6 +63,24 @@ var projectRuleScanTimeout = 10 * time.Second
 // projectRuleScan is the rule scanner, indirected for tests.
 var projectRuleScan = projectrule.Scan
 
+// resolveGit reads a cwd's git metadata, indirected for tests.
+var resolveGit = gitctx.Resolve
+
+// headOriginator reads the originator a rollout opens with, indirected for tests.
+var headOriginator = codexlog.HeadOriginator
+
+// gitMetaTTL bounds how long a cwd's git metadata is reused on the path that
+// only needs it for project rules. It matches the Claude syncer's metaTTL: every
+// unchanged session file reaches that path on every pass, and resolving afresh
+// forked up to five git processes per file -- tens of thousands per pass on a
+// machine with a long Codex history, for a few hundred distinct cwds.
+const gitMetaTTL = time.Hour
+
+type gitMetaEntry struct {
+	meta     gitctx.Context
+	cachedAt time.Time
+}
+
 // CodexSyncer scans Codex JSONL session files and sends records to the cctrace server.
 type CodexSyncer struct {
 	// codexDirs lists every Codex home directory to scan for session JSONL files.
@@ -101,6 +119,9 @@ type CodexSyncer struct {
 	// it would repeat on every poll forever). Cleared once the file's size
 	// catches back up to the offset.
 	shrunkFiles map[string]bool
+	// gitMeta caches resolveGit by cwd for gitMetaTTL. Only the watch loop's
+	// goroutine touches it, like rulesSkipUntil.
+	gitMeta map[string]gitMetaEntry
 	// accounts drops the records of excluded accounts before they are sent.
 	accounts *syncer.AccountFilter
 }
@@ -118,8 +139,26 @@ func New(codexDirs []string, profileEmail, userID string, state *syncer.State, c
 		collectPrefixes: collectPrefixes,
 		rulesSkipUntil:  make(map[string]time.Time),
 		shrunkFiles:     make(map[string]bool),
+		gitMeta:         make(map[string]gitMetaEntry),
 		accounts:        syncer.NewAccountFilter(client, state),
 	}
+}
+
+// cachedGitMeta returns cwd's git metadata, resolving it at most once per
+// gitMetaTTL. Only for deciding whether there is anything to send: the
+// repository, commit and branch it returns may be up to the TTL old.
+func (s *CodexSyncer) cachedGitMeta(cwd string) gitctx.Context {
+	if e, ok := s.gitMeta[cwd]; ok && nowFn().Sub(e.cachedAt) < gitMetaTTL {
+		return e.meta
+	}
+	return s.freshGitMeta(cwd)
+}
+
+// freshGitMeta resolves cwd's git metadata now and refreshes the cache with it.
+func (s *CodexSyncer) freshGitMeta(cwd string) gitctx.Context {
+	meta := resolveGit(cwd)
+	s.gitMeta[cwd] = gitMetaEntry{meta: meta, cachedAt: nowFn()}
+	return meta
 }
 
 // findAllFiles returns the union of session JSONL files across every configured
@@ -314,6 +353,13 @@ func (s *CodexSyncer) resetIfShrunk(filePath string, offset int64) int64 {
 		log.Printf("[codex-syncer] %s: shrunk, offset reset %d -> %d (%d bytes no longer on disk)", filePath, offset, fi.Size(), offset-fi.Size())
 	}
 	s.state.SetOffset(filePath, fi.Size())
+	// The originator, and the note that the head was read for it, describe the
+	// file that was there. One cut down and written again can open with another
+	// session_meta, so both go and the next pass with records reads the head
+	// again. The rest of the metadata saved with the offset is left as it was.
+	if fs := s.state.Files[filePath]; fs != nil {
+		fs.CodexOriginator, fs.CodexOriginatorScanned = "", false
+	}
 	// The bytes the ledger described are not on disk any more, so what it says
 	// about the prefix ending at the new offset is unknown. An unknown ledger is
 	// worse than none: it would nudge past records that may no longer exist.
@@ -438,7 +484,42 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 		newOffset = offset
 	}
 
+	// meta is the scan-end state and decides how this tail is sent; cwd and
+	// model then follow the records. None of that is what is saved. The
+	// metadata saved with an offset is where the next pass resumes the scanner,
+	// so it has to be the scanner's state at that offset: the scan-end state
+	// when the offset advances -- a tail can end on a turn_context that no
+	// record follows yet -- and the state this pass started from when the
+	// offset stays put, whether a failed quota send holds it or there was
+	// nothing new. Saved ahead of its offset, a cwd restamps the re-read
+	// records, a token total turns their usage into a difference from a total
+	// that already includes them, and a fork boundary lets the copied parent
+	// history through as the child's own.
+	persist := meta
 	meta = mergeMetadata(meta, scanMeta)
+	// An entry saved before the originator was kept has an offset past the
+	// session_meta that carries it, so this tail would go out with an empty
+	// entrypoint. The head is read for it here: only when there are records to
+	// stamp, because after an upgrade every tracked rollout is in this
+	// condition and most never grow again, and once per file, which the flag
+	// records whatever the head said. The flag alone decides, not whether an
+	// originator is already known: a recordless tail may have saved one of its
+	// own before any record came, and a scan from the start would have kept
+	// the first originator in the file. So what the head says wins, and a head
+	// that says nothing leaves what the scans found. The head lies in front of
+	// the offset, so it is part of the state the pass started from and is
+	// saved even when the offset is held.
+	if offset > 0 && len(records) > 0 && !persist.OriginatorScanned {
+		if head, err := headOriginator(ctx, filePath); err == nil {
+			persist.OriginatorScanned, meta.OriginatorScanned = true, true
+			if head != "" {
+				persist.Originator, meta.Originator = head, head
+			}
+		}
+	}
+	if newOffset != offset {
+		persist = meta
+	}
 	cwd, model := meta.CWD, meta.Model
 	// Built before the no-records return so that return can carry the ledger
 	// across the bytes it consumed. Those bytes held nothing to count, so the
@@ -451,14 +532,14 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 			if projectHash == "" {
 				projectHash = projectHashFromPath(filePath)
 			}
-			gitMeta := gitctx.Resolve(cwd)
-			if err := s.sendProjectRules(ctx, projectHash, projecthash.NameFromPath(cwd), gitMeta); err != nil {
+			gitMeta := s.cachedGitMeta(cwd)
+			if err := s.sendProjectRules(ctx, projectHash, projecthash.NameFromPath(cwd), gitMeta, cwd); err != nil {
 				log.Printf("[codex-syncer] project rules: %v", err)
 			}
 		}
 		if newOffset != offset || metadataUpdated {
 			s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
-			setStateFileMetadata(s.state, filePath, newOffset, meta)
+			setStateFileMetadata(s.state, filePath, newOffset, persist)
 			_ = s.state.Save()
 		}
 		return 0, nil
@@ -492,9 +573,8 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 	}
 
 	if len(storeRecords) == 0 {
-		meta.CWD, meta.Model = cwd, model
 		s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
-		setStateFileMetadata(s.state, filePath, newOffset, meta)
+		setStateFileMetadata(s.state, filePath, newOffset, persist)
 		_ = s.state.Save()
 		return 0, nil
 	}
@@ -504,17 +584,18 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 		projectHash = projectHashFromPath(filePath)
 	}
 	projectName := projecthash.NameFromPath(cwd)
-	gitMeta := gitctx.Resolve(cwd)
+	// Resolved afresh: these records carry the commit and branch, which must
+	// not lag by the cache TTL.
+	gitMeta := s.freshGitMeta(cwd)
 
 	// Drop repositories outside the configured allowlist before sending. Advance
 	// the offset so the dropped records are not rescanned every pass.
 	if !gitctx.AllowsRepository(gitMeta.RepositoryID, s.collectPrefixes) {
-		meta.CWD, meta.Model = cwd, model
 		// The ledger tracks the consumed prefix, not what was sent: records
 		// dropped here still occupy the keys a later same-timestamp record has
 		// to be nudged past, exactly as a from-zero rescan would count them.
 		s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
-		setStateFileMetadata(s.state, filePath, newOffset, meta)
+		setStateFileMetadata(s.state, filePath, newOffset, persist)
 		_ = s.state.Save()
 		return 0, nil
 	}
@@ -527,9 +608,8 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 		return 0, err
 	}
 	if len(storeRecords) == 0 {
-		meta.CWD, meta.Model = cwd, model
 		s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
-		setStateFileMetadata(s.state, filePath, newOffset, meta)
+		setStateFileMetadata(s.state, filePath, newOffset, persist)
 		_ = s.state.Save()
 		return 0, nil
 	}
@@ -547,20 +627,22 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 		}, storeRecords); err != nil {
 		return 0, err
 	}
-	if err := s.sendProjectRules(ctx, projectHash, projectName, gitMeta); err != nil {
+	if err := s.sendProjectRules(ctx, projectHash, projectName, gitMeta, ""); err != nil {
 		log.Printf("[codex-syncer] project rules: %v", err)
 	}
 
-	meta.CWD, meta.Model = cwd, model
 	s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
-	setStateFileMetadata(s.state, filePath, newOffset, meta)
+	setStateFileMetadata(s.state, filePath, newOffset, persist)
 	if err := s.state.Save(); err != nil {
 		log.Printf("[codex-syncer] save state: %v", err)
 	}
 	return len(storeRecords), nil
 }
 
-func (s *CodexSyncer) sendProjectRules(ctx context.Context, projectHash, projectName string, gitMeta gitctx.Context) error {
+// sendProjectRules scans and sends the rules of gitMeta's repository. cachedCWD
+// is set when gitMeta came from cachedGitMeta for that cwd: the cached value
+// then only decides whether a scan is due, and a due scan resolves git afresh.
+func (s *CodexSyncer) sendProjectRules(ctx context.Context, projectHash, projectName string, gitMeta gitctx.Context, cachedCWD string) error {
 	if !gitctx.AllowsRepository(gitMeta.RepositoryID, s.collectPrefixes) {
 		return nil
 	}
@@ -583,6 +665,13 @@ func (s *CodexSyncer) sendProjectRules(ctx context.Context, projectHash, project
 	cacheKey := "codex|" + repositoryKey + "|" + root
 	if until, ok := s.rulesSkipUntil[cacheKey]; ok && nowFn().Before(until) {
 		return nil
+	}
+	if cachedCWD != "" {
+		// The cwd may hold another repository, or HEAD may have moved, since the
+		// metadata was cached. The scan reads the tree as it is now, so the
+		// allowlist and the identity sent with it must come from now as well.
+		// This runs at most once per repository per ruleScanTTL, not per file.
+		return s.sendProjectRules(ctx, projectHash, projectName, s.freshGitMeta(cachedCWD), "")
 	}
 
 	scanCtx, cancel := context.WithTimeout(ctx, projectRuleScanTimeout)
@@ -673,6 +762,8 @@ func (s *CodexSyncer) fileMetadata(filePath string) codexlog.Metadata {
 		return codexlog.Metadata{
 			CWD:                    fs.CWD,
 			Model:                  fs.Model,
+			Originator:             fs.CodexOriginator,
+			OriginatorScanned:      fs.CodexOriginatorScanned,
 			TokenUsageScanned:      fs.TokenUsageScanned,
 			HasTotalTokenUsage:     fs.HasTotalTokenUsage,
 			TotalInputTokens:       fs.TotalInputTokens,
@@ -692,6 +783,8 @@ func (s *CodexSyncer) fileMetadata(filePath string) codexlog.Metadata {
 func setStateFileMetadata(state *syncer.State, filePath string, offset int64, meta codexlog.Metadata) {
 	state.SetOffsetWithMetadata(filePath, offset, meta.CWD, meta.Model)
 	if fs := state.Files[filePath]; fs != nil {
+		fs.CodexOriginator = meta.Originator
+		fs.CodexOriginatorScanned = meta.OriginatorScanned
 		fs.TokenUsageScanned = meta.TokenUsageScanned
 		fs.HasTotalTokenUsage = meta.HasTotalTokenUsage
 		fs.TotalInputTokens = meta.TotalInputTokens
@@ -749,6 +842,7 @@ func mergeMetadata(base, next codexlog.Metadata) codexlog.Metadata {
 func metadataChanged(a, b codexlog.Metadata) bool {
 	return a.CWD != b.CWD ||
 		a.Model != b.Model ||
+		a.Originator != b.Originator ||
 		a.TokenUsageScanned != b.TokenUsageScanned ||
 		a.HasTotalTokenUsage != b.HasTotalTokenUsage ||
 		a.TotalInputTokens != b.TotalInputTokens ||

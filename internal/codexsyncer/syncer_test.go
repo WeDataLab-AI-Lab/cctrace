@@ -1411,3 +1411,11 @@ func TestMergeMetadataKeepsOriginator(t *testing.T) {
 		t.Errorf("Originator = %q, want codex-tui adopted", got)
 	}
 }
+
+// The rescan of a consumed prefix saves what it rebuilt only when
+// metadataChanged reports a difference, and the originator can be the only one.
+func TestMetadataChangedSeesOriginator(t *testing.T) {
+	if !metadataChanged(codexlog.Metadata{CWD: "/p"}, codexlog.Metadata{CWD: "/p", Originator: "codex_exec"}) {
+		t.Error("a rebuilt originator was not reported as a change")
+	}
+}

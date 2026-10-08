@@ -7,7 +7,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import { isFable, isAstra, modelColor } from '@/lib/colors';
@@ -94,23 +93,22 @@ const UserStackTooltip = ({ active, payload, viewMode }: UserStackTooltipProps) 
   );
 };
 
-// recharts 의 `content` 는 함수를 컴포넌트 타입으로 쓴다. 컴포넌트 본문의 화살표
-// 함수는 렌더마다 새 참조라 범례가 통째로 재마운트된다 -- 여기는 호버 상태가 없어
-// 증상이 보이지 않았을 뿐이고, 트렌드 차트에서는 그것이 #552 를 만들었다.
-// 모듈 최상위 컴포넌트로 두고 엘리먼트로 넘긴다.
+// Keep the wrapping legend outside Recharts so its measured height cannot shrink
+// the user rows or mix viewport dimensions with chart coordinates under zoom.
 const UserStackLegend = ({ stackKeys }: { stackKeys: string[] }) => (
-    <div className="flex flex-wrap justify-center gap-4 text-[11px] text-ink-3">
+    <div className="mt-4 flex flex-wrap justify-center gap-4 text-[11px] text-ink-3">
       {stackKeys.map((key) => {
         const fable = isFable(key);
         const astra = isAstra(key);
 
         return (
-          <span key={key} className="inline-flex items-center gap-1">
+          <span key={key} className="inline-flex min-w-0 max-w-full items-center gap-1">
             <svg width={8} height={8} aria-hidden className="inline-block shrink-0">
               <rect width={8} height={8} fill={modelColor(key)} />
             </svg>
             <span
               className={cn(
+                'min-w-0 [overflow-wrap:anywhere]',
                 fable
                   ? 'text-model-fable'
                   : astra
@@ -173,38 +171,40 @@ const UserStackChart = ({ viewMode, data, stackKeys, isLoading = false }: UserSt
 
 
   return (
-    <article className="bg-surface rounded-xl border border-border shadow-[var(--sh-sm)] p-6">
+    <article className="min-w-0 bg-surface rounded-xl border border-border shadow-[var(--sh-sm)] p-6">
       <h3 className="text-[14px] font-semibold text-ink mb-4">{title}</h3>
       {isLoading ? (
         <ChartSkeleton variant="bar" className="h-[280px]" />
       ) : data.length === 0 ? (
         <p className="text-sm text-ink-3 text-center py-8">No data</p>
       ) : (
-        <ResponsiveContainer width="100%" height={Math.max(200, data.length * 40)}>
-          <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
-            {/* Flagship gradients share CSS stop tokens so palette tweaks stay in sync. */}
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
-            <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={yAxisFmt} />
-            <YAxis type="category" dataKey="name" tick={<UserAxisTick />} width={100} />
-            <Tooltip
-              content={<UserStackTooltip viewMode={viewMode} />}
-              wrapperStyle={{ zIndex: 50 }}
-              isAnimationActive={false}
-            />
-            <Legend content={<UserStackLegend stackKeys={stackKeys} />} />
-            <BarStack stackId="a" radius={BAR_STACK_RADIUS}>
-              {stackKeys.map((key) => (
-                <Bar
-                  key={key}
-                  dataKey={key}
-                  stackId="a"
-                  fill={modelColor(key)}
-                  isAnimationActive={false}
-                />
-              ))}
-            </BarStack>
-          </BarChart>
-        </ResponsiveContainer>
+        <>
+          <ResponsiveContainer width="100%" height={Math.max(200, data.length * 40)}>
+            <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
+              {/* Flagship gradients share CSS stop tokens so palette tweaks stay in sync. */}
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
+              <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={yAxisFmt} />
+              <YAxis type="category" dataKey="name" tick={<UserAxisTick />} width={100} interval={0} />
+              <Tooltip
+                content={<UserStackTooltip viewMode={viewMode} />}
+                wrapperStyle={{ zIndex: 50 }}
+                isAnimationActive={false}
+              />
+              <BarStack stackId="a" radius={BAR_STACK_RADIUS}>
+                {stackKeys.map((key) => (
+                  <Bar
+                    key={key}
+                    dataKey={key}
+                    stackId="a"
+                    fill={modelColor(key)}
+                    isAnimationActive={false}
+                  />
+                ))}
+              </BarStack>
+            </BarChart>
+          </ResponsiveContainer>
+          <UserStackLegend stackKeys={stackKeys} />
+        </>
       )}
     </article>
   );

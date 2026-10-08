@@ -3,6 +3,7 @@ package envgen
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -12,6 +13,10 @@ import (
 
 	"cctrace/internal/profile"
 )
+
+// warnOut receives the notes an apply prints about values it chose not to
+// touch. A variable so tests can read them.
+var warnOut io.Writer = os.Stderr
 
 // ClaudeSettingsPath returns the path to the Claude settings.json for the given profile.
 // Uses ClaudeConfigDir if set, otherwise defaults to ~/.claude.
@@ -64,6 +69,40 @@ func withSettingsLock(settingsPath string, fn func() error) error {
 	return fn()
 }
 
+// applyNodeExtraCACerts writes the CA file Claude Code's http/protobuf exporter
+// trusts to NODE_EXTRA_CA_CERTS, and removes it when the CA stops applying
+// (cleared, or the endpoint is no longer https). caFile is claudeCAFile(p).
+//
+// It touches only a value cctrace wrote, recorded in the stamp. This variable
+// is commonly set already for a company proxy, so a value with no record is
+// the user's: with no CA it is left exactly as it is, and with a CA that
+// differs it is still left as it is, with a note naming both. Keeping it is the
+// safer of the two choices -- overwriting would lose a value cctrace has no
+// copy of, while keeping it loses nothing and the note says how to hand the
+// key over. A value the user edits after cctrace wrote it no longer matches the
+// record and becomes theirs again the same way.
+func applyNodeExtraCACerts(settings, envSection map[string]interface{}, caFile string) {
+	recorded := recordedNodeExtraCACerts(settings)
+	raw, has := envSection[envNodeExtraCACerts]
+	current, _ := raw.(string)
+	owned := has && recorded != "" && current == recorded
+	switch {
+	case caFile == "":
+		if owned {
+			delete(envSection, envNodeExtraCACerts)
+		}
+		setRecordedNodeExtraCACerts(settings, "")
+	case has && !owned && current != caFile:
+		fmt.Fprintf(warnOut, "  [!] %s is already set to %v, which cctrace did not write; left as is.\n", envNodeExtraCACerts, raw)
+		fmt.Fprintf(warnOut, "      Claude Code telemetry needs server.ca_cert_file (%s) there. Put both CAs in one\n", caFile)
+		fmt.Fprintf(warnOut, "      PEM file and use it for both, or remove the variable to let cctrace manage it.\n")
+		setRecordedNodeExtraCACerts(settings, "")
+	default:
+		envSection[envNodeExtraCACerts] = caFile
+		setRecordedNodeExtraCACerts(settings, caFile)
+	}
+}
+
 func applyToClaudeSettingsLocked(settingsPath string, p *profile.Profile) error {
 	// Read existing settings or start fresh. A read error other than
 	// "not exist", or an existing file that is not valid JSON, must abort —
@@ -97,6 +136,7 @@ func applyToClaudeSettingsLocked(settingsPath string, p *profile.Profile) error 
 	for k, v := range BuildEnvMap(p) {
 		envSection[k] = v
 	}
+	applyNodeExtraCACerts(settings, envSection, claudeCAFile(p))
 	settings["env"] = envSection
 
 	// Add sync hooks if sync is enabled
@@ -221,6 +261,8 @@ func removeFromClaudeSettingsLocked(settingsPath string) error {
 		for k := range otelKeySet {
 			delete(envSection, k)
 		}
+		// NODE_EXTRA_CA_CERTS only when it is still the value cctrace wrote.
+		applyNodeExtraCACerts(settings, envSection, "")
 		settings["env"] = envSection
 	}
 

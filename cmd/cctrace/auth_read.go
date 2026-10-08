@@ -95,7 +95,10 @@ func issueReadToken(p *profile.Profile, password, device string) (string, error)
 	if err != nil {
 		return "", err
 	}
-	client := &http.Client{Timeout: 30 * time.Second}
+	client, err := serverClient(p.Server.CACertFile, 30*time.Second)
+	if err != nil {
+		return "", err
+	}
 	resp, err := client.Post(profileHTTPAPIEndpoint(p)+"/api/cli/read-token", "application/json", strings.NewReader(string(payload)))
 	if err != nil {
 		return "", fmt.Errorf("server unreachable: %w", err)

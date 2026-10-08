@@ -4,24 +4,42 @@
 #
 # CADDY_TLS_MODE is `internal` by default: Caddy issues from its own CA, which
 # needs no public DNS and works for a bare IP address. Clients then have to
-# trust that CA, and each one reads it from a different variable:
-#
-#   Claude Code, grpc   OTEL_EXPORTER_OTLP_CERTIFICATE
-#   Claude Code, http   NODE_EXTRA_CA_CERTS
-#   Codex               SSL_CERT_FILE
-#
-# SSL_CERT_FILE REPLACES the trust store rather than adding to it. A bundle that
-# contains only this CA makes Codex fail to verify api.openai.com; concatenate
-# it with the system roots.
+# trust that CA. Point the cctrace profile at it once
+# (`cctrace config set server.ca_cert_file <path>`) and cctrace writes it to
+# its own HTTP client, to Claude Code as NODE_EXTRA_CA_CERTS with the exporter
+# switched to http/protobuf on 5318, and to Codex's metrics exporter
+# `tls.ca-certificate`. Measured on Claude Code 2.1.291, its grpc exporter
+# trusted the CA through neither OTEL_EXPORTER_OTLP_CERTIFICATE nor
+# NODE_EXTRA_CA_CERTS; http/protobuf with NODE_EXTRA_CA_CERTS did. Codex 0.160.0
+# given no CA sent nothing over https and logged no error. Whether a CA
+# installed only in the OS keychain is enough for either was not measured, so
+# set the file even then. A running sync daemon keeps the CA it started with,
+# so restart it after a change; Codex's block is rewritten when sync next starts.
 #
 # Export the CA with:
 #   docker compose exec caddy cat /data/caddy/pki/authorities/local/root.crt
 #
-# Set CADDY_TLS_MODE=acme when the name resolves publicly and port 80 is
-# reachable from the internet, and Caddy obtains a real certificate instead --
-# no client-side trust configuration needed at all.
+# For a publicly trusted certificate, set CADDY_TLS_MODE to an ACME account
+# email address (e.g. ops@example.com) when the name resolves publicly and port
+# 80 is reachable from the internet, and Caddy obtains one instead; cctrace and
+# Claude Code then need no CA file, and Codex against a public certificate
+# without one was not measured. The literal `acme` is not accepted: Caddy's tls
+# directive takes `internal`, `force_automate` or an email, and refuses to start
+# on anything else.
+#
+# default_sni is what makes a bare IP address work. A client connecting to an IP
+# literal sends no SNI (RFC 6066 forbids IPs there), and without a default
+# Caddy has no certificate to pick: the handshake ends in "tlsv1 alert internal
+# error" even with the right CA. Measured against the dev stack on 2026-10-06:
+# curl --cacert to https://<ip>:8443 failed that way, and the same request with
+# the SNI forced succeeded; with default_sni, the cctrace client and Codex
+# reached cctraced through Caddy without forcing anything. default_sni only
+# names the certificate for a ClientHello that carries no SNI; a client that
+# sends SNI, as clients of a hostname site address normally do, is matched by
+# that name as before. Only the IP case above was measured.
 {
 	admin off
+	default_sni {$CADDY_SITE_ADDRESS}
 }
 
 # Dashboard and REST API.

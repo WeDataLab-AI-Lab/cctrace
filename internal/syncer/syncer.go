@@ -26,6 +26,18 @@ const batchSize = 200
 const metaTTL = 1 * time.Hour
 const ruleScanTTL = 30 * time.Second
 
+// lookupRetryInterval is how long a git lookup that settled nothing stands for
+// the callers that can wait -- records sent without an allowlist, and the idle
+// metadata refresh -- and how long a file with a held run is left alone. A
+// hung mount costs commandTimeout per lookup, and the watch loop polls every
+// second.
+//
+// It is not a bound per cwd. Under an allowlist a file with new records that
+// is not itself waiting looks its cwds up on its own pass, whatever another
+// file learned about them a second ago: a new session in a broken cwd costs
+// one lookup before it starts waiting too.
+const lookupRetryInterval = 30 * time.Second
+
 // RuleForbiddenTTL parks a repository the server refuses to accept rules for.
 //
 // Exported because internal/codexsyncer needs the same value. It had its own
@@ -84,6 +96,10 @@ var projectRuleScanTimeout = 10 * time.Second
 // projectRuleScan is the rule scanner, indirected for tests.
 var projectRuleScan = projectrule.Scan
 
+// resolveGit reads a cwd's git metadata, indirected for tests. The error wraps
+// gitctx.ErrUncertain when the lookup did not hear git's answer.
+var resolveGit = gitctx.ResolveChecked
+
 type projectMeta struct {
 	repositoryRoot     string
 	projectName        string
@@ -96,6 +112,15 @@ type projectMeta struct {
 	commitSHA          string
 	branch             string
 	cachedAt           time.Time
+	// uncertain is set when the lookup did not hear git's answer
+	// (gitctx.ErrUncertain): the identity above is a fallback that says
+	// nothing about the cwd. retryAt is when git may be asked again.
+	uncertain bool
+	retryAt   time.Time
+	// hold is set, under an allowlist only, when this lookup cannot be used
+	// to judge the cwd's records: the reason they are held (see the HeldReason
+	// constants). Such a lookup is never put in cwdCache.
+	hold string
 }
 
 // Syncer orchestrates scanning JSONL files and sending records to the server.
@@ -133,6 +158,19 @@ type Syncer struct {
 	lastPassSummary string
 	// accounts drops the records of excluded accounts before they are sent.
 	accounts *AccountFilter
+	// passMeta holds every lookup made in the current pass, so files sharing a
+	// cwd share one lookup. Cleared at the start of each SyncOnce.
+	passMeta map[string]*projectMeta
+	// uncertainMeta holds each cwd's last lookup that settled nothing --
+	// uncertain, or held under an allowlist -- which stands until its retryAt
+	// so a git that keeps failing is not asked every pass.
+	uncertainMeta map[string]*projectMeta
+	// heldRetryAt is when a file with a held run in its tail is looked at
+	// again. The entry stays for as long as the file keeps holding.
+	heldRetryAt map[string]time.Time
+	// stateDirty marks a state change that is saved at the end of the pass
+	// rather than where it was made (see flushState).
+	stateDirty bool
 }
 
 // PassStats is the result of one scan-and-send pass.
@@ -182,6 +220,9 @@ func New(claudeDir, profileEmail, userID string, state *State, client *Client, c
 		client:          client,
 		collectPrefixes: collectPrefixes,
 		cwdCache:        make(map[string]*projectMeta),
+		passMeta:        make(map[string]*projectMeta),
+		uncertainMeta:   make(map[string]*projectMeta),
+		heldRetryAt:     make(map[string]time.Time),
 		metaSent:        make(map[string]time.Time),
 		rulesSkipUntil:  make(map[string]time.Time),
 		shrunkFiles:     make(map[string]bool),
@@ -230,6 +271,10 @@ func (s *Syncer) SyncOnce(ctx context.Context) (int, error) {
 	// Reset before anything can return, so an early exit never leaves the
 	// previous pass's result looking like this one's.
 	s.pass = PassStats{}
+	s.mu.Lock()
+	clear(s.passMeta)
+	s.mu.Unlock()
+	defer s.flushState()
 	files, err := sessionlog.FindJSONLFiles(s.claudeDir)
 	if err != nil {
 		return 0, fmt.Errorf("find jsonl files: %w", err)
@@ -262,6 +307,10 @@ func (s *Syncer) SyncOnce(ctx context.Context) (int, error) {
 			return total, err
 		}
 		n, err := s.syncFile(ctx, file, firstRun)
+		// Counted before the error is looked at: a file that fails part-way
+		// has still sent what it sent, and a pass that got anything through
+		// is not a stalled one (see recordPassOutcome).
+		total += n
 		if err != nil {
 			if ctxErr := ctx.Err(); ctxErr != nil {
 				return total, ctxErr
@@ -273,7 +322,6 @@ func (s *Syncer) SyncOnce(ctx context.Context) (int, error) {
 			s.notePassFailure(err)
 			continue
 		}
-		total += n
 	}
 	s.pass.Sent = total
 	s.recordPassOutcome()
@@ -377,6 +425,7 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 		fi, err := os.Stat(filePath)
 		if err == nil {
 			s.state.SetOffset(filePath, fi.Size())
+			s.resetLastCWD(filePath, fi.Size())
 			if fi.Size() > 0 {
 				// Recorded in state as well as logged: sync.log rotates at 10MB and
 				// this line is written once per file, so on an active machine the
@@ -390,6 +439,10 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 				log.Printf("[syncer] %s: skipped (pre-existing at first sync — earlier content is not collected) bytes=%d", filePath, fi.Size())
 			}
 		}
+		return 0, nil
+	}
+
+	if until, holding := s.heldRetryAt[filePath]; holding && nowFn().Before(until) {
 		return 0, nil
 	}
 
@@ -418,6 +471,9 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 		}
 		offset = fi.Size()
 		s.state.SetOffset(filePath, offset)
+		s.resetLastCWD(filePath, offset)
+		// Whatever was holding this file's tail is no longer on disk.
+		s.state.Files[filePath].Held = nil
 		if err := s.state.Save(); err != nil {
 			log.Printf("[syncer] failed to save state: %v", err)
 		}
@@ -425,17 +481,27 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 		delete(s.shrunkFiles, filePath)
 	}
 
-	records, newOffset, err := sessionlog.ScanFileContext(ctx, filePath, offset)
+	s.pruneTaints(filePath, offset)
+
+	records, newOffset, skipped, err := sessionlog.ScanFileWithSkips(ctx, filePath, offset)
 	if err != nil {
 		return 0, err
 	}
 	projectHash := sessionlog.ProjectHash(s.claudeDir, filePath)
+	if len(s.collectPrefixes) > 0 && len(records) > 0 {
+		return s.syncJudgedTail(ctx, filePath, projectHash, records, skipped, offset, newOffset)
+	}
+	tailCWD, tailUnknown := lastScanCWD(records, skipped)
 
-	// Extract project metadata from CWD
+	// Extract project metadata from CWD. Records are sent with this pass's
+	// lookup (see recordMeta); only the idle metadata refresh below is served
+	// from the hour cache.
 	var meta projectMeta
+	var cwd string
 	for _, r := range records {
 		if r.CWD != "" {
-			meta = *s.resolveProjectMeta(r.CWD)
+			cwd = r.CWD
+			meta = *s.recordMeta(cwd)
 			break
 		}
 	}
@@ -448,22 +514,28 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 		if cached && time.Since(sent) < metaTTL {
 			// Cache hit: skip PeekCWD and metadata HTTP send
 			if len(records) == 0 {
-				s.persistAdvancedOffset(filePath, offset, newOffset)
+				s.persistAdvancedOffset(filePath, offset, newOffset, tailCWD, tailUnknown)
 				return 0, nil
 			}
 		} else {
-			if cwd := sessionlog.PeekCWD(filePath); cwd != "" {
-				meta = *s.resolveProjectMeta(cwd)
+			if cwd = sessionlog.PeekCWD(filePath); cwd != "" {
+				if len(records) > 0 {
+					meta = *s.recordMeta(cwd)
+				} else {
+					meta = *s.resolveProjectMeta(cwd)
+				}
 			}
 		}
 	}
 
 	// Drop repositories outside the configured allowlist before sending. Advance
 	// the offset only when the repository id is known, so a transient failure to
-	// resolve git metadata is retried rather than silently dropped.
+	// resolve git metadata is retried rather than silently dropped. Under an
+	// allowlist only a tail without records reaches this point; records are
+	// judged in syncJudgedTail.
 	if !gitctx.AllowsRepository(meta.repositoryID, s.collectPrefixes) {
 		if meta.repositoryID != "" {
-			s.persistAdvancedOffset(filePath, offset, newOffset)
+			s.persistAdvancedOffset(filePath, offset, newOffset, tailCWD, tailUnknown)
 		}
 		return 0, nil
 	}
@@ -482,7 +554,7 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 					CommitSHA:          meta.commitSHA,
 					Branch:             meta.branch,
 				}, nil)
-			if err := s.sendProjectRules(ctx, projectHash, &meta); err != nil {
+			if err := s.sendProjectRules(ctx, projectHash, &meta, cwd); err != nil {
 				log.Printf("[syncer] project rules: %v", err)
 			}
 			s.mu.Lock()
@@ -492,50 +564,75 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 		// The scan may still have consumed bytes without producing records (e.g. an
 		// oversized line was skipped). Persist the advanced offset, otherwise the
 		// same bytes are re-drained on every pass.
-		s.persistAdvancedOffset(filePath, offset, newOffset)
+		s.persistAdvancedOffset(filePath, offset, newOffset, tailCWD, tailUnknown)
 		return 0, nil
 	}
 
 	// Convert to store.SessionRecord
 	storeRecords := make([]*store.SessionRecord, 0, len(records))
-	home := normalizeHome(s.claudeDir)
+	convert := s.newRecordConverter(filePath, projectHash)
 	activeAttributionSkill := s.activeAttributionSkill(filePath)
-	sourceFile := filepath.Base(filePath)
-	// Subagent files carry a sibling <name>.meta.json whose toolUseId links back to
-	// the main-thread Task/Agent tool_use that spawned this sidechain.
-	toolUseID := subagentToolUseID(filePath)
 	for _, r := range records {
 		attributionCommand := attributionSkillInvocationName(r, &activeAttributionSkill)
-		sr := toStoreRecord(r, s.profileEmail, s.userID, projectHash, attributionCommand)
-		s.classifyCommand(sr, r.CWD)
-		if sr != nil {
-			sr.SourceFile = sourceFile
-			if toolUseID != "" {
-				sr.ToolUseID = toolUseID
-			}
-			// Per record, not per payload: a record older than the first
-			// observation must stay blank, so an envelope-level value would be
-			// wrong by definition for exactly those rows.
-			sr.AccountID = s.state.ClaudeAccountAt(home, sr.Ts)
+		if sr := convert(r, attributionCommand); sr != nil {
 			storeRecords = append(storeRecords, sr)
 		}
 	}
 
+	sent, err := s.sendRecords(ctx, filePath, projectHash, &meta, cwd, storeRecords)
+	if err != nil {
+		return sent, err
+	}
+
+	// Update state only after successful send
+	s.advanceOffset(filePath, newOffset, tailCWD, tailUnknown).LastAttributionSkill = activeAttributionSkill
+	if err := s.state.Save(); err != nil {
+		log.Printf("[syncer] failed to save state: %v", err)
+	}
+
+	return sent, nil
+}
+
+// newRecordConverter returns the conversion of one session file's records to
+// store.SessionRecord, with what is the same for every record of the file
+// worked out once. The conversion returns nil for a record that is not sent.
+func (s *Syncer) newRecordConverter(filePath, projectHash string) func(r *sessionlog.Record, attributionCommand string) *store.SessionRecord {
+	home := normalizeHome(s.claudeDir)
+	sourceFile := filepath.Base(filePath)
+	// Subagent files carry a sibling <name>.meta.json whose toolUseId links back to
+	// the main-thread Task/Agent tool_use that spawned this sidechain.
+	toolUseID := subagentToolUseID(filePath)
+	return func(r *sessionlog.Record, attributionCommand string) *store.SessionRecord {
+		sr := toStoreRecord(r, s.profileEmail, s.userID, projectHash, attributionCommand)
+		s.classifyCommand(sr, r.CWD)
+		if sr == nil {
+			return nil
+		}
+		sr.SourceFile = sourceFile
+		if toolUseID != "" {
+			sr.ToolUseID = toolUseID
+		}
+		// Per record, not per payload: a record older than the first
+		// observation must stay blank, so an envelope-level value would be
+		// wrong by definition for exactly those rows.
+		sr.AccountID = s.state.ClaudeAccountAt(home, sr.Ts)
+		return sr
+	}
+}
+
+// sendRecords sends storeRecords under meta's identity in batches, then the
+// repository's rules, and reports how many records the server took. A nil
+// error means every record is accounted for and the caller may advance past
+// them; that includes the records of excluded accounts, which are dropped here.
+func (s *Syncer) sendRecords(ctx context.Context, filePath, projectHash string, meta *projectMeta, cwd string, storeRecords []*store.SessionRecord) (int, error) {
 	// An excluded account's records are consumed like sent ones: the offset
 	// moves past them, so they are neither retried every pass nor left in
 	// front of the records that follow them.
-	storeRecords, err = s.accounts.Drop(ctx, "anthropic", storeRecords)
+	storeRecords, err := s.accounts.Drop(ctx, "anthropic", storeRecords)
 	if err != nil {
 		return 0, &sendError{err: err}
 	}
 	if len(storeRecords) == 0 {
-		s.state.SetOffset(filePath, newOffset)
-		if fs := s.state.Files[filePath]; fs != nil {
-			fs.LastAttributionSkill = activeAttributionSkill
-		}
-		if err := s.state.Save(); err != nil {
-			log.Printf("[syncer] failed to save state: %v", err)
-		}
 		return 0, nil
 	}
 
@@ -557,6 +654,12 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 				CommitSHA:          meta.commitSHA,
 				Branch:             meta.branch,
 			}, storeRecords[i:end])
+		// Before the error is looked at: a batch split after a 413 can have
+		// its first half accepted and its second fail, and the client says
+		// how many got through either way. A group whose first half is
+		// accepted again on every retry therefore counts as progress each
+		// time, although its offset does not move.
+		sent += n
 		if err != nil {
 			// The offset is deliberately left where it is by the caller, so the
 			// refused bytes stay collectable once the limit is raised. Recorded
@@ -573,7 +676,6 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 			}
 			return sent, &sendError{err: err}
 		}
-		sent += n
 	}
 	// Every batch got through, so whatever the server was refusing is refused no
 	// longer -- the operator raised the limit, or the run of large records ended.
@@ -582,7 +684,7 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 	if fs := s.state.Files[filePath]; fs != nil && fs.BlockedByBodyLimit {
 		fs.BlockedByBodyLimit = false
 	}
-	if err := s.sendProjectRules(ctx, projectHash, &meta); err != nil {
+	if err := s.sendProjectRules(ctx, projectHash, meta, cwd); err != nil {
 		log.Printf("[syncer] project rules: %v", err)
 	}
 
@@ -592,16 +694,6 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 		s.metaSent[projectHash] = time.Now()
 		s.mu.Unlock()
 	}
-
-	// Update state only after successful send
-	s.state.SetOffset(filePath, newOffset)
-	if fs := s.state.Files[filePath]; fs != nil {
-		fs.LastAttributionSkill = activeAttributionSkill
-	}
-	if err := s.state.Save(); err != nil {
-		log.Printf("[syncer] failed to save state: %v", err)
-	}
-
 	return sent, nil
 }
 
@@ -609,16 +701,19 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 // Scans that skip an oversized line consume bytes but yield no records, so the
 // early-return paths must still persist the offset or the file is re-drained on
 // every pass.
-func (s *Syncer) persistAdvancedOffset(filePath string, offset, newOffset int64) {
+func (s *Syncer) persistAdvancedOffset(filePath string, offset, newOffset int64, lastCWD string, cwdUnknown bool) {
 	if newOffset == offset {
 		return
 	}
-	s.state.SetOffset(filePath, newOffset)
+	s.advanceOffset(filePath, newOffset, lastCWD, cwdUnknown)
 	if err := s.state.Save(); err != nil {
 		log.Printf("[syncer] failed to save state: %v", err)
 	}
 }
 
+// resolveProjectMeta returns cwd's metadata from the metaTTL cache, looking git
+// up only when the cache has nothing current. It serves what does not have to
+// be this pass's answer: the idle metadata refresh and re-enrichment.
 func (s *Syncer) resolveProjectMeta(cwd string) *projectMeta {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -626,13 +721,103 @@ func (s *Syncer) resolveProjectMeta(cwd string) *projectMeta {
 	if m, ok := s.cwdCache[cwd]; ok && time.Since(m.cachedAt) < metaTTL {
 		return m
 	}
+	if u := s.standingUncertain(cwd); u != nil {
+		return u
+	}
+	return s.lookupLocked(cwd)
+}
 
+// standingUncertain returns cwd's last lookup that settled nothing while it is
+// too early to ask git again, or nil. Called with s.mu held.
+func (s *Syncer) standingUncertain(cwd string) *projectMeta {
+	if u, ok := s.uncertainMeta[cwd]; ok && nowFn().Before(u.retryAt) {
+		return u
+	}
+	return nil
+}
+
+// freshProjectMeta returns cwd's metadata as of this pass: this pass's lookup
+// when there is one, otherwise a new lookup. The metaTTL cache is never the
+// answer.
+func (s *Syncer) freshProjectMeta(cwd string) *projectMeta {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if m, ok := s.passMeta[cwd]; ok {
+		return m
+	}
+	return s.lookupLocked(cwd)
+}
+
+// recordMeta returns the metadata a file's new records are sent with when no
+// allowlist judges them.
+//
+// That is this pass's lookup, used whole: the repository identity, commit and
+// branch a record goes out with all come from now, so a backlog is not filed
+// under a commit -- or a repository -- cached up to metaTTL ago. Two lookups
+// are not believed over a warm cache entry (see warmEntry), and git that keeps
+// failing is asked again once per lookupRetryInterval, not once per pass.
+func (s *Syncer) recordMeta(cwd string) *projectMeta {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	m, ok := s.passMeta[cwd]
+	if !ok {
+		if m = s.standingUncertain(cwd); m == nil {
+			m = s.lookupLocked(cwd)
+		}
+	}
+	if c := s.warmEntry(cwd, m); c != nil {
+		return c
+	}
+	return m
+}
+
+// warmEntry returns the metaTTL cache entry that stands in for the lookup m
+// when no allowlist is configured, or nil when m is to be used.
+//
+// Before records looked git up every pass, a cwd resolved once kept that
+// identity for metaTTL whatever git said in between. Two answers would now
+// replace it at once and file the records under a local fallback: a lookup
+// that did not hear git at all, and a certain "no repository here" from a cwd
+// that resolved a moment ago (a volume not remounted yet, a directory deleted
+// under a running session). Neither is believed over a certain entry still
+// inside metaTTL; that entry ages out when it would have before.
+//
+// Nothing else stands in. A certain lookup that resolves -- to the cached
+// repository or to another one -- is used whole: identity, commit and branch
+// come from the same moment. A cwd that now holds a different repository is
+// therefore sent under it at once rather than when the cache ages out, which
+// is a change from the cache, and the intended one: the cached identity with
+// the new repository's commit would be data about neither.
+//
+// With an allowlist nothing stands in: what git says now is what is judged.
+// Called with s.mu held.
+func (s *Syncer) warmEntry(cwd string, m *projectMeta) *projectMeta {
+	if len(s.collectPrefixes) > 0 {
+		return nil
+	}
+	c, ok := s.cwdCache[cwd]
+	if !ok || c.uncertain || time.Since(c.cachedAt) >= metaTTL {
+		return nil
+	}
+	if m.uncertain || (c.repositoryIDSource == "resolved" && m.repositoryIDSource == "fallback") {
+		return c
+	}
+	return nil
+}
+
+// lookupLocked runs git for cwd and records the result for the pass and in the
+// metaTTL cache. Under an allowlist it is also where a replaced repository is
+// noticed (observeIdentity): every lookup that can judge records passes here,
+// so none of them judges by the recorded identity without looking.
+// Called with s.mu held.
+func (s *Syncer) lookupLocked(cwd string) *projectMeta {
 	m := &projectMeta{
 		projectName: filepath.Base(cwd),
 		cachedAt:    time.Now(),
 	}
 
-	g := gitctx.Resolve(cwd)
+	g, err := resolveGit(cwd)
+	m.uncertain = err != nil
 	// repositoryRoot stays empty when git reports no repository: it is the rule
 	// scan root (see sendProjectRules), and a non-repo cwd is not scannable.
 	m.repositoryRoot = g.RepositoryRoot
@@ -651,11 +836,44 @@ func (s *Syncer) resolveProjectMeta(cwd string) *projectMeta {
 	m.commitSHA = g.CommitSHA
 	m.branch = g.Branch
 
-	s.cwdCache[cwd] = m
+	s.passMeta[cwd] = m
+	if len(s.collectPrefixes) > 0 {
+		// Only under an allowlist: nothing is judged without one, and the
+		// default path gains neither state writes nor file listings.
+		if m.uncertain {
+			m.hold = HeldReasonGitUncertain
+		} else {
+			m.hold = s.observeIdentity(cwd, g)
+		}
+	}
+	// A lookup that settled nothing stands for lookupRetryInterval, so the
+	// callers that may wait do not ask git again every pass.
+	if m.uncertain || m.hold != "" {
+		m.retryAt = nowFn().Add(lookupRetryInterval)
+		s.uncertainMeta[cwd] = m
+	} else {
+		delete(s.uncertainMeta, cwd)
+	}
+	if len(s.collectPrefixes) > 0 {
+		// A lookup that judges nothing is not cached as the cwd's identity.
+		if m.hold == "" {
+			s.cwdCache[cwd] = m
+		}
+		return m
+	}
+	// With nothing certain to keep, an uncertain fallback is cached like any
+	// other answer, as it always was: the idle refresh then leaves a broken cwd
+	// alone for metaTTL instead of asking git on every pass.
+	if s.warmEntry(cwd, m) == nil {
+		s.cwdCache[cwd] = m
+	}
 	return m
 }
 
-func (s *Syncer) sendProjectRules(ctx context.Context, projectHash string, meta *projectMeta) error {
+// sendProjectRules scans and sends the rules of meta's repository. cachedCWD is
+// set when meta came from the metaTTL cache for that cwd: the cached value then
+// only decides whether a scan is due, and a due scan resolves git afresh.
+func (s *Syncer) sendProjectRules(ctx context.Context, projectHash string, meta *projectMeta, cachedCWD string) error {
 	// Only a real git repository root is scannable. repositoryRoot is empty for a
 	// non-repo cwd, and scanning that cwd would walk an unbounded tree ("/",
 	// "$HOME", a directory holding a hundred checkouts) and merge unrelated
@@ -679,6 +897,20 @@ func (s *Syncer) sendProjectRules(ctx context.Context, projectHash string, meta 
 		return nil
 	}
 	s.mu.Unlock()
+	if cachedCWD != "" {
+		// The cwd may hold another repository, or HEAD may have moved, since the
+		// metadata was cached. The scan reads the tree as it is now, so the
+		// allowlist and the identity sent with it must come from now as well.
+		// This runs at most once per repository per ruleScanTTL, not per file:
+		// the fresh value replaces the cached one, so the next file of the same
+		// cwd finds the scan parked under the fresh key, or, when the fresh
+		// repository is excluded, is dropped by syncFile's allowlist check.
+		fresh := s.freshProjectMeta(cachedCWD)
+		if !gitctx.AllowsRepository(fresh.repositoryID, s.collectPrefixes) {
+			return nil
+		}
+		return s.sendProjectRules(ctx, projectHash, fresh, "")
+	}
 
 	scanCtx, cancel := context.WithTimeout(ctx, projectRuleScanTimeout)
 	defer cancel()

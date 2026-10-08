@@ -10,7 +10,7 @@ import (
 // events is the one command that needs a session id: asking for "all events" over a
 // window returns a firehose nobody reads.
 func TestEventsRequiresASession(t *testing.T) {
-	err := runEvents("", "tok", "", 50, true, nil)
+	err := runEvents(http.DefaultClient, "", "tok", "", 50, true, nil)
 	if err == nil || !strings.Contains(err.Error(), "session") {
 		t.Fatalf("error = %v, want a refusal naming --session", err)
 	}
@@ -24,7 +24,7 @@ func TestEventsSendsSessionFilter(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	if err := runEvents(srv.URL, "tok", "ses-1", 50, true, nil); err != nil {
+	if err := runEvents(http.DefaultClient, srv.URL, "tok", "ses-1", 50, true, nil); err != nil {
 		t.Fatalf("runEvents: %v", err)
 	}
 	if gotPath != "/api/open/v1/events" {
@@ -42,7 +42,7 @@ func TestEventsTableReadsBareArray(t *testing.T) {
 	defer srv.Close()
 
 	var out strings.Builder
-	if err := runEvents(srv.URL, "tok", "ses-1", 50, false, &out); err != nil {
+	if err := runEvents(http.DefaultClient, srv.URL, "tok", "ses-1", 50, false, &out); err != nil {
 		t.Fatalf("runEvents: %v", err)
 	}
 	for _, want := range []string{"api_request", "0.250000", "12"} {

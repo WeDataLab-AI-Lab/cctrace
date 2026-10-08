@@ -57,6 +57,13 @@ func insightsSubcmd(kind, short string, hasProject bool) *cobra.Command {
 				return fmt.Errorf("no sync endpoint configured; run 'cctrace init' to set one")
 			}
 			client := openinsights.NewClient(endpoint, openAPIToken(p))
+			tr, err := serverTransport(p.Server.CACertFile)
+			if err != nil {
+				return err
+			}
+			if tr != nil {
+				client.SetTransport(tr)
+			}
 			now := time.Now().UTC().Truncate(time.Second)
 			if kind == "cost" {
 				return runInsightsCost(cmd.Context(), client, now, span, limit, asJSON, os.Stdout)

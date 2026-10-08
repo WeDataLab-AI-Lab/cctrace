@@ -64,8 +64,8 @@ func ReadConfig(codexDir string) (*Config, error) {
 // WriteOtelBlock writes or updates the [otel] section in ~/.codex/config.toml.
 // Idempotent: existing [otel] section (inline or legacy table form, including
 // duplicates) is replaced, other config preserved.
-func WriteOtelBlock(codexDir, endpoint, authToken string) error {
-	_, err := EnsureOtelBlock(codexDir, endpoint, authToken)
+func WriteOtelBlock(codexDir, endpoint, authToken, caFile string) error {
+	_, err := EnsureOtelBlock(codexDir, endpoint, authToken, caFile)
 	return err
 }
 
@@ -79,7 +79,9 @@ var ErrMultilineRootOtelKey = errors.New("config.toml has a multi-line root otel
 // duplicates, or a changed endpoint/token). Returns changed=true if it wrote.
 // Self-heal entry point for already-enabled Codex users — calling it every sync
 // is cheap because an already-correct config is left untouched.
-func EnsureOtelBlock(codexDir, endpoint, authToken string) (bool, error) {
+//
+// caFile is the profile's server.ca_cert_file; empty writes no tls table.
+func EnsureOtelBlock(codexDir, endpoint, authToken, caFile string) (bool, error) {
 	path := filepath.Join(codexDir, "config.toml")
 
 	var existing string
@@ -99,7 +101,7 @@ func EnsureOtelBlock(codexDir, endpoint, authToken string) (bool, error) {
 	// JSONL syncer stamps session records with (#715). An unreadable file leaves
 	// the header out: it must not stop the block from being written.
 	accountID, _ := codexauth.ReadAccountID(codexDir)
-	updated := replaceOrAppendOtelSection(existing, buildOtelBlock(endpoint, authToken, accountID))
+	updated := replaceOrAppendOtelSection(existing, buildOtelBlock(endpoint, authToken, accountID, caFile))
 	if updated == existing {
 		return false, nil
 	}
@@ -130,7 +132,10 @@ const (
 // profiles on the same server share the process CODEX_HOME and would otherwise
 // overwrite each other). An explicit `cctrace init` passes false so a reissued
 // token replaces a stale one.
-func HealExistingOtelBlock(codexDir, endpoint, authToken string, keepHomeToken bool) (HealResult, error) {
+//
+// The CA is the profile's, not the home's: the block is cctrace's to write, so a
+// tls table added there by hand goes when the profile has no CA.
+func HealExistingOtelBlock(codexDir, endpoint, authToken, caFile string, keepHomeToken bool) (HealResult, error) {
 	data, err := os.ReadFile(filepath.Join(codexDir, "config.toml"))
 	if os.IsNotExist(err) {
 		return HealNoOtel, nil
@@ -148,7 +153,7 @@ func HealExistingOtelBlock(codexDir, endpoint, authToken string, keepHomeToken b
 	if token := existingBearerToken(section); keepHomeToken && token != "" {
 		authToken = token
 	}
-	changed, err := EnsureOtelBlock(codexDir, endpoint, authToken)
+	changed, err := EnsureOtelBlock(codexDir, endpoint, authToken, caFile)
 	if changed {
 		return HealWritten, err
 	}
@@ -206,7 +211,14 @@ func sendsTo(section []string, metricsEndpoint string) bool {
 
 // buildOtelBlock constructs the [otel] TOML section string.
 // accountID is sent only when known -- an empty header would name no account.
-func buildOtelBlock(endpoint, authToken, accountID string) string {
+//
+// caFile becomes the exporter's tls table. Measured on 0.160.0, an https
+// collector behind a private CA received nothing without this table and nothing
+// was logged, and received the same metrics as plain http with it. For 0.153.4,
+// a #644 comment found that the binary's otlp-http options have a `tls` field
+// (from its string table); applying the table and sending over https was
+// measured only on 0.160.0.
+func buildOtelBlock(endpoint, authToken, accountID, caFile string) string {
 	metricsEndpoint := codexMetricsEndpoint(endpoint)
 	var headers []string
 	if authToken != "" {
@@ -215,10 +227,14 @@ func buildOtelBlock(endpoint, authToken, accountID string) string {
 	if accountID != "" {
 		headers = append(headers, fmt.Sprintf("%s = %q", CodexAccountHeader, accountID))
 	}
+	fields := fmt.Sprintf("endpoint = %q, protocol = \"binary\"", metricsEndpoint)
 	if len(headers) > 0 {
-		return fmt.Sprintf("[otel]\nmetrics_exporter = { otlp-http = { endpoint = %q, protocol = \"binary\", headers = { %s } } }\n", metricsEndpoint, strings.Join(headers, ", "))
+		fields += fmt.Sprintf(", headers = { %s }", strings.Join(headers, ", "))
 	}
-	return fmt.Sprintf("[otel]\nmetrics_exporter = { otlp-http = { endpoint = %q, protocol = \"binary\" } }\n", metricsEndpoint)
+	if caFile != "" {
+		fields += fmt.Sprintf(", tls = { ca-certificate = %q }", caFile)
+	}
+	return fmt.Sprintf("[otel]\nmetrics_exporter = { otlp-http = { %s } }\n", fields)
 }
 
 // CodexAccountHeader carries the Codex billing account id with each metrics
@@ -238,16 +254,8 @@ func codexMetricsEndpoint(endpoint string) string {
 		return strings.TrimRight(endpoint, "/") + "/v1/metrics"
 	}
 
-	host := u.Hostname()
-	port := u.Port()
-	switch port {
-	case "4317":
-		port = "4318"
-	case "14317":
-		port = "14318"
-	}
-	if port != "" {
-		u.Host = net.JoinHostPort(host, port)
+	if port := otlpHTTPPort(u.Port()); port != "" {
+		u.Host = net.JoinHostPort(u.Hostname(), port)
 	}
 
 	path := strings.TrimRight(u.Path, "/")
@@ -266,6 +274,36 @@ func codexMetricsEndpoint(endpoint string) string {
 	u.RawQuery = ""
 	u.Fragment = ""
 	return u.String()
+}
+
+// OTLPHTTPEndpoint returns endpoint with a known OTLP gRPC port replaced by its
+// OTLP/HTTP partner, keeping scheme, host and path. Any other endpoint is
+// returned as given. It is the base URL an OTLP/HTTP exporter appends its
+// signal paths to, for a client that cannot use the gRPC port.
+func OTLPHTTPEndpoint(endpoint string) string {
+	u, err := url.Parse(strings.TrimSpace(endpoint))
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return endpoint
+	}
+	if port := otlpHTTPPort(u.Port()); port != u.Port() {
+		u.Host = net.JoinHostPort(u.Hostname(), port)
+	}
+	return u.String()
+}
+
+// otlpHTTPPort maps the OTLP gRPC ports cctrace deployments publish to the
+// OTLP/HTTP port beside each. Other ports are returned unchanged.
+func otlpHTTPPort(port string) string {
+	switch port {
+	case "4317":
+		return "4318"
+	case "14317":
+		return "14318"
+	case "5317":
+		// The TLS overlay's OTLP ports (deploy/docker-compose.tls.yml).
+		return "5318"
+	}
+	return port
 }
 
 // replaceOrAppendOtelSection removes every existing otel section (inline OR

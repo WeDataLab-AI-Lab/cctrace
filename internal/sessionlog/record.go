@@ -31,6 +31,12 @@ type Record struct {
 	// in: two different last-prompt lines marshal back to identical bytes. Anything
 	// that needs to tell such records apart has to look at what was actually read.
 	RawLine []byte `json:"-"`
+
+	// Offset is the byte position in the file where this record's line starts.
+	// A scan's newOffset says where the whole scan ended; this says where each
+	// record began, so a caller can consume a tail up to any record and resume
+	// from that record later.
+	Offset int64 `json:"-"`
 }
 
 // ForkRef links a branched session back to its origin. Present on the first

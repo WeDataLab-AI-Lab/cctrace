@@ -16,7 +16,9 @@ type authResponse struct {
 	ApiToken           string `json:"api_token"`
 }
 
-func authenticateUser(syncEndpoint, userID, password, authToken string) (*authResponse, error) {
+// authenticateUser takes the client from init, which builds it from the CA file
+// asked just before: login is the first request, and it has to trust that CA.
+func authenticateUser(client *http.Client, syncEndpoint, userID, password, authToken string) (*authResponse, error) {
 	u, err := url.Parse(strings.TrimRight(syncEndpoint, "/") + "/api/cli/auth")
 	if err != nil {
 		return nil, err
@@ -32,7 +34,7 @@ func authenticateUser(syncEndpoint, userID, password, authToken string) (*authRe
 		req.Header.Set("Authorization", "Bearer "+authToken)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("server unreachable: %w", err)
 	}

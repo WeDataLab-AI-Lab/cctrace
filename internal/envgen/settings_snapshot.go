@@ -24,6 +24,11 @@ const (
 	envBSPMaxExportBatch  = "OTEL_BSP_MAX_EXPORT_BATCH_SIZE"
 	envBSPExportTimeout   = "OTEL_BSP_EXPORT_TIMEOUT"
 	envResourceAttributes = "OTEL_RESOURCE_ATTRIBUTES"
+	// envNodeExtraCACerts is deliberately NOT in otelEnvKeys. It is commonly
+	// set already, for a company proxy, so a value already there is the
+	// user's. cctrace owns it only while it holds exactly the value cctrace
+	// wrote, which the stamp records (see applyNodeExtraCACerts).
+	envNodeExtraCACerts = "NODE_EXTRA_CA_CERTS"
 )
 
 // otelEnvKeys is the single list of managed key names.
@@ -75,10 +80,17 @@ func takeSnapshot(settings map[string]interface{}) *settingsSnapshot {
 	}
 
 	if env, ok := settings["env"].(map[string]interface{}); ok {
+		recorded := recordedNodeExtraCACerts(settings)
 		for k, v := range env {
-			if !otelKeySet[k] {
-				s.envKeys[k] = fmt.Sprintf("%v", v)
+			if otelKeySet[k] {
+				continue
 			}
+			// The CA file cctrace wrote is cctrace's to change; any other value
+			// under that key is the user's and stays guarded.
+			if k == envNodeExtraCACerts && recorded != "" && v == recorded {
+				continue
+			}
+			s.envKeys[k] = fmt.Sprintf("%v", v)
 		}
 	}
 

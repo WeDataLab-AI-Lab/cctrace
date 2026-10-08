@@ -28,7 +28,7 @@ bar = 1
 		t.Fatalf("seed: %v", err)
 	}
 
-	if err := WriteOtelBlock(dir, "http://new:14317", "new-token"); err != nil {
+	if err := WriteOtelBlock(dir, "http://new:14317", "new-token", ""); err != nil {
 		t.Fatalf("write: %v", err)
 	}
 	s := readConfigToml(t, dir)
@@ -60,7 +60,7 @@ metrics_exporter = { otlp-http = { endpoint = "http://b:14318/v1/metrics" } }
 	if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte(existing), 0644); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
-	if err := WriteOtelBlock(dir, "http://c:14317", "tok"); err != nil {
+	if err := WriteOtelBlock(dir, "http://c:14317", "tok", ""); err != nil {
 		t.Fatalf("write: %v", err)
 	}
 	s := readConfigToml(t, dir)
@@ -92,10 +92,10 @@ endpoint = "http://x:14318/v1/metrics"
 // EnsureOtelBlock must be a no-op when the config already matches.
 func TestEnsureOtelBlock_NoopWhenCurrent(t *testing.T) {
 	dir := t.TempDir()
-	if _, err := EnsureOtelBlock(dir, "http://x:14317", "tok"); err != nil {
+	if _, err := EnsureOtelBlock(dir, "http://x:14317", "tok", ""); err != nil {
 		t.Fatalf("first: %v", err)
 	}
-	changed, err := EnsureOtelBlock(dir, "http://x:14317", "tok")
+	changed, err := EnsureOtelBlock(dir, "http://x:14317", "tok", "")
 	if err != nil {
 		t.Fatalf("second: %v", err)
 	}
@@ -114,7 +114,7 @@ endpoint = "http://old:14318/v1/metrics"
 	if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte(existing), 0644); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
-	changed, err := EnsureOtelBlock(dir, "http://x:14317", "tok")
+	changed, err := EnsureOtelBlock(dir, "http://x:14317", "tok", "")
 	if err != nil {
 		t.Fatalf("ensure: %v", err)
 	}

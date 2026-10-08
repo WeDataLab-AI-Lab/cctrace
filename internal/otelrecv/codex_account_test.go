@@ -139,7 +139,7 @@ func TestHealedExtraHomeOfAnExcludedAccountIsStillRefused(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(home, "config.toml"), []byte("[otel]\nendpoint = \"http://localhost:4317\"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := codexconfig.HealExistingOtelBlock(home, "http://localhost:4317", "tok", true); err != nil {
+	if _, err := codexconfig.HealExistingOtelBlock(home, "http://localhost:4317", "tok", "", true); err != nil {
 		t.Fatal(err)
 	}
 	config, err := os.ReadFile(filepath.Join(home, "config.toml"))

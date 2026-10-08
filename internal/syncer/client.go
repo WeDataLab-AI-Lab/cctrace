@@ -77,6 +77,12 @@ func (c *Client) SetUpdateStallReporter(fn func() *store.ClientUpdateStall) { c.
 // sync and reenrich, regardless of which agent produced them.
 func (c *Client) SetRedactPolicy(p RedactPolicy) { c.redact = p }
 
+// SetTransport installs the transport that carries a private CA. Only the
+// transport changes: the timeout set in NewClient stays the ceiling. A setter
+// rather than a NewClient argument so the many callers that never talk TLS to a
+// private server are left as they are.
+func (c *Client) SetTransport(rt http.RoundTripper) { c.http.Transport = rt }
+
 // maxRetryAfterDelay caps a parsed Retry-After, and maxRetryAfterSeconds is the
 // same bound expressed in whole seconds so the header can be range-checked
 // before it is multiplied into a time.Duration.
@@ -254,12 +260,41 @@ type QuotaSamplesPayload struct {
 	Samples []*store.QuotaSample `json:"samples"`
 }
 
-// SendQuotaSamples posts rate-limit history. A 404 is reported as
-// ErrQuotaSamplesUnsupported so the caller can tell an older server from a broken one.
+// MaxQuotaSamplesPerRequest bounds one /api/quota-samples request.
+//
+// The server advertises 5,000, but on servers that predate chunked inserts that
+// is not the ceiling that bites: they write a batch as one INSERT with 15 bind
+// parameters per row, and the Postgres extended protocol stops at 65,535
+// parameters, so 4,369 rows is the most one statement can carry. A Codex
+// session that ran long enough holds more readings than either, and an
+// unchunked send of it fails on every pass -- and because a failed send holds
+// the file's offset, the whole file is re-read and re-sent forever. 2,000 keeps
+// a request under that pre-chunked-insert statement ceiling and, at typical row
+// sizes, well under the 4 MiB request body limit, and is the size backfill has
+// always used. It is a row count, not a byte bound: rows carry strings such as
+// scope_label of unbounded length, and a 413 is not split here -- the same
+// limitation as before chunking.
+const MaxQuotaSamplesPerRequest = 2000
+
+// SendQuotaSamples posts rate-limit history in chunks of at most
+// MaxQuotaSamplesPerRequest. A 404 is reported as ErrQuotaSamplesUnsupported so
+// the caller can tell an older server from a broken one.
+//
+// The first failing chunk stops the send and its error is returned. Chunks
+// already accepted are not undone; the caller re-sends the same readings on its
+// next pass and the server keys each row, so the repeat inserts nothing.
 func (c *Client) SendQuotaSamples(ctx context.Context, samples []*store.QuotaSample) error {
-	if len(samples) == 0 {
-		return nil
+	for len(samples) > 0 {
+		n := min(len(samples), MaxQuotaSamplesPerRequest)
+		if err := c.sendQuotaSampleChunk(ctx, samples[:n]); err != nil {
+			return err
+		}
+		samples = samples[n:]
 	}
+	return nil
+}
+
+func (c *Client) sendQuotaSampleChunk(ctx context.Context, samples []*store.QuotaSample) error {
 	body, err := encodeRequestJSON(QuotaSamplesPayload{Samples: samples})
 	if err != nil {
 		return fmt.Errorf("marshal: %w", err)

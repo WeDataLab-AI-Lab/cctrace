@@ -21,6 +21,7 @@ cctrace init
 |---|---|
 | `Sync endpoint` | The server's HTTP address, for example `https://cctrace.company.example`. A bare `host:port` gets `http://` prepended. |
 | `OTEL endpoint` | The server's OTLP gRPC address, for example `http://cctrace.company.example:4317`. |
+| `CA certificate file (PEM)` | Asked only when either endpoint is `https://`. The root certificate of a private CA, such as the one exported in [Install the server](../server/install.md#certificates). Give it even if the OS keychain already trusts that CA: Claude Code takes it from `NODE_EXTRA_CA_CERTS` (over http/protobuf; see [Claude Code](../agents/claude-code.md#private-ca)) and Codex from its own configuration, both written by cctrace from this file, and whether the keychain alone is enough for them was not tested. Leave empty for a publicly trusted certificate (cctrace keeps the system roots; not tested with Codex). Type `none` to remove a stored CA; with both endpoints on `http://` a stored CA is removed without asking. Stored as `server.ca_cert_file`. |
 | `User ID` | Your cctrace user ID. If you type an email address, the part after `@` is dropped. |
 | `Temporary password` | Your current dashboard password (the one you set after the first sign-in). Input is hidden. Three attempts. |
 | `Enable session log sync? (y/n)` | `y` (default) installs the Claude Code hooks that start the sync daemon. `n` leaves telemetry on and session logs off. |
@@ -28,7 +29,7 @@ cctrace init
 
 ![Terminal showing cctrace init prompts and a successful connection, including Codex detection](../assets/screenshots/31-cctrace-init.png){ loading=lazy }
 
-An empty endpoint is not accepted. If an endpoint is plain `http://` to an address outside loopback and private ranges, `init` warns that transcripts or telemetry will cross the network unencrypted. It does not refuse.
+An empty endpoint is not accepted. If an endpoint is plain `http://` to anything but this machine (`localhost` or a loopback address), `init` warns that transcripts or telemetry will cross the network unencrypted. Private and link-local addresses are warned about too. It does not refuse.
 
 After authentication, `init` checks for other agents and asks about each one it finds:
 
@@ -118,12 +119,15 @@ cctrace config set options.codex_sync_enabled true
 
 `config set` saves the profile and then rewrites the Claude settings file, so a change to endpoints, identity, or options reaches Claude Code the next time a session starts. Boolean values take `true` or `false`.
 
+`server.ca_cert_file` is an exception in two ways. A running sync daemon keeps the CA it started with, so after setting or clearing it, restart the daemon: `cctrace sync --stop`, then start it again as usual (the next Claude Code session starts it, or `cctrace sync --daemon`). Codex's `[otel]` section is rewritten with the new CA when sync next starts, not by `config set`. The command prints both reminders.
+
 ```text
 user.id, user.name, user.email, user.team
 server.endpoint                     OTEL endpoint
 server.sync_endpoint                sync (HTTP) endpoint
 server.protocol                     OTLP protocol for Claude Code (default grpc)
 server.auth_token                   upload token issued by init
+server.ca_cert_file                 private CA (PEM) the server's certificate comes from; "" clears it
 options.sync_enabled                session log sync on or off
 options.redact_user_prompts         replace conversation text (prompts and replies) before upload
 options.redact_tool_details         drop tool arguments and results before upload

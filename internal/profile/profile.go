@@ -41,6 +41,13 @@ type ServerInfo struct {
 	// ReadToken reads the Open API. The upload token in AuthToken is refused
 	// there by design, so read commands use this one when it is set.
 	ReadToken string `json:"read_token,omitempty"`
+	// CACertFile is a PEM file of a private CA (Caddy's `tls internal` root, for
+	// example) that every channel to this server trusts. One file serves all of
+	// them because each client takes a CA from a different place: cctrace adds it
+	// to a copy of the system roots, Claude Code's http/protobuf exporter takes
+	// it from NODE_EXTRA_CA_CERTS, and Codex from its own [otel] tls table.
+	// Empty means the system roots only.
+	CACertFile string `json:"ca_cert_file,omitempty"`
 }
 
 // ProfileOptions holds behavioral toggles and intervals.

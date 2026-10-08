@@ -5,7 +5,8 @@ import "testing"
 // normalizeEndpoint's scheme-less default stays http:// by decision (#533,
 // 2026-09-21): the TLS overlay (deploy/docker-compose.tls.yml) is opt-in, TLS
 // ports are the plaintext port +1000 so a scheme switch alone would not reach
-// them, and Codex silently drops https OTLP endpoints (#644). This pins the
+// them, and Codex sends nothing to an https OTLP endpoint behind a private CA
+// unless server.ca_cert_file puts that CA in its block (#644). This pins the
 // current behavior so a future change to any of the three is deliberate.
 func TestNormalizeEndpoint(t *testing.T) {
 	cases := []struct {

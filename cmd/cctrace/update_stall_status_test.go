@@ -166,7 +166,7 @@ func TestTheOneShotLegBacksOffWhenItIsAutomated(t *testing.T) {
 
 	client := newTestSyncClient(t, server.URL)
 	for i := 0; i < 10; i++ {
-		applyUpdateIfAvailable(context.Background(), client, server.URL, "")
+		applyUpdateIfAvailable(context.Background(), client, "", server.URL, "")
 	}
 	if got := atomic.LoadInt32(&downloads); got != settled {
 		t.Fatalf("the one-shot leg refetched %d times inside the backoff", got-settled)
@@ -197,7 +197,7 @@ func TestTypingSyncStillRetriesImmediately(t *testing.T) {
 	settled := atomic.LoadInt32(&downloads)
 
 	client := newTestSyncClient(t, server.URL)
-	applyUpdateIfAvailable(context.Background(), client, server.URL, "")
+	applyUpdateIfAvailable(context.Background(), client, "", server.URL, "")
 	if atomic.LoadInt32(&downloads) == settled {
 		t.Fatal("a person who just fixed their install was made to wait out the backoff")
 	}

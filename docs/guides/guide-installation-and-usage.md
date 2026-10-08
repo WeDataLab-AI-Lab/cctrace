@@ -130,9 +130,12 @@ and port together — a wrong scheme then fails to connect instead of quietly
 reaching the plaintext listener next door.
 
 `CADDY_TLS_MODE` defaults to `internal`: Caddy issues from its own CA, which needs
-no public DNS and works for a bare IP address. Set it to `acme` when the name
-resolves publicly and port 80 is reachable, and Caddy obtains a real certificate
-instead — then no client needs the step below.
+no public DNS and works for a bare IP address. Set it to an ACME account email
+address (for example `ops@example.com`) when the name resolves publicly and port
+80 is reachable, and Caddy obtains a real certificate instead — the word `acme`
+itself makes Caddy refuse to start. Then cctrace and Claude Code need no CA
+file. Codex against a public certificate without `server.ca_cert_file` was not
+measured.
 
 #### Trusting the internal CA
 
@@ -143,25 +146,70 @@ docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.tls.yml \
   exec caddy cat /data/caddy/pki/authorities/local/root.crt > cctrace-ca.crt
 ```
 
-Each client reads its CA from a different variable:
+Then give that file to each client machine once:
 
-| Client | Variable |
-|--------|----------|
-| Claude Code, `grpc` protocol (the cctrace default) | `OTEL_EXPORTER_OTLP_CERTIFICATE` |
-| Claude Code, when `OTEL_EXPORTER_OTLP_PROTOCOL` is not `grpc` | `NODE_EXTRA_CA_CERTS` |
-| Codex | `SSL_CERT_FILE` |
+```bash
+cctrace config set server.ca_cert_file ~/cctrace-ca.crt
+```
 
-> **`SSL_CERT_FILE` replaces the trust store, it does not add to it.** A file
-> containing only this CA makes Codex fail to verify OpenAI's own API endpoint. Concatenate
-> it with the system roots:
-> `cat /etc/ssl/cert.pem cctrace-ca.crt > cctrace-bundle.crt`
+`cctrace init` asks for the same file when either endpoint is `https://`, before
+it logs in. The path is stored absolute, and a file that is missing or holds no
+PEM certificate is refused. `config set server.ca_cert_file ""` clears it, and
+so does answering `none` at the `init` prompt.
 
-> **Codex does not send OTLP metrics to an `https://` endpoint.** Measured on
-> 0.153.4: it opens no connection at all and logs no error. Leave its metrics
-> endpoint on plaintext 4318 within the network until #644 resolves.
-> cctrace still writes an `https://` endpoint into the Codex config as given,
-> and prints `[!] Codex metrics endpoint ... uses https://` each time it does
-> (`cctrace init`, and `cctrace sync` when it rewrites the block).
+Specify it even when the CA is already in the OS keychain: whether a CA
+installed only there is enough for Claude Code or Codex was not measured. Each
+client takes its CA from a different place, and cctrace writes the one file to
+each:
+
+| Client | Where it reads the CA | Who sets it |
+|--------|-----------------------|-------------|
+| cctrace (sync, read commands, `status`, update download) | system roots plus `server.ca_cert_file` | cctrace |
+| Claude Code | `NODE_EXTRA_CA_CERTS` in the profile's Claude Code settings file, with the exporter on http/protobuf | cctrace (`init`, `config set`) |
+| Codex | `tls = { ca-certificate = "..." }` in its `[otel]` block | cctrace (`init`, then every `cctrace sync`) |
+
+**Claude Code goes over http/protobuf, not `grpc`.** Measured on 2026-10-06
+with Claude Code 2.1.291 on macOS, against a local TLS receiver signed by a
+private CA and against the dev stack behind Caddy `tls internal`:
+
+| Protocol | CA given through | Result |
+|----------|------------------|--------|
+| `grpc` | `OTEL_EXPORTER_OTLP_CERTIFICATE` (settings or process env) | TLS handshake aborted: CA not trusted |
+| `grpc` | `NODE_EXTRA_CA_CERTS` (settings or process env) | same failure |
+| http/protobuf | `OTEL_EXPORTER_OTLP_CERTIFICATE` (settings env) | same failure |
+| http/protobuf | `NODE_EXTRA_CA_CERTS` (process env) | `/v1/metrics` and `/v1/logs` arrived |
+| http/protobuf | `NODE_EXTRA_CA_CERTS` (settings env) | arrived; through Caddy on 5318 to cctraced |
+
+Whether `grpc` trusts a CA installed in the OS keychain was not measured. So
+with a CA set and an `https://` OTEL endpoint, cctrace writes Claude Code's
+`OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf`, the endpoint with its gRPC port
+moved to the OTLP/HTTP one (4317 to 4318, 14317 to 14318, 5317 to 5318) and
+`NODE_EXTRA_CA_CERTS`. server.protocol stays as stored; `init` and
+`config set` print one line saying what Claude Code will use instead. Without a
+CA, or on plain `http://`, nothing changes.
+
+`NODE_EXTRA_CA_CERTS` is often already set for a company proxy, so cctrace
+changes or removes only a value it wrote itself (recorded in the settings
+file's `cctrace` object). A value you set is never removed; if it differs from
+`server.ca_cert_file`, `init` and `config set` keep it and print both paths.
+Put both CAs in one PEM file and use it for both, or remove yours to hand the
+variable over.
+
+A running sync daemon keeps the CA it started with. After setting or clearing
+`server.ca_cert_file`, restart it: `cctrace sync --stop`, then start it again as
+usual (the next Claude Code session starts it, or `cctrace sync --daemon`).
+Codex's `[otel]` block is rewritten with the new CA when sync next starts.
+
+> **Codex needs the CA in its own config.** Measured on Codex 0.160.0 with a
+> local HTTPS receiver and a test CA: with `tls.ca-certificate` set the metrics
+> arrived (147,889 bytes, the same as over plaintext); without it nothing arrived
+> and Codex logged no error. The earlier note that Codex does not send to
+> `https://` at all (#644) came from a 0.153.4 measurement that gave the CA through
+> `SSL_CERT_FILE`; 0.153.4 was not re-measured. A #644 comment found that its
+> binary's `otlp-http` options have a `tls` field, but applying the table and
+> sending over https was measured only on 0.160.0. When cctrace writes an
+> `https://` Codex endpoint with no CA set it prints
+> `[!] Codex metrics endpoint ... server.ca_cert_file is not set`.
 
 Losing the `caddy_data` volume means a new CA, and every client that trusted the
 old one stops connecting.
@@ -428,6 +476,9 @@ GOARCH=$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/')
 curl -fL -o cctrace "https://cctrace.example.com/downloads/cctrace-${GOOS}-${GOARCH}"
 chmod +x cctrace && sudo mv cctrace /usr/local/bin/
 ```
+
+If the server uses a private CA (the Caddy `tls internal` default above), `curl`
+does not trust it yet: add `--cacert cctrace-ca.crt` to the download.
 
 Windows is `/downloads/cctrace-windows-amd64.exe`. For the combinations provided, see the five binaries in the §9 checklist.
 
@@ -891,6 +942,10 @@ The two Korean-labelled lines report different subjects, and the distinction is 
 `수집 상태` reports `[!] ...` once sending has been failing for 15 minutes, carrying the last successful send, the failure count and the last error verbatim. A server refusal (413/429) says so and says a restart will not help. After 30 minutes of a transport-class stall the daemon releases its lock and exits, so the next session's SessionStart hook starts a fresh process; offsets are untouched, so that process backfills everything.
 
 `수집 상태` is sometimes followed by `[!] N files skipped at first sync (... not collected)`. For what it means and what to do, see the §8 troubleshooting table.
+
+**Records judged by repository (only with `options.collect_repository_prefixes`).** With a repository allowlist set, a Claude Code record is sent only when the repository of the working directory it was written in is on the list. A session that wanders into another repository leaves those records behind while the rest goes out grouped by repository identity, each group under its own identity (so for a session that crosses repositories, the project's row carries the identity of the last group sent). The session's position moves forward when a whole group has been accepted; if the server fails part-way through a large group, that group is sent again from its start. When git cannot say which repository a directory holds, the affected records are **held** rather than guessed at: nothing of them is sent, the session's position stops in front of them, and they are retried every 30 seconds. `수집 상태` is then followed by `[!] N sessions holding unsent records until their repository is confirmed (<reason> xN); retried every 30s, dropped after 24h of failing`. The reasons are `git-uncertain` (git timed out, a worktree's `.git` file points nowhere, permission denied, dubious ownership), `repository-lost-grace` (a directory that was a repository reports none, as a volume not mounted yet after wake does; believed after 15 minutes), `cwd-unknown` (lines that carry no working directory, after content that was skipped and names none: the part of a file that predates the first sync, or a line too large to read — and, in a new file, also the lines in front of such a line when none before it names a working directory) and `transition-pending` (the directory holds a different repository than before and not every session file could be listed to mark what was unsent, for example because a project directory cannot be read). **A hold that has been seen failing for 24 hours is a loss**: that directory is treated as outside the allowlist, its held records are dropped, the rest of the session continues, and `[!] N sessions dropped records held over 24h, not collected (...)` stays in the status from then on. Time during which the daemon was not running does not count towards the 24 hours.
+
+When a working directory comes to hold a different repository (a path reused for another checkout, a worktree replaced), the records of that directory still unsent at the moment sync notices are sent only if both the old and the new repository are on the list: nothing says which of the two a given line was written in. After a replacement where either side is excluded, those lines are dropped — typically the first prompt of the new session, or everything written while the daemon was stopped. Four limits remain. A directory sync has never looked at is judged by what it holds now. A replacement that is reversed between two looks goes unnoticed. A session file that is renamed is read again from its start under the new path, as it always was, and does not inherit what was recorded for the old path. And what each directory held is kept in the sync state file, only while an allowlist is set, and an older cctrace does not preserve it: after a downgrade and upgrade, or after turning the allowlist on, sync starts again from "never looked". `cctrace sync reenrich` re-reads each session file from its start, so under an allowlist it skips a file from which any record was kept back or is being held, one with a line whose working directory is unknown, excluded or cannot be confirmed now, and one still holding lines from before a replacement. That protection knows only what this version recorded: a file whose records were kept back by an earlier cctrace, and content skipped at first sync, carry no such record. This describes Claude Code session files; Codex sessions are collected separately, with their own state. Without an allowlist none of it applies and nothing is held. What does change there is that a record carries the git lookup of the pass that sends it, whole — repository identity (id, remote, name, subpath), commit and branch — instead of one cached for up to an hour, so a directory that now holds a different repository is sent under it at once. The cached identity still stands in when git cannot answer, or when a directory that was a repository reports none — as before, only while that cached entry is itself a certain answer and less than an hour old.
 
 **Keeping a personal billing account out.** If you use a personal Claude or Codex subscription on the same machine, list it with `cctrace config set options.exclude_accounts <entries>` — comma-separated, each an account id or `provider:account_id` (`anthropic`, `openai`); an empty value clears the list. Session records of those accounts are never sent: `cctrace sync` consumes them and moves on, so they are not retried and nothing behind them is held up. Login addresses are refused, because session records carry the billing account id and no address. Independently, sync asks the server whether the accounts a pass saw are excluded there (only those accounts; the server's list is not downloaded) and skips them the same way. An answer is reused for 5 minutes, so an exclusion lifted on the server applies within that time; an older server without the route excludes nothing, and is asked again after an hour. Either way `수집 상태` is followed by `[!] records not uploaded for ...`, naming each account and whether the exclusion is `options.exclude_accounts` or `excluded on the server`. This option does not cover OTEL: Claude Code and Codex send telemetry to the server directly, so an account also has to be excluded on the server (Admin → Excluded Accounts) for its OTEL to be discarded. Like `options.collect_repository_prefixes`, it applies to records collected from now on; what is already on the server stays until an administrator excludes the account there.
 

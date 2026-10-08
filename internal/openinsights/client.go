@@ -46,6 +46,10 @@ func NewClient(endpoint, token string) *Client {
 	}
 }
 
+// SetTransport installs the transport that carries a private CA, keeping the
+// per-request timeout.
+func (c *Client) SetTransport(rt http.RoundTripper) { c.http.Transport = rt }
+
 // APIError is a non-2xx answer. Code carries the server's machine-readable
 // reason when it sent one, such as "ingestion_token".
 type APIError struct {

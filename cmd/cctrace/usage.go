@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"text/tabwriter"
@@ -54,7 +55,11 @@ func usageCmd() *cobra.Command {
 			if endpoint == "" {
 				return fmt.Errorf("no sync endpoint configured; run 'cctrace init' to set one")
 			}
-			return runUsageWindow(endpoint, openAPIToken(p), d, untilWindow, groupBy, asJSON, nil)
+			client, err := serverClient(p.Server.CACertFile, 0)
+			if err != nil {
+				return err
+			}
+			return runUsageWindow(client, endpoint, openAPIToken(p), d, untilWindow, groupBy, asJSON, nil)
 		},
 	}
 	cmd.Flags().StringVar(&window, "since", "7d", "Time window (7d, 24h, 90m)")
@@ -65,11 +70,11 @@ func usageCmd() *cobra.Command {
 	return cmd
 }
 
-func runUsage(endpoint, token string, window time.Duration, groupBy string, asJSON bool, out io.Writer) error {
-	return runUsageWindow(endpoint, token, window, 0, groupBy, asJSON, out)
+func runUsage(client *http.Client, endpoint, token string, window time.Duration, groupBy string, asJSON bool, out io.Writer) error {
+	return runUsageWindow(client, endpoint, token, window, 0, groupBy, asJSON, out)
 }
 
-func runUsageWindow(endpoint, token string, window, untilAgo time.Duration, groupBy string, asJSON bool, out io.Writer) error {
+func runUsageWindow(client *http.Client, endpoint, token string, window, untilAgo time.Duration, groupBy string, asJSON bool, out io.Writer) error {
 	if out == nil {
 		out = os.Stdout
 	}
@@ -83,7 +88,7 @@ func runUsageWindow(endpoint, token string, window, untilAgo time.Duration, grou
 		q.Set("group_by", groupBy)
 	}
 
-	raw, err := fetchJSON(endpoint+"/api/open/v1/usage?"+q.Encode(), token)
+	raw, err := fetchJSON(client, endpoint+"/api/open/v1/usage?"+q.Encode(), token)
 	if err != nil {
 		return err
 	}

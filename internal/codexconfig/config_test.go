@@ -11,7 +11,7 @@ import (
 
 func TestWriteOtelBlock_NewFile(t *testing.T) {
 	dir := t.TempDir()
-	if err := WriteOtelBlock(dir, "http://localhost:4317", "tok-abc"); err != nil {
+	if err := WriteOtelBlock(dir, "http://localhost:4317", "tok-abc", ""); err != nil {
 		t.Fatalf("WriteOtelBlock: %v", err)
 	}
 
@@ -41,7 +41,7 @@ personality = "pragmatic"
 `
 	os.WriteFile(filepath.Join(dir, "config.toml"), []byte(existing), 0644)
 
-	if err := WriteOtelBlock(dir, "http://server:4317", "tok-xyz"); err != nil {
+	if err := WriteOtelBlock(dir, "http://server:4317", "tok-xyz", ""); err != nil {
 		t.Fatalf("WriteOtelBlock: %v", err)
 	}
 
@@ -68,7 +68,7 @@ headers = {Authorization = "Bearer old-token"}
 `
 	os.WriteFile(filepath.Join(dir, "config.toml"), []byte(existing), 0644)
 
-	if err := WriteOtelBlock(dir, "http://new:4317", "new-token"); err != nil {
+	if err := WriteOtelBlock(dir, "http://new:4317", "new-token", ""); err != nil {
 		t.Fatalf("WriteOtelBlock: %v", err)
 	}
 
@@ -91,7 +91,7 @@ headers = {Authorization = "Bearer old-token"}
 
 func TestWriteOtelBlock_NoToken(t *testing.T) {
 	dir := t.TempDir()
-	if err := WriteOtelBlock(dir, "http://localhost:4317", ""); err != nil {
+	if err := WriteOtelBlock(dir, "http://localhost:4317", "", ""); err != nil {
 		t.Fatalf("WriteOtelBlock: %v", err)
 	}
 	data, _ := os.ReadFile(filepath.Join(dir, "config.toml"))
@@ -104,7 +104,7 @@ func TestWriteOtelBlock_NoToken(t *testing.T) {
 func TestWriteOtelBlock_EscapesAuthTokenAsTomlString(t *testing.T) {
 	dir := t.TempDir()
 	token := `tok"with\special`
-	if err := WriteOtelBlock(dir, "http://localhost:4317", token); err != nil {
+	if err := WriteOtelBlock(dir, "http://localhost:4317", token, ""); err != nil {
 		t.Fatalf("WriteOtelBlock: %v", err)
 	}
 
@@ -125,7 +125,7 @@ func TestEnsureOtelBlockReportsUnreadableConfig(t *testing.T) {
 		t.Fatalf("mkdir config.toml as directory: %v", err)
 	}
 
-	changed, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok")
+	changed, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok", "")
 	if err == nil {
 		t.Fatal("expected unreadable config error")
 	}
@@ -196,6 +196,9 @@ func TestCodexMetricsEndpoint(t *testing.T) {
 	}{
 		{"grpc default", "http://localhost:4317", "http://localhost:4318/v1/metrics"},
 		{"deployed grpc", "http://trace.example.com:14317", "http://trace.example.com:14318/v1/metrics"},
+		// The TLS overlay (deploy/docker-compose.tls.yml) serves OTLP gRPC on 5317
+		// and OTLP HTTP on 5318, so an https gRPC endpoint maps like the others.
+		{"TLS overlay grpc", "https://trace.example.com:5317", "https://trace.example.com:5318/v1/metrics"},
 		{"http already", "http://trace.example.com:14318/v1/metrics", "http://trace.example.com:14318/v1/metrics"},
 		{"logs path", "http://trace.example.com:14318/v1/logs", "http://trace.example.com:14318/v1/metrics"},
 		{"custom http port", "https://trace.example.com:443", "https://trace.example.com:443/v1/metrics"},
@@ -238,7 +241,7 @@ func TestEnsureOtelBlockLeavesAMultilineRootOtelKeyAlone(t *testing.T) {
 			if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte(config), 0o600); err != nil {
 				t.Fatal(err)
 			}
-			changed, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok")
+			changed, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok", "")
 			if !errors.Is(err, ErrMultilineRootOtelKey) || changed {
 				t.Fatalf("EnsureOtelBlock = %v, %v; want ErrMultilineRootOtelKey", changed, err)
 			}
@@ -253,7 +256,7 @@ func TestEnsureOtelBlockLeavesAMultilineRootOtelKeyAlone(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte("otel.tags = [\"a\", \"b\"]\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if changed, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok"); err != nil || !changed {
+	if changed, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok", ""); err != nil || !changed {
 		t.Fatalf("single-line root key: EnsureOtelBlock = %v, %v; want rewritten", changed, err)
 	}
 }
@@ -289,5 +292,21 @@ model = "gpt-5-mini"
 	}
 	if again := replaceOrAppendOtelSection(got, "[otel]\nNEW = 1\n"); again != got {
 		t.Fatalf("not idempotent:\n%s", again)
+	}
+}
+
+// OTLPHTTPEndpoint is the port half of codexMetricsEndpoint: the gRPC port
+// becomes the OTLP/HTTP one and everything else is kept, path included.
+func TestOTLPHTTPEndpoint(t *testing.T) {
+	for in, want := range map[string]string{
+		"http://localhost:4317":                 "http://localhost:4318",
+		"https://trace.example.com:14317":       "https://trace.example.com:14318",
+		"https://trace.example.com:443":         "https://trace.example.com:443",
+		"https://trace.example.com:4317/prefix": "https://trace.example.com:4318/prefix",
+		"not a url":                             "not a url",
+	} {
+		if got := OTLPHTTPEndpoint(in); got != want {
+			t.Errorf("OTLPHTTPEndpoint(%q) = %q, want %q", in, got, want)
+		}
 	}
 }

@@ -84,7 +84,7 @@ RUN --mount=type=secret,id=update_signing_key,required=false \
 # codex CLI for weekly AI reports (CCTRACE_AI_RUNTIME=codex-app-server). Off by
 # default: the static binaries are about 290MB against a ~52MB image, so only a
 # deployment that turns AI reports on passes CODEX_VERSION. The digests are the
-# ones GitHub publishes for rust-v0.154.0's musl archives; another version needs
+# ones GitHub publishes for rust-v0.161.0's musl archives; another version needs
 # all four replaced, and a stale digest fails the build rather than installing an
 # unchecked binary.
 #
@@ -96,10 +96,10 @@ RUN --mount=type=secret,id=update_signing_key,required=false \
 FROM --platform=$BUILDPLATFORM alpine:3.24 AS codex
 ARG TARGETARCH
 ARG CODEX_VERSION=
-ARG CODEX_SHA256_AMD64=d7e18b2597ae8f242f5f31ee9e90deef48dbc9edd634d9868fb6435d08c07f02
-ARG CODEX_SHA256_ARM64=583b48df32804213bdcd338c2e5adb06b34340821fa757a726cc0a524fa33c27
-ARG CODEX_CODE_MODE_HOST_SHA256_AMD64=a68df7cca23c6da7cde175677df7de61c73a234add1333a1254b86d641af01f7
-ARG CODEX_CODE_MODE_HOST_SHA256_ARM64=20aefa302c2022b496e32911bf954a5f76c7fd749c6bdb9fbd711e32b66dcbfa
+ARG CODEX_SHA256_AMD64=b1efb95097660d7f2e5a3887618a23f2ea1b0d548078bf92b0f7a5d229a0cef2
+ARG CODEX_SHA256_ARM64=5c90bf4be3c97fc62fcafb28ec2335ee318e6ecb332e1e8ee3d2c63814a5a26a
+ARG CODEX_CODE_MODE_HOST_SHA256_AMD64=30cc945f77b3eed15ee385cc2f844a33bf1d7c422ff3a97161f701bffe4f77f8
+ARG CODEX_CODE_MODE_HOST_SHA256_ARM64=aaf902c8586ce82c201b5467042994efe89974a718d6079cd7ffc354ab4384ad
 RUN mkdir -p /out && [ -z "${CODEX_VERSION}" ] || { \
       case "${TARGETARCH}" in \
         amd64) arch=x86_64; sum="${CODEX_SHA256_AMD64}"; hostsum="${CODEX_CODE_MODE_HOST_SHA256_AMD64}" ;; \

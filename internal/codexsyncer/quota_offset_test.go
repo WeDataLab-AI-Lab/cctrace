@@ -2,6 +2,8 @@ package codexsyncer
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -9,6 +11,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"cctrace/internal/syncer"
 )
@@ -152,5 +155,74 @@ func TestSyncOnce_quotaUnsupportedStillAdvancesOffset(t *testing.T) {
 	}
 	if got := quotaHits.Load(); got != 1 {
 		t.Fatalf("quota requests = %d, want 1 (the 404 latches)", got)
+	}
+}
+
+// A session that ran long enough holds more readings than one request may
+// carry. Sent as one body, the server refused it on every pass, the offset was
+// held for the retry, and the whole file -- 157 MB in the case that surfaced
+// this -- was re-read and re-sent forever. The readings must arrive in chunks
+// the server accepts, and the offset must then move on.
+func TestSyncOnce_quotaReadingsBeyondOneRequestAdvanceOffset(t *testing.T) {
+	var received, requests atomic.Int64
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/quota-samples") {
+			var p syncer.QuotaSamplesPayload
+			if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+				t.Errorf("decode: %v", err)
+			}
+			requests.Add(1)
+			if len(p.Samples) > syncer.MaxQuotaSamplesPerRequest {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			received.Add(int64(len(p.Samples)))
+			_, _ = w.Write([]byte(`{}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"inserted":1,"skipped":0}`))
+	}))
+	t.Cleanup(srv.Close)
+
+	state, _ := syncer.LoadState(filepath.Join(t.TempDir(), "state.json"))
+	home, sessionPath := codexHomeWithQuotaSession(t)
+	cs := New([]string{home}, "user@example.com", "uid-001", state, syncer.NewClient(srv.URL, "token", ""), nil)
+	if _, err := cs.SyncOnce(context.Background()); err != nil {
+		t.Fatalf("first SyncOnce: %v", err)
+	}
+
+	// One window per reading, each at its own instant, so every reading is one row.
+	readings := syncer.MaxQuotaSamplesPerRequest + 1
+	f, err := os.OpenFile(sessionPath, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		t.Fatalf("append: %v", err)
+	}
+	var b strings.Builder
+	b.WriteString(`{"type":"response_item","timestamp":"2026-08-24T09:00:02.000Z","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"hello"}]}}` + "\n")
+	base := time.Date(2026, 8, 24, 9, 1, 0, 0, time.UTC)
+	for i := range readings {
+		ts := base.Add(time.Duration(i) * time.Second).Format("2006-01-02T15:04:05.000Z")
+		fmt.Fprintf(&b, `{"type":"event_msg","timestamp":%q,"payload":{"type":"token_count","info":null,"rate_limits":{"primary":{"used_percent":22.0,"window_minutes":10080,"resets_at":1786850006},"secondary":null,"plan_type":"pro"}}}`+"\n", ts)
+	}
+	if _, err := f.WriteString(b.String()); err != nil {
+		t.Fatalf("append: %v", err)
+	}
+	f.Close()
+	info, err := os.Stat(sessionPath)
+	if err != nil {
+		t.Fatalf("stat: %v", err)
+	}
+
+	if _, err := cs.SyncOnce(context.Background()); err != nil {
+		t.Fatalf("SyncOnce: %v", err)
+	}
+	if got := requests.Load(); got < 2 {
+		t.Errorf("quota requests = %d, want the readings split across at least 2", got)
+	}
+	if got := received.Load(); got != int64(readings) {
+		t.Errorf("rows accepted = %d, want %d", got, readings)
+	}
+	if got := state.GetOffset(sessionPath); got != info.Size() {
+		t.Fatalf("offset = %d, want %d (end of file); the file would be re-read every pass", got, info.Size())
 	}
 }

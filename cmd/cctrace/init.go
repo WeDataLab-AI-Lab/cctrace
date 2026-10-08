@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"net/url"
 	"os"
@@ -46,19 +47,24 @@ func normalizeEndpoint(raw string) string {
 }
 
 // plaintextLeavesTheLocalNetwork reports whether an endpoint sends over plain
-// HTTP to somewhere the local network does not reach. The sync channel carries
-// conversation transcripts and the OTEL channel carries telemetry; unlike the
-// update channel, neither is a published binary whose integrity a signature
-// already covers, so the confidentiality plain HTTP gives up is the whole point
-// (#533).
+// HTTP to anywhere but this machine. The sync channel carries conversation
+// transcripts and the OTEL channel carries telemetry; unlike the update channel,
+// neither is a published binary whose integrity a signature already covers, so
+// the confidentiality plain HTTP gives up is the whole point (#533).
 //
-// It warns rather than refuses. Plain HTTP inside a company network is a
-// legitimate deployment and refusing it would break installs that are doing
-// nothing wrong. The boundary is the one validateUpdateEndpointStrict already
-// draws, reused so the two channels cannot disagree about what "local" means:
-// literal loopback, private-range and link-local addresses, plus the name
-// "localhost". A hostname is not exempt -- the client cannot reason about what
-// DNS will resolve it to.
+// It warns rather than refuses. Plain HTTP inside a company network is still a
+// deployment someone may choose, and refusing it would break installs that work.
+// But only literal loopback addresses and the name "localhost" are exempt.
+// Private-range and link-local addresses used to be exempt too, which is how a
+// production server ran plain HTTP with no install ever saying so: those
+// networks are shared with other machines, and the transcripts are readable on
+// them. A hostname is not exempt -- the client cannot reason about what DNS will
+// resolve it to.
+//
+// This is no longer the boundary validateUpdateEndpointStrict draws. The update
+// channel still allows private-range plain HTTP, because what it fetches is a
+// signed binary and its exemption rests on the signature, not on where the
+// server is. The two channels now disagree about "local" on purpose.
 func plaintextLeavesTheLocalNetwork(endpoint string) bool {
 	parsed, err := url.Parse(endpoint)
 	if err != nil || !strings.EqualFold(parsed.Scheme, "http") {
@@ -68,15 +74,15 @@ func plaintextLeavesTheLocalNetwork(endpoint string) bool {
 	if strings.EqualFold(host, "localhost") {
 		return false
 	}
-	if ip := net.ParseIP(host); ip != nil && (ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast()) {
+	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
 		return false
 	}
 	return true
 }
 
 // warnPlaintextEndpoint says so once per endpoint, naming which one and what it
-// carries, so a person reading install output can tell a deliberate internal
-// deployment from an address about to cross the public internet in the clear.
+// carries, so a person reading install output sees what travels unencrypted,
+// whether the server is on the company network or across the public internet.
 //
 // carries is named per channel rather than shared: the two endpoints do not send
 // the same thing, and "conversation transcripts" is the part that makes this
@@ -85,22 +91,102 @@ func warnPlaintextEndpoint(label, carries, endpoint string) {
 	if !plaintextLeavesTheLocalNetwork(endpoint) {
 		return
 	}
-	fmt.Printf("  [!] %s %s is plain HTTP to a non-local address.\n", label, endpoint)
+	fmt.Printf("  [!] %s %s is plain HTTP to another machine.\n", label, endpoint)
 	fmt.Printf("      %s will cross the network unencrypted.\n", carries)
 	fmt.Printf("      Use https:// if the server terminates TLS.\n")
 }
 
-// warnCodexHTTPSEndpoint follows every write of a Codex [otel] block. Codex
-// (measured on 0.153.4) opens no connection to an https:// OTLP metrics endpoint
-// and logs nothing, so the block would collect nothing without a word (#644).
-func warnCodexHTTPSEndpoint(endpoint string) {
+// warnCodexHTTPSEndpoint follows every write of a Codex [otel] block. Measured on
+// Codex 0.160.0, an https:// collector behind a private CA receives nothing and
+// Codex logs nothing unless the block's tls table names that CA; with it, the
+// metrics arrive. #644 had read the silence as Codex dropping https altogether;
+// that measurement (0.153.4) gave the CA through SSL_CERT_FILE and was not
+// repeated with the tls table.
+//
+// So the warning is about the missing CA, not the scheme: with
+// server.ca_cert_file set the block carries it and there is nothing to say.
+func warnCodexHTTPSEndpoint(endpoint, caFile string) {
 	parsed, err := url.Parse(strings.TrimSpace(endpoint))
-	if err != nil || !strings.EqualFold(parsed.Scheme, "https") {
+	if err != nil || !strings.EqualFold(parsed.Scheme, "https") || caFile != "" {
 		return
 	}
-	fmt.Printf("  [!] Codex metrics endpoint %s uses https://.\n", endpoint)
-	fmt.Printf("      Codex sends no OTLP metrics to https:// and reports no error (#644).\n")
-	fmt.Printf("      Codex tool metrics stay empty until it points at plain http:// (port 4318).\n")
+	fmt.Printf("  [!] Codex metrics endpoint %s uses https:// and server.ca_cert_file is not set.\n", endpoint)
+	fmt.Printf("      If the server's certificate is from a private CA, Codex sends no metrics and\n")
+	fmt.Printf("      reports no error (#644). Set it: cctrace config set server.ca_cert_file <root.crt>\n")
+}
+
+// noteClaudeProtocolOverride says, once, that Claude Code telemetry will not use
+// the stored server.protocol. With a private CA on an https endpoint, envgen
+// sends Claude Code over http/protobuf to the OTLP/HTTP port, because in
+// measurement (Claude Code 2.1.291) its grpc exporter did not trust a private
+// CA. The stored protocol is left as it is, so without this line the profile
+// would read as what Claude Code uses.
+func noteClaudeProtocolOverride(w io.Writer, p *profile.Profile) {
+	stored := p.Server.Protocol
+	if stored == "" {
+		stored = "grpc"
+	}
+	env := envgen.BuildEnvMap(p)
+	used := env["OTEL_EXPORTER_OTLP_PROTOCOL"]
+	if used == stored {
+		return
+	}
+	fmt.Fprintf(w, "  [!] Claude Code telemetry will use %s on %s, not server.protocol %s: its grpc\n", used, env["OTEL_EXPORTER_OTLP_ENDPOINT"], stored)
+	fmt.Fprintf(w, "      exporter did not trust a private CA in measurement (Claude Code 2.1.291).\n")
+}
+
+// promptCACertFile asks for server.ca_cert_file when either endpoint is https.
+//
+// It runs after the endpoints and before login because login is the first
+// request to the server and has to trust the CA already.
+//
+// It is asked even when the OS keychain already trusts the CA. In measurement,
+// Claude Code 2.1.291 trusted a private CA only through NODE_EXTRA_CA_CERTS on
+// its http/protobuf exporter, and Codex 0.160.0 sent nothing to an https
+// endpoint behind a private CA until its tls table named that CA. Whether a
+// keychain-installed CA alone would be enough for either was not measured, so
+// the file is asked for rather than assumed away.
+//
+// Re-running init offers the stored file as the default, so Enter keeps it;
+// "none" or "-" removes it, which is how a CA that has moved or no longer
+// applies is dropped from init. With both endpoints on plain http the stored CA
+// is dropped without asking: nothing reads it there.
+//
+// Attempts are bounded like promptEndpoint so a piped stdin terminates.
+func promptCACertFile(ir *inputReader, p *profile.Profile) error {
+	if !isHTTPSEndpoint(p.Server.SyncEndpoint) && !isHTTPSEndpoint(p.Server.Endpoint) {
+		p.Server.CACertFile = ""
+		return nil
+	}
+	fmt.Println("  Private CA (Caddy 'tls internal' and the like): give its root certificate.")
+	fmt.Println("  cctrace writes it into Claude Code's and Codex's telemetry settings; a CA")
+	fmt.Println("  trusted only in the OS keychain was not tested there, so give the file anyway.")
+	fmt.Println("  Public certificate: leave empty (cctrace uses the system roots; not tested")
+	fmt.Println("  with Codex). Type 'none' to remove a stored CA.")
+	var err error
+	for attempt := 1; attempt <= 3; attempt++ {
+		answer := ir.Prompt("  CA certificate file (PEM)", p.Server.CACertFile)
+		if a := strings.TrimSpace(answer); a == "none" || a == "-" {
+			p.Server.CACertFile = ""
+			return nil
+		}
+		var path string
+		path, err = normalizeCACertFile(answer)
+		if err == nil {
+			p.Server.CACertFile = path
+			noteClaudeProtocolOverride(os.Stdout, p)
+			return nil
+		}
+		if attempt < 3 {
+			fmt.Printf("  [!] %v. Try again, or type 'none' (%d/3).\n", err, attempt)
+		}
+	}
+	return fmt.Errorf("%w; to stop using a stored CA run: cctrace config set server.ca_cert_file \"\"", err)
+}
+
+func isHTTPSEndpoint(endpoint string) bool {
+	parsed, err := url.Parse(strings.TrimSpace(endpoint))
+	return err == nil && strings.EqualFold(parsed.Scheme, "https")
 }
 
 // promptEndpoint asks for an endpoint and does not move on until it has one.
@@ -286,6 +372,14 @@ func runInit(cmd *cobra.Command, profileName string) (runErr error) {
 	warnPlaintextEndpoint("Sync endpoint", "Conversation transcripts", p.Server.SyncEndpoint)
 	warnPlaintextEndpoint("OTEL endpoint", "Usage telemetry", p.Server.Endpoint)
 
+	if err := promptCACertFile(ir, p); err != nil {
+		return err
+	}
+	serverHTTP, err := serverClient(p.Server.CACertFile, 0)
+	if err != nil {
+		return err
+	}
+
 	// Step 2: User ID (strip @domain if entered as email)
 	p.User.ID = ir.Prompt("  User ID (company e-mail id, e.g. 'user123')", "")
 	if at := strings.Index(p.User.ID, "@"); at > 0 {
@@ -308,7 +402,7 @@ func runInit(cmd *cobra.Command, profileName string) (runErr error) {
 			}
 			return fmt.Errorf("authentication cancelled")
 		}
-		info, err := authenticateUser(p.Server.SyncEndpoint, p.User.ID, password, p.Server.AuthToken)
+		info, err := authenticateUser(serverHTTP, p.Server.SyncEndpoint, p.User.ID, password, p.Server.AuthToken)
 		if err == nil {
 			if info.Name != "" {
 				p.User.Name = info.Name

@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// backfillChunk bounds one upload. The server caps a batch, and a machine with
-// a long Codex history has tens of thousands of readings.
-const backfillChunk = 2000
+// backfillChunk bounds how many readings are buffered before an upload. A
+// machine with a long Codex history has tens of thousands of readings.
+const backfillChunk = syncer.MaxQuotaSamplesPerRequest
 
 // backfillQuotaCmd reconstructs Codex rate-limit history from session logs.
 //
@@ -96,7 +96,10 @@ func runBackfillQuota(ctx context.Context, profileName, endpointOverride string,
 
 	var client *syncer.Client
 	if !dryRun {
-		client = newSyncClient(p, ep, version, profileName)
+		client, err = newSyncClient(p, ep, version, profileName)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Readings are uploaded as they are found rather than collected first.

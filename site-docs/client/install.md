@@ -45,7 +45,7 @@ $ curl -fL -o cctrace "<sync endpoint>/downloads/cctrace-<platform>"
 $ chmod +x cctrace
 ```
 
-Use HTTPS or a network you trust for this download.
+Use HTTPS or a network you trust for this download. If the server's certificate comes from a private CA (the Caddy `tls internal` default in [Install the server](../server/install.md#certificates)), `curl` does not trust it yet; add `--cacert cctrace-ca.crt`.
 
 These binaries are built with version `dev` unless the server image was built with `--build-arg VERSION=...`. `cctrace --version` then prints `dev`, and `cctrace status` marks the binary as a development build. Like any client built from this repository, they do not update themselves.
 

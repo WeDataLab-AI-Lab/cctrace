@@ -30,7 +30,7 @@ func TestEnsureOtelBlockSendsCodexAccountHeader(t *testing.T) {
 	dir := t.TempDir()
 	writeAuth(t, dir, `{"tokens":{"account_id":"acct-1","access_token":"secret-access","refresh_token":"secret-refresh"}}`)
 
-	if _, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok"); err != nil {
+	if _, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok", ""); err != nil {
 		t.Fatalf("EnsureOtelBlock: %v", err)
 	}
 	content := readConfigText(t, dir)
@@ -43,14 +43,14 @@ func TestEnsureOtelBlockSendsCodexAccountHeader(t *testing.T) {
 
 	// An account switch rewrites the block on the next sync.
 	writeAuth(t, dir, `{"tokens":{"account_id":"acct-2"}}`)
-	changed, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok")
+	changed, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok", "")
 	if err != nil {
 		t.Fatalf("EnsureOtelBlock: %v", err)
 	}
 	if !changed || !strings.Contains(readConfigText(t, dir), `X-Cctrace-Codex-Account = "acct-2"`) {
 		t.Fatalf("account switch not written (changed=%v):\n%s", changed, readConfigText(t, dir))
 	}
-	if changed, _ := EnsureOtelBlock(dir, "http://localhost:4317", "tok"); changed {
+	if changed, _ := EnsureOtelBlock(dir, "http://localhost:4317", "tok", ""); changed {
 		t.Fatal("unchanged account rewrote the config")
 	}
 }
@@ -64,7 +64,7 @@ func TestEnsureOtelBlockOmitsAccountHeaderWhenUnknown(t *testing.T) {
 			if auth != "" {
 				writeAuth(t, dir, auth)
 			}
-			if _, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok"); err != nil {
+			if _, err := EnsureOtelBlock(dir, "http://localhost:4317", "tok", ""); err != nil {
 				t.Fatalf("EnsureOtelBlock: %v", err)
 			}
 			if content := readConfigText(t, dir); strings.Contains(content, "X-Cctrace-Codex-Account") {
@@ -88,7 +88,7 @@ func TestHealExistingOtelBlockLeavesHomesWithoutOtelAlone(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", true)
+			got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", "", true)
 			if err != nil || got != HealNoOtel {
 				t.Fatalf("HealExistingOtelBlock = %v, %v; want HealNoOtel", got, err)
 			}
@@ -124,7 +124,7 @@ func TestHealExistingOtelBlockMigratesLegacyEndpointForm(t *testing.T) {
 			if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte(legacy), 0o600); err != nil {
 				t.Fatal(err)
 			}
-			got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", true)
+			got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", "", true)
 			if err != nil || got != HealWritten {
 				t.Fatalf("HealExistingOtelBlock = %v, %v; want HealWritten", got, err)
 			}
@@ -139,7 +139,7 @@ func TestHealExistingOtelBlockMigratesLegacyEndpointForm(t *testing.T) {
 			}
 
 			// Every sync runs this; the second run must find nothing to do.
-			if got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", true); err != nil || got != HealUnchanged {
+			if got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", "", true); err != nil || got != HealUnchanged {
 				t.Fatalf("second run = %v, %v; want HealUnchanged", got, err)
 			}
 			if again := readConfigText(t, dir); again != content {
@@ -165,7 +165,7 @@ func TestHealExistingOtelBlockLeavesAForeignCollectorAlone(t *testing.T) {
 			if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte(config), 0o600); err != nil {
 				t.Fatal(err)
 			}
-			got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", true)
+			got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", "", true)
 			if err != nil || got != HealForeign {
 				t.Fatalf("HealExistingOtelBlock = %v, %v; want HealForeign", got, err)
 			}
@@ -182,16 +182,16 @@ func TestHealExistingOtelBlockLeavesAForeignCollectorAlone(t *testing.T) {
 func TestHealExistingOtelBlockKeepsTheHomesOwnToken(t *testing.T) {
 	dir := t.TempDir()
 	writeAuth(t, dir, `{"tokens":{"account_id":"acct-2"}}`)
-	current := buildOtelBlock(codexMetricsEndpoint(ownEndpoint), "their-tok", "acct-2")
+	current := buildOtelBlock(codexMetricsEndpoint(ownEndpoint), "their-tok", "acct-2", "")
 	if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte(current), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "my-tok", true); err != nil || got != HealUnchanged {
+	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "my-tok", "", true); err != nil || got != HealUnchanged {
 		t.Fatalf("token-only difference: HealExistingOtelBlock = %v, %v; want HealUnchanged", got, err)
 	}
 
 	writeAuth(t, dir, `{"tokens":{"account_id":"acct-3"}}`)
-	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "my-tok", true); err != nil || got != HealWritten {
+	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "my-tok", "", true); err != nil || got != HealWritten {
 		t.Fatalf("account switch: HealExistingOtelBlock = %v, %v; want HealWritten", got, err)
 	}
 	content := readConfigText(t, dir)
@@ -205,14 +205,14 @@ func TestHealExistingOtelBlockKeepsTheHomesOwnToken(t *testing.T) {
 // `cctrace init` heals with keepHomeToken=false to replace it.
 func TestHealExistingOtelBlockOverwritesTheTokenWhenAskedTo(t *testing.T) {
 	dir := t.TempDir()
-	current := buildOtelBlock(codexMetricsEndpoint(ownEndpoint), "old-tok", "")
+	current := buildOtelBlock(codexMetricsEndpoint(ownEndpoint), "old-tok", "", "")
 	if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte(current), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if got := OtelBearerToken(dir); got != "old-tok" {
 		t.Fatalf("OtelBearerToken = %q, want old-tok", got)
 	}
-	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "new-tok", false); err != nil || got != HealWritten {
+	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "new-tok", "", false); err != nil || got != HealWritten {
 		t.Fatalf("HealExistingOtelBlock = %v, %v; want HealWritten", got, err)
 	}
 	if got := OtelBearerToken(dir); got != "new-tok" {
@@ -229,7 +229,7 @@ func TestHealExistingOtelBlockIgnoresCommentedOutLines(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte(foreign), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", true); err != nil || got != HealForeign {
+	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", "", true); err != nil || got != HealForeign {
 		t.Fatalf("commented cctrace endpoint: HealExistingOtelBlock = %v, %v; want HealForeign", got, err)
 	}
 
@@ -238,7 +238,7 @@ func TestHealExistingOtelBlockIgnoresCommentedOutLines(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "config.toml"), []byte(owned), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", true); err != nil || got != HealWritten {
+	if got, err := HealExistingOtelBlock(dir, ownEndpoint, "tok", "", true); err != nil || got != HealWritten {
 		t.Fatalf("owned legacy block: HealExistingOtelBlock = %v, %v; want HealWritten", got, err)
 	}
 	if content := readConfigText(t, dir); strings.Contains(content, "old-tok") || !strings.Contains(content, "Bearer tok") {

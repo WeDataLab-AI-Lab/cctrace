@@ -16,7 +16,10 @@ import (
 func TestNewSyncClientCarriesExcludedAccounts(t *testing.T) {
 	p := profile.NewDefault()
 	p.Options.ExcludeAccounts = []string{"openai:acct-personal"}
-	client := newSyncClient(p, "http://127.0.0.1:1", "test", "")
+	client, err := newSyncClient(p, "http://127.0.0.1:1", "test", "")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	state, err := syncer.LoadState(filepath.Join(t.TempDir(), "state.json"))
 	if err != nil {

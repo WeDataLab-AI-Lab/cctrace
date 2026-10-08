@@ -143,9 +143,9 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml logs cctrac
 
 이후 클라이언트는 대시보드와 동기화에 `https://cctrace.company.example:8443`, OTLP에 5317 또는 5318 포트를 사용한다.
 
-Codex 메트릭은 이 오버레이를 거쳐서는 서버에 도달하지 않는다. cctrace는 프로필의 OTEL 엔드포인트에서 포트 4317만 4318로 바꿔 Codex 메트릭 엔드포인트를 만든다. 따라서 OTEL 엔드포인트가 5317이면 Codex의 OTLP/HTTP가 5317로 가고 Caddy는 이를 gRPC 리스너로 전달한다. [Codex CLI](../agents/codex.md) 참조.
+Codex는 OTLP/HTTP로 보내므로 cctrace는 프로필의 OTEL 엔드포인트에서 4317을 4318로 바꾸듯 5317을 5318로 바꿔 Codex 메트릭 엔드포인트를 만든다. 내부 CA를 쓰면 Codex 설정에도 그 CA가 있어야 한다. 아래와 [Codex CLI](../agents/codex.md) 참조.
 
-### 인증서
+### 인증서 {#certificates}
 
 `CADDY_TLS_MODE` 기본값은 `internal`이다. Caddy가 자체 CA로 인증서를 발급하므로 공개 DNS가 필요 없고 IP 주소만으로도 동작한다. 클라이언트는 이 CA를 신뢰해야 한다. CA 내보내기:
 
@@ -155,17 +155,25 @@ $ docker compose --env-file deploy/.env \
     exec caddy cat /data/caddy/pki/authorities/local/root.crt > cctrace-ca.crt
 ```
 
-Caddyfile에 적힌 에이전트별 CA 지정 변수:
+이 파일을 각 클라이언트 머신에 복사해 cctrace에 한 번 지정한다. 엔드포인트가 `https://`이면 `cctrace init`이 묻고, 직접 지정해도 된다.
 
-| 에이전트 | 변수 |
-|----------|------|
-| Claude Code, gRPC exporter | `OTEL_EXPORTER_OTLP_CERTIFICATE` |
-| Claude Code, HTTP exporter | `NODE_EXTRA_CA_CERTS` |
-| Codex | `SSL_CERT_FILE` |
+```console
+$ cctrace config set server.ca_cert_file ~/cctrace-ca.crt
+```
 
-`SSL_CERT_FILE`은 신뢰 저장소에 추가하는 것이 아니라 대체한다. CA를 시스템 루트 인증서와 이어 붙이지 않으면 Codex가 자체 API 엔드포인트를 검증하지 못한다.
+OS 키체인에 이미 CA가 있어도 지정한다. 키체인만으로 Claude Code와 Codex에 충분한지는 시험하지 않았다. 클라이언트마다 CA를 받는 곳이 달라서 cctrace가 각각에 이 파일 하나를 넣는다.
 
-이름이 공개 DNS로 해석되고 인터넷에서 80 포트에 닿을 수 있다면 `CADDY_TLS_MODE=acme`로 지정한다. Caddy가 공개적으로 신뢰되는 인증서를 받으므로 클라이언트 쪽 CA 설정이 필요 없다.
+| 클라이언트 | CA를 읽는 곳 | 설정 주체 |
+|------------|--------------|-----------|
+| cctrace | 시스템 루트 + `server.ca_cert_file` | cctrace |
+| Claude Code | 설정 파일의 `NODE_EXTRA_CA_CERTS`, exporter는 5318로 http/protobuf([이유](../agents/claude-code.md#private-ca)) | cctrace |
+| Codex | `[otel]` 섹션의 `tls = { ca-certificate = "..." }` | cctrace |
+
+실행 중인 동기화 데몬은 시작할 때의 CA를 계속 쓴다. CA를 지정하거나 해제한 뒤에는 데몬을 다시 시작한다(`cctrace sync --stop` 후 평소대로 시작). Codex 섹션은 다음 동기화 시작 때 다시 쓰인다. [클라이언트 설정](../client/setup.md) 참조.
+
+클라이언트 바이너리를 처음 `curl`로 내려받을 때는 이 설정이 쓰이지 않으므로 `--cacert cctrace-ca.crt`를 붙인다. [클라이언트 설치](../client/install.md) 참조.
+
+이름이 공개 DNS로 해석되고 인터넷에서 80 포트에 닿을 수 있다면 `CADDY_TLS_MODE`에 ACME 계정 이메일 주소(예: `ops@example.com`)를 지정한다. `acme`라는 단어를 그대로 넣으면 Caddy가 시작하지 않는다. Caddy가 공개적으로 신뢰되는 인증서를 받으므로 cctrace와 Claude Code는 CA 설정이 필요 없다. Codex가 `server.ca_cert_file` 없이 공인 인증서로 보내는지는 측정하지 않았다.
 
 !!! warning "`caddy_data` 볼륨 유지"
     발급한 인증서와 내부 CA가 이 볼륨에 있다. 지우면 새 CA가 만들어지고 이전 CA를 신뢰하던 클라이언트는 모두 연결이 끊긴다.

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"time"
@@ -42,7 +43,11 @@ func openAPIResourceCmd(resource string, hasWindow bool) *cobra.Command {
 					return err
 				}
 			}
-			return runOpenAPIResource(endpoint, openAPIToken(p), resource, duration, agent, status, query, limit, asJSON, nil)
+			client, err := serverClient(p.Server.CACertFile, 0)
+			if err != nil {
+				return err
+			}
+			return runOpenAPIResource(client, endpoint, openAPIToken(p), resource, duration, agent, status, query, limit, asJSON, nil)
 		},
 	}
 
@@ -62,7 +67,7 @@ func openAPIResourceCmd(resource string, hasWindow bool) *cobra.Command {
 	return cmd
 }
 
-func runOpenAPIResource(endpoint, token, resource string, window time.Duration, agent, status, query string, limit int, asJSON bool, out io.Writer) error {
+func runOpenAPIResource(client *http.Client, endpoint, token, resource string, window time.Duration, agent, status, query string, limit int, asJSON bool, out io.Writer) error {
 	if out == nil {
 		out = os.Stdout
 	}
@@ -86,7 +91,7 @@ func runOpenAPIResource(endpoint, token, resource string, window time.Duration, 
 			q.Set("limit", fmt.Sprint(limit))
 		}
 	}
-	raw, err := fetchJSON(endpoint+"/api/open/v1/"+resource+"?"+q.Encode(), token)
+	raw, err := fetchJSON(client, endpoint+"/api/open/v1/"+resource+"?"+q.Encode(), token)
 	if err != nil {
 		return err
 	}

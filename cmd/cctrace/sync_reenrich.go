@@ -52,7 +52,10 @@ func runSyncReenrich(claudeDir string, profileName string, profileEmail string, 
 	if endpointOverride != "" {
 		ep = endpointOverride
 	}
-	client := newSyncClient(p, ep, version, profileName)
+	client, err := newSyncClient(p, ep, version, profileName)
+	if err != nil {
+		return err
+	}
 	ctx := context.Background()
 
 	resolvedClaudeDir := resolveClaudeDir(p, claudeDir)

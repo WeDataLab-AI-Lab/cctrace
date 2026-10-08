@@ -38,7 +38,7 @@ var updatePublicKeyBase64 string
 // applyUpdateIfAvailable checks the server version and self-updates if a newer
 // version is available. Prints a message and exits 0 after a successful update
 // so the caller can re-run with the new binary.
-func applyUpdateIfAvailable(ctx context.Context, client *syncer.Client, endpoint string, profileName string) {
+func applyUpdateIfAvailable(ctx context.Context, client *syncer.Client, caFile, endpoint string, profileName string) {
 	serverVer, err := client.CheckVersion(ctx)
 	if err != nil {
 		// Version endpoint unreachable — silently skip update.
@@ -70,7 +70,7 @@ func applyUpdateIfAvailable(ctx context.Context, client *syncer.Client, endpoint
 	}
 
 	fmt.Printf("  Updating cctrace %s → %s ...\n", version, serverVer)
-	if err := downloadAndApplyUpdate(ctx, endpoint, serverVer); err != nil {
+	if err := downloadAndApplyUpdate(ctx, caFile, endpoint, serverVer); err != nil {
 		// diagf, not os.Stderr: `sync --once` runs as a spawned child whose stderr
 		// is sync-crash.log, a file reset when it outgrows its cap and not the one
 		// anybody reads. Routing through the log package puts the failure in
@@ -94,8 +94,16 @@ func applyUpdateIfAvailable(ctx context.Context, client *syncer.Client, endpoint
 // /downloads endpoint and atomically replaces the running executable in place.
 // It does NOT exit — the caller decides whether to re-exec (one-shot) or respawn
 // (daemon parent, #103).
-func downloadAndApplyUpdate(ctx context.Context, endpoint, serverVersion string) error {
-	return downloadAndApplyUpdateWith(ctx, http.DefaultClient, endpoint, applyUpdate, updatePublicKeyBase64, serverVersion)
+//
+// The download goes to the same server as the sync, so it trusts the same CA.
+// The signature still decides whether the binary is applied; the CA only lets
+// the request reach a server behind a private certificate.
+func downloadAndApplyUpdate(ctx context.Context, caFile, endpoint, serverVersion string) error {
+	httpClient, err := serverClient(caFile, 0)
+	if err != nil {
+		return err
+	}
+	return downloadAndApplyUpdateWith(ctx, httpClient, endpoint, applyUpdate, updatePublicKeyBase64, serverVersion)
 }
 
 type updateApplier func(io.Reader) error

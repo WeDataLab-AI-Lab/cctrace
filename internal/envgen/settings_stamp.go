@@ -15,6 +15,9 @@ const (
 	cctraceMetaKey   = "cctrace"
 	managedHashField = "managed_settings_hash"
 	binaryVersField  = "settings_binary_version"
+	// managedNodeCAField records the NODE_EXTRA_CA_CERTS value cctrace wrote,
+	// so a later clear or reset removes that value and nothing else.
+	managedNodeCAField = "node_extra_ca_certs"
 )
 
 // managedSettingsHash returns a stable hash of the settings content cctrace
@@ -25,6 +28,11 @@ func managedSettingsHash(p *profile.Profile) string {
 	h := sha256.New()
 
 	env := BuildEnvMap(p)
+	// Only when it applies, so a profile without a CA, or on plain http,
+	// hashes as it did before and existing installs are not rewritten.
+	if ca := claudeCAFile(p); ca != "" {
+		env[envNodeExtraCACerts] = ca
+	}
 	envKeys := make([]string, 0, len(env))
 	for k := range env {
 		envKeys = append(envKeys, k)
@@ -68,6 +76,30 @@ func storedManagedHash(settings map[string]interface{}) string {
 	return s
 }
 
+// recordedNodeExtraCACerts is the NODE_EXTRA_CA_CERTS value cctrace last
+// wrote, or "" when it has not written one.
+func recordedNodeExtraCACerts(settings map[string]interface{}) string {
+	meta, _ := settings[cctraceMetaKey].(map[string]interface{})
+	s, _ := meta[managedNodeCAField].(string)
+	return s
+}
+
+// setRecordedNodeExtraCACerts records value as cctrace's; "" drops the record.
+func setRecordedNodeExtraCACerts(settings map[string]interface{}, value string) {
+	meta, _ := settings[cctraceMetaKey].(map[string]interface{})
+	if value == "" {
+		if meta != nil {
+			delete(meta, managedNodeCAField)
+		}
+		return
+	}
+	if meta == nil {
+		meta = make(map[string]interface{})
+		settings[cctraceMetaKey] = meta
+	}
+	meta[managedNodeCAField] = value
+}
+
 // removeManagedStamp drops cctrace's stamp subkeys, removing the "cctrace"
 // object entirely only when no unknown subkeys remain (preserves anything a
 // user or other tool placed there).
@@ -78,6 +110,7 @@ func removeManagedStamp(settings map[string]interface{}) {
 	}
 	delete(meta, managedHashField)
 	delete(meta, binaryVersField)
+	delete(meta, managedNodeCAField)
 	if len(meta) == 0 {
 		delete(settings, cctraceMetaKey)
 	}

@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"cctrace/internal/codexconfig"
 	"cctrace/internal/profile"
 )
 
@@ -109,11 +110,38 @@ func WritePs1(p *profile.Profile, path string) error {
 	return os.WriteFile(path, []byte(content), 0600)
 }
 
+// claudeCAFile is server.ca_cert_file when it applies to Claude Code's exporter:
+// a CA is set and the OTEL endpoint is https. Otherwise "".
+func claudeCAFile(p *profile.Profile) string {
+	if p.Server.CACertFile == "" {
+		return ""
+	}
+	u, err := url.Parse(strings.TrimSpace(p.Server.Endpoint))
+	if err != nil || !strings.EqualFold(u.Scheme, "https") {
+		return ""
+	}
+	return p.Server.CACertFile
+}
+
 // BuildEnvMap returns the OTEL environment variables as a map for a given profile.
+//
+// With a private CA on an https endpoint, Claude Code is sent over http/protobuf
+// to the OTLP/HTTP port beside the gRPC one, whatever server.protocol says.
+// Measured on Claude Code 2.1.291 against a private CA: the grpc exporter
+// aborted the TLS handshake with the CA in OTEL_EXPORTER_OTLP_CERTIFICATE and
+// in NODE_EXTRA_CA_CERTS alike, and http/protobuf with NODE_EXTRA_CA_CERTS
+// (written by applyNodeExtraCACerts) delivered metrics and logs. Whether the
+// grpc exporter trusts a CA installed in the OS keychain was not measured.
+// Without a CA, or on plain http, nothing here changes.
 func BuildEnvMap(p *profile.Profile) map[string]string {
 	protocol := p.Server.Protocol
 	if protocol == "" {
 		protocol = "grpc"
+	}
+	endpoint := p.Server.Endpoint
+	if claudeCAFile(p) != "" {
+		protocol = "http/protobuf"
+		endpoint = codexconfig.OTLPHTTPEndpoint(endpoint)
 	}
 	// Keys come from the shared constants so this map and otelKeySet cannot drift.
 	env := map[string]string{
@@ -130,8 +158,8 @@ func BuildEnvMap(p *profile.Profile) map[string]string {
 		envBSPExportTimeout:   "30000",
 		envResourceAttributes: buildResourceAttributes(p),
 	}
-	if p.Server.Endpoint != "" {
-		env[envOTLPEndpoint] = p.Server.Endpoint
+	if endpoint != "" {
+		env[envOTLPEndpoint] = endpoint
 	}
 	if p.Server.AuthToken != "" {
 		env[envOTLPHeaders] = "Authorization=Bearer " + p.Server.AuthToken

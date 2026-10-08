@@ -31,13 +31,12 @@ cctrace가 쓰는 섹션 예시:
 metrics_exporter = { otlp-http = { endpoint = "http://cctrace.company.example:4318/v1/metrics", protocol = "binary", headers = { Authorization = "Bearer <upload token>", X-Cctrace-Codex-Account = "<account id>" } } }
 ```
 
-- 엔드포인트는 프로필의 OTEL 엔드포인트에서 유도: 포트 4317은 4318로, 경로는 `/v1/metrics`로. Codex는 gRPC가 아닌 OTLP/HTTP로 전송
+- 엔드포인트는 프로필의 OTEL 엔드포인트에서 유도: 포트 4317은 4318로(TLS 오버레이의 5317은 5318로), 경로는 `/v1/metrics`로. Codex는 gRPC가 아닌 OTLP/HTTP로 전송
 - 메트릭 익스포터만 설정. Codex용 OTEL 로그 전송은 설정하지 않음
 - `X-Cctrace-Codex-Account`는 `<Codex 홈>/auth.json`에 있는 Codex 결제 계정 id. 서버가 Codex 메트릭에 결제 계정 제외를 적용하는 근거. 계정을 모르면 생략, 계정이 바뀌면 동기화가 다시 씀. Codex를 다시 시작해야 새 섹션을 읽음
-- Codex는 `https://` 엔드포인트로 메트릭을 보내지 않고 오류도 내지 않음. `init`·Codex 패치·동기화가 그런 엔드포인트를 쓸 때마다 `[!]` 경고 출력. 포트 4318의 `http://` 사용
+- `server.ca_cert_file`이 있으면 익스포터에 `tls = { ca-certificate = "<파일>" }`이 붙음. 사설 CA 인증서를 쓰는 `https://` 엔드포인트에 Codex가 보내려면 이 값이 필요하며, 없으면 메트릭을 보내지 않고 오류도 내지 않음. `init`·Codex 패치·동기화가 CA 없이 `https://` 엔드포인트를 쓸 때 `[!]` 경고 출력. 공인 인증서 엔드포인트에 CA 없이 Codex가 보내는지는 측정하지 않음
 - 섹션 전체를 cctrace가 관리하며 헤더가 더 붙을 수 있음. 기존 `[otel]` 섹션은 인라인·테이블 형식 모두 교체, 파일의 나머지는 유지. 파일은 원자적으로 교체되며 권한은 0600
-- [서버 설치](../server/install.md)의 TLS 오버레이를 거치면 Codex 메트릭이 서버에 닿지 않음. cctrace는 Codex 엔드포인트를 만들 때 포트 4317만 4318로 바꾸므로, OTEL 엔드포인트가 5317이면 Codex의 OTLP/HTTP가 gRPC 리스너로 감. 섹션을 직접 고쳐도 다음 동기화가 다시 씀
-- 동기화할 때마다 현재 프로필 기준으로 만들 섹션과 비교해 다르면 다시 씀. 예: `cctrace config set`으로 OTEL 엔드포인트를 바꾼 뒤
+- 동기화할 때마다 현재 프로필 기준으로 만들 섹션과 비교해 다르면 다시 씀. 예: `cctrace config set`으로 OTEL 엔드포인트나 `server.ca_cert_file`을 바꾼 뒤. 프로필에 CA가 없으면 직접 넣은 `tls` 테이블은 지워짐
 
 ## 세션 파일
 

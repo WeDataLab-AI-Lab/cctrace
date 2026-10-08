@@ -107,7 +107,7 @@ make lint           # 린트 오류 확인
 
 ```
 user.name / user.email / user.team / user.id
-server.endpoint / server.sync_endpoint / server.protocol / server.auth_token / server.read_token
+server.endpoint / server.sync_endpoint / server.protocol / server.auth_token / server.read_token / server.ca_cert_file
 options.sync_enabled / options.codex_sync_enabled / options.gjc_sync_enabled / options.omo_sync_enabled
 options.redact_user_prompts / options.redact_tool_details
 options.metrics_export_interval / options.logs_export_interval
@@ -119,6 +119,7 @@ options.collect_repository_prefixes / options.exclude_accounts / options.codex_d
 
 | 키 | 뜻 |
 |---|---|
+| `server.ca_cert_file` | 서버가 사설 CA(Caddy `tls internal` 등) 인증서를 쓸 때 그 루트 PEM 경로. 비우면(`""`) 시스템 루트만 신뢰 |
 | `options.*_sync_enabled` | 에이전트별 세션 수집 on/off. **claude 는 `sync_enabled`** |
 | `options.redact_*` | 업로드 전에 프롬프트·툴 내용을 지운다. 기본 `false`(=수집) |
 | `options.collect_repository_prefixes` | 지정한 경로 접두사의 저장소만 수집. 비면 전체 |

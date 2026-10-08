@@ -162,8 +162,19 @@ var hookCollectFile string
 // third. Three call sites construct this client, and a redaction setting that
 // applies to two of them is worse than none: the operator sees the flag, some
 // records honour it, and nothing says which.
-func newSyncClient(p *profile.Profile, endpoint, version, profileName string) *syncer.Client {
+//
+// The profile's CA is installed here for the same reason. A CA file that cannot
+// be read fails construction, so the pass that wanted it fails and says why,
+// instead of every upload failing on a certificate nobody named.
+func newSyncClient(p *profile.Profile, endpoint, version, profileName string) (*syncer.Client, error) {
+	tr, err := serverTransport(p.Server.CACertFile)
+	if err != nil {
+		return nil, err
+	}
 	client := syncer.NewClient(endpoint, p.Server.AuthToken, version)
+	if tr != nil {
+		client.SetTransport(tr)
+	}
 	client.SetRedactPolicy(syncer.RedactPolicy{
 		UserPrompts: p.Options.RedactUserPrompts,
 		ToolDetails: p.Options.RedactToolDetails,
@@ -173,7 +184,7 @@ func newSyncClient(p *profile.Profile, endpoint, version, profileName string) *s
 	// state is per install, and a sync path that forgets to report it makes that
 	// install indistinguishable from a current one (#750).
 	client.SetUpdateStallReporter(func() *store.ClientUpdateStall { return updateStallReport(profileName) })
-	return client
+	return client, nil
 }
 
 // updateStallReport is what this install says about its own self-update.
@@ -478,7 +489,13 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 	if endpointOverride != "" {
 		ep = endpointOverride
 	}
-	client := newSyncClient(p, ep, version, profileName)
+	client, err := newSyncClient(p, ep, version, profileName)
+	if err != nil {
+		if watch {
+			_ = writeSyncStartAck(startAckFile, syncStartAck{Status: syncStartAckError, Error: err.Error()})
+		}
+		return err
+	}
 
 	ctx := context.Background()
 	var stopCh <-chan struct{}
@@ -488,7 +505,7 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 
 	// Check for updates before syncing (skip in daemon/watch/dry-run mode).
 	if version != "dev" && !daemon && !watch && !dryRun && !finalizeWorker {
-		applyUpdateIfAvailable(ctx, client, ep, profileName)
+		applyUpdateIfAvailable(ctx, client, p.Server.CACertFile, ep, profileName)
 	}
 
 	s := syncer.New(resolvedClaudeDir, resolvedEmail, resolvedUserID, state, client, p.Options.CollectRepositoryPrefixes)
@@ -800,7 +817,11 @@ func applyDaemonParentUpdateIfAvailable(ctx context.Context, profileName string,
 		return daemonParentUpdateResult{}
 	}
 
-	client := newSyncClient(p, ep, version, profileName)
+	client, err := newSyncClient(p, ep, version, profileName)
+	if err != nil {
+		diagf("update: %v", err)
+		return daemonParentUpdateResult{}
+	}
 	serverVer, err := client.CheckVersion(ctx)
 	if err != nil || serverVer == "" || serverVer == "dev" {
 		return daemonParentUpdateResult{}
@@ -827,7 +848,7 @@ func applyDaemonParentUpdateIfAvailable(ctx context.Context, profileName string,
 		return daemonParentUpdateResult{}
 	}
 	fmt.Printf("  Updating cctrace %s → %s ...\n", version, serverVer)
-	if err := downloadAndApplyUpdate(ctx, ep, serverVer); err != nil {
+	if err := downloadAndApplyUpdate(ctx, p.Server.CACertFile, ep, serverVer); err != nil {
 		// See applyUpdateIfAvailable: the watch child reaches this same
 		// function before it starts collecting, and its stderr is the crash
 		// file. diagf keeps the interactive `--daemon` parent on stderr and

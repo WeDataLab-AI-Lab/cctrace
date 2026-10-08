@@ -37,9 +37,11 @@ func TestHTTPSCodexWarningIsOncePerSync(t *testing.T) {
 	}
 }
 
-// #644: Codex opens no connection to an https:// OTLP metrics endpoint and logs
-// nothing. Writing such a block must say so, or Codex tool metrics go missing
-// without a word from either side.
+// Codex sends nothing to an https:// OTLP endpoint behind a private CA unless
+// the block carries that CA, and it logs nothing either way (#644; measured on
+// 0.160.0). Writing an https block without server.ca_cert_file must say so, or
+// Codex tool metrics go missing without a word from either side. With the CA
+// set the block carries it, and there is nothing to warn about.
 func TestWritingAnHTTPSCodexEndpointWarns(t *testing.T) {
 	cases := map[string]func(p *profile.Profile, endpoint string){
 		"init codex patch": func(p *profile.Profile, endpoint string) {
@@ -54,21 +56,35 @@ func TestWritingAnHTTPSCodexEndpointWarns(t *testing.T) {
 	}
 	for name, write := range cases {
 		t.Run(name, func(t *testing.T) {
-			run := func(endpoint string) string {
+			var codexDir string
+			run := func(endpoint, caFile string) string {
 				home := useTempSyncHome(t)
-				if err := os.MkdirAll(filepath.Join(home, ".codex"), 0o755); err != nil {
+				codexDir = filepath.Join(home, ".codex")
+				if err := os.MkdirAll(codexDir, 0o755); err != nil {
 					t.Fatal(err)
 				}
 				p := profile.NewDefault()
 				p.Server.AuthToken = "tok"
+				p.Server.CACertFile = caFile
 				stdout, _ := captureOutput(t, func() { write(p, endpoint) })
 				return stdout
 			}
-			if out := run("https://cctrace.example.com:4317"); !strings.Contains(out, "#644") {
-				t.Fatalf("no https warning in output:\n%s", out)
+			if out := run("https://cctrace.example.com:4317", ""); !strings.Contains(out, "#644") || !strings.Contains(out, "server.ca_cert_file") {
+				t.Fatalf("no https-without-CA warning in output:\n%s", out)
 			}
-			if out := run("http://192.168.0.10:18080"); strings.Contains(out, "#644") {
+			if out := run("http://192.168.0.10:18080", ""); strings.Contains(out, "#644") {
 				t.Fatalf("plain http endpoint warned:\n%s", out)
+			}
+			ca := writeTestCAFile(t, t.TempDir())
+			if out := run("https://cctrace.example.com:4317", ca); strings.Contains(out, "#644") {
+				t.Fatalf("https endpoint with a CA warned:\n%s", out)
+			}
+			config, err := os.ReadFile(filepath.Join(codexDir, "config.toml"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !strings.Contains(string(config), "ca-certificate") {
+				t.Fatalf("the profile CA did not reach the Codex block:\n%s", config)
 			}
 		})
 	}

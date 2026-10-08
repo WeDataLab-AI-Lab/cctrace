@@ -50,11 +50,11 @@ func TestSendProjectRulesParksAfterSendFailure(t *testing.T) {
 	s := newRuleSyncer(t, srv.URL)
 	meta := &projectMeta{repositoryRoot: ruleRepo(t), repositoryID: "github.com/org/repo"}
 
-	if err := s.sendProjectRules(context.Background(), "proj", meta); err == nil {
+	if err := s.sendProjectRules(context.Background(), "proj", meta, ""); err == nil {
 		t.Fatal("expected the send failure to be reported")
 	}
 	// Same repository, same pass: this is what a second session file does.
-	if err := s.sendProjectRules(context.Background(), "proj", meta); err != nil {
+	if err := s.sendProjectRules(context.Background(), "proj", meta, ""); err != nil {
 		t.Fatalf("second attempt should be suppressed, got %v", err)
 	}
 
@@ -71,7 +71,7 @@ func TestSendProjectRulesParksAfterForbidden(t *testing.T) {
 	meta := &projectMeta{repositoryRoot: ruleRepo(t), repositoryID: "github.com/org/repo"}
 
 	for i := 0; i < 3; i++ {
-		if err := s.sendProjectRules(context.Background(), "proj", meta); err != nil {
+		if err := s.sendProjectRules(context.Background(), "proj", meta, ""); err != nil {
 			t.Fatalf("attempt %d: %v", i, err)
 		}
 	}
@@ -92,7 +92,7 @@ func TestSendProjectRulesParksAfterSuccess(t *testing.T) {
 	meta := &projectMeta{repositoryRoot: ruleRepo(t), repositoryID: "github.com/org/repo"}
 
 	for i := 0; i < 3; i++ {
-		if err := s.sendProjectRules(context.Background(), "proj", meta); err != nil {
+		if err := s.sendProjectRules(context.Background(), "proj", meta, ""); err != nil {
 			t.Fatalf("attempt %d: %v", i, err)
 		}
 	}
@@ -127,19 +127,19 @@ func TestSendProjectRulesHonoursRetryAfter(t *testing.T) {
 	s := newRuleSyncer(t, srv.URL)
 	meta := &projectMeta{repositoryRoot: ruleRepo(t), repositoryID: "github.com/org/repo"}
 
-	if err := s.sendProjectRules(context.Background(), "proj", meta); err == nil {
+	if err := s.sendProjectRules(context.Background(), "proj", meta, ""); err == nil {
 		t.Fatal("expected the 429 to be reported")
 	}
 
 	// Past the ordinary repository TTL but well inside the server's window.
 	advance(5 * time.Minute)
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 	if got := hits.Load(); got != 1 {
 		t.Fatalf("%d requests inside Retry-After, want 1", got)
 	}
 
 	advance(time.Hour)
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 	if got := hits.Load(); got != 2 {
 		t.Fatalf("%d requests after Retry-After elapsed, want 2", got)
 	}
@@ -158,9 +158,9 @@ func TestSendProjectRulesClampsRetryAfter(t *testing.T) {
 	s := newRuleSyncer(t, srv.URL)
 	meta := &projectMeta{repositoryRoot: ruleRepo(t), repositoryID: "github.com/org/repo"}
 
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 	advance(maxRuleRetryAfter + time.Minute)
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 
 	if got := hits.Load(); got != 2 {
 		t.Fatalf("%d requests after the clamp elapsed, want 2", got)
@@ -175,15 +175,15 @@ func TestSendProjectRulesUsesRuleScanTTLWithoutRetryAfter(t *testing.T) {
 	s := newRuleSyncer(t, srv.URL)
 	meta := &projectMeta{repositoryRoot: ruleRepo(t), repositoryID: "github.com/org/repo"}
 
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 	advance(ruleScanTTL / 2)
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 	if got := hits.Load(); got != 1 {
 		t.Fatalf("%d requests inside the TTL, want 1", got)
 	}
 
 	advance(ruleScanTTL)
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 	if got := hits.Load(); got != 2 {
 		t.Fatalf("%d requests after the TTL, want 2", got)
 	}
@@ -197,9 +197,9 @@ func TestSendProjectRulesParksPerRepository(t *testing.T) {
 	first := &projectMeta{repositoryRoot: ruleRepo(t), repositoryID: "github.com/org/own"}
 	second := &projectMeta{repositoryRoot: ruleRepo(t), repositoryID: "github.com/org/victim"}
 
-	_ = s.sendProjectRules(context.Background(), "proj", first)
-	_ = s.sendProjectRules(context.Background(), "proj", second)
-	_ = s.sendProjectRules(context.Background(), "proj", first)
+	_ = s.sendProjectRules(context.Background(), "proj", first, "")
+	_ = s.sendProjectRules(context.Background(), "proj", second, "")
+	_ = s.sendProjectRules(context.Background(), "proj", first, "")
 
 	if got := hits.Load(); got != 2 {
 		t.Fatalf("%d requests issued, want 2 (one per repository)", got)
@@ -218,15 +218,15 @@ func TestSendProjectRulesParksForbiddenLongerThanScanTTL(t *testing.T) {
 	s := newRuleSyncer(t, srv.URL)
 	meta := &projectMeta{repositoryRoot: ruleRepo(t), repositoryID: "github.com/org/repo"}
 
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 	advance(ruleScanTTL * 2)
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 	if got := hits.Load(); got != 1 {
 		t.Fatalf("%d requests after twice the scan TTL, want 1 -- forbidden must park longer", got)
 	}
 
 	advance(RuleForbiddenTTL)
-	_ = s.sendProjectRules(context.Background(), "proj", meta)
+	_ = s.sendProjectRules(context.Background(), "proj", meta, "")
 	if got := hits.Load(); got != 2 {
 		t.Fatalf("%d requests after the forbidden TTL, want 2 -- the park must expire", got)
 	}

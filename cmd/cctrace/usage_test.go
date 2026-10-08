@@ -21,7 +21,7 @@ func TestUsageSendsAbsoluteWindowAndGroup(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	if err := runUsage(srv.URL, "tok", 7*24*3600*1e9, "user", true, nil); err != nil {
+	if err := runUsage(http.DefaultClient, srv.URL, "tok", 7*24*3600*1e9, "user", true, nil); err != nil {
 		t.Fatalf("runUsage: %v", err)
 	}
 	if gotPath != "/api/open/v1/usage" {
@@ -51,7 +51,7 @@ func TestUsageSurfacesAPIRefusal(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	err := runUsage(srv.URL, "cli-token", 24*3600*1e9, "", true, nil)
+	err := runUsage(http.DefaultClient, srv.URL, "cli-token", 24*3600*1e9, "", true, nil)
 	if err == nil {
 		t.Fatal("want an error for a 401")
 	}
@@ -68,7 +68,7 @@ func TestUsageJSONPassesThroughUnchanged(t *testing.T) {
 	defer srv.Close()
 
 	var out strings.Builder
-	if err := runUsage(srv.URL, "tok", 24*3600*1e9, "user", true, &out); err != nil {
+	if err := runUsage(http.DefaultClient, srv.URL, "tok", 24*3600*1e9, "user", true, &out); err != nil {
 		t.Fatalf("runUsage: %v", err)
 	}
 	var got, want map[string]any
@@ -89,7 +89,7 @@ func TestUsageSupportsACompletedComparisonWindow(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	if err := runUsageWindow(srv.URL, "tok", 14*24*time.Hour, 7*24*time.Hour, "", true, nil); err != nil {
+	if err := runUsageWindow(http.DefaultClient, srv.URL, "tok", 14*24*time.Hour, 7*24*time.Hour, "", true, nil); err != nil {
 		t.Fatalf("runUsageWindow: %v", err)
 	}
 	if strings.Contains(gotQuery, "14d") || strings.Contains(gotQuery, "7d") {

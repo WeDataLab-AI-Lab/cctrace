@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // InsertQuotaSamples appends readings and reports how many were new.
@@ -52,24 +54,51 @@ func (s *PgStore) InsertQuotaSamples(ctx context.Context, samples []*QuotaSample
 	if err != nil {
 		return 0, err
 	}
-	var (
-		b    strings.Builder
-		args []any
-	)
-	b.WriteString(`INSERT INTO quota_samples
-		(billing_provider, account_id, window_key, sampled_at, used_pct, resets_at,
-		 window_minutes, severity, is_active, scope_label, plan, login_email,
-		 profile_email, attribution, source_session_id) VALUES `)
-	rows := 0
+	keep := valid[:0]
 	for _, q := range valid {
 		if q.SourceSessionID != "" && !live[q.SourceSessionID] {
 			continue
 		}
-		if rows > 0 {
+		keep = append(keep, q)
+	}
+	inserted := 0
+	for len(keep) > 0 {
+		n := min(len(keep), quotaSampleInsertChunk)
+		affected, err := insertQuotaSampleRows(ctx, tx, keep[:n])
+		if err != nil {
+			return 0, err
+		}
+		inserted += affected
+		keep = keep[n:]
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return 0, err
+	}
+	return inserted, nil
+}
+
+// quotaSampleInsertChunk bounds the rows in one INSERT statement. Each row binds
+// quotaSampleColumns parameters and the Postgres extended protocol stops at
+// 65,535, so one statement holds at most 4,369 rows -- fewer than the 5,000 the
+// ingest handler accepts. Chunking inside the transaction keeps the request
+// all-or-nothing while letting it reach the size the handler promises.
+const (
+	quotaSampleColumns     = 15
+	quotaSampleInsertChunk = 4000
+)
+
+func insertQuotaSampleRows(ctx context.Context, tx pgx.Tx, rows []*QuotaSample) (int, error) {
+	var b strings.Builder
+	args := make([]any, 0, len(rows)*quotaSampleColumns)
+	b.WriteString(`INSERT INTO quota_samples
+		(billing_provider, account_id, window_key, sampled_at, used_pct, resets_at,
+		 window_minutes, severity, is_active, scope_label, plan, login_email,
+		 profile_email, attribution, source_session_id) VALUES `)
+	for i, q := range rows {
+		if i > 0 {
 			b.WriteString(",")
 		}
-		n := len(args)
-		b.WriteString(placeholders(n, 15))
+		b.WriteString(placeholders(len(args), quotaSampleColumns))
 		attribution := q.Attribution
 		if attribution == "" {
 			attribution = AttributionObserved
@@ -77,17 +106,10 @@ func (s *PgStore) InsertQuotaSamples(ctx context.Context, samples []*QuotaSample
 		args = append(args, q.BillingProvider, q.AccountID, q.WindowKey, q.SampledAt,
 			q.UsedPct, q.ResetsAt, q.WindowMinutes, q.Severity, q.IsActive, q.ScopeLabel,
 			q.Plan, q.LoginEmail, q.ProfileEmail, attribution, q.SourceSessionID)
-		rows++
-	}
-	if rows == 0 {
-		return 0, tx.Commit(ctx)
 	}
 	b.WriteString(` ON CONFLICT (billing_provider, account_id, window_key, sampled_at) DO NOTHING`)
 	tag, err := tx.Exec(ctx, b.String(), args...)
 	if err != nil {
-		return 0, err
-	}
-	if err := tx.Commit(ctx); err != nil {
 		return 0, err
 	}
 	return int(tag.RowsAffected()), nil

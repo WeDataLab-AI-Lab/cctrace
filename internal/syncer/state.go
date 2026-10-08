@@ -30,6 +30,16 @@ type FileState struct {
 	// incremental pass only reads the new tail -- so without keeping it here the
 	// answer changes with whichever slice of the file a pass happened to see.
 	CodexHasTokenUsageRecord bool `json:"codex_has_token_usage_record,omitempty"`
+	// CodexOriginator is what launched the session, from the session_meta that
+	// opens the rollout. Every record's entrypoint is derived from it, and a
+	// pass that resumes past that line never reads it again.
+	CodexOriginator string `json:"codex_originator,omitempty"`
+	// CodexOriginatorScanned records that the head of the rollout has been read
+	// for its originator. Until then CodexOriginator is only what the scans of
+	// this file covered: nothing for an entry saved before the field existed,
+	// a later session_meta's when that is all a tail held. It is set whatever
+	// the head said, so each file is read for it once and not on every pass.
+	CodexOriginatorScanned bool `json:"codex_originator_scanned,omitempty"`
 	// GjcSessionID persists the session id a gjc subagent transcript's header
 	// carried, across incremental scans. Subagent transcript filenames are an
 	// arbitrary subagentId, not a UUID, so the id only exists in the header line
@@ -62,6 +72,50 @@ type FileState struct {
 	// before this field existed says -- and ConflictSeed reads that as a reason
 	// to give up the nudge, never as a count of zero.
 	ConflictTail *ConflictTail `json:"conflict_tail,omitempty"`
+	// CWDUnknown records that the cwd the consumed bytes ended in could not be
+	// established: the offset moved without the records being read (the first
+	// sync's skip, a shrink reset) and no line before it carries one. A Claude
+	// file's CWD is that last cwd; lines without their own continue from it, so
+	// an empty CWD with this unset means only that nobody has looked yet.
+	CWDUnknown bool `json:"cwd_unknown,omitempty"`
+	// Held records, per cwd, the runs of this file's pending tail that are not
+	// being sent because their repository could not be established ("" is the
+	// run whose cwd is unknown). Nothing is lost while a cwd is here: the
+	// offset stays in front of its records. Recorded rather than only logged
+	// so `cctrace status` can say a session is waiting, and so the time a hold
+	// has been seen failing survives a restart.
+	Held map[string]HeldRun `json:"held,omitempty"`
+	// HoldExpired records the last time a hold of this file lasted heldExpiry
+	// and its records were dropped unsent. Written by the save that moves the
+	// offset past them, and never cleared: the records stay missing, the same
+	// reason SkippedAtFirstSync is kept.
+	HoldExpired *HoldExpired `json:"hold_expired,omitempty"`
+	// ExcludedSeen records that some of this file's records were consumed
+	// unsent under a repository allowlist: their repository was excluded, may
+	// have been (see Taint), or could never be established. Never cleared --
+	// the file keeps those lines, and anything that re-reads it from the start
+	// (re-enrichment) would send them.
+	ExcludedSeen bool `json:"excluded_seen,omitempty"`
+}
+
+// HeldRun is one cwd's hold on a file's tail.
+//
+// Observed is how long the hold has been seen failing: each retry adds the
+// time since the one before, capped at two retry intervals. Time since Since
+// would count a night's sleep or a stopped daemon as a day of retrying, and
+// drop the records on the first pass after it.
+type HeldRun struct {
+	Since        time.Time     `json:"since"`
+	Reason       string        `json:"reason"`
+	Observed     time.Duration `json:"observed"`
+	LastFailedAt time.Time     `json:"last_failed_at"`
+}
+
+// HoldExpired is a run of records dropped because its hold never ended.
+type HoldExpired struct {
+	At     time.Time `json:"at"`
+	Reason string    `json:"reason"`
+	CWD    string    `json:"cwd,omitempty"`
 }
 
 // CodexAccountObservation records that a given Codex billing account was the
@@ -132,6 +186,14 @@ type State struct {
 	// where `cctrace status` reads it back. An account leaves when the server
 	// answers that it is no longer excluded.
 	ServerExcludedAccounts map[string]time.Time `json:"server_excluded_accounts,omitempty"`
+
+	// CWDIdentity records, per working directory, the repository the last
+	// certain git lookup found there, and Taints, per session file, the parts
+	// that were unsent when one of them changed (see provenance.go). Both are
+	// written only under a repository allowlist. Kept here rather than in memory
+	// because the tail they are asked about can be older than the process.
+	CWDIdentity map[string]*CWDIdentity `json:"cwd_identity,omitempty"`
+	Taints      map[string][]Taint      `json:"taints,omitempty"`
 
 	path  string
 	isNew bool // true when loaded from a non-existent file

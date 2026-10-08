@@ -29,6 +29,11 @@ type Metadata struct {
 	ForkHistoryCopied      bool
 	ForkBoundaryReached    bool
 	ForkHasTriggerTurn     bool
+	// OriginatorScanned records that the head of the file has been read for
+	// its originator (see HeadOriginator). The scanners neither set nor clear
+	// it: the Originator they return is the first one in the bytes they
+	// covered, which is the file's own only when those bytes start at its head.
+	OriginatorScanned bool
 }
 
 // ScanFile reads Codex JSONL records from path starting at fromOffset.
@@ -251,6 +256,33 @@ func scanForTriggerTurn(ctx context.Context, path string, fromOffset int64) (boo
 			return false, nil
 		}
 	}
+}
+
+// HeadOriginator returns the originator of the session_meta that opens path,
+// or "" when the first line is not a session_meta or carries none. It reads
+// that line and nothing after it, so a caller resuming deep in a rollout can
+// ask without paying for the rollout's size.
+func HeadOriginator(ctx context.Context, path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	line, _, _, err := jsonlscan.ReadLine(ctx, bufio.NewReaderSize(f, 64*1024))
+	// An oversized line is one the scanners skip too: it has no originator to
+	// give, which is an answer rather than a failure to read one.
+	if err != nil && err != io.EOF && !errors.Is(err, jsonlscan.ErrLineTooLong) {
+		return "", err
+	}
+	var head struct {
+		Type    string             `json:"type"`
+		Payload sessionMetaPayload `json:"payload"`
+	}
+	if json.Unmarshal(line, &head) != nil || head.Type != "session_meta" {
+		return "", nil
+	}
+	return head.Payload.Originator, nil
 }
 
 func scanStateFromMetadata(sessionID string, meta Metadata) *scanState {

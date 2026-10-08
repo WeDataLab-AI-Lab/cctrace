@@ -36,11 +36,15 @@ func (s *Syncer) ReenrichOnce(ctx context.Context) (int, error) {
 }
 
 func (s *Syncer) reenrichFile(ctx context.Context, filePath string) (int, error) {
-	records, _, err := sessionlog.ScanFileContext(ctx, filePath, 0)
+	records, _, skipped, err := sessionlog.ScanFileWithSkips(ctx, filePath, 0)
 	if err != nil {
 		return 0, err
 	}
 	if len(records) == 0 {
+		return 0, nil
+	}
+
+	if len(s.collectPrefixes) > 0 && !s.reenrichAllowed(filePath, records, skipped) {
 		return 0, nil
 	}
 
@@ -111,4 +115,54 @@ func (s *Syncer) reenrichFile(ctx context.Context, filePath string) (int, error)
 		updated += n
 	}
 	return updated, nil
+}
+
+// reenrichAllowed reports whether a whole file may be re-sent under an
+// allowlist. Re-enrichment reads from the first byte and posts everything
+// under one identity, so nothing in the file may have been kept back, or be
+// waiting to be:
+//
+//   - no record consumed unsent (FileState.ExcludedSeen);
+//   - no run held now (FileState.Held) and no unknown last cwd
+//     (FileState.CWDUnknown) -- a hold is not a verdict yet, and the lines it
+//     covers may name no cwd for a lookup to speak for;
+//   - every record's cwd known, followed from line to line as a sync pass
+//     follows it (tailCWDs), and certainly allowed now;
+//   - no taint above the offset.
+//
+// The taints are read after the lookups. A lookup is where a replaced
+// repository is noticed, and re-enrichment can be the first to look -- at a
+// file no sync pass has reached since.
+//
+// This only knows what this version recorded. A file consumed by an earlier
+// cctrace, and content skipped at first sync, carry no record of what was
+// kept back.
+func (s *Syncer) reenrichAllowed(filePath string, records []*sessionlog.Record, skipped []sessionlog.SkippedSpan) bool {
+	if fs := s.state.Files[filePath]; fs != nil && (fs.ExcludedSeen || fs.CWDUnknown || len(fs.Held) > 0) {
+		return false
+	}
+	cwds, ok := s.tailCWDs(filePath, 0, records, skipped)
+	if !ok {
+		return false
+	}
+	seen := map[string]bool{}
+	for _, cwd := range cwds {
+		if cwd == "" {
+			return false
+		}
+		if seen[cwd] {
+			continue
+		}
+		seen[cwd] = true
+		if m := s.resolveProjectMeta(cwd); m.hold != "" || !gitctx.AllowsRepository(m.repositoryID, s.collectPrefixes) {
+			return false
+		}
+	}
+	offset := s.state.GetOffset(filePath)
+	for _, t := range s.state.Taints[filePath] {
+		if t.Until > offset {
+			return false
+		}
+	}
+	return true
 }

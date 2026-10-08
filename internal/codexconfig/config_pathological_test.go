@@ -100,7 +100,7 @@ enabled = true
 				t.Fatalf("seed config: %v", err)
 			}
 
-			changed, err := EnsureOtelBlock(dir, "http://new:14317", `tok"with\chars`)
+			changed, err := EnsureOtelBlock(dir, "http://new:14317", `tok"with\chars`, "")
 			if err != nil {
 				t.Fatalf("EnsureOtelBlock: %v", err)
 			}
@@ -133,7 +133,7 @@ otel = "project-local metadata, not the root otel config"
 		t.Fatalf("seed config: %v", err)
 	}
 
-	if _, err := EnsureOtelBlock(dir, "http://new:14317", "tok"); err != nil {
+	if _, err := EnsureOtelBlock(dir, "http://new:14317", "tok", ""); err != nil {
 		t.Fatalf("EnsureOtelBlock: %v", err)
 	}
 	got := readConfigToml(t, dir)
@@ -157,7 +157,7 @@ note = "literal dotted table, not cctrace otel config"
 		t.Fatalf("seed config: %v", err)
 	}
 
-	if _, err := EnsureOtelBlock(dir, "http://new:14317", "tok"); err != nil {
+	if _, err := EnsureOtelBlock(dir, "http://new:14317", "tok", ""); err != nil {
 		t.Fatalf("EnsureOtelBlock: %v", err)
 	}
 	got := readConfigToml(t, dir)
@@ -179,7 +179,7 @@ func TestEnsureOtelBlockPreservesLiteralDottedOtelRootKey(t *testing.T) {
 		t.Fatalf("seed config: %v", err)
 	}
 
-	if _, err := EnsureOtelBlock(dir, "http://new:14317", "tok"); err != nil {
+	if _, err := EnsureOtelBlock(dir, "http://new:14317", "tok", ""); err != nil {
 		t.Fatalf("EnsureOtelBlock: %v", err)
 	}
 	got := readConfigToml(t, dir)
@@ -195,7 +195,7 @@ func TestEnsureOtelBlockCreatesConfigWithPrivateMode(t *testing.T) {
 	}
 	dir := t.TempDir()
 
-	changed, err := EnsureOtelBlock(dir, "http://new:14317", "tok")
+	changed, err := EnsureOtelBlock(dir, "http://new:14317", "tok", "")
 	if err != nil {
 		t.Fatalf("EnsureOtelBlock: %v", err)
 	}
@@ -248,7 +248,7 @@ model = "gpt-5-codex"
 		t.Fatalf("seed config: %v", err)
 	}
 
-	changed, err := EnsureOtelBlock(dir, "http://new:14317", "tok")
+	changed, err := EnsureOtelBlock(dir, "http://new:14317", "tok", "")
 	if err != nil {
 		t.Fatalf("EnsureOtelBlock: %v", err)
 	}

@@ -19,7 +19,7 @@ func TestProjectsShowsTheHash(t *testing.T) {
 	defer srv.Close()
 
 	var out strings.Builder
-	if err := runProjects(srv.URL, "tok", false, &out); err != nil {
+	if err := runProjects(http.DefaultClient, srv.URL, "tok", false, &out); err != nil {
 		t.Fatalf("runProjects: %v", err)
 	}
 	for _, want := range []string{"alpha", "org/alpha", "abc", "HASH"} {
@@ -37,7 +37,7 @@ func TestProjectsSaysWhenTheListIsCutShort(t *testing.T) {
 	defer srv.Close()
 
 	var out strings.Builder
-	if err := runProjects(srv.URL, "tok", false, &out); err != nil {
+	if err := runProjects(http.DefaultClient, srv.URL, "tok", false, &out); err != nil {
 		t.Fatalf("runProjects: %v", err)
 	}
 	if !strings.Contains(out.String(), "showing 1 of 9") {

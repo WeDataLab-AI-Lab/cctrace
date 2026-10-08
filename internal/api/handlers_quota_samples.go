@@ -9,9 +9,9 @@ import (
 	"cctrace/internal/store"
 )
 
-// maxQuotaSampleBatch bounds one ingest request. The Codex backfill walks
-// thousands of session files at once, so it chunks; this is the ceiling it
-// chunks to, and it keeps a malformed or hostile body from being unbounded.
+// maxQuotaSampleBatch bounds one ingest request. Clients chunk below it, to
+// syncer.MaxQuotaSamplesPerRequest; this is the server's hard ceiling, and it
+// keeps a malformed or hostile body from being unbounded.
 const maxQuotaSampleBatch = 5000
 
 type quotaSamplesRequest struct {

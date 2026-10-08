@@ -1,10 +1,18 @@
 package main
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
+	"math/big"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"cctrace/internal/profile"
 )
@@ -364,5 +372,149 @@ func TestSetProfileFieldExcludeAccountsRejectsAddresses(t *testing.T) {
 	}
 	if len(p.Options.ExcludeAccounts) != 0 {
 		t.Fatalf("a refused value was partly stored: %v", p.Options.ExcludeAccounts)
+	}
+}
+
+// writeTestCAFile writes a freshly generated self-signed CA certificate as PEM,
+// the shape Caddy's `tls internal` root has, and returns its path.
+func writeTestCAFile(t *testing.T, dir string) string {
+	t.Helper()
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tmpl := &x509.Certificate{
+		SerialNumber:          big.NewInt(1),
+		Subject:               pkix.Name{CommonName: "cctrace test CA"},
+		NotBefore:             time.Now().Add(-time.Hour),
+		NotAfter:              time.Now().Add(time.Hour),
+		IsCA:                  true,
+		KeyUsage:              x509.KeyUsageCertSign,
+		BasicConstraintsValid: true,
+	}
+	der, err := x509.CreateCertificate(rand.Reader, tmpl, tmpl, &key.PublicKey, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(dir, "root.crt")
+	if err := os.WriteFile(path, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der}), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+// server.ca_cert_file is read by every later run, from whatever directory that
+// run starts in, so it is stored absolute with "~" expanded.
+func TestSetProfileFieldCACertFile(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	ca := writeTestCAFile(t, home)
+
+	p := profile.NewDefault()
+	if err := setProfileField(p, "server.ca_cert_file", "~/root.crt"); err != nil {
+		t.Fatalf("setProfileField: %v", err)
+	}
+	if p.Server.CACertFile != ca {
+		t.Fatalf("CACertFile = %q, want %q", p.Server.CACertFile, ca)
+	}
+
+	t.Chdir(home)
+	p = profile.NewDefault()
+	if err := setProfileField(p, "server.ca_cert_file", "root.crt"); err != nil {
+		t.Fatalf("setProfileField(relative): %v", err)
+	}
+	if !filepath.IsAbs(p.Server.CACertFile) {
+		t.Fatalf("CACertFile = %q, want an absolute path", p.Server.CACertFile)
+	}
+
+	shown := false
+	for _, s := range flattenProfile(p) {
+		if s.key == "server.ca_cert_file" {
+			shown = true
+			if s.value != p.Server.CACertFile {
+				t.Fatalf("server.ca_cert_file shown as %q, want %q", s.value, p.Server.CACertFile)
+			}
+		}
+	}
+	if !shown {
+		t.Fatal("server.ca_cert_file missing from config settings")
+	}
+
+	if err := setProfileField(p, "server.ca_cert_file", ""); err != nil {
+		t.Fatalf("setProfileField clear: %v", err)
+	}
+	if p.Server.CACertFile != "" {
+		t.Fatalf("CACertFile = %q, want empty after clearing", p.Server.CACertFile)
+	}
+}
+
+// A path that is not a certificate would be stored and then fail every
+// connection later, far from the command that put it there.
+func TestSetProfileFieldCACertFileRejectsMissingAndNonPEM(t *testing.T) {
+	dir := t.TempDir()
+	notPEM := filepath.Join(dir, "not.pem")
+	if err := os.WriteFile(notPEM, []byte("not a certificate\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, value := range []string{filepath.Join(dir, "missing.crt"), notPEM} {
+		p := profile.NewDefault()
+		if err := setProfileField(p, "server.ca_cert_file", value); err == nil {
+			t.Fatalf("setProfileField(%q) = nil, want error", value)
+		}
+		if p.Server.CACertFile != "" {
+			t.Fatalf("CACertFile = %q, want unchanged on error", p.Server.CACertFile)
+		}
+	}
+}
+
+// The path is echoed to the terminal and written into Claude Code's and Codex's
+// configuration. A control character there is never a real file name someone
+// meant, and printed back it can rewrite the terminal line it appears on.
+func TestSetProfileFieldCACertFileRejectsControlCharacters(t *testing.T) {
+	for _, value := range []string{"/tmp/root\n.crt", "/tmp/root\x1b[2K.crt", "/tmp/\troot.crt"} {
+		p := profile.NewDefault()
+		err := setProfileField(p, "server.ca_cert_file", value)
+		if err == nil || !strings.Contains(err.Error(), "control character") {
+			t.Fatalf("setProfileField(%q) = %v, want a control character error", value, err)
+		}
+	}
+}
+
+// config set echoes what was stored, which for this key is the expanded absolute
+// path, not what was typed: the stored form is the one every later process reads.
+func TestConfigSetPrintsStoredCACertPath(t *testing.T) {
+	home := setupTestHome(t)
+	ca := writeTestCAFile(t, home)
+	stdout, _ := captureOutput(t, func() {
+		if err := runConfigSet("", "server.ca_cert_file", "~/root.crt"); err != nil {
+			t.Errorf("runConfigSet: %v", err)
+		}
+	})
+	if !strings.Contains(stdout, "server.ca_cert_file = "+ca) {
+		t.Fatalf("output does not show the stored path %s:\n%s", ca, stdout)
+	}
+}
+
+// A running sync daemon built its HTTP client from the CA it started with, so
+// saving a new CA, or clearing it, does not reach that daemon. The command says
+// so instead of letting the saved value read as applied.
+func TestConfigSetCACertTellsToRestartTheDaemon(t *testing.T) {
+	home := setupTestHome(t)
+	writeTestCAFile(t, home)
+	for _, value := range []string{"~/root.crt", ""} {
+		stdout, _ := captureOutput(t, func() {
+			if err := runConfigSet("", "server.ca_cert_file", value); err != nil {
+				t.Errorf("runConfigSet(%q): %v", value, err)
+			}
+		})
+		if !strings.Contains(stdout, "cctrace sync --stop") {
+			t.Fatalf("config set server.ca_cert_file %q did not mention restarting the daemon:\n%s", value, stdout)
+		}
+		// Codex's block is rewritten by the sync, not by config set.
+		if !strings.Contains(stdout, "Codex's [otel] block") {
+			t.Fatalf("config set server.ca_cert_file %q did not say when Codex's config follows:\n%s", value, stdout)
+		}
 	}
 }

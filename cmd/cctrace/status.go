@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -97,7 +96,7 @@ func runStatus(profileName string) error {
 		// (#712). Naming who probed is the fix; the reachability answer itself is
 		// still worth printing, because "this process reaches it, the daemon does
 		// not" is what identified the stuck daemon.
-		fmt.Printf("    서버 도달:     %s\n", checkHTTPHealth(p.Server.SyncEndpoint))
+		fmt.Printf("    서버 도달:     %s\n", checkHTTPHealth(p.Server.SyncEndpoint, p.Server.CACertFile))
 		// Reachability is not the same as completeness. A run that skipped content
 		// at first sync reports "healthy" on the line above and is missing session
 		// history all the same, so the two facts are printed together.
@@ -133,6 +132,12 @@ func runStatus(profileName string) error {
 			fmt.Printf("                   %s\n", notice)
 		}
 		if notice := bodyLimitBlockNotice(skipped); notice != "" {
+			fmt.Printf("                   %s\n", notice)
+		}
+		if notice := heldNotice(skipped); notice != "" {
+			fmt.Printf("                   %s\n", notice)
+		}
+		if notice := holdExpiredNotice(skipped); notice != "" {
 			fmt.Printf("                   %s\n", notice)
 		}
 		if notice := rulesDeniedNotice(rulesDenied); notice != "" {
@@ -331,9 +336,12 @@ func checkEndpoint(endpoint string) string {
 // was true while the daemon beside it sent nothing (#712). What this call can
 // honestly report is that *this* process reached the server, which is worth
 // printing precisely because the daemon's own answer can differ.
-func checkHTTPHealth(syncEndpoint string) string {
+func checkHTTPHealth(syncEndpoint, caFile string) string {
 	u := strings.TrimRight(syncEndpoint, "/") + "/api/health"
-	client := &http.Client{Timeout: 3 * time.Second}
+	client, err := serverClient(caFile, 3*time.Second)
+	if err != nil {
+		return "[WARN] " + err.Error()
+	}
 	resp, err := client.Get(u)
 	if err != nil {
 		return "[WARN] 이 프로세스에서 서버에 닿지 않습니다"
@@ -421,6 +429,85 @@ func bodyLimitBlockNotice(files map[string]*syncer.FileState) string {
 	// Says what to do, because the fix is on the server and the person reading
 	// this is at a client.
 	return fmt.Sprintf("[!] %d %s holding: a record exceeds the server's request size limit (raise CCTRACE_MAX_SYNC_BODY_BYTES on the server; nothing is lost meanwhile)", n, noun)
+}
+
+// heldNotice describes files with unsent records held because their repository
+// could not be established, or "" when there are none.
+//
+// A hold sends nothing and fails nothing, so neither the log summary nor the
+// stall notice says anything about it. Each reason is printed as stored, with
+// the number of files held for it: a reason this binary does not know is still
+// a hold. A hold seen failing for 24 hours ends in loss (see
+// holdExpiredNotice), so the notice says so.
+func heldNotice(files map[string]*syncer.FileState) string {
+	n, reasons := countReasons(files, func(fs *syncer.FileState) []string {
+		var held []string
+		for _, run := range fs.Held {
+			held = append(held, run.Reason)
+		}
+		return held
+	})
+	if n == 0 {
+		return ""
+	}
+	return fmt.Sprintf("[!] %d %s holding unsent records until their repository is confirmed (%s); retried every 30s, dropped after 24h of failing", n, sessionNoun(n), reasons)
+}
+
+// holdExpiredNotice describes files that dropped records because a hold never
+// ended, or "" when there are none. Only a loss that happened is recorded --
+// the state carries it from the save that moved past the records -- and it is
+// kept for the same reason first-run skips are: the records stay missing.
+func holdExpiredNotice(files map[string]*syncer.FileState) string {
+	n, reasons := countReasons(files, func(fs *syncer.FileState) []string {
+		if fs.HoldExpired == nil {
+			return nil
+		}
+		return []string{fs.HoldExpired.Reason}
+	})
+	if n == 0 {
+		return ""
+	}
+	return fmt.Sprintf("[!] %d %s dropped records held over 24h, not collected (%s)", n, sessionNoun(n), reasons)
+}
+
+// countReasons counts the files reasonsOf returns anything for, and renders
+// "reason xN" for each reason, sorted, N being the files that have it. A file
+// with the same reason twice counts once for it.
+func countReasons(files map[string]*syncer.FileState, reasonsOf func(*syncer.FileState) []string) (int, string) {
+	counts := map[string]int{}
+	n := 0
+	for _, fs := range files {
+		if fs == nil {
+			continue
+		}
+		seen := map[string]bool{}
+		for _, r := range reasonsOf(fs) {
+			if !seen[r] {
+				seen[r] = true
+				counts[r]++
+			}
+		}
+		if len(seen) > 0 {
+			n++
+		}
+	}
+	names := make([]string, 0, len(counts))
+	for r := range counts {
+		names = append(names, r)
+	}
+	sort.Strings(names)
+	parts := make([]string, 0, len(names))
+	for _, r := range names {
+		parts = append(parts, fmt.Sprintf("%s x%d", r, counts[r]))
+	}
+	return n, strings.Join(parts, ", ")
+}
+
+func sessionNoun(n int) string {
+	if n == 1 {
+		return "session"
+	}
+	return "sessions"
 }
 
 // rulesDeniedNotice describes repositories whose project rules the server

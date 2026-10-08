@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"text/tabwriter"
 
@@ -35,7 +36,11 @@ func projectsCmd() *cobra.Command {
 			if endpoint == "" {
 				return fmt.Errorf("no sync endpoint configured; run 'cctrace init' to set one")
 			}
-			return runProjects(endpoint, openAPIToken(p), asJSON, nil)
+			client, err := serverClient(p.Server.CACertFile, 0)
+			if err != nil {
+				return err
+			}
+			return runProjects(client, endpoint, openAPIToken(p), asJSON, nil)
 		},
 	}
 	cmd.Flags().StringVar(&profileName, "profile", "", "Named profile to use (overrides CCTRACE_PROFILE env var)")
@@ -43,11 +48,11 @@ func projectsCmd() *cobra.Command {
 	return cmd
 }
 
-func runProjects(endpoint, token string, asJSON bool, out io.Writer) error {
+func runProjects(client *http.Client, endpoint, token string, asJSON bool, out io.Writer) error {
 	if out == nil {
 		out = os.Stdout
 	}
-	raw, err := fetchJSON(endpoint+"/api/open/v1/projects", token)
+	raw, err := fetchJSON(client, endpoint+"/api/open/v1/projects", token)
 	if err != nil {
 		return err
 	}
