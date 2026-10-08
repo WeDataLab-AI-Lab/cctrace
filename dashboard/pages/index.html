@@ -1,0 +1,1794 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/dashboard/pages/">
+      
+      
+        <link rel="prev" href="../users/">
+      
+      
+        <link rel="next" href="../../reference/cli/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../ko/dashboard/pages/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Pages - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pages" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Pages
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ko/dashboard/pages/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Server
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Client
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Profiles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sync daemon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reset and uninstall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC and OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Dashboard
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First admin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#header" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Header
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview (/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage (/cost)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#users-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Users (/users)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sessions-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sessions (/sessions)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sessions (/sessions)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete a session
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-user-accounts-own-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A user account's own sessions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#weekly-report-weekly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weekly report (/weekly)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools (/tools)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugins-skills-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins &amp; Skills (/plugins)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules (/rules)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logs-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logs (/logs)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin (/admin)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings (/settings)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pages-under-active-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pages under active development
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#header" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Header
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview (/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage (/cost)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#users-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Users (/users)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sessions-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sessions (/sessions)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sessions (/sessions)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete a session
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-user-accounts-own-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A user account's own sessions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#weekly-report-weekly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weekly report (/weekly)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools (/tools)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugins-skills-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins &amp; Skills (/plugins)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules (/rules)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logs-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logs (/logs)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin (/admin)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings (/settings)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pages-under-active-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pages under active development
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="pages">Pages<a class="headerlink" href="#pages" title="Permanent link">&para;</a></h1>
+<p>What each dashboard page shows and who can use it.</p>
+<p>Every page requires sign-in. A <code>user</code> account sees only its own sessions; aggregates are shared with every signed-in user. See <a href="../../reference/privacy/#who-can-see-what">Privacy</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The screenshots on this page are a fictitious five-person team (Ivy, Marcus, Priya, Tomás, Yuki) on a demo server, not a real deployment.</p>
+</div>
+<h2 id="header">Header<a class="headerlink" href="#header" title="Permanent link">&para;</a></h2>
+<p>The header above every page holds an agent selector and an account selector. Pages that support them narrow their data to the selected agent and account. The account selector only appears when the signed-in account can see more than one account; a <code>user</code> account with no other account visible to it never sees the row.</p>
+<h2 id="overview">Overview (<code>/</code>)<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The page you land on after sign-in.</p>
+<p>Four summary cards report the trend chart's current range: <strong>Total Cost</strong>, <strong>Total Tokens</strong>, <strong>Active Users</strong>, <strong>Total Events</strong>. Total Cost carries a note that the figure is an estimate from API-priced usage, and that a subscription plan's own fee is prepaid separately from it.</p>
+<p><img alt="Overview page with four summary cards and the per-minute cost trend chart stacked by user" loading="lazy" src="../../assets/screenshots/40-overview.png" /></p>
+<p>Below the cards:</p>
+<ul>
+<li>A filter bar: <strong>Cost</strong>/<strong>Token</strong> view, model category (<strong>All</strong>/<strong>Claude</strong>/<strong>Codex</strong>/<strong>Compatible</strong>), group <strong>by Model</strong>/<strong>by User</strong>, and model/user dropdown filters.</li>
+<li><strong>Cost Trend</strong>: a stacked area chart at <strong>Minute</strong> or <strong>Hourly</strong> granularity, and a stacked bar chart — one bar per bucket — at <strong>Daily</strong>, <strong>Weekly</strong>, or <strong>Monthly</strong> granularity. <strong>Date</strong> opens a custom since/until range. <strong>Unknown</strong> toggles a stacked segment for subscription burn the dashboard could not measure directly — an estimate from the gap between the provider's own usage meter and what OTEL/JSONL reported, with no user or model attribution; it is disabled when the range cannot support the estimate (a project, user, model, or agent filter is active, for example). Selecting a point on the chart narrows the cards and the panels below it to that point's range. A footnote states how much of the range's subscription burn the chart could measure, for example "Measured usage covers ≈100% of subscription burn over the last 7 days · readings span 100% of the range"; hover it for the method and, where eligible, each account's own fit.</li>
+<li>
+<p><strong>Subscription burn</strong> (collapsible; labelled "preview" while collapsed): how much of each connected Claude/Codex subscription's quota window has been spent, per billing account. Toggle <strong>5h</strong>/<strong>7d</strong> windows and <strong>Claude</strong>/<strong>Codex</strong> providers; <strong>Accounts</strong> draws one line per billing account, <strong>Weighted</strong> adds a price-weighted cross-account average (shown only once more than one priced account is on screen). The axis is inverted — 0% at the top, 100% consumed at the bottom — so a line's height is what is left of that window, and a reset reads as the line jumping back up. The headline reads "\&lt;window&gt; X% consumed · $Y of $Z left"; the footer states how many $/mo of subscription spend the chart could weight, and names any account it left out (an unpriced plan, or one with no reading in range).</p>
+<p><img alt="Overview scrolled to the Subscription burn panel, with its 5h/7d and Claude/Codex/Accounts/Weighted toggles" loading="lazy" src="../../assets/screenshots/41-subscription-burn.png" /></p>
+</li>
+</ul>
+<p>Cost Trend switches from area to bar at <strong>Daily</strong> already, and stays bar through <strong>Weekly</strong> and <strong>Monthly</strong>. Subscription burn stays a step line until <strong>Weekly</strong> or <strong>Monthly</strong>, where it switches to one bar per bucket carrying a time-weighted average — because a step line would otherwise collapse into unreadable hatching across that many quota resets.</p>
+<p><img alt="Overview with the trend chart switched to Daily (30d), one stacked bar per active day" loading="lazy" src="../../assets/screenshots/42-overview-daily.png" /></p>
+<ul>
+<li><strong>Cost by Model</strong> and <strong>Cost by User</strong>: the same range's totals from the two other angles, as a pie chart and a stacked bar.</li>
+</ul>
+<h2 id="usage-cost">Usage (<code>/cost</code>)<a class="headerlink" href="#usage-cost" title="Permanent link">&para;</a></h2>
+<p>The same <strong>Cost Trend</strong> chart as Overview, followed by the full per-user, per-model breakdown behind it: <strong>Requests</strong>, <strong>Input Tokens</strong>, <strong>Output Tokens</strong>, and <strong>Cost</strong> (or <strong>Total Tokens</strong> in Token view), sorted by cost and totalled in a footer row. The search box filters the table by user or model.</p>
+<p><img alt="Usage Details page with the cost trend chart and the full per-user, per-model table" loading="lazy" src="../../assets/screenshots/43-usage.png" /></p>
+<p>A row with no owner and the label <strong>weekly</strong> is not a person — it is the tokens the server's own Codex account spent building the <a href="#weekly-report-weekly">weekly AI report</a>; hover it for the explanation.</p>
+<h2 id="users-users">Users (<code>/users</code>)<a class="headerlink" href="#users-users" title="Permanent link">&para;</a></h2>
+<p>The <strong>Analytics</strong> tab lists users by cost. Selecting a person's card opens an inline Detail View next to it. Administrators also get the <strong>Management</strong> tab, described in <a href="../users/">Users</a>.</p>
+<p><img alt="A user's inline Detail View: cost trend, model breakdown, and recent sessions" loading="lazy" src="../../assets/screenshots/45-user-detail.png" /></p>
+<h2 id="sessions-sessions">Sessions (<code>/sessions</code>)<a class="headerlink" href="#sessions-sessions" title="Permanent link">&para;</a></h2>
+<p>A session list on the left and the selected session's transcript on the right.</p>
+<ul>
+<li>Select a session in the list to open its transcript. The list loads more as you scroll and shows how many sessions match out of the total.</li>
+<li><strong>Assembled</strong> merges related session files (subagents, branches) into one conversation. <strong>Raw</strong> shows each file's records as they are, grouped by file.</li>
+<li><strong>Interactive</strong> (the default) shows sessions with human turns, <strong>Headless</strong> shows machine-driven sessions such as <code>claude -p</code>, <strong>All</strong> shows both.</li>
+<li>The project picker narrows the list to one project. The search box filters the loaded sessions by session, user, or project.</li>
+</ul>
+<p><img alt="Sessions list mixing Codex and Claude Code sessions, with the topmost session's transcript open on the right" loading="lazy" src="../../assets/screenshots/46-sessions-list.png" /></p>
+<p>A transcript's tool calls render for what the recording agent actually sent: a Claude session's <code>Read</code>/<code>Edit</code>/<code>Bash</code> steps —</p>
+<p><img alt="A Claude Code session's transcript: an Edit followed by a Bash test run" loading="lazy" src="../../assets/screenshots/47-session-detail-claude.png" /></p>
+<p>— and a Codex session's <code>apply_patch</code>/<code>shell</code> steps, filtered here to sessions tagged <code>codex</code> with the <strong>Agent</strong> selector:</p>
+<p><img alt="A Codex session's transcript, Agent filter set to Codex: an apply_patch followed by a shell test run" loading="lazy" src="../../assets/screenshots/48-session-detail-codex.png" /></p>
+<h3 id="delete-a-session">Delete a session<a class="headerlink" href="#delete-a-session" title="Permanent link">&para;</a></h3>
+<p>The trash icon in the transcript header (tooltip <code>세션 삭제</code>) deletes the session's records and the events and metrics attached to it. This cannot be undone, and the server refuses the session if a client uploads it again.</p>
+<table>
+<thead>
+<tr>
+<th>Who</th>
+<th>Can delete</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>admin</code></td>
+<td>Any session. The dialog then offers to delete the project's other sessions and to stop collecting the project.</td>
+</tr>
+<tr>
+<td><code>user</code></td>
+<td>Their own sessions, while the owner-delete policy allows it (the default)</td>
+</tr>
+</tbody>
+</table>
+<p>Administrators set the owner-delete policy and remove projects from the blocked list in the gear dialog next to the trash icon (<code>세션 수집 설정</code>). They can also delete a whole project from the project picker.</p>
+<h3 id="a-user-accounts-own-sessions">A <code>user</code> account's own sessions<a class="headerlink" href="#a-user-accounts-own-sessions" title="Permanent link">&para;</a></h3>
+<p>A <code>user</code> account's <code>/sessions</code> is the same list-and-transcript page, narrowed to its own sessions with no Account selector (and no <strong>Admin</strong> entry in the sidebar):</p>
+<p><img alt="A user account's own Sessions page: no Account selector, no Admin sidebar entry, and only that person's sessions" loading="lazy" src="../../assets/screenshots/53-user-view.png" /></p>
+<h2 id="weekly-report-weekly">Weekly report (<code>/weekly</code>)<a class="headerlink" href="#weekly-report-weekly" title="Permanent link">&para;</a></h2>
+<p>A signed-in account's own record for one calendar week, navigated with the arrows next to the week label; a week in progress is marked so, and a week that has not started yet is not reachable.</p>
+<p>The summary line under the title counts that week's sessions by agent and its rule-derived "work segments" (<code>Claude Code 세션 N · Codex 세션 N · 작업 구간 N</code>); it also carries any caveats that apply that week, for example the same OTEL-metric scope note used on the <a href="#tools-tools">Tools</a> page for Codex tool counts, records an administrator excluded from analysis, or sessions not covered by a work-segment fact.</p>
+<p><img alt="Weekly report: session summary, Projects donut, Task types table, and the AI report placeholder" loading="lazy" src="../../assets/screenshots/49-weekly-report.png" /></p>
+<ul>
+<li><strong>Projects</strong>: a donut of that week's sessions by project.</li>
+<li><strong>Task types</strong>: the week's turns grouped by task type; selecting a type opens its underlying session segments. A dataset with no classification run yet shows every turn as <strong>Not yet classified</strong>.</li>
+<li>The AI report panel reads the week's task segments' conversation content and writes a summary and a to-revisit list — off by default, and shown as "AI 리포트가 꺼져 있습니다" until an administrator turns it on.</li>
+</ul>
+<h2 id="tools-tools">Tools (<code>/tools</code>)<a class="headerlink" href="#tools-tools" title="Permanent link">&para;</a></h2>
+<p>Claude Code and Codex tool calls over the last 30 days: total uses, successes, failures, and the overall success rate, then a per-tool table with a success-rate bar.</p>
+<p><img alt="Tool Usage page: four summary cards and a per-tool table with success bars" loading="lazy" src="../../assets/screenshots/50-tools.png" /></p>
+<p>A scope note under the title states what the Codex figures rest on: Codex's tool counts come from its codex.tool.call OTEL metric, which counts calls made inside a code-mode exec script and is sent only by TUI and VS Code runs; Codex also carries no per-call failure detail, so a tool's expandable <strong>Recent Failures</strong> list is Claude's calls only.</p>
+<h2 id="plugins-skills-plugins">Plugins &amp; Skills (<code>/plugins</code>)<a class="headerlink" href="#plugins-skills-plugins" title="Permanent link">&para;</a></h2>
+<p>Calls to Claude Code slash commands and skills, and Codex skill injections, grouped by plugin or skill name.</p>
+<ul>
+<li>Period: <strong>7d</strong>, <strong>30d</strong> (default), <strong>90d</strong>, <strong>All</strong>.</li>
+<li>Summary cards: <strong>Claude Calls</strong>, <strong>Codex Calls</strong>, <strong>Avg Tokens</strong>, <strong>Total</strong>, <strong>Input</strong>, <strong>Output</strong> tokens.</li>
+<li>Views: <strong>By Skill</strong>, <strong>By User</strong>, <strong>By Project</strong>. <strong>By Project</strong> counts only sessions in git repositories.</li>
+</ul>
+<p><img alt="Plugins &amp; Skills page, By Skill view, with call and token totals per skill" loading="lazy" src="../../assets/screenshots/51-plugins-skills.png" /></p>
+<p><code>/skills</code> redirects here.</p>
+<h2 id="rules-rules">Rules (<code>/rules</code>)<a class="headerlink" href="#rules-rules" title="Permanent link">&para;</a></h2>
+<p>The CLAUDE.md and AGENTS.md files the client found in the git repositories your sessions ran in, with their version history.</p>
+<ul>
+<li>Filter by text, status (<strong>Active</strong>, <strong>Missing</strong>), and repository. Summary cards count <strong>Repositories</strong> and <strong>Rule Files</strong>.</li>
+<li>Select a file to read a version and add comments to it.</li>
+<li>A <code>user</code> account sees rule files only from repositories where it has sessions.</li>
+</ul>
+<p><img alt="Project Rules page: a repository list on the left and a selected AGENTS.md's rendered content on the right" loading="lazy" src="../../assets/screenshots/54-rules.png" /></p>
+<h2 id="logs-logs">Logs (<code>/logs</code>)<a class="headerlink" href="#logs-logs" title="Permanent link">&para;</a></h2>
+<p>Raw telemetry from the last 30 days, 50 rows per page.</p>
+<table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>Columns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Events</td>
+<td>Time, Event, Model, Session, User, Input, Output, Cost, Age</td>
+</tr>
+<tr>
+<td>Metrics</td>
+<td>Time, Metric, Model, User, Value, Session, Age</td>
+</tr>
+</tbody>
+</table>
+<p>Logs are not limited to your own data. Attributes that carry free text, such as prompts and tool output, are removed before they reach the page.</p>
+<h2 id="admin-admin">Admin (<code>/admin</code>)<a class="headerlink" href="#admin-admin" title="Permanent link">&para;</a></h2>
+<p>Visible only to administrators.</p>
+<table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>Shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clients</strong></td>
+<td>Each client that reported a version: Profile Email, Name, User ID, Client Version, Last Seen, Status</td>
+</tr>
+<tr>
+<td><strong>Storage</strong></td>
+<td>Retention, table sizes, and free space on the data volume. Retention is edited here; see <a href="../../server/operations/#data-retention">Operations</a>.</td>
+</tr>
+</tbody>
+</table>
+<p><code>/versions</code> and <code>/storage</code> redirect to <code>/admin</code>.</p>
+<p>The <strong>Excluded Accounts</strong>, <strong>Unpriced Models</strong>, <strong>Insights</strong>, and <strong>AI</strong> tabs are under active development and are not documented here.</p>
+<h2 id="settings-settings">Settings (<code>/settings</code>)<a class="headerlink" href="#settings-settings" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Change Password</strong>: enter the current password and a new one of at least 8 characters. An account with a temporary password is sent here until it changes it.</li>
+<li><strong>Appearance</strong>: accent color, agent tone, and whether the logo mark is shown.</li>
+</ul>
+<p>The API token and billing account sections are under active development and are not documented here.</p>
+<h2 id="pages-under-active-development">Pages under active development<a class="headerlink" href="#pages-under-active-development" title="Permanent link">&para;</a></h2>
+<p>These pages exist and are under active development. They are not documented here.</p>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Sidebar entry</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/open-api</code></td>
+<td>Open API</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../users/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Users">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Users
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../reference/cli/" class="md-footer__link md-footer__link--next" aria-label="Next: CLI">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                CLI
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

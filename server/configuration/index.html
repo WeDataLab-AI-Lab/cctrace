@@ -1,0 +1,1748 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/server/configuration/">
+      
+      
+        <link rel="prev" href="../install/">
+      
+      
+        <link rel="next" href="../operations/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../ko/server/configuration/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Configuration - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configure-the-server" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Configuration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ko/server/configuration/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Server
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Database">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#if-the-role-was-not-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        If the role was not created
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#databases-already-in-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Databases already in use
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication-and-browser-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication and browser access
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sync-uploads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sync uploads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#images-and-containers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Images and containers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variables-the-compose-file-does-not-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Variables the compose file does not pass
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Client
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Profiles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sync daemon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reset and uninstall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC and OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Dashboard
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First admin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/pages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Database">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#if-the-role-was-not-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        If the role was not created
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#databases-already-in-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Databases already in use
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication-and-browser-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication and browser access
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sync-uploads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sync uploads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#images-and-containers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Images and containers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variables-the-compose-file-does-not-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Variables the compose file does not pass
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="configure-the-server">Configure the server<a class="headerlink" href="#configure-the-server" title="Permanent link">&para;</a></h1>
+<p>The server is configured only through environment variables. With Docker Compose you set them in the server env file (<code>.env</code> in the <code>deploy/</code> directory), and the compose file passes a fixed subset to the <code>cctraced</code> container.</p>
+<p>There are two kinds of keys:</p>
+<ul>
+<li><strong>Compose keys</strong> shape the containers: host ports, bind addresses, image tags, the logs directory. <code>cctraced</code> never sees them.</li>
+<li><strong>Server variables</strong> are read by <code>cctraced</code> itself. Compose passes only the ones listed in its <code>environment:</code> block.</li>
+</ul>
+<p><code>deploy/.env.example</code> is the annotated template. Run <code>cctraced --help</code> inside the container for the server's own list:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>cctraced<span class="w"> </span>cctraced<span class="w"> </span>--help
+</code></pre></div>
+<p>After changing a value, recreate the container so it takes effect:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+<p><code>CCTRACE_AI_*</code> variables and <code>CCTRACE_SECRETS_KEY</code> belong to an area that is under active development and are not documented here.</p>
+<h2 id="required">Required<a class="headerlink" href="#required" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JWT_SECRET</code></td>
+<td>none</td>
+<td>Signing key for dashboard sessions. At least 32 bytes. Compose refuses to start without it; <code>cctraced</code> exits on a shorter value with <code>JWT secret must be at least 32 bytes</code>, and on the value <code>deploy/.env.example</code> shipped with <code>JWT_SECRET is a published example value</code>.</td>
+</tr>
+<tr>
+<td><code>LOGS_DIR</code></td>
+<td>none</td>
+<td>Host directory mounted at <code>/data/logs</code> in the <code>cctraced</code> container. Compose refuses to start without it. See <a href="../operations/#logs">Operations</a>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="database">Database<a class="headerlink" href="#database" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DB_PASSWORD</code></td>
+<td><code>cctrace</code></td>
+<td>Password of the <code>cctrace</code> database superuser. Applied only when the database volume is first initialised. Set it before the first start.</td>
+</tr>
+<tr>
+<td><code>DB_APP_CREDENTIALS</code></td>
+<td>empty</td>
+<td><code>&lt;user&gt;:&lt;password&gt;</code> of a non-superuser role for <code>cctraced</code>. Set it before the first start (see below).</td>
+</tr>
+<tr>
+<td><code>DB_PORT</code></td>
+<td><code>5432</code></td>
+<td>Host port for TimescaleDB. Always bound to 127.0.0.1.</td>
+</tr>
+</tbody>
+</table>
+<p>Compose builds <code>DATABASE_URL</code> for <code>cctraced</code> from these values. With <code>DB_APP_CREDENTIALS</code> empty, <code>cctraced</code> connects as <code>cctrace</code> with <code>DB_PASSWORD</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">How <code>DB_APP_CREDENTIALS</code> takes effect</p>
+<p>On the first start, while the database volume is empty, <code>deploy/initdb/10-app-role.sh</code> creates the role named in <code>DB_APP_CREDENTIALS</code> as <code>NOSUPERUSER NOCREATEROLE NOCREATEDB</code>, and <code>cctraced</code> connects as that role. With the key empty, <code>cctraced</code> connects as the <code>cctrace</code> superuser, and a flaw in the server can then run commands inside the database container through <code>COPY ... FROM PROGRAM</code>.</p>
+<p>The role name must not be <code>cctrace</code> (the superuser) or start with <code>pg_</code>, may contain only <code>A-Za-z0-9_</code>, and must be at most 63 bytes. Generate the password with only URL-safe characters, for example <code>openssl rand -hex 20</code>: compose writes it into the connection URL as it is, so <code>/</code>, <code>#</code>, <code>?</code> or <code>%</code> in it leave <code>cctraced</code> unable to parse the URL, and that parse error contains part of the password.</p>
+</div>
+<h3 id="if-the-role-was-not-created">If the role was not created<a class="headerlink" href="#if-the-role-was-not-created" title="Permanent link">&para;</a></h3>
+<p>When the value is malformed or the role cannot be created, the script prints the reason in the <code>timescaledb</code> log, prefixed <code>[initdb]</code>, and skips the role; the database still finishes initialising. <code>cctraced</code> still connects with the credentials in <code>DB_APP_CREDENTIALS</code>, so it fails to authenticate until a role with that name and password exists.</p>
+<p>Clearing <code>DB_APP_CREDENTIALS</code> also gets <code>cctraced</code> running, but as the superuser, and the tables it then creates belong to the superuser, which puts the database in the situation of the next section. As long as <code>cctraced</code> has never connected, the database holds none of its objects, and either of these adds the role instead:</p>
+<ol>
+<li>
+<p>Fix the value in the server env file. Recreate the database container so it sees the new value, wait for <code>timescaledb</code> to show <code>(healthy)</code> in <code>ps</code>, run the script again inside it, then start the rest of the stack:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>timescaledb
+<span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nb">exec</span><span class="w"> </span>timescaledb<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">'PGPASSWORD="$POSTGRES_PASSWORD" sh /docker-entrypoint-initdb.d/10-app-role.sh'</span>
+<span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+<p>The script prints <code>[initdb] created &lt;name&gt; (NOSUPERUSER)</code> once the role exists.</p>
+</li>
+<li>
+<p>If nothing has been collected yet, remove the volumes, fix the value in the server env file, and start again. The script runs again on the empty volume.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>down<span class="w"> </span>-v
+<span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+</li>
+</ol>
+<h3 id="databases-already-in-use">Databases already in use<a class="headerlink" href="#databases-already-in-use" title="Permanent link">&para;</a></h3>
+<p>The script runs only while the data volume is empty. On a database that is already initialised it does not run, so setting <code>DB_APP_CREDENTIALS</code> there points <code>cctraced</code> at a role that does not exist. Creating the role by hand is not enough: it must also own the objects the superuser already created, or the boot migration fails with <code>must be owner</code>. This repository does not include a tool for that conversion. With <code>DB_APP_CREDENTIALS</code> left empty, an existing deployment keeps connecting as the superuser.</p>
+<h2 id="network">Network<a class="headerlink" href="#network" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HTTP_BIND</code></td>
+<td>127.0.0.1</td>
+<td>Host address for the dashboard and REST API port</td>
+</tr>
+<tr>
+<td><code>GRPC_BIND</code></td>
+<td>0.0.0.0</td>
+<td>Host address for OTLP gRPC</td>
+</tr>
+<tr>
+<td><code>OTEL_HTTP_BIND</code></td>
+<td>0.0.0.0</td>
+<td>Host address for OTLP HTTP</td>
+</tr>
+<tr>
+<td><code>HTTP_PORT</code></td>
+<td><code>8080</code></td>
+<td>Host port for the dashboard and REST API</td>
+</tr>
+<tr>
+<td><code>GRPC_PORT</code></td>
+<td><code>4317</code></td>
+<td>Host port for OTLP gRPC</td>
+</tr>
+<tr>
+<td><code>OTEL_HTTP_PORT</code></td>
+<td><code>4318</code></td>
+<td>Host port for OTLP HTTP</td>
+</tr>
+</tbody>
+</table>
+<p>These are compose keys. Inside the container, <code>cctraced</code> always listens on 8080, 4317 and 4318; the compose file sets its own <code>HTTP_PORT</code>, <code>GRPC_PORT</code> and <code>HTTP_OTEL_PORT</code> to those values. Note <code>OTEL_HTTP_PORT</code> (host, compose) versus <code>HTTP_OTEL_PORT</code> (container, server).</p>
+<p>See <a href="../../reference/ports/">Ports</a> for the complete table, including the TLS overlay.</p>
+<h2 id="authentication-and-browser-access">Authentication and browser access<a class="headerlink" href="#authentication-and-browser-access" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CCTRACE_SETUP_TOKEN</code></td>
+<td>empty</td>
+<td>Token for creating the first admin. Empty: <code>cctraced</code> generates one and prints it in its log while no users exist. Invalid after the first admin is created.</td>
+</tr>
+<tr>
+<td><code>COOKIE_SECURE</code></td>
+<td><code>0</code></td>
+<td><code>1</code> forces the Secure flag on auth cookies. Set it when the dashboard is served over HTTPS through a proxy. Requests over TLS or with <code>X-Forwarded-Proto: https</code> get Secure cookies either way.</td>
+</tr>
+<tr>
+<td><code>CCTRACE_ALLOWED_ORIGINS</code></td>
+<td>empty</td>
+<td>Comma-separated browser origins on another host or port that may call the API, as exact <code>scheme://host[:port]</code> values without paths. No wildcard. Empty disables CORS. The bundled dashboard does not need it.</td>
+</tr>
+<tr>
+<td><code>API_KEY</code></td>
+<td>empty</td>
+<td>Optional shared API token, accepted in addition to per-user tokens. Empty disables the shared key; per-user tokens keep working.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sync-uploads">Sync uploads<a class="headerlink" href="#sync-uploads" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CCTRACE_MAX_SYNC_BODY_BYTES</code></td>
+<td><code>8388608</code> (8 MiB)</td>
+<td>Maximum size of one <code>POST /api/sync</code> request body. At most <code>268435456</code> (256 MiB); a larger, non-positive or non-numeric value keeps the default and logs a warning.</td>
+</tr>
+</tbody>
+</table>
+<p>The client sends session records in batches and does not split a batch by size. A batch above the limit is rejected with HTTP 413, and sync of that file stops at that point. Raise the limit if your batches exceed it. The server buffers the whole body, and decoding uses roughly five times its size in memory, per request.</p>
+<h2 id="images-and-containers">Images and containers<a class="headerlink" href="#images-and-containers" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IMAGE_TAG</code></td>
+<td><code>latest</code></td>
+<td>Tag of cctrace/cctraced to run. Must match a locally built image.</td>
+</tr>
+<tr>
+<td><code>DB_IMAGE_TAG</code></td>
+<td><code>latest</code></td>
+<td>Tag of cctrace/timescaledb-pgmq to run. Must match a locally built image.</td>
+</tr>
+<tr>
+<td><code>CONTAINER_PREFIX</code></td>
+<td><code>cctrace</code></td>
+<td>Container name prefix. Change it only to run a second stack on the same host.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="variables-the-compose-file-does-not-pass">Variables the compose file does not pass<a class="headerlink" href="#variables-the-compose-file-does-not-pass" title="Permanent link">&para;</a></h2>
+<p><code>cctraced</code> reads the following variables, but the shipped <code>deploy/docker-compose.yml</code> does not list them under the <code>cctraced</code> service. Setting them in the server env file has no effect on the container. They apply when you run <code>cctraced</code> another way, or when you add them to the service's <code>environment:</code> yourself.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OTEL_RETENTION_DAYS</code></td>
+<td>unset</td>
+<td>Retention in days for OpenTelemetry events and metrics. Unset leaves the current policy (90 days from the schema).</td>
+</tr>
+<tr>
+<td><code>SESSION_RETENTION_DAYS</code></td>
+<td>unset</td>
+<td>Retention in days for session records (conversation content). Unset leaves the current policy; <code>0</code> means keep forever.</td>
+</tr>
+<tr>
+<td><code>CCTRACE_USERID_ACCESS_CONTROL</code></td>
+<td><code>true</code></td>
+<td>Per-user isolation of session data. Only the literal value <code>false</code> turns it off.</td>
+</tr>
+<tr>
+<td><code>CCTRACE_ALLOW_EMPTY_DASHBOARD</code></td>
+<td>empty</td>
+<td><code>1</code> lets <code>cctraced</code> start without embedded dashboard assets (API only). Without it, a binary built without the dashboard refuses to start.</td>
+</tr>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td><code>postgres://cctrace:cctrace@localhost:5432/cctrace?sslmode=disable</code></td>
+<td>Database connection string. Compose always sets it (see <a href="#database">Database</a>).</td>
+</tr>
+</tbody>
+</table>
+<p>Retention can be set without these variables in the dashboard: <strong>Admin &gt; Storage</strong>. See <a href="../operations/#data-retention">Operations</a>.</p>
+<p>For a single table of every key, see <a href="../../reference/server-env/">Server environment</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../install/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Install">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Install
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../operations/" class="md-footer__link md-footer__link--next" aria-label="Next: Operations">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Operations
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

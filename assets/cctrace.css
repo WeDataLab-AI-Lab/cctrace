@@ -1,0 +1,217 @@
+/* cctrace docs theme.
+ *
+ * Maps Material for MkDocs onto the dashboard's tokens. Every value here is a
+ * token name from assets/tokens.css (generated from web/app/globals.css); a
+ * literal colour in this file is a copy, and DESIGN.md explains why copies rot.
+ *
+ * DESIGN.md principles carried over:
+ *  - chrome is achromatic, colour belongs to data: header, links and selection
+ *    use ink and the mono accent, never Material's indigo.
+ *  - depth is a surface step and a hairline, not a shadow.
+ *  - light only: the dashboard pins itself to white, so the docs do too.
+ */
+
+:root,
+[data-md-color-scheme="default"] {
+  --md-default-bg-color: var(--surface);
+  --md-default-fg-color: var(--ink);
+  --md-default-fg-color--light: var(--ink-2);
+  --md-default-fg-color--lighter: var(--ink-3);
+  --md-default-fg-color--lightest: var(--border);
+
+  --md-primary-fg-color: var(--surface);
+  --md-primary-fg-color--light: var(--surface-2);
+  --md-primary-fg-color--dark: var(--surface-sunk);
+  --md-primary-bg-color: var(--ink);
+  --md-primary-bg-color--light: var(--ink-2);
+
+  --md-accent-fg-color: var(--accent-hover);
+  --md-accent-fg-color--transparent: var(--accent-soft);
+  --md-accent-bg-color: var(--accent-ink);
+
+  --md-typeset-color: var(--ink);
+  --md-typeset-a-color: var(--accent);
+
+  --md-code-bg-color: var(--surface-sunk);
+  --md-code-fg-color: var(--ink);
+
+  --md-footer-bg-color: var(--surface);
+  --md-footer-bg-color--dark: var(--surface-sunk);
+  --md-footer-fg-color: var(--ink);
+  --md-footer-fg-color--light: var(--ink-2);
+  --md-footer-fg-color--lighter: var(--ink-3);
+
+  --md-shadow-z1: none;
+  --md-shadow-z2: none;
+  --md-shadow-z3: none;
+}
+
+/* Header and tabs: a surface with a hairline under it, not a coloured bar. */
+.md-header,
+.md-tabs {
+  background-color: var(--surface);
+  color: var(--ink);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+.md-header--shadow,
+.md-search__form,
+.md-nav__title { box-shadow: none !important; }
+.md-search__form { background-color: var(--surface-sunk); border-radius: var(--r-md); }
+.md-search__input { color: var(--ink); }
+.md-search__input::placeholder,
+.md-search__icon { color: var(--ink-3); }
+
+/* Size: Material scales the root font up to 137.5% on wide screens, which put
+   body text near 18px. Pin the root so rem means the same at every width; body
+   prose is then 15px -- a step above the dashboard's dense 13.5px because this
+   is reading, not scanning. */
+html,
+[data-md-color-scheme] { font-size: 125%; }
+@media screen and (min-width: 100em) { html { font-size: 125%; } }
+@media screen and (min-width: 125em) { html { font-size: 125%; } }
+.md-typeset { font-size: 0.75rem; line-height: 1.65; }
+.md-nav { font-size: 0.68rem; }
+.md-header__title { font-size: 0.85rem; }
+
+/* One surface for the whole page. The sidebars are separated by a hairline, not
+   by a second background, so nothing ends mid-page when the article is short. */
+.md-main__inner { margin-top: 0; }
+.md-content__inner { padding-top: 1.2rem; }
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary .md-sidebar__scrollwrap { border-right: 1px solid var(--border); }
+}
+@media screen and (min-width: 60em) {
+  .md-sidebar--secondary .md-sidebar__scrollwrap { border-left: 1px solid var(--border); }
+}
+
+/* Footer: previous/next sits on the same surface under a hairline. The meta row
+   held only the generator credit (extra.generator: false), so it is dropped
+   rather than left as an empty band. */
+.md-footer { border-top: 1px solid var(--border); }
+.md-footer__inner { padding: 0.4rem 0; }
+.md-footer__title { font-size: 0.8rem; }
+.md-footer__direction { font-size: 0.6rem; color: var(--ink-3); }
+.md-footer-meta { display: none; }
+
+/* Typography: the dashboard's hierarchy (DESIGN.md, 타이포그래피). */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+/* Page title 24px, section 18px, subsection 15.5px (DESIGN.md 위계 표). */
+.md-typeset h1 { font-size: 1.2rem; margin-bottom: 1rem; }
+.md-typeset h2 { font-size: 0.9rem; margin-top: 2em; }
+.md-typeset h3 { font-size: 0.775rem; }
+.md-typeset a { text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 0.2em; }
+.md-typeset a:hover { color: var(--accent-hover); text-decoration-color: currentColor; }
+.md-nav__link--active,
+.md-nav__link:hover { color: var(--ink) !important; font-weight: 600; }
+.md-nav__item .md-nav__link { color: var(--ink-2); }
+
+/* Numbers align; IDs, paths and commands are mono. An identifier in a table
+   cell never breaks mid-token: the table scrolls sideways instead
+   (DESIGN.md 원칙 7 — 좁아지면 데이터를 줄이는 대신 스크롤). */
+.md-typeset table:not([class]) td { font-variant-numeric: tabular-nums; }
+.md-typeset table:not([class]) code { white-space: nowrap; }
+
+/* Hairline depth everywhere Material would reach for a shadow. */
+.md-typeset code { border-radius: var(--r-xs); }
+.md-typeset pre > code { border: 1px solid var(--border); border-radius: var(--r-md); }
+.md-typeset table:not([class]) {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: none;
+}
+.md-typeset table:not([class]) th { background-color: var(--surface-2); color: var(--ink-2); font-weight: 600; }
+.md-typeset table:not([class]) td { border-top: 1px solid var(--border-subtle); }
+
+/* Admonitions: neutral by default; colour only where it carries meaning. */
+.md-typeset .admonition,
+.md-typeset details {
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: var(--r-md);
+  box-shadow: none;
+  background-color: var(--surface);
+  font-size: 0.72rem;
+}
+.md-typeset .admonition-title,
+.md-typeset summary { background-color: var(--surface-2) !important; }
+.md-typeset .admonition-title::before,
+.md-typeset summary::before { background-color: var(--ink-3) !important; }
+.md-typeset .admonition.admonition,
+.md-typeset details.details { border-color: var(--border); border-left-color: var(--border-strong); }
+.md-typeset .admonition.warning,
+.md-typeset details.warning { border-left-color: var(--warning); }
+.md-typeset .warning > .admonition-title::before,
+.md-typeset .warning > summary::before { background-color: var(--warning-strong) !important; }
+.md-typeset .admonition.danger,
+.md-typeset details.danger { border-left-color: var(--danger); }
+.md-typeset .danger > .admonition-title::before,
+.md-typeset .danger > summary::before { background-color: var(--danger-strong) !important; }
+
+/* Landing cards (Material "grid cards"). */
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid > .card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background-color: var(--surface);
+  box-shadow: none;
+}
+.md-typeset .grid.cards > ul > li:hover,
+.md-typeset .grid > .card:hover {
+  border-color: var(--border-strong);
+  box-shadow: none;
+}
+
+/* Logo: the eye mark, one flat ink colour (docs-overrides/partials/logo.html). */
+.md-header__button.md-logo svg { fill: none; height: 1.4rem; width: 1.4rem; }
+
+/* Inline diagrams: drawn with token names, framed like a card. */
+.diagram {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background-color: var(--surface-2);
+  padding: 0.4rem;
+  margin: 1.2em 0;
+  overflow-x: auto;
+}
+.diagram svg { display: block; width: 100%; height: auto; min-width: 560px; }
+
+/* The architecture SVGs also render as standalone GitHub images, where their
+   own prefers-color-scheme rule applies. These overrides keep an inline copy
+   aligned with Material's manual palette even when it differs from the OS. */
+[data-md-color-scheme="default"] .architecture-diagram {
+  --arch-canvas: #ffffff;
+  --arch-zone: #f7f9fc;
+  --arch-zone-border: #c8d2e1;
+  --arch-node: #ffffff;
+  --arch-node-border: #94a3b8;
+  --arch-focus: #edf4ff;
+  --arch-focus-border: #356fc4;
+  --arch-store: #edf8f3;
+  --arch-store-border: #338363;
+  --arch-ink: #16233a;
+  --arch-muted: #5c6b82;
+  --arch-line: #65758f;
+  --arch-accent: #c95b42;
+}
+[data-md-color-scheme="slate"] .architecture-diagram {
+  --arch-canvas: #0d1117;
+  --arch-zone: #121923;
+  --arch-zone-border: #3a485c;
+  --arch-node: #161e29;
+  --arch-node-border: #627087;
+  --arch-focus: #14243b;
+  --arch-focus-border: #70a5f5;
+  --arch-store: #10271f;
+  --arch-store-border: #63bd94;
+  --arch-ink: #e6edf3;
+  --arch-muted: #a3afbf;
+  --arch-line: #91a0b4;
+  --arch-accent: #ff9b7c;
+}

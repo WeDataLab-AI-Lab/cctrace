@@ -1,0 +1,1806 @@
+
+<!doctype html>
+<html lang="ko" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/ko/server/install/">
+      
+      
+        <link rel="prev" href="../../getting-started/">
+      
+      
+        <link rel="next" href="../configuration/">
+      
+      
+        
+          <link rel="alternate" href="../../../server/install/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>설치 - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../../../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          콘텐츠로 이동
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="상단/헤더">
+    <a href="../../" title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              설치
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="언어설정">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../server/install/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="검색" placeholder="검색" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="검색">
+        
+        <button type="reset" class="md-search__icon md-icon" title="지우기" aria-label="지우기" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            검색 초기화
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="네비게이션" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    개요
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    시작하기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    서버
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    서버
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설치
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설치
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        요구 사항
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 이미지 빌드
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-env" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 서버 env 파일 작성
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 노출 범위 확인
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 스택 시작
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 확인
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 첫 관리자 생성
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optional-https-with-caddy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        선택: Caddy로 HTTPS 적용
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="선택: Caddy로 HTTPS 적용">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#certificates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        인증서
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        다음 단계
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설정
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    운영
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    클라이언트
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    클라이언트
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설치
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    연결
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로필
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    동기화 데몬
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    초기화와 제거
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    에이전트
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    에이전트
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC와 OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    대시보드
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    대시보드
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    첫 관리자
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    사용자
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/pages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    페이지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    레퍼런스
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    레퍼런스
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    서버 환경변수
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    포트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    개인정보
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        요구 사항
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 이미지 빌드
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-env" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 서버 env 파일 작성
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 노출 범위 확인
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 스택 시작
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 확인
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 첫 관리자 생성
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optional-https-with-caddy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        선택: Caddy로 HTTPS 적용
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="선택: Caddy로 HTTPS 적용">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#certificates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        인증서
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        다음 단계
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="_1">서버 설치<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>이 저장소에서 서버 이미지 두 개를 빌드하고 서버 env 파일을 작성한 뒤 Docker Compose로 스택을 올리는 절차.</p>
+<p>스택은 컨테이너 두 개로 구성된다. <code>cctraced</code>(OTLP 수집, 동기화 API, 대시보드)와 TimescaleDB다. 두 이미지 모두 레지스트리에 게시되지 않는 로컬 빌드 태그이고 compose 파일이 <code>pull_policy: never</code>를 지정하므로, 두 이미지를 먼저 빌드하지 않으면 스택이 시작되지 않는다.</p>
+<div class="diagram">
+<svg viewBox="28 36 910 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="server-deployment-ko-title server-deployment-ko-desc">
+  <title id="server-deployment-ko-title">서버 배포: 공개 포트와 서비스</title>
+  <desc id="server-deployment-ko-desc">서버 호스트에서 docker compose가 cctraced와 TimescaleDB를 실행한다. cctraced는 기본값으로 OTLP gRPC 4317과 OTLP HTTP 4318을 모든 인터페이스(0.0.0.0)에, HTTP 8080을 루프백(127.0.0.1)에 공개하고, TimescaleDB는 5432를 루프백에만 공개한다. Claude Code는 OTLP gRPC를 4317로, Codex는 OTLP HTTP를 4318로 보내고, cctrace 클라이언트의 세션 업로드와 브라우저의 대시보드 접속은 HTTP 8080을 쓰며, 다른 머신의 클라이언트는 HTTP_BIND를 바꾸거나 TLS 프록시를 거쳐야 접근할 수 있다. 선택 TLS 오버레이는 8443, 5317, 5318을 공개하는 Caddy 서비스를 추가하고, Caddy는 compose 네트워크를 통해 cctraced로 프록시한다.</desc>
+  <defs>
+    <marker id="server-deployment-ko-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill: var(--ink-3)"/></marker>
+  </defs>
+
+  <!-- Boundaries -->
+  <rect x="40" y="48" width="170" height="356" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="56" y="72" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">클라이언트 머신</text>
+  <rect x="234" y="48" width="692" height="356" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="250" y="72" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">서버 호스트</text>
+  <rect x="430" y="84" width="480" height="308" rx="10" style="fill: none; stroke: var(--border-strong)"/>
+  <text x="446" y="106" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">Docker Compose</text>
+
+  <!-- Connectors (drawn before nodes) -->
+  <path d="M 194,140 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 194,208 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 194,292 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 194,364 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 398,140 H 466" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 398,208 H 466" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 398,328 H 466" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 606,162 H 724" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 724,334 H 606" style="fill: none; stroke: var(--ink-3); stroke-width: 1.2; stroke-dasharray: 4 3" marker-end="url(#server-deployment-ko-arrow)"/>
+
+  <!-- Arrow label: mask sits 8px clear of its line -->
+  <rect x="640" y="306" width="50" height="20" rx="3" style="fill: var(--surface-2)"/>
+  <text x="665" y="320" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">프록시</text>
+
+  <!-- Clients -->
+  <rect x="56" y="112" width="138" height="56" rx="8" style="fill: var(--agent-claude-soft); stroke: var(--agent-claude)"/>
+  <text x="125" y="137" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Claude Code</text>
+  <text x="125" y="155" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">에이전트</text>
+  <rect x="56" y="180" width="138" height="56" rx="8" style="fill: var(--agent-codex-soft); stroke: var(--agent-codex)"/>
+  <text x="125" y="205" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Codex CLI</text>
+  <text x="125" y="223" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">에이전트</text>
+  <rect x="56" y="264" width="138" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="125" y="289" font-size="17" font-weight="600" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink)">cctrace</text>
+  <text x="125" y="307" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">세션 동기화</text>
+  <rect x="56" y="336" width="138" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="125" y="361" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">브라우저</text>
+  <text x="125" y="379" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">대시보드</text>
+
+  <!-- Published ports (default bind addresses) -->
+  <rect x="258" y="112" width="140" height="56" rx="8" style="fill: var(--canvas); stroke: var(--border-strong)"/>
+  <text x="328" y="137" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">OTLP gRPC</text>
+  <text x="328" y="155" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:4317 · 0.0.0.0</text>
+  <rect x="258" y="180" width="140" height="56" rx="8" style="fill: var(--canvas); stroke: var(--border-strong)"/>
+  <text x="328" y="205" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">OTLP HTTP</text>
+  <text x="328" y="223" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:4318 · 0.0.0.0</text>
+  <rect x="258" y="268" width="140" height="120" rx="8" style="fill: var(--canvas); stroke: var(--border-strong)"/>
+  <text x="328" y="302" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">HTTP</text>
+  <text x="328" y="324" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:8080</text>
+  <text x="328" y="346" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">127.0.0.1</text>
+  <text x="328" y="366" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">HTTP_BIND로 변경</text>
+
+  <!-- Compose services -->
+  <rect x="466" y="128" width="140" height="248" rx="8" style="fill: var(--surface); stroke: var(--ink); stroke-width: 1.5"/>
+  <text x="536" y="246" font-size="17" font-weight="600" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink)">cctraced</text>
+  <text x="536" y="264" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">서버</text>
+  <rect x="724" y="128" width="162" height="68" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="805" y="153" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">TimescaleDB</text>
+  <text x="805" y="171" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">저장소</text>
+  <text x="805" y="189" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">127.0.0.1:5432</text>
+  <rect x="724" y="300" width="162" height="76" rx="8" style="fill: var(--surface); stroke: var(--border-strong); stroke-dasharray: 4 3"/>
+  <text x="805" y="325" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Caddy</text>
+  <text x="805" y="343" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">선택 TLS</text>
+  <text x="805" y="363" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:8443 :5317 :5318</text>
+</svg>
+
+</div>
+
+<h2 id="_2">요구 사항<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Compose 플러그인이 포함된 Docker</li>
+<li>이 저장소의 클론. 아래 모든 명령은 저장소 루트에서 실행</li>
+</ul>
+<h2 id="1">1. 이미지 빌드<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>cctrace/timescaledb-pgmq:latest<span class="w"> </span>docker/timescaledb-pgmq/
+<span class="gp">$ </span>docker<span class="w"> </span>build<span class="w"> </span>-f<span class="w"> </span>deploy/Dockerfile<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">UPDATE_SIGNING</span><span class="o">=</span>optional<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span>cctrace/cctraced:latest<span class="w"> </span>.
+</code></pre></div>
+<ul>
+<li>첫 번째 이미지: pgmq 확장을 포함한 TimescaleDB</li>
+<li>두 번째 이미지: Docker 안에서 대시보드와 <code>cctraced</code> 바이너리를 빌드. <code>UPDATE_SIGNING=optional</code>은 업데이트 서명 키 없이 빌드. 기본값 <code>required</code>는 키가 없으면 실패</li>
+<li>서버 env 파일에 <code>IMAGE_TAG</code> 또는 <code>DB_IMAGE_TAG</code>를 지정했다면 정확히 같은 태그로 빌드(<code>cctrace/cctraced:&lt;IMAGE_TAG&gt;</code>, <code>cctrace/timescaledb-pgmq:&lt;DB_IMAGE_TAG&gt;</code>). Compose는 레지스트리로 대체하지 않음</li>
+</ul>
+<h2 id="2-env">2. 서버 env 파일 작성<a class="headerlink" href="#2-env" title="Permanent link">&para;</a></h2>
+<p>Compose는 <code>deploy/</code> 디렉터리의 <code>.env</code>(서버 env 파일)에서 설정을 읽는다. 예제 파일을 복사한 뒤 아래 3개 키만 고친다. 나머지 키는 기본값과 설명 주석 그대로 둔다.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cp<span class="w"> </span>deploy/.env.example<span class="w"> </span>deploy/.env
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>키</th>
+<th>필수인 이유</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JWT_SECRET</code></td>
+<td>그대로 둘 기본값 없음. 없으면 Compose가 시작 거부, 32바이트 미만이면 <code>cctraced</code> 종료. <code>openssl rand -hex 32</code>로 생성</td>
+</tr>
+<tr>
+<td><code>LOGS_DIR</code></td>
+<td>기본값 없음. 없으면 Compose가 시작 거부. 컨테이너의 <code>/data/logs</code>에 마운트되는 호스트 디렉터리. 미리 생성 권장</td>
+</tr>
+<tr>
+<td><code>DB_PASSWORD</code></td>
+<td><code>change-me-strong-password</code> 자리 표시 값이 기본값이며 그대로 두면 안 됨. <code>openssl rand -hex 20</code>으로 생성</td>
+</tr>
+</tbody>
+</table>
+<p><code>deploy/.env</code>의 3개 키는 에디터로 고치거나, 명령줄에서 바로 바꾼다.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span><span class="nv">jwt_secret</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sed<span class="w"> </span>-i.bak<span class="w"> </span><span class="s2">"s|^JWT_SECRET=.*|JWT_SECRET=</span><span class="si">${</span><span class="nv">jwt_secret</span><span class="si">}</span><span class="s2">|"</span><span class="w"> </span>deploy/.env
+<span class="gp">$ </span><span class="nv">db_password</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">20</span><span class="k">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sed<span class="w"> </span>-i.bak<span class="w"> </span><span class="s2">"s|^DB_PASSWORD=.*|DB_PASSWORD=</span><span class="si">${</span><span class="nv">db_password</span><span class="si">}</span><span class="s2">|"</span><span class="w"> </span>deploy/.env
+<span class="gp">$ </span><span class="nv">LOGS_DIR</span><span class="o">=</span>/absolute/path/on/the/host/for/logs<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="nv">$LOGS_DIR</span><span class="s2">"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sed<span class="w"> </span>-i.bak<span class="w"> </span><span class="s2">"s|^LOGS_DIR=.*|LOGS_DIR=</span><span class="si">${</span><span class="nv">LOGS_DIR</span><span class="si">}</span><span class="s2">|"</span><span class="w"> </span>deploy/.env
+<span class="gp">$ </span>rm<span class="w"> </span>deploy/.env.bak
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title"><code>DB_PASSWORD</code>는 첫 시작 전에 결정</p>
+<p>PostgreSQL은 데이터 볼륨을 처음 초기화할 때만 비밀번호를 적용한다. 이후 <code>DB_PASSWORD</code>를 바꾸면 DB 역할은 옛 비밀번호로 남고 <code>cctraced</code>는 <code>password authentication failed</code>로 재시작을 반복한다. 복구하려면 DB 볼륨을 지워야 하는데 그러면 수집한 데이터가 모두 삭제된다.</p>
+</div>
+<p><code>DB_APP_CREDENTIALS</code>도 첫 시작 전에 지정한다. <code>&lt;user&gt;:&lt;password&gt;</code>를 넣으면 첫 시작 때 비슈퍼유저 역할이 만들어지고 <code>cctraced</code>가 그 역할로 접속한다. 비워 두면 <code>cctraced</code>는 DB 슈퍼유저로 접속한다. 역할은 첫 시작 때만 만들어지며 이름은 <code>cctrace</code>일 수 없다. 비밀번호는 <code>DB_PASSWORD</code>처럼 <code>openssl rand -hex 20</code>으로 만든다. compose가 이 값을 연결 URL에 그대로 넣으므로 <code>/</code>, <code>#</code>, <code>?</code>, <code>%</code>가 들어가면 URL이 깨진다.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span><span class="nv">app_password</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">20</span><span class="k">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sed<span class="w"> </span>-i.bak<span class="w"> </span><span class="s2">"s|^DB_APP_CREDENTIALS=.*|DB_APP_CREDENTIALS=cctrace_app:</span><span class="si">${</span><span class="nv">app_password</span><span class="si">}</span><span class="s2">|"</span><span class="w"> </span>deploy/.env
+<span class="gp">$ </span>rm<span class="w"> </span>deploy/.env.bak
+</code></pre></div>
+<p>나머지 이름 규칙, 첫 시작에서 역할이 만들어지지 않았을 때의 조치, 이미 사용 중인 DB의 경우는 <a href="../configuration/#database">설정</a> 참조.</p>
+<h2 id="3">3. 노출 범위 확인<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<p>첫 시작 전에 각 포트가 어느 인터페이스에 바인드될지 정한다.</p>
+<table>
+<thead>
+<tr>
+<th>포트</th>
+<th>기본 호스트 바인드</th>
+<th>용도</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8080</td>
+<td>127.0.0.1</td>
+<td>대시보드와 REST API(클라이언트 동기화 포함)</td>
+</tr>
+<tr>
+<td>4317</td>
+<td>0.0.0.0(모든 인터페이스)</td>
+<td>OTLP over gRPC</td>
+</tr>
+<tr>
+<td>4318</td>
+<td>0.0.0.0(모든 인터페이스)</td>
+<td>OTLP over HTTP</td>
+</tr>
+<tr>
+<td>5432</td>
+<td>127.0.0.1(고정)</td>
+<td>TimescaleDB</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">OTLP는 TLS 없이 모든 인터페이스에서 수신</p>
+<p>4317과 4318 포트는 다른 머신의 텔레메트리를 받는다. <code>cctraced</code>는 TLS를 종료하지 않는다. 통제하지 않는 네트워크라면 서버 env 파일에서 <code>GRPC_BIND</code>와 <code>OTEL_HTTP_BIND</code>를 루프백이나 사설 주소로 지정하거나, 방화벽·VPN으로 포트를 제한하거나, <a href="#optional-https-with-caddy">HTTPS 오버레이</a>를 쓴다.</p>
+</div>
+<p>대시보드는 기본적으로 루프백에 바인드된다. 클라이언트 머신이 동기화하려면 8080 포트에 닿아야 하므로 <code>HTTP_BIND</code>를 도달 가능한 주소로 지정하거나 TLS를 종료하는 프록시를 앞에 둔다. 전체 포트 표는 <a href="../../reference/ports/">포트</a> 참조.</p>
+<h2 id="4">4. 스택 시작<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+<p><code>up -d</code>가 정상 종료했다는 것은 컨테이너가 생성됐다는 뜻일 뿐 서버가 시작됐다는 뜻은 아니다. <code>cctraced</code>의 설정 오류는 자체 로그에만 나온다.</p>
+<h2 id="5">5. 확인<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>ps
+<span class="gp">$ </span>curl<span class="w"> </span>-fsS<span class="w"> </span>http://127.0.0.1:8080/api/health
+</code></pre></div>
+<p><img alt="docker compose ps로 두 컨테이너가 healthy 상태이고 curl로 /api/health 확인에 성공한 터미널" loading="lazy" src="../../../assets/screenshots/01-server-compose-ps.png" /></p>
+<ul>
+<li>두 컨테이너 모두 <code>Up</code>과 <code>(healthy)</code> 표시가 정상. <code>cctraced</code> 헬스 체크는 <code>/api/version</code>을 확인하며 시작 유예가 30초라 처음에는 <code>health: starting</code> 표시</li>
+<li><code>/api/health</code> 응답: DB에 연결되면 <code>"status":"ok"</code>, 연결되지 않으면 HTTP 503과 <code>"status":"unhealthy"</code></li>
+<li><code>cctraced</code>가 <code>Restarting</code>이면 로그 확인:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>logs<span class="w"> </span>cctraced
+</code></pre></div>
+<h2 id="6">6. 첫 관리자 생성<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p>사용자가 없는 DB에서는 <code>cctraced</code>가 로그에 일회용 설정 토큰을 출력한다.</p>
+<div class="highlight"><pre><span></span><code>[cctraced] initial administrator setup token: &lt;token&gt;
+</code></pre></div>
+<p><img alt="cctraced 로그에 찍힌 최초 관리자 설정 토큰 줄(토큰 값 가림)" loading="lazy" src="../../../assets/screenshots/02-server-setup-token.png" /></p>
+<p>토큰을 직접 정하려면 첫 시작 전에 서버 env 파일에 <code>CCTRACE_SETUP_TOKEN</code>을 지정한다. 첫 관리자가 생성되면 토큰은 무효가 된다. 이어서 <a href="../../dashboard/first-admin/">첫 관리자</a>로 진행한다.</p>
+<h2 id="optional-https-with-caddy">선택: Caddy로 HTTPS 적용<a class="headerlink" href="#optional-https-with-caddy" title="Permanent link">&para;</a></h2>
+<p><code>deploy/docker-compose.tls.yml</code>은 Caddy 컨테이너를 추가하는 선택형 오버레이다. Caddy가 세 리스너 모두의 TLS를 종료하고 <code>deploy/caddy/Caddyfile</code>에 따라 compose 네트워크를 통해 <code>cctraced</code>로 전달한다. 기본 compose 파일은 그대로이며 Caddy 이미지(<code>caddy:2-alpine</code>)는 Docker Hub에서 받는다.</p>
+<ol>
+<li>
+<p>서버 env 파일에서 평문 포트를 루프백으로 옮기고 서버 이름 지정:</p>
+<div class="highlight"><pre><span></span><code>HTTP_BIND=127.0.0.1
+GRPC_BIND=127.0.0.1
+OTEL_HTTP_BIND=127.0.0.1
+CADDY_SITE_ADDRESS=cctrace.company.example
+</code></pre></div>
+<p><code>CADDY_SITE_ADDRESS</code>는 오버레이 필수값이며 호스트 이름이나 서버 IP 주소 모두 가능. 바인드 설정 세 개를 빼면 평문 포트가 TLS 포트 옆에서 계속 열려 있음.</p>
+</li>
+<li>
+<p>compose 파일 두 개로 시작:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.tls.yml<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>채널</th>
+<th>평문(컨테이너)</th>
+<th>TLS(호스트 기본값)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>대시보드와 REST API</td>
+<td>8080</td>
+<td>8443</td>
+</tr>
+<tr>
+<td>OTLP gRPC</td>
+<td>4317</td>
+<td>5317</td>
+</tr>
+<tr>
+<td>OTLP HTTP</td>
+<td>4318</td>
+<td>5318</td>
+</tr>
+</tbody>
+</table>
+<p>이후 클라이언트는 대시보드와 동기화에 <code>https://cctrace.company.example:8443</code>, OTLP에 5317 또는 5318 포트를 사용한다.</p>
+<p>Codex는 OTLP/HTTP로 보내므로 cctrace는 프로필의 OTEL 엔드포인트에서 4317을 4318로 바꾸듯 5317을 5318로 바꿔 Codex 메트릭 엔드포인트를 만든다. 내부 CA를 쓰면 Codex 설정에도 그 CA가 있어야 한다. 아래와 <a href="../../agents/codex/">Codex CLI</a> 참조.</p>
+<h3 id="certificates">인증서<a class="headerlink" href="#certificates" title="Permanent link">&para;</a></h3>
+<p><code>CADDY_TLS_MODE</code> 기본값은 <code>internal</code>이다. Caddy가 자체 CA로 인증서를 발급하므로 공개 DNS가 필요 없고 IP 주소만으로도 동작한다. 클라이언트는 이 CA를 신뢰해야 한다. CA 내보내기:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>compose<span class="w"> </span>--env-file<span class="w"> </span>deploy/.env<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>deploy/docker-compose.yml<span class="w"> </span>-f<span class="w"> </span>deploy/docker-compose.tls.yml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nb">exec</span><span class="w"> </span>caddy<span class="w"> </span>cat<span class="w"> </span>/data/caddy/pki/authorities/local/root.crt<span class="w"> </span>&gt;<span class="w"> </span>cctrace-ca.crt
+</code></pre></div>
+<p>이 파일을 각 클라이언트 머신에 복사해 cctrace에 한 번 지정한다. 엔드포인트가 <code>https://</code>이면 <code>cctrace init</code>이 묻고, 직접 지정해도 된다.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cctrace<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>server.ca_cert_file<span class="w"> </span>~/cctrace-ca.crt
+</code></pre></div>
+<p>OS 키체인에 이미 CA가 있어도 지정한다. 키체인만으로 Claude Code와 Codex에 충분한지는 시험하지 않았다. 클라이언트마다 CA를 받는 곳이 달라서 cctrace가 각각에 이 파일 하나를 넣는다.</p>
+<table>
+<thead>
+<tr>
+<th>클라이언트</th>
+<th>CA를 읽는 곳</th>
+<th>설정 주체</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cctrace</td>
+<td>시스템 루트 + <code>server.ca_cert_file</code></td>
+<td>cctrace</td>
+</tr>
+<tr>
+<td>Claude Code</td>
+<td>설정 파일의 <code>NODE_EXTRA_CA_CERTS</code>, exporter는 5318로 http/protobuf(<a href="../../agents/claude-code/#private-ca">이유</a>)</td>
+<td>cctrace</td>
+</tr>
+<tr>
+<td>Codex</td>
+<td><code>[otel]</code> 섹션의 <code>tls = { ca-certificate = "..." }</code></td>
+<td>cctrace</td>
+</tr>
+</tbody>
+</table>
+<p>실행 중인 동기화 데몬은 시작할 때의 CA를 계속 쓴다. CA를 지정하거나 해제한 뒤에는 데몬을 다시 시작한다(<code>cctrace sync --stop</code> 후 평소대로 시작). Codex 섹션은 다음 동기화 시작 때 다시 쓰인다. <a href="../../client/setup/">클라이언트 설정</a> 참조.</p>
+<p>클라이언트 바이너리를 처음 <code>curl</code>로 내려받을 때는 이 설정이 쓰이지 않으므로 <code>--cacert cctrace-ca.crt</code>를 붙인다. <a href="../../client/install/">클라이언트 설치</a> 참조.</p>
+<p>이름이 공개 DNS로 해석되고 인터넷에서 80 포트에 닿을 수 있다면 <code>CADDY_TLS_MODE</code>에 ACME 계정 이메일 주소(예: <code>ops@example.com</code>)를 지정한다. <code>acme</code>라는 단어를 그대로 넣으면 Caddy가 시작하지 않는다. Caddy가 공개적으로 신뢰되는 인증서를 받으므로 cctrace와 Claude Code는 CA 설정이 필요 없다. Codex가 <code>server.ca_cert_file</code> 없이 공인 인증서로 보내는지는 측정하지 않았다.</p>
+<div class="admonition warning">
+<p class="admonition-title"><code>caddy_data</code> 볼륨 유지</p>
+<p>발급한 인증서와 내부 CA가 이 볼륨에 있다. 지우면 새 CA가 만들어지고 이전 CA를 신뢰하던 클라이언트는 모두 연결이 끊긴다.</p>
+</div>
+<h2 id="_3">다음 단계<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../configuration/">설정</a>: 서버 env 파일의 모든 설정</li>
+<li><a href="../operations/">운영</a>: 로그, 백업, 업그레이드, 보존 기간</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  맨위로
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="하단/푸터" >
+        
+          
+          <a href="../../getting-started/" class="md-footer__link md-footer__link--prev" aria-label="이전: 시작하기">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                이전
+              </span>
+              <div class="md-ellipsis">
+                시작하기
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../configuration/" class="md-footer__link md-footer__link--next" aria-label="다음: 설정">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                다음
+              </span>
+              <div class="md-ellipsis">
+                설정
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub428", "clipboard.copy": "\ud074\ub9bd\ubcf4\ub4dc\ub85c \ubcf5\uc0ac", "search.result.more.one": "\uc774 \ubb38\uc11c\uc5d0\uc11c 1\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.more.other": "\uc774 \ubb38\uc11c\uc5d0\uc11c #\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.none": "\uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubb38\uc11c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4", "search.result.one": "1\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.other": "#\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.placeholder": "\uac80\uc0c9\uc5b4\ub97c \uc785\ub825\ud558\uc138\uc694", "search.result.term.missing": "\ud3ec\ud568\ub418\uc9c0 \uc54a\uc740 \uac80\uc0c9\uc5b4", "select.version": "\ubc84\uc804 \uc120\ud0dd"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1794 @@
+
+<!doctype html>
+<html lang="ko" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/ko/dashboard/pages/">
+      
+      
+        <link rel="prev" href="../users/">
+      
+      
+        <link rel="next" href="../../reference/cli/">
+      
+      
+        
+          <link rel="alternate" href="../../../dashboard/pages/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>페이지 - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../../../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          콘텐츠로 이동
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="상단/헤더">
+    <a href="../../" title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              페이지
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="언어설정">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../dashboard/pages/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="검색" placeholder="검색" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="검색">
+        
+        <button type="reset" class="md-search__icon md-icon" title="지우기" aria-label="지우기" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            검색 초기화
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="네비게이션" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    개요
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    시작하기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    서버
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    서버
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설치
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설정
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    운영
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    클라이언트
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    클라이언트
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설치
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    연결
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로필
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    동기화 데몬
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    초기화와 제거
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    에이전트
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    에이전트
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC와 OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    대시보드
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    대시보드
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    첫 관리자
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    사용자
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    페이지
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    페이지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#header" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        헤더
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview (/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage (/cost)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#users-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Users (/users)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sessions-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sessions (/sessions)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sessions (/sessions)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        세션 삭제
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-user-accounts-own-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        user 계정 본인의 세션
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#weekly-report-weekly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weekly report (/weekly)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools (/tools)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugins-skills-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins &amp; Skills (/plugins)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules (/rules)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logs-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logs (/logs)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin (/admin)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings (/settings)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pages-under-active-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        변경이 진행 중인 페이지
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    레퍼런스
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    레퍼런스
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    서버 환경변수
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    포트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    개인정보
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#header" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        헤더
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview (/)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage (/cost)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#users-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Users (/users)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sessions-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sessions (/sessions)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sessions (/sessions)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delete-a-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        세션 삭제
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-user-accounts-own-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        user 계정 본인의 세션
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#weekly-report-weekly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weekly report (/weekly)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools (/tools)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugins-skills-plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins &amp; Skills (/plugins)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules (/rules)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logs-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logs (/logs)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin (/admin)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings (/settings)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pages-under-active-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        변경이 진행 중인 페이지
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="_1">페이지<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>대시보드 각 페이지가 보여 주는 내용과 사용 가능한 역할.</p>
+<p>모든 페이지는 로그인이 필요하다. <code>user</code> 계정은 본인 세션만 보지만 집계는 로그인한 모든 사용자가 공유한다. <a href="../../reference/privacy/#who-can-see-what">개인정보</a> 참고.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>이 페이지의 스크린샷은 데모 서버 위의 가상 5인 팀(Ivy, Marcus, Priya, Tomás, Yuki)이며 실제 운영 데이터가 아니다.</p>
+</div>
+<h2 id="header">헤더<a class="headerlink" href="#header" title="Permanent link">&para;</a></h2>
+<p>모든 페이지 위의 헤더에 에이전트 선택기와 계정 선택기가 있다. 이를 지원하는 페이지는 선택한 에이전트와 계정으로 데이터를 좁힌다. 계정 선택기는 로그인한 계정이 둘 이상의 계정을 볼 수 있을 때만 나타난다 — 다른 계정이 보이지 않는 <code>user</code> 계정에는 이 줄 자체가 없다.</p>
+<h2 id="overview">Overview (<code>/</code>)<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>로그인 직후 열리는 페이지.</p>
+<p>요약 카드 4개가 추이 차트의 현재 범위를 보고한다: <strong>Total Cost</strong>, <strong>Total Tokens</strong>, <strong>Active Users</strong>, <strong>Total Events</strong>. Total Cost 카드에는 이 값이 API 사용량 기반 추정치이며 구독 요금제 자체의 요금은 별도로 선결제된다는 안내가 붙는다.</p>
+<p><img alt="요약 카드 4개와 사용자별로 쌓은 분 단위 비용 추이 차트가 있는 Overview 페이지" loading="lazy" src="../../../assets/screenshots/40-overview.png" /></p>
+<p>카드 아래:</p>
+<ul>
+<li>필터 바: <strong>Cost</strong>/<strong>Token</strong> 보기, 모델 카테고리(<strong>All</strong>/<strong>Claude</strong>/<strong>Codex</strong>/<strong>Compatible</strong>), <strong>by Model</strong>/<strong>by User</strong> 묶기, 모델·사용자 드롭다운 필터</li>
+<li><strong>Cost Trend</strong>: <strong>Minute</strong>·<strong>Hourly</strong> 단위에서는 쌓아 그리는 영역 차트, <strong>Daily</strong>·<strong>Weekly</strong>·<strong>Monthly</strong> 단위에서는 버킷당 막대 하나로 쌓는 막대 차트. <strong>Date</strong>는 임의의 since/until 범위를 여는 버튼이다. <strong>Unknown</strong>은 대시보드가 직접 측정하지 못한 구독 소비분을 쌓아 보이는 토글이다 — 제공자 자체 사용량 계측과 OTEL/JSONL로 수집된 값의 차이에서 추정한 값으로, 특정 사용자·모델에 귀속되지 않으며, 범위가 그 추정을 뒷받침하지 못할 때(예: 프로젝트·사용자·모델·에이전트 필터가 걸려 있을 때)는 비활성화된다. 차트의 한 지점을 선택하면 아래 카드·패널이 그 지점의 범위로 좁혀진다. 각주는 이 범위의 구독 소비분 중 측정할 수 있었던 비율을 적는다. 예: "Measured usage covers ≈100% of subscription burn over the last 7 days · readings span 100% of the range". 마우스를 올리면 방법과, 해당될 때는 계정별 적합도 표시.</li>
+<li>
+<p><strong>Subscription burn</strong>(접을 수 있음; 접혀 있을 때 "preview" 표시): 연결된 Claude/Codex 구독 각각의 쿼터 창 소비량을 계정별로 보여준다. <strong>5h</strong>/<strong>7d</strong> 창과 <strong>Claude</strong>/<strong>Codex</strong> 제공자를 토글하고, <strong>Accounts</strong>는 청구 계정별로 선 하나씩, <strong>Weighted</strong>는 가격 가중 평균을 더한다(가격이 매겨진 계정이 둘 이상일 때만 나타남). 축은 반전되어 있다 — 위가 0%, 아래가 100% 소진이므로 선의 높이가 그 창에 남은 양이고, 창이 초기화되면 선이 다시 위로 뛴다. 헤드라인은 "\&lt;창&gt; X% consumed · $Y of $Z left" 형식이고, 하단 각주는 가중 평균에 반영된 월 구독료 합과 제외된 계정(가격 미설정이거나 범위 내 측정값이 없는 계정) 표기.</p>
+<p><img alt="Subscription burn 패널로 스크롤한 Overview: 5h/7d, Claude/Codex, Accounts/Weighted 토글" loading="lazy" src="../../../assets/screenshots/41-subscription-burn.png" /></p>
+</li>
+</ul>
+<p>Cost Trend는 이미 <strong>Daily</strong>부터 영역에서 막대로 바뀌어 <strong>Weekly</strong>·<strong>Monthly</strong>까지 막대로 유지된다. Subscription burn은 <strong>Weekly</strong>나 <strong>Monthly</strong>에 이르러서야 계단선에서 버킷당 막대 하나(시간 가중 평균)로 바뀐다 — 쿼터 초기화가 그만큼 잦은 구간에서는 계단선이 읽을 수 없는 해칭으로 뭉개지기 때문이다.</p>
+<p><img alt="추이 차트를 Daily(30d)로 바꾼 Overview: 활동일마다 누적 막대 1개" loading="lazy" src="../../../assets/screenshots/42-overview-daily.png" /></p>
+<ul>
+<li><strong>Cost by Model</strong>, <strong>Cost by User</strong>: 같은 범위 합계를 파이 차트와 누적 막대로, 각각 다른 각도에서 표시.</li>
+</ul>
+<h2 id="usage-cost">Usage (<code>/cost</code>)<a class="headerlink" href="#usage-cost" title="Permanent link">&para;</a></h2>
+<p>Overview와 같은 <strong>Cost Trend</strong> 차트 아래에 사용자·모델별 전체 내역 표가 이어진다: <strong>Requests</strong>, <strong>Input Tokens</strong>, <strong>Output Tokens</strong>, <strong>Cost</strong>(Token 보기에서는 <strong>Total Tokens</strong>), 비용 순 정렬, 하단에 합계 행. 검색창은 사용자나 모델로 표를 거른다.</p>
+<p><img alt="비용 추이 차트와 사용자·모델별 전체 표가 있는 Usage Details 페이지" loading="lazy" src="../../../assets/screenshots/43-usage.png" /></p>
+<p>소유자가 없고 <strong>weekly</strong>로 표시되는 행은 사람이 아니라 서버 자체 Codex 계정이 <a href="#weekly-report-weekly">주간 AI 리포트</a>를 만드는 데 쓴 토큰이다. 마우스를 올리면 설명이 나온다.</p>
+<h2 id="users-users">Users (<code>/users</code>)<a class="headerlink" href="#users-users" title="Permanent link">&para;</a></h2>
+<p><strong>Analytics</strong> 탭은 사용자를 비용 순으로 나열한다. 사람 카드를 선택하면 바로 옆에 인라인 Detail View가 열린다. 관리자에게는 <strong>Management</strong> 탭이 추가되며, 이 탭은 <a href="../users/">사용자</a>에서 설명한다.</p>
+<p><img alt="사용자의 인라인 Detail View: 비용 추이, 모델별 분류, 최근 세션" loading="lazy" src="../../../assets/screenshots/45-user-detail.png" /></p>
+<h2 id="sessions-sessions">Sessions (<code>/sessions</code>)<a class="headerlink" href="#sessions-sessions" title="Permanent link">&para;</a></h2>
+<p>왼쪽에 세션 목록, 오른쪽에 선택한 세션의 트랜스크립트.</p>
+<ul>
+<li>목록에서 세션을 선택하면 트랜스크립트가 열림. 스크롤하면 더 불러오고 조건에 맞는 세션 수와 전체 수를 표시</li>
+<li><strong>Assembled</strong>: 관련 세션 파일(서브에이전트, 분기)을 한 대화로 합침. <strong>Raw</strong>: 파일별 레코드를 그대로, 파일 단위로 묶어 표시</li>
+<li><strong>Interactive</strong>(기본값): 사람의 입력이 있는 세션. <strong>Headless</strong>: <code>claude -p</code> 같은 기계 구동 세션. <strong>All</strong>: 둘 다</li>
+<li>프로젝트 선택기로 한 프로젝트만 표시. 검색창은 불러온 세션을 세션, 사용자, 프로젝트로 거름</li>
+</ul>
+<p><img alt="Codex와 Claude Code 세션이 섞인 목록, 오른쪽에는 최상단 세션의 트랜스크립트" loading="lazy" src="../../../assets/screenshots/46-sessions-list.png" /></p>
+<p>트랜스크립트의 도구 호출은 기록한 에이전트가 실제로 보낸 형태 그대로 렌더링된다: Claude 세션의 <code>Read</code>/<code>Edit</code>/<code>Bash</code> 단계 —</p>
+<p><img alt="Claude Code 세션 트랜스크립트: Edit 다음에 이어지는 Bash 테스트 실행" loading="lazy" src="../../../assets/screenshots/47-session-detail-claude.png" /></p>
+<p>— 그리고 <strong>Agent</strong> 선택기를 Codex로 좁혀서 본 <code>codex</code> 태그 세션의 <code>apply_patch</code>/<code>shell</code> 단계:</p>
+<p><img alt="Codex 세션 트랜스크립트, Agent 필터 Codex: apply_patch 다음에 이어지는 shell 테스트 실행" loading="lazy" src="../../../assets/screenshots/48-session-detail-codex.png" /></p>
+<h3 id="delete-a-session">세션 삭제<a class="headerlink" href="#delete-a-session" title="Permanent link">&para;</a></h3>
+<p>트랜스크립트 헤더의 휴지통 아이콘(툴팁 <code>세션 삭제</code>)은 세션 레코드와 거기 딸린 이벤트·메트릭을 삭제한다. 되돌릴 수 없고 클라이언트가 같은 세션을 다시 올려도 서버가 거부한다.</p>
+<table>
+<thead>
+<tr>
+<th>역할</th>
+<th>삭제 범위</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>admin</code></td>
+<td>모든 세션. 이어서 프로젝트의 다른 세션 삭제와 프로젝트 수집 중단을 묻는 대화상자 표시</td>
+</tr>
+<tr>
+<td><code>user</code></td>
+<td>본인 세션. 소유자 삭제 정책이 허용할 때(기본값 허용)</td>
+</tr>
+</tbody>
+</table>
+<p>관리자는 휴지통 옆 톱니 대화상자(<code>세션 수집 설정</code>)에서 소유자 삭제 정책을 정하고 차단 목록의 프로젝트를 해제한다. 프로젝트 선택기에서 프로젝트 전체를 삭제할 수도 있다.</p>
+<h3 id="a-user-accounts-own-sessions"><code>user</code> 계정 본인의 세션<a class="headerlink" href="#a-user-accounts-own-sessions" title="Permanent link">&para;</a></h3>
+<p><code>user</code> 계정의 <code>/sessions</code>도 같은 목록·트랜스크립트 페이지이며, 본인 세션으로만 좁혀지고 계정 선택기와 사이드바의 <strong>Admin</strong> 항목이 없다:</p>
+<p><img alt="user 계정 본인의 Sessions 페이지: 계정 선택기·Admin 사이드바 항목 없이 본인 세션만 표시" loading="lazy" src="../../../assets/screenshots/53-user-view.png" /></p>
+<h2 id="weekly-report-weekly">Weekly report (<code>/weekly</code>)<a class="headerlink" href="#weekly-report-weekly" title="Permanent link">&para;</a></h2>
+<p>로그인한 계정 본인의 한 주 기록. 제목 옆 화살표로 주를 이동하며, 진행 중인 주는 표시가 붙고 아직 시작하지 않은 주는 열 수 없다.</p>
+<p>제목 아래 요약 줄은 그 주의 세션을 에이전트별로, 그리고 규칙으로 산출한 "작업 구간" 수를 센다(<code>Claude Code 세션 N · Codex 세션 N · 작업 구간 N</code>). 해당하는 경우 그 주의 유의사항도 함께 붙는다 — <a href="#tools-tools">Tools</a> 페이지의 Codex 도구 수와 같은 OTEL 메트릭 범위 안내, 분석에서 제외된 관리자 기록 건수, 작업 구간 사실이 덮지 못한 세션 수 등.</p>
+<p><img alt="Weekly report: 세션 요약, Projects 도넛, Task types 표, AI 리포트 안내 카드" loading="lazy" src="../../../assets/screenshots/49-weekly-report.png" /></p>
+<ul>
+<li><strong>Projects</strong>: 그 주 세션을 프로젝트별로 나눈 도넛 차트</li>
+<li><strong>Task types</strong>: 그 주의 턴을 작업 유형별로 묶은 목록. 유형을 선택하면 해당 작업 구간이 열림. 분류를 아직 돌리지 않은 데이터셋은 모든 턴을 <strong>Not yet classified</strong>로 표시</li>
+<li><strong>AI 리포트</strong>: 그 주 작업 구간의 대화 내용을 읽어 작성하는 요약과 다시 볼 작업 목록 — 기본값은 꺼짐, 관리자가 켤 때까지 "AI 리포트가 꺼져 있습니다" 표시</li>
+</ul>
+<h2 id="tools-tools">Tools (<code>/tools</code>)<a class="headerlink" href="#tools-tools" title="Permanent link">&para;</a></h2>
+<p>최근 30일간 Claude Code·Codex 도구 호출: 총 사용 수, 성공, 실패, 전체 성공률, 그리고 도구별 표와 성공률 막대.</p>
+<p><img alt="Tool Usage 페이지: 요약 카드 4개와 성공률 막대가 있는 도구별 표" loading="lazy" src="../../../assets/screenshots/50-tools.png" /></p>
+<p>제목 아래 범위 안내는 Codex 수치의 근거를 적는다: Codex의 도구 수는 codex.tool.call OTEL 메트릭 기준이라 코드 모드 내부 호출을 포함하고 TUI·VS Code 실행만 집계되며, Codex는 호출 단위 실패 상세도 없어 도구를 펼쳤을 때 보이는 <strong>Recent Failures</strong> 목록은 Claude 도구만 담는다.</p>
+<h2 id="plugins-skills-plugins">Plugins &amp; Skills (<code>/plugins</code>)<a class="headerlink" href="#plugins-skills-plugins" title="Permanent link">&para;</a></h2>
+<p>Claude Code 슬래시 명령·스킬 호출과 Codex 스킬 주입을 플러그인 또는 스킬 이름별로 묶어 표시.</p>
+<ul>
+<li>기간: <strong>7d</strong>, <strong>30d</strong>(기본값), <strong>90d</strong>, <strong>All</strong></li>
+<li>요약 카드: <strong>Claude Calls</strong>, <strong>Codex Calls</strong>, <strong>Avg Tokens</strong>, <strong>Total</strong>, <strong>Input</strong>, <strong>Output</strong> 토큰</li>
+<li>보기: <strong>By Skill</strong>, <strong>By User</strong>, <strong>By Project</strong>. <strong>By Project</strong>는 git 저장소 안의 세션만 집계</li>
+</ul>
+<p><img alt="Plugins &amp; Skills 페이지, By Skill 보기, 스킬별 호출·토큰 합계" loading="lazy" src="../../../assets/screenshots/51-plugins-skills.png" /></p>
+<p><code>/skills</code>는 이 페이지로 이동.</p>
+<h2 id="rules-rules">Rules (<code>/rules</code>)<a class="headerlink" href="#rules-rules" title="Permanent link">&para;</a></h2>
+<p>세션이 실행된 git 저장소에서 클라이언트가 찾은 CLAUDE.md와 AGENTS.md 파일, 그리고 버전 이력.</p>
+<ul>
+<li>텍스트, 상태(<strong>Active</strong>, <strong>Missing</strong>), 저장소로 필터. 요약 카드는 <strong>Repositories</strong>와 <strong>Rule Files</strong> 수</li>
+<li>파일을 선택하면 버전별 내용 확인과 댓글 작성 가능</li>
+<li><code>user</code> 계정은 본인 세션이 있는 저장소의 규칙 파일만 조회</li>
+</ul>
+<p><img alt="Project Rules 페이지: 왼쪽 저장소 목록, 오른쪽 선택한 AGENTS.md의 렌더링 내용" loading="lazy" src="../../../assets/screenshots/54-rules.png" /></p>
+<h2 id="logs-logs">Logs (<code>/logs</code>)<a class="headerlink" href="#logs-logs" title="Permanent link">&para;</a></h2>
+<p>최근 30일 원시 텔레메트리, 페이지당 50행.</p>
+<table>
+<thead>
+<tr>
+<th>탭</th>
+<th>열</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Events</td>
+<td>Time, Event, Model, Session, User, Input, Output, Cost, Age</td>
+</tr>
+<tr>
+<td>Metrics</td>
+<td>Time, Metric, Model, User, Value, Session, Age</td>
+</tr>
+</tbody>
+</table>
+<p>Logs는 본인 데이터로 제한되지 않는다. 프롬프트나 도구 출력처럼 자유 텍스트를 담은 속성은 페이지로 오기 전에 제거된다.</p>
+<h2 id="admin-admin">Admin (<code>/admin</code>)<a class="headerlink" href="#admin-admin" title="Permanent link">&para;</a></h2>
+<p>관리자에게만 보임.</p>
+<table>
+<thead>
+<tr>
+<th>탭</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clients</strong></td>
+<td>버전을 보고한 클라이언트별 Profile Email, Name, User ID, Client Version, Last Seen, Status</td>
+</tr>
+<tr>
+<td><strong>Storage</strong></td>
+<td>보존 기간, 테이블 크기, 데이터 볼륨 여유 공간. 보존 기간은 여기서 수정. <a href="../../server/operations/#data-retention">운영</a> 참고</td>
+</tr>
+</tbody>
+</table>
+<p><code>/versions</code>와 <code>/storage</code>는 <code>/admin</code>으로 이동.</p>
+<p><strong>Excluded Accounts</strong>, <strong>Unpriced Models</strong>, <strong>Insights</strong>, <strong>AI</strong> 탭은 변경이 진행 중이라 이 문서에서 다루지 않음.</p>
+<h2 id="settings-settings">Settings (<code>/settings</code>)<a class="headerlink" href="#settings-settings" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Change Password</strong>: 현재 비밀번호와 8자 이상의 새 비밀번호 입력. 임시 비밀번호 계정은 변경할 때까지 이 페이지로 이동</li>
+<li><strong>Appearance</strong>: 강조 색, 에이전트 색조, 로고 마크 표시 여부</li>
+</ul>
+<p>API 토큰과 결제 계정 섹션은 변경이 진행 중이라 이 문서에서 다루지 않음.</p>
+<h2 id="pages-under-active-development">변경이 진행 중인 페이지<a class="headerlink" href="#pages-under-active-development" title="Permanent link">&para;</a></h2>
+<p>다음 페이지는 존재하지만 변경이 진행 중이라 이 문서에서 다루지 않음.</p>
+<table>
+<thead>
+<tr>
+<th>페이지</th>
+<th>사이드바 항목</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/open-api</code></td>
+<td>Open API</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  맨위로
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="하단/푸터" >
+        
+          
+          <a href="../users/" class="md-footer__link md-footer__link--prev" aria-label="이전: 사용자">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                이전
+              </span>
+              <div class="md-ellipsis">
+                사용자
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../reference/cli/" class="md-footer__link md-footer__link--next" aria-label="다음: CLI">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                다음
+              </span>
+              <div class="md-ellipsis">
+                CLI
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub428", "clipboard.copy": "\ud074\ub9bd\ubcf4\ub4dc\ub85c \ubcf5\uc0ac", "search.result.more.one": "\uc774 \ubb38\uc11c\uc5d0\uc11c 1\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.more.other": "\uc774 \ubb38\uc11c\uc5d0\uc11c #\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.none": "\uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubb38\uc11c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4", "search.result.one": "1\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.other": "#\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.placeholder": "\uac80\uc0c9\uc5b4\ub97c \uc785\ub825\ud558\uc138\uc694", "search.result.term.missing": "\ud3ec\ud568\ub418\uc9c0 \uc54a\uc740 \uac80\uc0c9\uc5b4", "select.version": "\ubc84\uc804 \uc120\ud0dd"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

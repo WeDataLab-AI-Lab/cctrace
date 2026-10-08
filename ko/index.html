@@ -1,0 +1,1571 @@
+
+<!doctype html>
+<html lang="ko" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/ko/">
+      
+      
+      
+        <link rel="next" href="getting-started/">
+      
+      
+        
+          <link rel="alternate" href="/cctrace/" hreflang="en">
+        
+          <link rel="alternate" href="/cctrace/ko/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>개요 - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cctrace" class="md-skip">
+          콘텐츠로 이동
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="상단/헤더">
+    <a href="./" title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              개요
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="언어설정">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/cctrace/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/cctrace/ko/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="검색" placeholder="검색" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="검색">
+        
+        <button type="reset" class="md-search__icon md-icon" title="지우기" aria-label="지우기" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            검색 초기화
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="네비게이션" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./" title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    개요
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    개요
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        데이터 수집 경로
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        구성 요소
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        알아 둘 점
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        다음 단계
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    시작하기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    서버
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    서버
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="server/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설치
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="server/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설정
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="server/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    운영
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    클라이언트
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    클라이언트
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="client/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설치
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="client/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    연결
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="client/profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로필
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="client/sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    동기화 데몬
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="client/uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    초기화와 제거
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    에이전트
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    에이전트
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC와 OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    대시보드
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    대시보드
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dashboard/first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    첫 관리자
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dashboard/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    사용자
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dashboard/pages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    페이지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    레퍼런스
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    레퍼런스
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    서버 환경변수
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    포트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    개인정보
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        데이터 수집 경로
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        구성 요소
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        알아 둘 점
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        다음 단계
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cctrace">cctrace<a class="headerlink" href="#cctrace" title="Permanent link">&para;</a></h1>
+<p>Claude Code·Codex CLI 세션용 자체 호스팅 텔레메트리</p>
+<p>cctrace는 코딩 에이전트 세션이 실제로 한 일(토큰 사용량, 비용, 도구 호출, 대화 내용)을 직접 운영하는 데이터베이스에 모으고 그 위에 대시보드를 제공한다. 에이전트의 OpenTelemetry 출력으로는 "얼마나"를, 세션 트랜스크립트로는 "무엇을 했나"를 알 수 있다. cctrace는 둘을 모두 수집해 세션 단위로 묶어 둔다.</p>
+<div class="diagram">
+<svg class="architecture-diagram" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="architecture-ko-title architecture-ko-desc">
+  <title id="architecture-ko-title">cctrace 세션 수집 아키텍처</title>
+  <desc id="architecture-ko-desc">각 개발자 머신에서 Claude Code는 gRPC 4317 포트로, Codex CLI는 HTTP 4318 포트로 OTLP 텔레메트리를 cctraced에 전송한다. cctrace 동기화 데몬은 두 에이전트의 세션 JSONL 파일을 읽어 8080 포트의 HTTP /api/sync로 업로드한다. 서버 Docker Compose 경계에서 cctraced는 OTLP 데이터를 PGMQ를 거쳐 큐잉하고 텔레메트리와 세션 레코드를 TimescaleDB에 저장하며, 기본 호스트 바인드가 127.0.0.1인 8080 포트에서 내장된 Next.js 정적 대시보드를 제공한다.</desc>
+  <defs>
+    <marker id="architecture-ko-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,4 L0,8 Z" fill="var(--arch-line)"/>
+    </marker>
+  </defs>
+  <style>
+    .architecture-diagram {
+      color-scheme: light dark;
+      --arch-canvas: #ffffff;
+      --arch-zone: #f7f9fc;
+      --arch-zone-border: #c8d2e1;
+      --arch-node: #ffffff;
+      --arch-node-border: #94a3b8;
+      --arch-focus: #edf4ff;
+      --arch-focus-border: #356fc4;
+      --arch-store: #edf8f3;
+      --arch-store-border: #338363;
+      --arch-ink: #16233a;
+      --arch-muted: #5c6b82;
+      --arch-line: #65758f;
+      --arch-accent: #c95b42;
+    }
+    @media (prefers-color-scheme: dark) {
+      .architecture-diagram {
+        --arch-canvas: #0d1117;
+        --arch-zone: #121923;
+        --arch-zone-border: #3a485c;
+        --arch-node: #161e29;
+        --arch-node-border: #627087;
+        --arch-focus: #14243b;
+        --arch-focus-border: #70a5f5;
+        --arch-store: #10271f;
+        --arch-store-border: #63bd94;
+        --arch-ink: #e6edf3;
+        --arch-muted: #a3afbf;
+        --arch-line: #91a0b4;
+        --arch-accent: #ff9b7c;
+      }
+    }
+    .arch-bg { fill: var(--arch-canvas); }
+    .arch-zone { fill: var(--arch-zone); stroke: var(--arch-zone-border); stroke-width: 2; stroke-dasharray: 8 6; }
+    .arch-connector { fill: none; stroke: var(--arch-line); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .arch-connector-secondary { stroke-width: 1.8; }
+    .arch-label-mask { fill: var(--arch-canvas); }
+    .arch-node { fill: var(--arch-node); stroke: var(--arch-node-border); stroke-width: 2; }
+    .arch-focus-node { fill: var(--arch-focus); stroke: var(--arch-focus-border); stroke-width: 2.6; }
+    .arch-store-node { fill: var(--arch-store); stroke: var(--arch-store-border); stroke-width: 2.2; }
+    .arch-accent { fill: var(--arch-accent); }
+    .arch-title { fill: var(--arch-ink); font-weight: 700; }
+    .arch-text { fill: var(--arch-ink); }
+    .arch-muted { fill: var(--arch-muted); }
+  </style>
+
+  <rect class="arch-bg" x="0" y="0" width="1280" height="720"/>
+  <text class="arch-title" x="40" y="46" font-size="25" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" dominant-baseline="middle">cctrace 세션 수집 아키텍처</text>
+  <text class="arch-muted" x="40" y="78" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" dominant-baseline="middle">두 수집 경로가 하나의 자체 호스팅 저장소로 연결</text>
+
+  <!-- 배포 경계 -->
+  <rect class="arch-zone" x="40" y="110" width="520" height="560" rx="18"/>
+  <rect class="arch-zone" x="600" y="110" width="640" height="560" rx="18"/>
+
+  <!-- 화살표를 노드보다 먼저 그려 모든 경로가 끝점 뒤에 놓이도록 함. -->
+  <path class="arch-connector" d="M260 222 H700" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector" d="M260 350 H700" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector arch-connector-secondary" d="M260 544 H336" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector" d="M520 544 H642 Q650 544 650 536 V408 Q650 400 658 400 H700" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector arch-connector-secondary" d="M1000 294 H1030" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector" d="M792 424 V514" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector" d="M908 424 V514" marker-end="url(#architecture-ko-arrow)"/>
+
+  <!-- 경로에서 간격을 둔 커넥터 레이블 -->
+  <rect class="arch-label-mask" x="366" y="188" width="224" height="20" rx="4"/>
+  <text class="arch-muted" x="478" y="198" font-size="16" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">OTLP/gRPC · TCP 4317</text>
+  <rect class="arch-label-mask" x="366" y="316" width="224" height="20" rx="4"/>
+  <text class="arch-muted" x="478" y="326" font-size="16" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">OTLP/HTTP · TCP 4318</text>
+  <rect class="arch-label-mask" x="490" y="438" width="140" height="20" rx="4"/>
+  <text class="arch-muted" x="560" y="448" font-size="16" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">HTTP /api/sync</text>
+  <rect class="arch-label-mask" x="802" y="458" width="96" height="20" rx="4"/>
+  <text class="arch-muted" x="850" y="468" font-size="16" font-weight="600" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP 큐</text>
+  <rect class="arch-label-mask" x="928" y="458" width="116" height="20" rx="4"/>
+  <text class="arch-muted" x="986" y="468" font-size="16" font-weight="600" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">세션 직접 저장</text>
+
+  <!-- 노드 -->
+  <rect class="arch-node" x="80" y="176" width="180" height="92" rx="12"/>
+  <rect class="arch-accent" x="80" y="176" width="8" height="92" rx="4"/>
+  <text class="arch-title" x="170" y="210" font-size="19" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">Claude Code</text>
+  <text class="arch-muted" x="170" y="242" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP · JSONL</text>
+
+  <rect class="arch-node" x="80" y="304" width="180" height="92" rx="12"/>
+  <rect class="arch-accent" x="80" y="304" width="8" height="92" rx="4"/>
+  <text class="arch-title" x="170" y="338" font-size="19" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">Codex CLI</text>
+  <text class="arch-muted" x="170" y="370" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP · JSONL</text>
+
+  <rect class="arch-node" x="80" y="494" width="180" height="100" rx="12"/>
+  <text class="arch-title" x="170" y="530" font-size="18" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">세션 JSONL</text>
+  <text class="arch-muted" x="170" y="562" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">Claude + Codex</text>
+
+  <rect class="arch-node" x="336" y="494" width="184" height="100" rx="12"/>
+  <text class="arch-title" x="428" y="530" font-size="19" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">cctrace</text>
+  <text class="arch-muted" x="428" y="562" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">동기화 데몬</text>
+
+  <rect class="arch-focus-node" x="700" y="164" width="300" height="260" rx="14"/>
+  <text class="arch-title" x="850" y="204" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">cctraced</text>
+  <text class="arch-text" x="850" y="252" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP 수신기</text>
+  <text class="arch-text" x="850" y="286" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">REST API · /api/sync</text>
+  <text class="arch-text" x="850" y="320" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">내장 웹 서버</text>
+  <text class="arch-muted" x="850" y="372" font-size="16" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">4317 · 4318 · 8080</text>
+
+  <rect class="arch-node" x="1030" y="202" width="170" height="184" rx="12"/>
+  <text class="arch-title" x="1115" y="232" font-size="18" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">대시보드</text>
+  <text class="arch-muted" x="1115" y="260" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">Next.js</text>
+  <text class="arch-muted" x="1115" y="282" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">정적 export</text>
+  <text class="arch-muted" x="1115" y="310" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">cctraced가</text>
+  <text class="arch-muted" x="1115" y="332" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">제공</text>
+  <text class="arch-muted" x="1115" y="356" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">기본 바인드</text>
+  <text class="arch-muted" x="1115" y="378" font-size="16" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">127.0.0.1:8080</text>
+
+  <rect class="arch-store-node" x="700" y="514" width="500" height="110" rx="14"/>
+  <text class="arch-title" x="950" y="550" font-size="20" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">TimescaleDB + PGMQ</text>
+  <text class="arch-muted" x="950" y="586" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP 큐 · 텔레메트리와 세션 테이블</text>
+
+  <!-- 경계 레이블은 점선 위에서 읽히도록 마지막에 배치. -->
+  <rect class="arch-zone" x="62" y="124" width="156" height="28" rx="6" stroke-dasharray="none"/>
+  <text class="arch-muted" x="140" y="138" font-size="16" font-weight="700" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">개발자 머신</text>
+  <rect class="arch-zone" x="622" y="124" width="230" height="28" rx="6" stroke-dasharray="none"/>
+  <text class="arch-muted" x="737" y="138" font-size="16" font-weight="700" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">서버 · Docker Compose</text>
+</svg>
+
+</div>
+
+<p><img alt="cctrace 대시보드 Overview 페이지: 요약 카드 4개와 사용자별로 쌓은 분 단위 비용 추이 차트" loading="lazy" src="../assets/screenshots/40-overview.png" /></p>
+<p>위 대시보드는 데모 서버 위의 가상 5인 팀이며 실제 운영 데이터가 아니다. 페이지별 설명은 <a href="dashboard/pages/">대시보드 페이지</a> 참고.</p>
+<h2 id="_1">데이터 수집 경로<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>한쪽만으로는 부족해서 두 경로가 하나의 저장소로 모인다.</p>
+<table>
+<thead>
+<tr>
+<th>경로</th>
+<th>출처</th>
+<th>전송</th>
+<th>내용</th>
+<th>지연</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OTEL</td>
+<td>에이전트의 OTLP exporter</td>
+<td>gRPC 4317 (Claude Code), HTTP 4318 (Codex)</td>
+<td>토큰 수, 비용, 메트릭</td>
+<td>실시간</td>
+</tr>
+<tr>
+<td>Sync</td>
+<td>디스크의 세션 JSONL 파일</td>
+<td>HTTP <code>/api/sync</code> (포트 8080)</td>
+<td>전체 대화, 도구 호출</td>
+<td>주기적</td>
+</tr>
+</tbody>
+</table>
+<p>개발자 머신에서는 <code>cctrace init</code> 하나로 두 경로 모두 설정. 에이전트의 OTLP exporter를 서버로 향하게 하고 동기화 데몬을 띄우는 훅을 등록한다.</p>
+<h2 id="_2">구성 요소<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>구성 요소</th>
+<th>실행 위치</th>
+<th>역할</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cctrace</code></td>
+<td>각 개발자 머신</td>
+<td>클라이언트 CLI와 동기화 데몬. 에이전트 세션 디렉터리를 감시해 레코드 업로드</td>
+</tr>
+<tr>
+<td><code>cctraced</code></td>
+<td>서버 호스트</td>
+<td>서버. OTLP 수신, 동기화 업로드 수신, API·대시보드 제공</td>
+</tr>
+<tr>
+<td>TimescaleDB + 대시보드</td>
+<td>서버 호스트</td>
+<td>압축·보존 정책이 걸린 저장소. Next.js 대시보드는 <code>cctraced</code>에 내장</td>
+</tr>
+</tbody>
+</table>
+<p>서버와 데이터베이스는 <code>deploy/docker-compose.yml</code>의 컨테이너 두 개로 실행. 두 이미지 모두 이 저장소에서 빌드하며 레지스트리에 공개된 이미지는 없음.</p>
+<h2 id="_3">알아 둘 점<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>제3자로 텔레메트리 전송 없음. 지정한 서버 외에, 클라이언트는 요금제 한도를 읽으려고 로컬 Claude Code 로그인으로 Anthropic 사용량 API를 조회하고, 서버는 OpenAI 공개 가격 페이지를 내려받음. <a href="reference/privacy/">개인정보</a> 참조. 주간 AI 리포트는 관리자가 켜면 외부 AI 제공자로 데이터를 보낼 수 있으나, 변경이 진행 중이라 이 문서에서 다루지 않음</li>
+<li>호스팅 서비스·사전 빌드 바이너리 없음. 클라이언트와 서버 이미지를 소스에서 빌드</li>
+<li>이 저장소에서 빌드한 클라이언트는 자동 업데이트 없음. 빈 업데이트 공개 키로 링크되어 자동 업데이트를 거부하므로 업그레이드는 재빌드로 진행</li>
+</ul>
+<p>대시보드는 대화 내용을 저장한다. 팀을 연결하기 전에 보존 기간과 마스킹 범위를 먼저 정할 것. <a href="reference/privacy/">개인정보</a> 참조.</p>
+<div class="admonition note">
+<p class="admonition-title">상태</p>
+<p>cctrace는 초기 단계. 서버 API와 데이터베이스 스키마가 릴리스마다 바뀔 수 있음. 둘 중 하나에 의존한다면 버전 고정 필요.</p>
+</div>
+<h2 id="_4">다음 단계<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<div class="grid cards">
+<ul>
+<li><a href="getting-started/"><strong>시작하기</strong></a> — 서버 실행부터 머신 한 대 연결까지 처음부터 끝까지</li>
+<li><a href="server/install/"><strong>서버 설치</strong></a> — 이미지 빌드, 필수 값 설정, 스택 기동</li>
+<li><a href="client/install/"><strong>클라이언트 설치</strong></a> — <code>cctrace</code> 빌드와 <code>PATH</code> 등록</li>
+<li><a href="reference/cli/"><strong>레퍼런스</strong></a> — 명령어, 서버 환경 변수, 포트, 개인정보 설정</li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  맨위로
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="하단/푸터" >
+        
+        
+          
+          <a href="getting-started/" class="md-footer__link md-footer__link--next" aria-label="다음: 시작하기">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                다음
+              </span>
+              <div class="md-ellipsis">
+                시작하기
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub428", "clipboard.copy": "\ud074\ub9bd\ubcf4\ub4dc\ub85c \ubcf5\uc0ac", "search.result.more.one": "\uc774 \ubb38\uc11c\uc5d0\uc11c 1\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.more.other": "\uc774 \ubb38\uc11c\uc5d0\uc11c #\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.none": "\uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubb38\uc11c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4", "search.result.one": "1\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.other": "#\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.placeholder": "\uac80\uc0c9\uc5b4\ub97c \uc785\ub825\ud558\uc138\uc694", "search.result.term.missing": "\ud3ec\ud568\ub418\uc9c0 \uc54a\uc740 \uac80\uc0c9\uc5b4", "select.version": "\ubc84\uc804 \uc120\ud0dd"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

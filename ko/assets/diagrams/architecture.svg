@@ -1,0 +1,130 @@
+<svg class="architecture-diagram" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="architecture-ko-title architecture-ko-desc">
+  <title id="architecture-ko-title">cctrace 세션 수집 아키텍처</title>
+  <desc id="architecture-ko-desc">각 개발자 머신에서 Claude Code는 gRPC 4317 포트로, Codex CLI는 HTTP 4318 포트로 OTLP 텔레메트리를 cctraced에 전송한다. cctrace 동기화 데몬은 두 에이전트의 세션 JSONL 파일을 읽어 8080 포트의 HTTP /api/sync로 업로드한다. 서버 Docker Compose 경계에서 cctraced는 OTLP 데이터를 PGMQ를 거쳐 큐잉하고 텔레메트리와 세션 레코드를 TimescaleDB에 저장하며, 기본 호스트 바인드가 127.0.0.1인 8080 포트에서 내장된 Next.js 정적 대시보드를 제공한다.</desc>
+  <defs>
+    <marker id="architecture-ko-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,4 L0,8 Z" fill="var(--arch-line)"/>
+    </marker>
+  </defs>
+  <style>
+    .architecture-diagram {
+      color-scheme: light dark;
+      --arch-canvas: #ffffff;
+      --arch-zone: #f7f9fc;
+      --arch-zone-border: #c8d2e1;
+      --arch-node: #ffffff;
+      --arch-node-border: #94a3b8;
+      --arch-focus: #edf4ff;
+      --arch-focus-border: #356fc4;
+      --arch-store: #edf8f3;
+      --arch-store-border: #338363;
+      --arch-ink: #16233a;
+      --arch-muted: #5c6b82;
+      --arch-line: #65758f;
+      --arch-accent: #c95b42;
+    }
+    @media (prefers-color-scheme: dark) {
+      .architecture-diagram {
+        --arch-canvas: #0d1117;
+        --arch-zone: #121923;
+        --arch-zone-border: #3a485c;
+        --arch-node: #161e29;
+        --arch-node-border: #627087;
+        --arch-focus: #14243b;
+        --arch-focus-border: #70a5f5;
+        --arch-store: #10271f;
+        --arch-store-border: #63bd94;
+        --arch-ink: #e6edf3;
+        --arch-muted: #a3afbf;
+        --arch-line: #91a0b4;
+        --arch-accent: #ff9b7c;
+      }
+    }
+    .arch-bg { fill: var(--arch-canvas); }
+    .arch-zone { fill: var(--arch-zone); stroke: var(--arch-zone-border); stroke-width: 2; stroke-dasharray: 8 6; }
+    .arch-connector { fill: none; stroke: var(--arch-line); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .arch-connector-secondary { stroke-width: 1.8; }
+    .arch-label-mask { fill: var(--arch-canvas); }
+    .arch-node { fill: var(--arch-node); stroke: var(--arch-node-border); stroke-width: 2; }
+    .arch-focus-node { fill: var(--arch-focus); stroke: var(--arch-focus-border); stroke-width: 2.6; }
+    .arch-store-node { fill: var(--arch-store); stroke: var(--arch-store-border); stroke-width: 2.2; }
+    .arch-accent { fill: var(--arch-accent); }
+    .arch-title { fill: var(--arch-ink); font-weight: 700; }
+    .arch-text { fill: var(--arch-ink); }
+    .arch-muted { fill: var(--arch-muted); }
+  </style>
+
+  <rect class="arch-bg" x="0" y="0" width="1280" height="720"/>
+  <text class="arch-title" x="40" y="46" font-size="25" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" dominant-baseline="middle">cctrace 세션 수집 아키텍처</text>
+  <text class="arch-muted" x="40" y="78" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" dominant-baseline="middle">두 수집 경로가 하나의 자체 호스팅 저장소로 연결</text>
+
+  <!-- 배포 경계 -->
+  <rect class="arch-zone" x="40" y="110" width="520" height="560" rx="18"/>
+  <rect class="arch-zone" x="600" y="110" width="640" height="560" rx="18"/>
+
+  <!-- 화살표를 노드보다 먼저 그려 모든 경로가 끝점 뒤에 놓이도록 함. -->
+  <path class="arch-connector" d="M260 222 H700" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector" d="M260 350 H700" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector arch-connector-secondary" d="M260 544 H336" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector" d="M520 544 H642 Q650 544 650 536 V408 Q650 400 658 400 H700" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector arch-connector-secondary" d="M1000 294 H1030" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector" d="M792 424 V514" marker-end="url(#architecture-ko-arrow)"/>
+  <path class="arch-connector" d="M908 424 V514" marker-end="url(#architecture-ko-arrow)"/>
+
+  <!-- 경로에서 간격을 둔 커넥터 레이블 -->
+  <rect class="arch-label-mask" x="366" y="188" width="224" height="20" rx="4"/>
+  <text class="arch-muted" x="478" y="198" font-size="16" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">OTLP/gRPC · TCP 4317</text>
+  <rect class="arch-label-mask" x="366" y="316" width="224" height="20" rx="4"/>
+  <text class="arch-muted" x="478" y="326" font-size="16" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">OTLP/HTTP · TCP 4318</text>
+  <rect class="arch-label-mask" x="490" y="438" width="140" height="20" rx="4"/>
+  <text class="arch-muted" x="560" y="448" font-size="16" font-weight="600" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">HTTP /api/sync</text>
+  <rect class="arch-label-mask" x="802" y="458" width="96" height="20" rx="4"/>
+  <text class="arch-muted" x="850" y="468" font-size="16" font-weight="600" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP 큐</text>
+  <rect class="arch-label-mask" x="928" y="458" width="116" height="20" rx="4"/>
+  <text class="arch-muted" x="986" y="468" font-size="16" font-weight="600" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">세션 직접 저장</text>
+
+  <!-- 노드 -->
+  <rect class="arch-node" x="80" y="176" width="180" height="92" rx="12"/>
+  <rect class="arch-accent" x="80" y="176" width="8" height="92" rx="4"/>
+  <text class="arch-title" x="170" y="210" font-size="19" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">Claude Code</text>
+  <text class="arch-muted" x="170" y="242" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP · JSONL</text>
+
+  <rect class="arch-node" x="80" y="304" width="180" height="92" rx="12"/>
+  <rect class="arch-accent" x="80" y="304" width="8" height="92" rx="4"/>
+  <text class="arch-title" x="170" y="338" font-size="19" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">Codex CLI</text>
+  <text class="arch-muted" x="170" y="370" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP · JSONL</text>
+
+  <rect class="arch-node" x="80" y="494" width="180" height="100" rx="12"/>
+  <text class="arch-title" x="170" y="530" font-size="18" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">세션 JSONL</text>
+  <text class="arch-muted" x="170" y="562" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">Claude + Codex</text>
+
+  <rect class="arch-node" x="336" y="494" width="184" height="100" rx="12"/>
+  <text class="arch-title" x="428" y="530" font-size="19" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">cctrace</text>
+  <text class="arch-muted" x="428" y="562" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">동기화 데몬</text>
+
+  <rect class="arch-focus-node" x="700" y="164" width="300" height="260" rx="14"/>
+  <text class="arch-title" x="850" y="204" font-size="22" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">cctraced</text>
+  <text class="arch-text" x="850" y="252" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP 수신기</text>
+  <text class="arch-text" x="850" y="286" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">REST API · /api/sync</text>
+  <text class="arch-text" x="850" y="320" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">내장 웹 서버</text>
+  <text class="arch-muted" x="850" y="372" font-size="16" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">4317 · 4318 · 8080</text>
+
+  <rect class="arch-node" x="1030" y="202" width="170" height="184" rx="12"/>
+  <text class="arch-title" x="1115" y="232" font-size="18" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">대시보드</text>
+  <text class="arch-muted" x="1115" y="260" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">Next.js</text>
+  <text class="arch-muted" x="1115" y="282" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">정적 export</text>
+  <text class="arch-muted" x="1115" y="310" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">cctraced가</text>
+  <text class="arch-muted" x="1115" y="332" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">제공</text>
+  <text class="arch-muted" x="1115" y="356" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">기본 바인드</text>
+  <text class="arch-muted" x="1115" y="378" font-size="16" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">127.0.0.1:8080</text>
+
+  <rect class="arch-store-node" x="700" y="514" width="500" height="110" rx="14"/>
+  <text class="arch-title" x="950" y="550" font-size="20" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">TimescaleDB + PGMQ</text>
+  <text class="arch-muted" x="950" y="586" font-size="16" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">OTLP 큐 · 텔레메트리와 세션 테이블</text>
+
+  <!-- 경계 레이블은 점선 위에서 읽히도록 마지막에 배치. -->
+  <rect class="arch-zone" x="62" y="124" width="156" height="28" rx="6" stroke-dasharray="none"/>
+  <text class="arch-muted" x="140" y="138" font-size="16" font-weight="700" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">개발자 머신</text>
+  <rect class="arch-zone" x="622" y="124" width="230" height="28" rx="6" stroke-dasharray="none"/>
+  <text class="arch-muted" x="737" y="138" font-size="16" font-weight="700" font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Inter, ui-sans-serif, system-ui, sans-serif" text-anchor="middle" dominant-baseline="middle">서버 · Docker Compose</text>
+</svg>
