@@ -46,7 +46,16 @@
 {$CADDY_SITE_ADDRESS}:8443 {
 	tls {$CADDY_TLS_MODE}
 	log
-	reverse_proxy cctraced:8080
+	handle_path /downloads/gui/experimental/* {
+		root * /data/cctrace-desktop/experimental
+		file_server
+	}
+	handle {
+		# Conversation payloads are large JSON and already gated by auth; compress them on
+		# the way out. No shared cache is configured, so only the transfer shrinks.
+		encode zstd gzip
+		reverse_proxy cctraced:8080
+	}
 }
 
 # OTLP over gRPC. h2c because the upstream speaks cleartext HTTP/2 -- without it

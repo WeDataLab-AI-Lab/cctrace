@@ -35,6 +35,12 @@ const taskTypeBackfillCandidateSQL = `SELECT id, raw FROM session_records
 
 // BackfillTaskTypes labels at most limit previously stored human prompts. It is
 // deliberately bounded so an administrator can resume it without a startup scan.
+//
+// A label is an input of session analysis (the session's task type), so the
+// labelled sessions are queued for it. The shared source lock that queue write
+// relies on comes first, before the candidates are locked FOR UPDATE: holding
+// them while waiting for it would deadlock against DeleteUserData, which holds
+// it exclusively while it deletes rows (p1b-design §5.2).
 func (s *PgStore) BackfillTaskTypes(ctx context.Context, limit int) (int, error) {
 	if s.classifier == nil {
 		return 0, fmt.Errorf("task classifier not configured")
@@ -47,6 +53,9 @@ func (s *PgStore) BackfillTaskTypes(ctx context.Context, limit int) (int, error)
 		return 0, err
 	}
 	defer tx.Rollback(ctx)
+	if err := lockSessionOverviewSourceMutation(ctx, tx, false); err != nil {
+		return 0, err
+	}
 
 	rows, err := tx.Query(ctx, taskTypeBackfillCandidateSQL, limit)
 	if err != nil {
@@ -85,11 +94,16 @@ func (s *PgStore) BackfillTaskTypes(ctx context.Context, limit int) (int, error)
 	// parallel arrays back into (id, task_type) pairs server-side. Classification
 	// itself stays in Go (the injected classifier decides the label), only the write
 	// is batched.
-	if _, err := tx.Exec(ctx, `UPDATE session_records sr
+	labelled, err := querySessionIDs(ctx, tx, `UPDATE session_records sr
 		SET task_type = v.task_type, classifier_version = $1
 		FROM (SELECT unnest($2::bigint[]) AS id, unnest($3::text[]) AS task_type) v
-		WHERE sr.id = v.id AND sr.task_type = ''`,
-		s.classifier.Version(), ids, taskTypes); err != nil {
+		WHERE sr.id = v.id AND sr.task_type = ''
+		RETURNING sr.session_id`,
+		s.classifier.Version(), ids, taskTypes)
+	if err != nil {
+		return 0, err
+	}
+	if err := markSessionFactsDirty(ctx, tx, labelled, nil, dirtyTaskType); err != nil {
 		return 0, err
 	}
 	return len(candidates), tx.Commit(ctx)
@@ -111,6 +125,9 @@ const reclassifySweepBatch = 2000
 // The cursor remembers which version it was walking for. A later bump resets it
 // without anybody having to remember, and a completed sweep costs one index lookup
 // per call until then.
+//
+// The relabelled sessions are queued for session analysis, under the shared
+// source lock taken first, as BackfillTaskTypes does.
 func (s *PgStore) ReclassifyStaleTaskTypes(ctx context.Context) (int, error) {
 	if s.classifier == nil {
 		return 0, fmt.Errorf("task classifier not configured")
@@ -122,6 +139,9 @@ func (s *PgStore) ReclassifyStaleTaskTypes(ctx context.Context) (int, error) {
 		return 0, err
 	}
 	defer tx.Rollback(ctx) //nolint:errcheck // no-op after commit
+	if err := lockSessionOverviewSourceMutation(ctx, tx, false); err != nil {
+		return 0, err
+	}
 
 	var cursor int64
 	var cursorVersion string
@@ -137,31 +157,31 @@ func (s *PgStore) ReclassifyStaleTaskTypes(ctx context.Context) (int, error) {
 	}
 
 	rows, err := tx.Query(ctx, `
-		SELECT id, raw, classifier_version FROM session_records
+		SELECT id, session_id, raw, classifier_version FROM session_records
 		WHERE id > $1 AND record_type = 'user'
 		ORDER BY id LIMIT $2`, cursor, reclassifySweepBatch)
 	if err != nil {
 		return 0, err
 	}
 	type candidate struct {
-		id  int64
-		raw []byte
+		id        int64
+		sessionID string
+		raw       []byte
 	}
 	var stale []candidate
 	var head int64
 	for rows.Next() {
-		var id int64
-		var raw []byte
+		var c candidate
 		var stored string
-		if err := rows.Scan(&id, &raw, &stored); err != nil {
+		if err := rows.Scan(&c.id, &c.sessionID, &c.raw, &stored); err != nil {
 			rows.Close()
 			return 0, err
 		}
-		head = id
+		head = c.id
 		// '' is "never classified" -- BackfillTaskTypes owns those, and taking them
 		// here would race it for the same rows under a different lock.
 		if stored != "" && stored != version {
-			stale = append(stale, candidate{id: id, raw: raw})
+			stale = append(stale, c)
 		}
 	}
 	rows.Close()
@@ -175,6 +195,7 @@ func (s *PgStore) ReclassifyStaleTaskTypes(ctx context.Context) (int, error) {
 	}
 
 	relabelled := 0
+	var sessionIDs []string
 	for _, c := range stale {
 		prompt := s.classifier.PromptFromRaw(c.raw)
 		if prompt == "" {
@@ -185,6 +206,7 @@ func (s *PgStore) ReclassifyStaleTaskTypes(ctx context.Context) (int, error) {
 			s.classifier.Classify(prompt), version, c.id); err != nil {
 			return 0, err
 		}
+		sessionIDs = append(sessionIDs, c.sessionID)
 		relabelled++
 	}
 
@@ -192,6 +214,9 @@ func (s *PgStore) ReclassifyStaleTaskTypes(ctx context.Context) (int, error) {
 		`INSERT INTO task_type_reclassify_cursor (only_row, last_record_id, version) VALUES (TRUE, $1, $2)
 		 ON CONFLICT (only_row) DO UPDATE SET last_record_id = EXCLUDED.last_record_id, version = EXCLUDED.version`,
 		head, version); err != nil {
+		return 0, err
+	}
+	if err := markSessionFactsDirty(ctx, tx, sessionIDs, nil, dirtyTaskType); err != nil {
 		return 0, err
 	}
 	if err := tx.Commit(ctx); err != nil {

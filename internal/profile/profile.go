@@ -15,13 +15,23 @@ import (
 
 // Profile holds user configuration for cctrace.
 type Profile struct {
-	Version         int            `json:"version"`
-	User            UserInfo       `json:"user"`
-	Server          ServerInfo     `json:"server"`
-	Options         ProfileOptions `json:"options"`
-	CreatedAt       time.Time      `json:"created_at"`
-	UpdatedAt       time.Time      `json:"updated_at"`
-	ClaudeConfigDir string         `json:"claude_config_dir,omitempty"`
+	HomeCollection   *HomeCollection  `json:"home_collection,omitempty"`
+	HomesVersion     int              `json:"homes_version,omitempty"`
+	Homes            []HomeMembership `json:"homes,omitempty"`
+	ID               string           `json:"profile_id,omitempty"`
+	RegistrationOnly bool             `json:"registration_only,omitempty"`
+	Version          int              `json:"version"`
+	User             UserInfo         `json:"user"`
+	Server           ServerInfo       `json:"server"`
+	Options          ProfileOptions   `json:"options"`
+	CreatedAt        time.Time        `json:"created_at"`
+	UpdatedAt        time.Time        `json:"updated_at"`
+	ClaudeConfigDir  string           `json:"claude_config_dir,omitempty"`
+	// CodexHome is an explicitly chosen execution home, separate from additional scan roots.
+	CodexHome      string `json:"codex_home,omitempty"`
+	sourcePath     string
+	sourceRevision string
+	sourceJSON     []byte
 }
 
 // UserInfo holds identity fields.
@@ -52,7 +62,8 @@ type ServerInfo struct {
 
 // ProfileOptions holds behavioral toggles and intervals.
 type ProfileOptions struct {
-	SyncEnabled bool `json:"sync_enabled"`
+	LocalAnalysisEnabled bool `json:"local_analysis_enabled,omitempty"`
+	SyncEnabled          bool `json:"sync_enabled"`
 	// RedactUserPrompts drops the text a person typed before a record leaves this
 	// machine. RedactToolDetails does the same for tool arguments and results.
 	// Both default to false: cctrace exists to show conversations, so collecting
@@ -163,19 +174,37 @@ func LoadFrom(path string) (*Profile, error) {
 	if err := json.Unmarshal(data, &p); err != nil {
 		return nil, fmt.Errorf("profile: unmarshal: %w", err)
 	}
+	if err := p.ValidateHomes(); err != nil {
+		return nil, err
+	}
+	p.sourcePath = filepath.Clean(path)
+	p.sourceRevision = revision(data)
+	p.sourceJSON = data
 	return &p, nil
 }
 
 // Save saves the profile to the default path atomically with 0600 permissions.
 func Save(p *Profile) error {
+	p.ID = "default"
 	return SaveTo(p, DefaultPath())
 }
 
 // SaveTo saves the profile to the given path atomically with 0600 permissions,
 // delegating the durable replace to internal/atomicfile.
 func SaveTo(p *Profile, path string) error {
+	return withProfileLock(profileRootForPath(path), func() error { return saveToUnlocked(p, path) })
+}
+
+func saveToUnlocked(p *Profile, path string) error {
+	p.FenceLegacyCollector()
+	if p.HomesVersion == 1 && p.RegistrationOnly && (p.CollectionEnabled("claude") || p.CollectionEnabled("codex")) && (p.User.ID != "" || p.User.Email != "") && (p.Server.Endpoint != "" || p.Server.SyncEndpoint != "") {
+		p.RegistrationOnly = false
+	}
+	if err := p.ValidateHomes(); err != nil {
+		return err
+	}
 	// Ensure parent directory exists.
-	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+	if err := ensureProfileParent(path); err != nil {
 		return fmt.Errorf("profile: mkdir: %w", err)
 	}
 
@@ -184,7 +213,18 @@ func SaveTo(p *Profile, path string) error {
 		p.User.ID = strings.SplitN(p.User.Email, "@", 2)[0]
 	}
 
-	data, err := json.MarshalIndent(p, "", "  ")
+	current, readErr := os.ReadFile(path)
+	if readErr != nil && !errors.Is(readErr, os.ErrNotExist) {
+		return readErr
+	}
+	if p.sourcePath == filepath.Clean(path) && p.sourceRevision != "" {
+		if readErr != nil || revision(current) != p.sourceRevision {
+			return ErrConflict
+		}
+	} else if readErr == nil {
+		return ErrConflict
+	}
+	data, err := marshalPreservingUnknown(p)
 	if err != nil {
 		return fmt.Errorf("profile: marshal: %w", err)
 	}
@@ -197,6 +237,9 @@ func SaveTo(p *Profile, path string) error {
 	if err := atomicfile.Write(path, data, 0600); err != nil {
 		return fmt.Errorf("profile: write: %w", err)
 	}
+	p.sourcePath = filepath.Clean(path)
+	p.sourceRevision = revision(data)
+	p.sourceJSON = data
 	return nil
 }
 
@@ -218,7 +261,7 @@ func Remove() error {
 
 // RemoveAt removes the profile file at the given path.
 func RemoveAt(path string) error {
-	return os.Remove(path)
+	return withProfileLock(profileRootForPath(path), func() error { return os.Remove(path) })
 }
 
 // Validate checks that all required fields are present. Returns ValidationErrors
@@ -313,12 +356,24 @@ func LoadNamed(name string) (*Profile, error) {
 	p, err := LoadFrom(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, fmt.Errorf("profile %q not found; run 'cctrace init --profile %s' first", name, name)
+			return nil, &notFoundError{name}
 		}
 		return nil, err
 	}
 	return p, nil
 }
+
+// notFoundError says no profile has the name: its profile.json does not exist. It
+// still matches os.ErrNotExist, as the missing file it stands for does, so a
+// caller that scans the named profiles can tell a directory that holds no profile
+// from a profile that cannot be read.
+type notFoundError struct{ name string }
+
+func (e *notFoundError) Error() string {
+	return fmt.Sprintf("profile %q not found; run 'cctrace init --profile %s' first", e.name, e.name)
+}
+
+func (e *notFoundError) Unwrap() error { return os.ErrNotExist }
 
 // SaveNamed saves a profile to ~/.cctrace/profiles/{name}/profile.json.
 func SaveNamed(p *Profile, name string) error {
@@ -326,6 +381,7 @@ func SaveNamed(p *Profile, name string) error {
 	if err != nil {
 		return err
 	}
+	p.ID = "named:" + name
 	return SaveTo(p, path)
 }
 
@@ -335,7 +391,32 @@ func RemoveNamed(name string) error {
 	if err != nil {
 		return err
 	}
-	return os.RemoveAll(dir)
+	return withProfileLock(DefaultDir(), func() error {
+		p, err := LoadNamed(name)
+		if err != nil {
+			if _, statErr := os.Lstat(dir); errors.Is(statErr, os.ErrNotExist) {
+				return nil
+			}
+			return ErrUnsafe
+		}
+		resolvedDir, err := resolveRemovalPath(dir)
+		if err != nil {
+			return ErrUnsafe
+		}
+		homes := append([]string{p.ClaudeConfigDir, p.CodexHome}, p.Options.CodexDirs...)
+		homes = append(homes, p.Options.GjcDirs...)
+		homes = append(homes, p.Options.OmoDirs...)
+		for _, home := range homes {
+			if home == "" {
+				continue
+			}
+			resolvedHome, err := resolveRemovalPath(home)
+			if err != nil || removalWithin(resolvedDir, resolvedHome) || removalWithin(resolvedHome, resolvedDir) {
+				return ErrUnsafe
+			}
+		}
+		return os.RemoveAll(dir)
+	})
 }
 
 // ResolveByClaudeConfigDir scans named profiles and returns the name whose
@@ -345,15 +426,46 @@ func ResolveByClaudeConfigDir(dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	names = append([]string{"default"}, names...)
+	canonical, e := filepath.EvalSymlinks(dir)
+	if e == nil {
+		dir = canonical
+	}
 	clean := filepath.Clean(dir)
+	matches := []string{}
+	explicit := false
 	for _, name := range names {
-		p, err := LoadNamed(name)
+		var p *Profile
+		if name == "default" {
+			p, err = Load()
+		} else {
+			p, err = LoadNamed(name)
+		}
 		if err != nil {
 			continue
 		}
-		if p.ClaudeConfigDir != "" && filepath.Clean(p.ClaudeConfigDir) == clean {
-			return name, nil
+		if p.HomesVersion != 0 || p.Homes != nil {
+			explicit = true
+			for _, h := range p.ProviderHomes("claude", "") {
+				if h.Home == clean {
+					matches = append(matches, name)
+				}
+			}
+		} else if name != "default" && p.ClaudeConfigDir != "" && filepath.Clean(p.ClaudeConfigDir) == clean {
+			matches = append(matches, name)
 		}
+	}
+	if len(matches) > 1 && explicit {
+		return "", fmt.Errorf("provider home belongs to multiple profiles")
+	}
+	if len(matches) > 0 {
+		if matches[0] == "default" {
+			return "", nil
+		}
+		return matches[0], nil
+	}
+	if explicit {
+		return "", fmt.Errorf("provider home is not enrolled; complete onboarding before collection")
 	}
 	return "", nil
 }

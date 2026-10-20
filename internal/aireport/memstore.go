@@ -32,6 +32,8 @@ type MemStore struct {
 	Choice *store.AIRuntimeChoice
 	// Enabled is the admin's AI report switch; nil means none saved.
 	Enabled *store.AIEnabledChoice
+	// RunPolicy is the admin's run policy; nil means none saved.
+	RunPolicy *store.AIRunPolicy
 	// Credentials holds sealed provider keys; CredentialErr fails their writes.
 	Credentials   map[string]*store.AIProviderCredential
 	CredentialErr error
@@ -369,6 +371,29 @@ func (m *MemStore) SetAIEnabledChoice(_ context.Context, enabled *bool, actor st
 		return nil
 	}
 	m.Enabled = &store.AIEnabledChoice{Enabled: *enabled, UpdatedBy: actor, UpdatedAt: time.Now()}
+	return nil
+}
+
+func (m *MemStore) GetAIRunPolicy(context.Context) (*store.AIRunPolicy, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.RunPolicy == nil {
+		return nil, nil
+	}
+	cp := *m.RunPolicy
+	return &cp, nil
+}
+
+// SetAIRunPolicy replaces the whole policy, as the single-row UPSERT does; all
+// fields nil reads back as none saved.
+func (m *MemStore) SetAIRunPolicy(_ context.Context, consentRequired *bool, maxConcurrent *int, actor string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if consentRequired == nil && maxConcurrent == nil {
+		m.RunPolicy = nil
+		return nil
+	}
+	m.RunPolicy = &store.AIRunPolicy{ConsentRequired: consentRequired, MaxConcurrent: maxConcurrent, UpdatedBy: actor, UpdatedAt: time.Now()}
 	return nil
 }
 

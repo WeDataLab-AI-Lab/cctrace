@@ -69,7 +69,7 @@
 | **Deactivate** / **Activate** | 비활성 계정은 로그인 불가(`account is disabled`), `cctrace init` 인증 불가, 업로드 토큰도 거부되어 클라이언트 전송 중단. 저장된 데이터는 유지 |
 | **Reset Password** | 새 임시 비밀번호 발급, 한 번만 표시. 다음 로그인 때 다시 변경해야 하고 그 전까지 `cctrace init` 거부. 기존 업로드 토큰의 수집은 계속됨 |
 | **Revoke API Token** | 계정에 토큰이 있을 때 표시. 업로드 토큰을 포함한 계정의 모든 토큰 삭제. `cctrace init`을 다시 실행할 때까지 클라이언트 전송 중단 |
-| **Clear Collected Data** | 계정 이메일로 저장된 텔레메트리와 세션 레코드 삭제. 되돌릴 수 없음 |
+| **Clear Collected Data** | 계정 이메일로 저장된 텔레메트리, 세션 로그, 실시간 상태, 정책 대상 보고, 클라이언트 버전 기록, 가장 최근 사용 한도 수치, 개인정보 설정 삭제. 남는 데이터는 [데이터 삭제](../reference/privacy.md#delete-data) 참고. 되돌릴 수 없음 |
 
 ![Team과 cctrace User ID를 입력한 관리자 Edit User 대화상자](../assets/screenshots/21-edit-admin.png){ loading=lazy }
 

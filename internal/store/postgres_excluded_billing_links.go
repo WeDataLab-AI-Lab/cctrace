@@ -258,12 +258,21 @@ func (s *PgStore) RefreshExcludedBillingLinks(ctx context.Context) (bool, error)
 // recompute added or removed are added to them. Only the overview rows of
 // sessions they reach are rebuilt -- unless full is set, for a caller that
 // cannot say what changed.
+//
+// The shared source lock comes first, before the change writes anything: the
+// recompute queues the sessions it reaches for session analysis, and that queue
+// write relies on no tombstone landing before commit. Taken later, with row locks
+// already held, it could deadlock against DeleteUserData, which holds it
+// exclusively while it deletes rows (p1b-design §5.2).
 func (s *PgStore) applyExclusionChange(ctx context.Context, mutate func(pgx.Tx) error, emails []string, accounts []BillingAccountRef, full bool) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx) //nolint:errcheck // no-op after commit
+	if err := lockSessionOverviewSourceMutation(ctx, tx, false); err != nil {
+		return err
+	}
 	if mutate != nil {
 		if err := mutate(tx); err != nil {
 			return err

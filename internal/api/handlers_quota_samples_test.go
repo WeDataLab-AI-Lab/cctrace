@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"cctrace/internal/auth"
+	"cctrace/internal/emailalias"
 	"cctrace/internal/store"
 )
 
@@ -15,6 +17,11 @@ func quotaSamplesServer(t *testing.T) (*Server, *mockStore) {
 	t.Helper()
 	m := &mockStore{}
 	return newTestServer(m, nil), m
+}
+
+func quotaSamplesReadRequest(target string) *http.Request {
+	req := httptest.NewRequest(http.MethodGet, target, nil)
+	return req.WithContext(auth.WithUser(req.Context(), &auth.DashboardUser{ID: 1, Role: "admin"}))
 }
 
 // Accepted and inserted are reported separately because they routinely differ:
@@ -73,8 +80,8 @@ func TestQuotaSamplesRead_passesFilters(t *testing.T) {
 	s, m := quotaSamplesServer(t)
 
 	rec := httptest.NewRecorder()
-	s.mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet,
-		"/api/quota-samples?from=2026-08-24T00:00:00Z&to=2026-08-25T00:00:00Z&billing_provider=openai&window_minutes=10080", nil))
+	s.mux.ServeHTTP(rec, quotaSamplesReadRequest(
+		"/api/quota-samples?from=2026-08-24T00:00:00Z&to=2026-08-25T00:00:00Z&billing_provider=openai&window_minutes=10080"))
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, body = %s", rec.Code, rec.Body.String())
@@ -97,7 +104,7 @@ func TestQuotaSamplesRead_rejectsBadTimestamps(t *testing.T) {
 	s, _ := quotaSamplesServer(t)
 	for _, q := range []string{"?from=yesterday", "?to=soon", "?window_minutes=5h"} {
 		rec := httptest.NewRecorder()
-		s.mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/quota-samples"+q, nil))
+		s.mux.ServeHTTP(rec, quotaSamplesReadRequest("/api/quota-samples"+q))
 		if rec.Code != http.StatusBadRequest {
 			t.Errorf("%s: status = %d, want 400", q, rec.Code)
 		}
@@ -109,10 +116,21 @@ func TestQuotaSamplesRead_rejectsBadTimestamps(t *testing.T) {
 func TestQuotaSamplesRead_emptyIsAnEmptyList(t *testing.T) {
 	s, _ := quotaSamplesServer(t)
 	rec := httptest.NewRecorder()
-	s.mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/quota-samples", nil))
+	s.mux.ServeHTTP(rec, quotaSamplesReadRequest("/api/quota-samples"))
 
 	if body := strings.TrimSpace(rec.Body.String()); body != "[]" {
 		t.Errorf("body = %q, want []", body)
+	}
+}
+
+func TestQuotaSamplesRead_allowsDashboardUser(t *testing.T) {
+	s, _ := quotaSamplesServer(t)
+	req := httptest.NewRequest(http.MethodGet, "/api/quota-samples", nil)
+	req = req.WithContext(auth.WithUser(req.Context(), &auth.DashboardUser{ID: 7, Role: "user"}))
+	rec := httptest.NewRecorder()
+	s.mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
 	}
 }
 
@@ -126,6 +144,34 @@ func TestQuotaSnapshotRouteStillServed(t *testing.T) {
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, body = %s", rec.Code, rec.Body.String())
+	}
+}
+
+// The snapshot is keyed by profile_email like every other row the profile
+// writes, so a profile merged into another reports under the target's address as
+// sync and the other ingest paths do. Without that, each report after a merge
+// puts a row back under the address the merge just removed.
+func TestQuotaSnapshotWrite_resolvesAliases(t *testing.T) {
+	m := &mockStore{}
+	s := newTestServer(m, nil).WithAliases(emailalias.Aliases{"old@example.test": "new@example.test"})
+
+	for _, email := range []string{"Old@Example.test", "other@Example.test"} {
+		rec := httptest.NewRecorder()
+		s.mux.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/api/quota",
+			strings.NewReader(`{"profile_email":"`+email+`","five_hour_pct":42}`)))
+		if rec.Code != http.StatusOK {
+			t.Fatalf("%s: status = %d, body = %s", email, rec.Code, rec.Body.String())
+		}
+	}
+
+	if len(m.quotaSnapshots) != 2 {
+		t.Fatalf("stored %d snapshots, want 2", len(m.quotaSnapshots))
+	}
+	if got := m.quotaSnapshots[0].ProfileEmail; got != "new@example.test" {
+		t.Errorf("aliased profile stored as %q, want new@example.test", got)
+	}
+	if got := m.quotaSnapshots[1].ProfileEmail; got != "other@Example.test" {
+		t.Errorf("unaliased profile stored as %q, want it as received", got)
 	}
 }
 

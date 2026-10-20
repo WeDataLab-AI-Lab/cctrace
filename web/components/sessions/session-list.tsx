@@ -4,7 +4,12 @@ import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { CollectingLoader } from '@/components/common/collecting-loader';
 import type { SessionOverview } from '@/lib/types';
-import { fmt, fmtCost, fmtSessionPeriod, projectLabel, isRecentlyActive } from './session-utils';
+import { CLASSIFICATION_LABEL } from './analysis/list-model';
+import { CategoryChip } from './analysis/category-chip';
+import { SessionAnalysisRow } from './analysis/session-analysis-row';
+import { SessionGroupList } from './session-group-list';
+import type { SessionGroupMember, SessionGroups } from '@/lib/session-groups-api';
+import { fmt, fmtCost, fmtSessionPeriod, createSessionPeriodFormatters, projectLabel, isRecentlyActive } from './session-utils';
 
 // Both agents are badged. Badging only codex made claude the unmarked default, but the
 // product covers the two equally. Keyed by the raw agent value so a session with no agent
@@ -12,6 +17,16 @@ import { fmt, fmtCost, fmtSessionPeriod, projectLabel, isRecentlyActive } from '
 const AGENT_BADGE: Record<string, string> = {
   claude: 'bg-agent-claude-soft text-agent-claude',
   codex: 'bg-agent-codex-soft text-agent-codex',
+};
+
+const ANALYSIS_STATE_LABEL: Record<NonNullable<SessionOverview['analysis']>['state'], string> = {
+  ready: '분석 완료',
+  stale: '분석 규칙 갱신 중',
+  building: '분석을 만드는 중',
+  none: '분석 없음',
+  truncated: '분석 범위 제한',
+  unsupported: '분석 미지원',
+  withheld: '분석 보류',
 };
 
 interface IntersectionLoadDecision {
@@ -65,9 +80,20 @@ interface SessionListProps {
    */
   unattributedCount?: number;
   onCommitPending?: () => void;
+  groups?: SessionGroups;
+  groupsBusy?: boolean;
+  groupReadError?: boolean;
+  groupWriteError?: boolean;
+  onDismissGroup?: (members: readonly SessionGroupMember[], group?: SessionGroups['ended'][number], allMembers?: boolean) => void;
+  onRestoreGroup?: (members: readonly SessionGroupMember[], group?: SessionGroups['ended'][number]) => void;
+  /** Keep server row order under groups while an analysis filter or sort is active. */
+  preserveGroupOrder?: boolean;
+  /** Render server-provided analysis and owner-scoped P5 record fields in the real list. */
+  analysisMode?: boolean;
 }
 
-const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoadingMore, onLoadMore, total, pendingCount = 0, unattributedCount = 0, onCommitPending }: SessionListProps) => {
+const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoadingMore, onLoadMore, total, pendingCount = 0, unattributedCount = 0, onCommitPending, groups, groupsBusy = false, groupReadError = false, groupWriteError = false, onDismissGroup, onRestoreGroup, preserveGroupOrder = false, analysisMode = false }: SessionListProps) => {
+  const periodFormatters = createSessionPeriodFormatters();
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const handleSelect = (session: SessionOverview) => () => onSelect(session);
@@ -136,13 +162,15 @@ const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoa
     // is for. Below 220 the list's own rows wrap into noise, hence min-w.
     <div className="relative flex min-h-0 w-auto min-w-[220px] max-w-[288px] shrink grow basis-[220px] flex-col border-r border-border">
       {pendingCount > 0 && (
-        <button
-          type="button"
-          onClick={handleCommitPending}
-          className="absolute top-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-brand bg-surface px-3 py-1 text-[11px] font-medium text-brand shadow-sm hover:bg-brand-soft"
-        >
-          새 세션 {pendingCount.toLocaleString()}개
-        </button>
+        <div className="flex shrink-0 items-center justify-end border-b border-border-subtle bg-surface px-4 py-1.5">
+          <button
+            type="button"
+            onClick={handleCommitPending}
+            className="rounded border border-border px-2 py-0.5 text-[10px] text-ink-2 hover:bg-surface-sunk"
+          >
+            새 세션 {pendingCount.toLocaleString()}개
+          </button>
+        </div>
       )}
       {unattributedCount > 0 && (
         <div className="border-b border-border bg-surface-sunk px-4 py-2 text-[11px] leading-relaxed text-ink-3">
@@ -151,8 +179,11 @@ const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoa
           OTEL 수집 이전에 기록된 세션이라 어느 계정의 것인지 확인할 수 없습니다.
         </div>
       )}
+      {groupReadError && <div role="alert" className="border-b border-border px-4 py-2 text-xs text-danger">세션 묶음을 읽지 못했습니다. 다시 불러오세요.</div>}
+      {groupWriteError && <div role="alert" className="border-b border-border px-4 py-2 text-xs text-danger">세션 묶음 변경을 저장하지 못했습니다. 일부 변경이 저장되지 않았을 수 있으니 목록을 다시 확인해 주세요.</div>}
       <div
         ref={scrollRef}
+        data-session-return-scroll="list"
         // min-w-0: this scroller is the list's only flexible child, so its min-content
         // width becomes the list's floor. Left at auto it held the column at 359px no
         // matter what basis or min-w said above it.
@@ -178,16 +209,25 @@ const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoa
           </div>
         ) : (
           <>
-            {sessions.map((s) => {
+            <SessionGroupList rows={sessions} groups={groups} preserveOrder={preserveGroupOrder} busy={groupsBusy || !onDismissGroup || !onRestoreGroup} onDismiss={(members, group, allMembers) => onDismissGroup?.(members, group, allMembers)} onRestore={(members, group) => onRestoreGroup?.(members, group)} renderRow={(s, action) => {
               const isSelected = selectedId === s.session_id;
+              if (analysisMode && s.analysis) {
+                const live = groups ? groups.running.some((item) => item.session_id === s.session_id) : isRecentlyActive(s.end_time);
+                return (
+                  <div key={s.session_id}>
+                    <SessionAnalysisRow session={s} selected={isSelected} onSelect={onSelect} live={live} />
+                    {action && <div className="border-b border-border/50 px-3 pb-2">{action}</div>}
+                  </div>
+                );
+              }
               return (
+                <div key={s.session_id} className="relative border-b border-border/50">
                 <button
                   type="button"
-                  key={s.session_id}
                   onClick={handleSelect(s)}
                   aria-pressed={isSelected}
                   className={cn(
-                    'w-full px-4 py-3 border-b border-border/50 text-left cursor-pointer hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand',
+                    'w-full px-4 py-3 text-left cursor-pointer hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand',
                     isSelected && 'bg-surface-sunk border-l-2 border-l-brand hover:bg-surface-sunk',
                   )}
                 >
@@ -200,18 +240,33 @@ const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoa
                         sync
                       </span>
                     )}
-                    {isRecentlyActive(s.end_time) && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-danger-soft text-danger">
-                        <span className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
-                        LIVE
-                      </span>
-                    )}
+                    {(() => {
+                      // An observed live instance is a fact; a recent record is only activity.
+                      // Both stay neutral so a healthy run never reads as an error.
+                      const running = groups ? groups.running.some((item) => item.session_id === s.session_id) : false;
+                      const activity = !running && (groups ? isRecentlyActive(s.end_time) : isRecentlyActive(s.end_time));
+                      if (!running && !activity) return null;
+                      return <span className="inline-flex items-center gap-1 border-l border-border pl-1.5 text-[10px] text-ink-2">
+                        <span className="size-1.5 rounded-full border border-ink-3" aria-hidden="true" />
+                        {running ? '실행 중' : '활동 중'}
+                      </span>;
+                    })()}
                     {AGENT_BADGE[s.agent] && (
                       <span className={cn('inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium', AGENT_BADGE[s.agent])}>
                         {s.agent}
                       </span>
                     )}
+                    {s.classification && Object.hasOwn(CLASSIFICATION_LABEL, s.classification) && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-brand-soft text-brand">
+                        {CLASSIFICATION_LABEL[s.classification]}
+                      </span>
+                    )}
+                    {s.analysis?.category && <CategoryChip category={s.analysis.category} />}
                   </div>
+                  {s.analysis?.title?.state === 'ok' && s.analysis.title.text && (
+                    <div className="mb-0.5 truncate text-xs text-ink" title={s.analysis.title.text}>{s.analysis.title.text}</div>
+                  )}
+                  {s.first_line && <div className="text-xs text-ink mb-0.5 truncate" title={s.first_line}>{s.first_line}</div>}
                   <div className="text-xs text-ink mb-0.5 truncate">{s.profile_email || '-'}</div>
                   {(s.project_name || s.project_hash) && (
                     <div className="text-[11px] text-ink-3 mb-0.5 truncate">{projectLabel(s)}</div>
@@ -236,17 +291,30 @@ const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoa
                       )}
                     </div>
                   )}
+                  {/* A row still being analyzed carries no analysis values (the server sends only
+                      its state), so the line is left out rather than shown as "분석을 만드는 중". */}
+                  {s.analysis && s.analysis.state !== 'building' && (
+                    <div className="mb-1 flex flex-wrap gap-2 text-[11px] text-ink-3">
+                      <span>{ANALYSIS_STATE_LABEL[s.analysis.state]}</span>
+                      {s.analysis.requests != null && <span>요청 {s.analysis.requests.toLocaleString()}건</span>}
+                      {s.analysis.inputs != null && <span>입력 {s.analysis.inputs.toLocaleString()}건</span>}
+                      {s.analysis.plan_flags?.has_plan_file && <span>플랜 파일</span>}
+                      {s.analysis.plan_flags?.used_plan_mode && <span>플랜 모드</span>}
+                    </div>
+                  )}
                   <div className="flex gap-3 text-[11px] text-ink-3">
                     <span>In: <span className="text-ink-2 font-medium">{fmt(s.input_tokens)}</span></span>
                     <span>Out: <span className="text-ink-2 font-medium">{fmt(s.output_tokens)}</span></span>
                     <span>Cost: <span className="text-ink-2 font-medium">{fmtCost(s.cost_usd)}</span></span>
                   </div>
                   <div className="text-[11px] text-ink-3 mt-1">
-                    {fmtSessionPeriod(s.start_time, s.end_time)}
+                    {fmtSessionPeriod(s.start_time, s.end_time, periodFormatters)}
                   </div>
                 </button>
+                {action && <div className="px-4 pb-2">{action}</div>}
+                </div>
               );
-            })}
+            }} />
             {hasMore && (
               <div ref={sentinelRef} className="px-4 py-3 text-center">
                 {isLoadingMore && <CollectingLoader compact label="더 불러오는 중" />}

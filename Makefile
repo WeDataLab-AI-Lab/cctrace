@@ -1,27 +1,44 @@
-.PHONY: all build web-dist-placeholder web-dist-check test-scope-check build-client print-update-public-key build-linux build-windows run docker-up docker-down docker-logs install test test-unit test-integration coverage lint clean spike-codex replay-codex gate-phase1 ai-live
+.PHONY: all build web-dist-placeholder web-dist-check test-scope-check build-client print-update-public-key build-linux build-windows run docker-up docker-down docker-logs install test test-unit test-integration coverage lint lint-toolchain clean spike-codex replay-codex gate-phase1 ai-live
 
 # All targets
 all: build
 
 # Binaries
-VERSION := $(shell git describe --tags --always 2>/dev/null || echo "dev")
+VERSION := $(shell git describe --tags --match 'v[0-9]*' --always 2>/dev/null || echo "dev")
 # The Ed25519 public key that verifies update manifests. Public by definition —
 # it ships inside every released binary. Kept in-tree so locally built clients
 # share the release trust root instead of failing every self-update, and so the
 # repository states which key a release is expected to be signed with.
 UPDATE_PUBLIC_KEY ?= $(shell cat deploy/update-public-key.txt 2>/dev/null)
+# The Ed25519 public key that verifies server policies, kept in-tree for the
+# same reasons. Optional here: a build without it trusts policies signed with
+# the update key only. The release image build is what requires it.
+POLICY_PUBLIC_KEY ?= $(shell cat deploy/policy-public-key.txt 2>/dev/null)
 # Default endpoints offered by `cctrace init`. Deployment-specific, so the file
 # is gitignored and the leading `-` keeps a build without it working: the
 # variables stay empty and init prompts for both values instead. Copy
 # deploy/local-defaults.env.example to create one.
 -include deploy/local-defaults.env
-LDFLAGS := -ldflags "-X main.version=$(VERSION) -X main.updatePublicKeyBase64=$(UPDATE_PUBLIC_KEY) -X main.defaultSyncEndpoint=$(DEFAULT_SYNC_ENDPOINT) -X main.defaultOTELEndpoint=$(DEFAULT_OTEL_ENDPOINT)"
+LDFLAGS := -ldflags "-X main.version=$(VERSION) -X main.updatePublicKeyBase64=$(UPDATE_PUBLIC_KEY) -X main.policyPublicKeyBase64=$(POLICY_PUBLIC_KEY) -X main.defaultSyncEndpoint=$(DEFAULT_SYNC_ENDPOINT) -X main.defaultOTELEndpoint=$(DEFAULT_OTEL_ENDPOINT)"
 
 # The version above already comes from `git describe`, so Go's own VCS stamping
 # adds nothing — and it hard-fails with exit 128 inside a git worktree, which
 # makes `make build` unusable there. tests/integration_test.go disables it for
 # the same reason.
 BUILDFLAGS := -buildvcs=false
+
+# Without -trimpath the compiler writes each package's absolute directory into
+# its output, so the build cache keys every compile on where the checkout lives:
+# the same code built in a second worktree or clone is cached again in full.
+# Measured on two worktrees of this repository a few commits apart (go build,
+# go test and go test -race over ./..., same commits and Go release): the second
+# added 456 MiB without the flag (2026-10-15) and 9.5 MiB with it (2026-10-20).
+# Exported, so that every go command a target runs, including the binaries
+# tests build, keys the cache the same way.
+# Run go outside make with the same setting (go env -w GOFLAGS=-trimpath):
+# a cache filled one way is recompiled from the standard library up the other.
+# Stack traces show module-relative paths instead of absolute ones.
+export GOFLAGS += -trimpath
 
 # cctraced embeds internal/web/dist. The placeholder that test/lint targets
 # create satisfies go:embed but contains no dashboard, so without this guard a
@@ -60,6 +77,11 @@ build-client:
 # 직접 읽는 대신 이 타깃을 쓰면, 파일이 없는 체크아웃에서도 빈 문자열이 나온다.
 print-update-public-key:
 	@echo "$(UPDATE_PUBLIC_KEY)"
+
+# 같은 이유로 정책 공개키도 꺼내 준다. 키가 없는 체크아웃에서는 빈 문자열이다.
+.PHONY: print-policy-public-key
+print-policy-public-key:
+	@echo "$(POLICY_PUBLIC_KEY)"
 
 build-linux:
 	mkdir -p dist
@@ -154,7 +176,11 @@ test-unit: web-dist-placeholder test-scope-check
 		./internal/codexrates/... \
 		./internal/codexsyncer/... \
 		./internal/containertest/... \
+		./internal/desktop/... \
+		./internal/configtxn/... \
 		./internal/envgen/... \
+		./internal/filesec/... \
+		./internal/gitcmd/... \
 		./internal/gitctx/... \
 		./internal/gjclog/... \
 		./internal/gjcsyncer/... \
@@ -168,7 +194,16 @@ test-unit: web-dist-placeholder test-scope-check
 		./internal/profile/... \
 		./internal/projecthash/... \
 		./internal/projectrule/... \
+		./internal/samefolder/... \
+		./internal/localapi/... \
+		./internal/localdaemon/... \
+		./internal/sessionfacts/... \
 		./internal/sessionlog/... \
+		./internal/sessionrecord/... \
+		./internal/sessiontrace/... \
+		./internal/sessiontranscript/... \
+		./internal/processio/... \
+		./internal/serverpolicy/... \
 		./internal/sessionview/... \
 		./internal/synclog/... \
 		./internal/syncer/... \
@@ -177,6 +212,7 @@ test-unit: web-dist-placeholder test-scope-check
 		./internal/worker/... \
 		./packages/usage-insights/... \
 		./cmd/cctrace/... \
+		./cmd/cctrace-desktop-helper/... \
 		./cmd/cctraced/... \
 		-race -count=1 -timeout 300s
 	$(if $(wildcard scripts/*_test.go),go test ./scripts/... -race -count=1 -timeout 600s)
@@ -232,6 +268,10 @@ test-scope-check: web-dist-placeholder
 	echo "test scope OK"
 
 # Integration tests (requires Docker / Colima)
+# ./cmd/cctraced/... is in test-unit too. Its tests over a real database (the
+# P1t transition runner, request_set_migration_pg_test.go) run only with
+# CCTRACE_REQUIRE_CONTAINERS=1, so test-unit starts no container and this is
+# the target that runs them.
 test-integration: web-dist-placeholder
 	CCTRACE_REQUIRE_CONTAINERS=1 go test \
 		./internal/buffer/... \
@@ -239,6 +279,7 @@ test-integration: web-dist-placeholder
 		./internal/queue/... \
 		./internal/store/... \
 		./tests/... \
+		./cmd/cctraced/... \
 		-race -count=1 -timeout 300s
 
 # All tests
@@ -279,7 +320,30 @@ coverage: web-dist-placeholder
 	@echo "Coverage report: coverage.html"
 
 # Lint
-lint: web-dist-placeholder
+#
+# gofmt ships inside golangci-lint, and its verdict follows the Go release that
+# binary was built with: go1.26 and go1.27 indent a composite literal inside a
+# multi-value return differently. With nothing naming a release, a file that was
+# clean on a go1.26 machine was reformatted on a go1.27 machine to clear its
+# lint, and from then on failed on the first. LINT_GO is the release this
+# repository is formatted with. A mismatch is a tool to replace, not code to
+# reformat; raising LINT_GO is a change of its own that carries the reformat.
+# `override`, so that a LINT_GO= on the command line cannot wave a mismatch
+# through.
+override LINT_GO := go1.27
+
+lint-toolchain:
+	@command -v golangci-lint >/dev/null || { echo "ERROR: golangci-lint is not on PATH"; exit 1; }; \
+	built=$$(golangci-lint --version | sed -n 's/.* built with \(go[^ ]*\).*/\1/p'); \
+	case "$$built" in \
+		$(LINT_GO)|$(LINT_GO).*) ;; \
+		*) echo "ERROR: golangci-lint on PATH is built with $${built:-an unknown Go release}; this repository lints with $(LINT_GO)"; \
+		   echo "gofmt's verdict differs between Go releases: install a golangci-lint built with $(LINT_GO), do not reformat code to suit this one"; \
+		   echo "Check with 'golangci-lint --version'. The release is LINT_GO in the Makefile"; \
+		   exit 1 ;; \
+	esac
+
+lint: lint-toolchain web-dist-placeholder
 	golangci-lint run ./...
 
 clean:

@@ -278,6 +278,9 @@ func (t *turn) run() (string, error) {
 
 func (t *turn) body() map[string]any {
 	b := map[string]any{"model": t.model, "input": t.input, "store": false}
+	if t.req.MaxOutputTokens > 0 {
+		b["max_output_tokens"] = t.req.MaxOutputTokens
+	}
 	if t.req.Instructions != "" {
 		// Instructions are not carried between responses, so every request
 		// sends them.
@@ -333,9 +336,8 @@ func (t *turn) account(resp *apiResponse) error {
 		}
 	}
 	// The budget is checked after the response arrives, so a final answer
-	// whose response crosses it is dropped, as in the Codex runtime. The turn
-	// stops at the budget either way; max_output_tokens is not sent because it
-	// also counts reasoning tokens and would cut answers short.
+	// whose response crosses it is dropped. Callers that need a hard per-response
+	// output cap set MaxOutputTokens; otherwise the provider default is preserved.
 	// What the provider said goes to the log; messages stay fixed.
 	switch resp.Status {
 	case "completed":
@@ -521,7 +523,11 @@ func (r *Runtime) do(ctx context.Context, key, method, path string, body any) ([
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		r.cfg.Logger.Warn("openai request rejected", "method", method, "path", path, "status", resp.StatusCode, "body", loggedBody(raw, key))
+		bodyLog := loggedBody(raw, key)
+		if airuntime.HasSensitiveInput(ctx) {
+			bodyLog = "[provider response omitted for sensitive input]"
+		}
+		r.cfg.Logger.Warn("openai request rejected", "method", method, "path", path, "status", resp.StatusCode, "body", bodyLog)
 		var e struct {
 			Error struct {
 				Param string `json:"param"`

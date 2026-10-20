@@ -151,3 +151,35 @@ func TestSweepEmptiesRepairStagingTables(t *testing.T) {
 		}
 	}
 }
+
+func TestSweepEmptiesSessionAIRecords(t *testing.T) {
+	s := acquireTestStore(t)
+	truncateTables(t, s)
+	ctx := context.Background()
+	for _, id := range []string{"doomed", "kept"} {
+		if _, err := s.pool.Exec(ctx, `INSERT INTO session_ai_records
+			(session_id,outcome,reason,agent,prompt_version,facts_hash,facts_rules_version,basis_hash)
+			VALUES ($1,'redacted','prompt_policy','claude',1,decode(repeat('00',32),'hex'),1,decode(repeat('11',32),'hex'))`, id); err != nil {
+			t.Fatalf("seed P5 record %s: %v", id, err)
+		}
+		if _, err := s.pool.Exec(ctx, `INSERT INTO session_ai_record_jobs (session_id) VALUES ($1)`, id); err != nil {
+			t.Fatalf("seed P5 job %s: %v", id, err)
+		}
+	}
+	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "privacy", false, false); err != nil {
+		t.Fatalf("DeleteSession: %v", err)
+	}
+	if _, err := s.SweepDeletedSessions(ctx, 25); err != nil {
+		t.Fatalf("SweepDeletedSessions: %v", err)
+	}
+	for _, table := range []string{"session_ai_records", "session_ai_record_jobs"} {
+		var doomed, kept int
+		if err := s.pool.QueryRow(ctx, `SELECT count(*) FILTER (WHERE session_id='doomed'),
+			count(*) FILTER (WHERE session_id='kept') FROM `+table).Scan(&doomed, &kept); err != nil {
+			t.Fatalf("count %s: %v", table, err)
+		}
+		if doomed != 0 || kept != 1 {
+			t.Errorf("%s rows after sweep: doomed=%d kept=%d, want 0 and 1", table, doomed, kept)
+		}
+	}
+}

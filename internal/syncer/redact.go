@@ -92,11 +92,153 @@ func redactRecord(r *store.SessionRecord, policy RedactPolicy) {
 		r.Raw = json.RawMessage(`{"redacted":"` + redactedMarker + `"}`)
 		return
 	}
+	redactPaths(doc, policy)
+	if r.RecordType == "system" {
+		if line, ok := doc.(map[string]interface{}); ok {
+			redactMembers(line, "content")
+		}
+	}
 	redactValue(doc, policy)
 	if cleaned, err := json.Marshal(doc); err == nil {
 		r.Raw = cleaned
 	} else {
 		r.Raw = json.RawMessage(`{"redacted":"` + redactedMarker + `"}`)
+	}
+}
+
+// redactPaths removes content the key-name walk does not reach, by where it sits
+// in a Claude line rather than by what its key is called. It runs before the walk
+// and only ever replaces values with the same marker.
+//
+// The walk is only safe for names that mean content wherever they appear. The
+// fields collected from toolUseResult and attachments (sessionlog.CollectVersion)
+// sit under names that do not: "prompt" is also the Agent tool's input (618 local
+// calls) and "name" is every tool call's name (31,317), so adding either to the
+// maps above would blank the tool names the dashboard pairs calls with. Each rule
+// here names the line shape it applies to and touches nothing else.
+//
+// The rule is that every representation of the same content gets the same
+// treatment. The AskUserQuestion answer is the clearest case: the person's choice
+// is in the tool_result text and again, structured, in toolUseResult.answers, and
+// redacting one of them protects nothing. A background task's result is another:
+// it arrives queued (attachment queued_command, commandMode task-notification)
+// and then as a user line of its own (origin.kind task-notification). The
+// question and options the model asked, and an ExitPlanMode plan, need no rule
+// here: they sit in message.content, which the prompt walk replaces whole, and
+// under "input", which the tool walk replaces whole.
+//
+// Redact runs this only when the policy is enabled, so the rules marked "either
+// policy" below hold whenever it runs at all.
+func redactPaths(doc interface{}, policy RedactPolicy) {
+	line, ok := doc.(map[string]interface{})
+	if !ok {
+		return
+	}
+	// Native request shapes and wire arguments contain instruction text, schema
+	// property names and paths under arbitrary keys, so a key-name walk cannot
+	// protect them. Both policies cover every representation of these payloads.
+	redactMembers(line, "wireToolInputs", "wireIngestContext", "error", "apiError", "apiErrorParams", "params")
+	if shape, ok := line["shape"].(map[string]interface{}); ok {
+		redactMembers(shape, "system", "tools")
+	}
+	redactMembers(line, "hookInfos", "hookErrors", "hookAdditionalContext", "stopReason")
+	// Either policy: the answers are the person's words and the tool's result.
+	if result, ok := line["toolUseResult"].(map[string]interface{}); ok {
+		redactMembers(result, "answers", "annotations")
+	}
+	// Either policy: system messages can contain recaps, file paths and command
+	// echoes, so their content gets the same treatment planContent gets.
+	// Matched on subtype alone: only a system line carries one at the top, and a
+	// re-enrichment raw is the collected fields without the line's type.
+	if line["subtype"] != nil || line["type"] == "system" {
+		redactMembers(line, "content")
+	}
+	// Codex context records keep the actual instruction fields rather than a
+	// complete metadata payload. They can contain prompts, code and paths, so
+	// either configured policy applies to every representation.
+	if payload, ok := line["payload"].(map[string]interface{}); ok {
+		redactMembers(payload, "base_instructions", "developer_instructions", "user_instructions")
+		if mode, ok := payload["collaboration_mode"].(map[string]interface{}); ok {
+			if settings, ok := mode["settings"].(map[string]interface{}); ok {
+				redactMembers(settings, "developer_instructions")
+			}
+		}
+	}
+	message, _ := line["message"].(map[string]interface{})
+	// Native system blobs retain output configuration in the same instruction
+	// payload. Match the role too, as reenrich sends no top-level type.
+	if message != nil && message["role"] == "system" {
+		redactMembers(message, "content", "output_config")
+	}
+	// Either policy, for the recap's reason: the summary that opens a session
+	// continued after compaction restates the earlier conversation, files and
+	// code included.
+	if message != nil && line["type"] == "user" && line["isCompactSummary"] == true {
+		redactMembers(message, "content")
+	}
+	// A tool_result block's output is under "content", which only the prompt walk
+	// names, so it used to leave the machine under the tool-details policy alone.
+	if policy.ToolDetails && message != nil {
+		if blocks, ok := message["content"].([]interface{}); ok {
+			for _, b := range blocks {
+				if block, ok := b.(map[string]interface{}); ok && block["type"] == "tool_result" {
+					redactMembers(block, "content")
+				}
+			}
+		}
+	}
+	// A background task's result comes back to the conversation as a user line
+	// of its own: an Agent's summary, a shell's output path. It is tool output,
+	// so the tool policy takes it too; the prompt walk already does.
+	if policy.ToolDetails && message != nil && line["type"] == "user" {
+		if origin, ok := line["origin"].(map[string]interface{}); ok && origin["kind"] == "task-notification" {
+			redactMembers(message, "content")
+		}
+	}
+	attachment, ok := line["attachment"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	switch attachment["type"] {
+	case "instructions":
+		redactMembers(attachment, "files")
+	case "hook_success", "hook_additional_context", "async_hook_response", "hook_system_message":
+		redactMembers(attachment, "content", "stdout", "stderr", "command", "response")
+	case "queued_command":
+		// What the person typed while the agent was busy -- or, queued the same
+		// way, a background task's result on its way to becoming the user line
+		// above, which the tool policy takes as it takes that line.
+		if policy.UserPrompts || (policy.ToolDetails && attachment["commandMode"] == "task-notification") {
+			redactMembers(attachment, "prompt")
+		}
+	case "plan_file_reference":
+		// Either policy: the plan is the person's request worked over by the
+		// model, and the same plan the ExitPlanMode input carries.
+		redactMembers(attachment, "planContent")
+		if policy.ToolDetails {
+			redactMembers(attachment, "planFilePath")
+		}
+	case "plan_mode":
+		if policy.ToolDetails {
+			redactMembers(attachment, "planFilePath")
+		}
+	case "task_reminder":
+		// Task subjects come from TaskCreate input. Under the prompt policy the
+		// walk already replaces content.
+		if policy.ToolDetails {
+			redactMembers(attachment, "content")
+		}
+	}
+}
+
+// redactMembers replaces the named members that are present. An absent one stays
+// absent: a marker on a field the line never had would say something was withheld
+// that was not there.
+func redactMembers(node map[string]interface{}, keys ...string) {
+	for _, key := range keys {
+		if _, ok := node[key]; ok {
+			node[key] = redactedMarker
+		}
 	}
 }
 

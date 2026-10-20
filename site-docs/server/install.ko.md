@@ -22,7 +22,7 @@ $ docker build -f deploy/Dockerfile --build-arg UPDATE_SIGNING=optional \
 ```
 
 - 첫 번째 이미지: pgmq 확장을 포함한 TimescaleDB
-- 두 번째 이미지: Docker 안에서 대시보드와 `cctraced` 바이너리를 빌드. `UPDATE_SIGNING=optional`은 업데이트 서명 키 없이 빌드. 기본값 `required`는 키가 없으면 실패
+- 두 번째 이미지: Docker 안에서 대시보드와 `cctraced` 바이너리를 빌드. `UPDATE_SIGNING=optional`은 업데이트 서명 키 없이 빌드. 기본값 `required`는 키가 없으면 실패. 서명 없이 빌드한 이미지가 배포하는 클라이언트는 스스로 업데이트하지 않음. 서명 빌드는 [보안 운영](security.md#build-a-signed-server-image) 참고
 - 서버 env 파일에 `IMAGE_TAG` 또는 `DB_IMAGE_TAG`를 지정했다면 정확히 같은 태그로 빌드(`cctrace/cctraced:<IMAGE_TAG>`, `cctrace/timescaledb-pgmq:<DB_IMAGE_TAG>`). Compose는 레지스트리로 대체하지 않음
 
 ## 2. 서버 env 파일 작성
@@ -182,3 +182,4 @@ OS 키체인에 이미 CA가 있어도 지정한다. 키체인만으로 Claude C
 
 - [설정](configuration.md): 서버 env 파일의 모든 설정
 - [운영](operations.md): 로그, 백업, 업그레이드, 보존 기간
+- [보안 운영](security.md): 서명된 클라이언트 업데이트, 서버 정책, 그 키

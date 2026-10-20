@@ -23,6 +23,18 @@ const testKey = "sk-proj-test0123456789abcdefSECRET"
 
 var answerSchema = json.RawMessage(`{"type":"object","additionalProperties":false,"required":["answer"],"properties":{"answer":{"type":"string","maxLength":10}}}`)
 
+func TestBodyUsesExplicitOutputTokenCapWhenSet(t *testing.T) {
+	req := airuntime.RunRequest{MaxOutputTokens: 12_000}
+	body := (&turn{req: req}).body()
+	if got := body["max_output_tokens"]; got != int64(12_000) {
+		t.Fatalf("max_output_tokens = %#v, want 12000", got)
+	}
+	body = (&turn{req: airuntime.RunRequest{}}).body()
+	if _, exists := body["max_output_tokens"]; exists {
+		t.Fatalf("default request unexpectedly set max_output_tokens: %#v", body)
+	}
+}
+
 // fakeAPI is a Responses API stand-in. respond gets the request number
 // (0-based, per path) and the decoded body.
 type fakeAPI struct {

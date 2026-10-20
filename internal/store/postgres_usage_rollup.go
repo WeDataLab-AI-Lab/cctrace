@@ -121,10 +121,11 @@ func refreshUsageHourlyRollups(ctx context.Context, tx pgx.Tx, from *time.Time) 
 	// Writers take turns. Each deletes a range and reinserts it, and two
 	// overlapping collide on the primary key: the second DELETE cannot see rows
 	// the first inserted after its snapshot, so its INSERT fails 23505. The 60s
-	// tail, the 48h window, the boot backfill and an exclusion change all write
-	// here; inside an exclusion change the collision rolled the change back.
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext('usage_hourly_rollups_writers'))`); err != nil {
-		return fmt.Errorf("lock usage hourly rollups: %w", err)
+	// tail, the 48h window, the boot backfill, an exclusion change and step 5 of
+	// the P1t transition all write here; inside an exclusion change the collision
+	// rolled the change back.
+	if err := lockUsageHourlyRollupWriters(ctx, tx); err != nil {
+		return err
 	}
 	if from == nil {
 		if _, err := tx.Exec(ctx, usageHourlyRollupDeleteAllSQL); err != nil {
@@ -141,6 +142,23 @@ func refreshUsageHourlyRollups(ctx context.Context, tx pgx.Tx, from *time.Time) 
 	}
 	if _, err := tx.Exec(ctx, fmt.Sprintf(usageHourlyRollupInsertSQL, "WHERE v.ts >= $1"), start); err != nil {
 		return fmt.Errorf("insert usage hourly rollups: %w", err)
+	}
+	return nil
+}
+
+// usageHourlyRollupWritersLock is the advisory lock key the writers of
+// usage_hourly_rollups take turns on: lockUsageHourlyRollupWriters waits for it,
+// and the queued exclusion rebuild only tries it. One constant, so the two
+// cannot drift apart.
+const usageHourlyRollupWritersLock = "usage_hourly_rollups_writers"
+
+// lockUsageHourlyRollupWriters takes the lock the writers of
+// usage_hourly_rollups take turns on (refreshUsageHourlyRollups says why). It is
+// a transaction-level advisory lock, so a transaction that already holds it is
+// granted it again at once.
+func lockUsageHourlyRollupWriters(ctx context.Context, tx pgx.Tx) error {
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext($1))`, usageHourlyRollupWritersLock); err != nil {
+		return fmt.Errorf("lock usage hourly rollups: %w", err)
 	}
 	return nil
 }
@@ -206,8 +224,14 @@ func (s *PgStore) BackfillUsageHourlyRollups(ctx context.Context) error {
 	return tx.Commit(ctx)
 }
 
-func backfillMarked(ctx context.Context, tx pgx.Tx, name string) (bool, error) {
+// queryRower is what backfillMarked reads through: the caller's transaction, or
+// the pool for a read that needs none.
+type queryRower interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
+func backfillMarked(ctx context.Context, q queryRower, name string) (bool, error) {
 	var done bool
-	err := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_backfills WHERE name = $1)`, name).Scan(&done)
+	err := q.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_backfills WHERE name = $1)`, name).Scan(&done)
 	return done, err
 }

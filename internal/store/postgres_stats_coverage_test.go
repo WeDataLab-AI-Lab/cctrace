@@ -254,8 +254,9 @@ func TestCoverageGapStatsMeasuredRollupMatchesRawAggregation(t *testing.T) {
 // An account excluded after the aggregate was built must leave the measured side
 // immediately, because it leaves the readings side immediately. An estimate
 // whose numerator and denominator disagree about who counts is worse than a slow
-// one, so the account-level exclusions are applied at read time rather than
-// baked into the table.
+// one. The refresh applies the exclusion too, through visible_events, but only to
+// the minutes it rewrites; the minutes stored before the exclusion stay, and the
+// reader's own filter on excluded_accounts is what takes them off at once.
 func TestCoverageMeasuredMinutesAppliesExclusionsAtReadTime(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)

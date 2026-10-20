@@ -1,0 +1,335 @@
+{
+  "owner": {
+    "from": "2026-10-05T00:00:00Z",
+    "to": "2026-10-05T02:00:00Z",
+    "owner_view": true,
+    "sessions": [
+      {
+        "session_id": "fixture-claude",
+        "title": {
+          "source": "first_request",
+          "state": "ok",
+          "text": "real title"
+        },
+        "colors": {
+          "agent": "claude",
+          "components": null,
+          "kinds": null,
+          "model": "real-model",
+          "profile": null,
+          "project": {
+            "hash": "real-project",
+            "name": null
+          },
+          "screens": null,
+          "status": null
+        },
+        "requests": null,
+        "cost": {
+          "source": "none",
+          "usd": null
+        },
+        "facts": "ready",
+        "range": {
+          "end": "2026-10-05T01:00:00Z",
+          "start": "2026-10-05T00:00:00Z"
+        },
+        "segments": [
+          {
+            "start": "2026-10-05T00:00:00Z",
+            "end": "2026-10-05T01:00:00Z",
+            "records": 3,
+            "human_inputs": 2
+          }
+        ],
+        "inputs": {
+          "state": "observed",
+          "items": [
+            {
+              "ts": "2026-10-05T00:10:00Z",
+              "turn_key": "fixture-turn",
+              "preview": {
+                "state": "none",
+                "text": null
+              }
+            }
+          ],
+          "truncated": false
+        },
+        "overview": {
+          "session_id": "fixture-claude",
+          "profile_email": "",
+          "user_id": "",
+          "login_email": "",
+          "account_count": 0,
+          "login_email_inferred": false,
+          "model": "real-model",
+          "agent": "claude",
+          "start_time": "2026-10-05T00:00:00Z",
+          "end_time": "2026-10-05T01:00:00Z",
+          "input_tokens": 42,
+          "output_tokens": 0,
+          "cost_usd": 12.5,
+          "event_count": 0,
+          "has_sync": true,
+          "project_hash": "real-project",
+          "project_name": "",
+          "entrypoint": "",
+          "has_enriched": false
+        }
+      },
+      {
+        "session_id": "fixture-codex-range",
+        "title": {
+          "source": "first_request",
+          "state": "ok",
+          "text": "real title"
+        },
+        "colors": {
+          "agent": "codex",
+          "components": null,
+          "kinds": null,
+          "model": "real-model",
+          "profile": null,
+          "project": {
+            "hash": "real-project",
+            "name": null
+          },
+          "screens": null,
+          "status": null
+        },
+        "requests": null,
+        "cost": {
+          "source": "none",
+          "usd": null
+        },
+        "facts": "ready",
+        "range": {
+          "end": "2026-10-05T01:00:00Z",
+          "start": "2026-10-05T00:00:00Z"
+        },
+        "segments": [],
+        "inputs": {
+          "state": "observed",
+          "items": [],
+          "truncated": false
+        },
+        "overview": {
+          "session_id": "fixture-codex-range",
+          "profile_email": "",
+          "user_id": "",
+          "login_email": "",
+          "account_count": 0,
+          "login_email_inferred": false,
+          "model": "real-model",
+          "agent": "codex",
+          "start_time": "2026-10-05T00:00:00Z",
+          "end_time": "2026-10-05T01:00:00Z",
+          "input_tokens": 42,
+          "output_tokens": 0,
+          "cost_usd": 12.5,
+          "event_count": 0,
+          "has_sync": true,
+          "project_hash": "real-project",
+          "project_name": "",
+          "entrypoint": "",
+          "has_enriched": false
+        }
+      },
+      {
+        "session_id": "fixture-truncated-range",
+        "title": {
+          "source": "first_request",
+          "state": "ok",
+          "text": "real title"
+        },
+        "colors": {
+          "agent": "claude",
+          "components": null,
+          "kinds": null,
+          "model": "real-model",
+          "profile": null,
+          "project": {
+            "hash": "real-project",
+            "name": null
+          },
+          "screens": null,
+          "status": null
+        },
+        "requests": null,
+        "cost": {
+          "source": "none",
+          "usd": null
+        },
+        "facts": "truncated",
+        "range": {
+          "end": "2026-10-05T01:00:00Z",
+          "start": "2026-10-05T00:00:00Z"
+        },
+        "segments": [],
+        "inputs": {
+          "state": "undeterminable",
+          "items": [],
+          "truncated": false
+        },
+        "overview": {
+          "session_id": "fixture-truncated-range",
+          "profile_email": "",
+          "user_id": "",
+          "login_email": "",
+          "account_count": 0,
+          "login_email_inferred": false,
+          "model": "real-model",
+          "agent": "claude",
+          "start_time": "2026-10-05T00:00:00Z",
+          "end_time": "2026-10-05T01:00:00Z",
+          "input_tokens": 42,
+          "output_tokens": 0,
+          "cost_usd": 12.5,
+          "event_count": 0,
+          "has_sync": true,
+          "project_hash": "real-project",
+          "project_name": "",
+          "entrypoint": "",
+          "has_enriched": false
+        }
+      },
+      {
+        "session_id": "fixture-undeterminable",
+        "title": {
+          "source": "first_request",
+          "state": "ok",
+          "text": "real title"
+        },
+        "colors": {
+          "agent": "claude",
+          "components": null,
+          "kinds": null,
+          "model": "real-model",
+          "profile": null,
+          "project": {
+            "hash": "real-project",
+            "name": null
+          },
+          "screens": null,
+          "status": null
+        },
+        "requests": null,
+        "cost": {
+          "source": "none",
+          "usd": null
+        },
+        "facts": "ready",
+        "range": {
+          "end": "2026-10-05T01:00:00Z",
+          "start": "2026-10-05T00:00:00Z"
+        },
+        "segments": [
+          {
+            "start": "2026-10-05T00:00:00Z",
+            "end": "2026-10-05T01:00:00Z",
+            "records": 3,
+            "human_inputs": null
+          }
+        ],
+        "inputs": {
+          "state": "undeterminable",
+          "items": [],
+          "truncated": false
+        },
+        "overview": {
+          "session_id": "fixture-undeterminable",
+          "profile_email": "",
+          "user_id": "",
+          "login_email": "",
+          "account_count": 0,
+          "login_email_inferred": false,
+          "model": "real-model",
+          "agent": "claude",
+          "start_time": "2026-10-05T00:00:00Z",
+          "end_time": "2026-10-05T01:00:00Z",
+          "input_tokens": 42,
+          "output_tokens": 0,
+          "cost_usd": 12.5,
+          "event_count": 0,
+          "has_sync": true,
+          "project_hash": "real-project",
+          "project_name": "",
+          "entrypoint": "",
+          "has_enriched": false
+        }
+      }
+    ]
+  },
+  "admin_mixed": {
+    "from": "2026-10-05T00:00:00Z",
+    "to": "2026-10-05T02:00:00Z",
+    "owner_view": false,
+    "sessions": [
+      {
+        "session_id": "fixture-admin-mixed",
+        "title": {
+          "source": "first_request",
+          "state": "ok",
+          "text": "real title"
+        },
+        "colors": {
+          "agent": "claude",
+          "components": null,
+          "kinds": null,
+          "model": "real-model",
+          "profile": null,
+          "project": {
+            "hash": "real-project",
+            "name": null
+          },
+          "screens": null
+        },
+        "requests": 2,
+        "cost": {
+          "source": "none",
+          "usd": null
+        },
+        "facts": "ready",
+        "range": {
+          "end": "2026-10-05T01:00:00Z",
+          "start": "2026-10-05T00:00:00Z"
+        },
+        "segments": [
+          {
+            "start": "2026-10-05T00:00:00Z",
+            "end": "2026-10-05T01:00:00Z",
+            "records": 3,
+            "human_inputs": 2
+          }
+        ],
+        "inputs": {
+          "state": "observed",
+          "items": [],
+          "truncated": false
+        },
+        "overview": {
+          "session_id": "fixture-admin-mixed",
+          "profile_email": "",
+          "user_id": "",
+          "login_email": "",
+          "account_count": 0,
+          "login_email_inferred": false,
+          "model": "real-model",
+          "agent": "claude",
+          "start_time": "2026-10-05T00:00:00Z",
+          "end_time": "2026-10-05T01:00:00Z",
+          "input_tokens": 42,
+          "output_tokens": 0,
+          "cost_usd": 12.5,
+          "event_count": 0,
+          "has_sync": true,
+          "project_hash": "real-project",
+          "project_name": "",
+          "entrypoint": "",
+          "has_enriched": false
+        }
+      }
+    ]
+  }
+}

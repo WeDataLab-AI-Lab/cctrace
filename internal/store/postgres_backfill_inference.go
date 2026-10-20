@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -291,11 +292,25 @@ func (s *PgStore) InferSessionRecordLoginEmail(ctx context.Context, since time.T
 	if err := lockSessionOverviewSourceMutation(ctx, tx, false); err != nil {
 		return 0, err
 	}
-	updated, ids, err := inferSessionRecordLoginEmailTx(ctx, tx, since)
+	edges, args := inferEdgesFor(since)
+	var sessions []string
+	// Empty session IDs remain eligible for attribution, even though they have
+	// no session facts or claim fences. Do not use querySessionIDs here.
+	if err := tx.QueryRow(ctx, edges+`
+		SELECT COALESCE(array_agg(DISTINCT sr.session_id), '{}')
+		FROM session_records sr
+		JOIN intervals i ON sr.user_id = i.user_id`+inferMatch, args...).Scan(&sessions); err != nil {
+		return 0, err
+	}
+	peers, err := prepareSessionClaimMutation(ctx, tx, sessions)
 	if err != nil {
 		return 0, err
 	}
-	if err := refreshLoginEmailDerivedRows(ctx, tx, ids); err != nil {
+	updated, ids, err := inferSessionRecordLoginEmailTx(ctx, tx, since, sessions)
+	if err != nil {
+		return 0, err
+	}
+	if err := refreshLoginEmailDerivedRowsWithClaimPeers(ctx, tx, ids, peers); err != nil {
 		return 0, err
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -304,13 +319,17 @@ func (s *PgStore) InferSessionRecordLoginEmail(ctx context.Context, since time.T
 	return updated, nil
 }
 
-func inferSessionRecordLoginEmailTx(ctx context.Context, tx pgx.Tx, since time.Time) (int64, []string, error) {
+func inferSessionRecordLoginEmailTx(ctx context.Context, tx pgx.Tx, since time.Time, sessions []string) (int64, []string, error) {
 	edges, args := inferEdgesFor(since)
+	// The next periodic pass picks up new sessions discovered while the fences
+	// were awaited; current predicates and complete intervals are read again.
+	args = append(args, sessions)
 	q := edges + `
 	UPDATE session_records sr
 	SET login_email = ` + inferPickEmail + `, login_email_source = 'inferred'
 	FROM intervals i
-	WHERE sr.user_id = i.user_id` + inferMatch + `
+	WHERE sr.user_id = i.user_id` + inferMatch +
+		fmt.Sprintf(` AND sr.session_id = ANY($%d::text[])`, len(args)) + `
 	RETURNING sr.session_id`
 	return updateLoginEmailRows(ctx, tx, q, args...)
 }

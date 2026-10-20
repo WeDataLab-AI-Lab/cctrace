@@ -185,10 +185,12 @@ func (s *PgStore) loadCoverageInputs(ctx context.Context, email string, from, to
 	// request: measured on a prod snapshot, 757ms of aggregation becomes an 8ms
 	// range read.
 	//
-	// The two account-level exclusions are applied HERE rather than baked into the
-	// table, so an account excluded today leaves the measured side at the same
-	// instant it leaves the readings side. The table is small enough (14,366 rows
-	// for 28 days) that the anti-joins cost nothing.
+	// The refresh already left out what visible_events excludes, all three account
+	// keys, but only from the minutes it has rewritten since. Filtering
+	// excluded_accounts here again takes an address excluded today off the measured
+	// side at the same instant it leaves the readings side, the minutes stored
+	// before its exclusion included (coverageMinutesInsertSQL). The table is small
+	// enough (14,366 rows for 28 days) that the anti-join costs nothing.
 	measuredSQL := `
 		SELECT login_email, minute, chart_tokens, cost_usd
 		FROM coverage_measured_minutes

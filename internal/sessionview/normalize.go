@@ -37,6 +37,13 @@ func Summarize(rec *store.SessionRecord) Summary {
 	return Summary{Kind: v.Kind, ToolCallCount: len(v.ToolCalls)}
 }
 
+// AlwaysHiddenForConversation is deliberately narrower than Normalize: it only
+// identifies the canonical raw-independent record-type whitelist. Unknown
+// agents and record types are retained.
+func AlwaysHiddenForConversation(rec *store.SessionRecord) bool {
+	return rec != nil && store.AlwaysHiddenConversationRecord(rec.Agent, rec.RecordType)
+}
+
 func view(rec *store.SessionRecord) View {
 	switch rec.Agent {
 	case "", "claude":

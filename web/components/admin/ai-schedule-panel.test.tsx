@@ -22,6 +22,7 @@ const adminAI: AdminAIResponse = {
   model: '',
   settings: null,
   schedule: { enabled: true, enabled_source: 'admin', weekday: 1, hour: 6, minute: 0, when_source: 'admin', tz: 'Asia/Seoul' },
+  run_policy: { consent_required: false, consent_required_source: 'default', max_concurrent: 2, max_concurrent_source: 'default', max_concurrent_default: 2, max_concurrent_max: 10 },
   usage_this_week: { runs: 0, failed: 0, input_tokens: 0, output_tokens: 0 },
 };
 

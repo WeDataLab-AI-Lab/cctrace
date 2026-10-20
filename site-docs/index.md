@@ -37,7 +37,8 @@ The server and the database run as two containers from `deploy/docker-compose.ym
 
 - It does not send telemetry to a third party. Besides the server you configure, the client queries Anthropic's usage API with the local Claude Code login to read plan limits, and the server downloads OpenAI's public pricing pages. See [Privacy](reference/privacy.md). The weekly AI report can send data to an outside AI provider once an admin enables it; it is under active development and not documented here.
 - It does not come as a hosted service or pre-built binaries. You build the client and the server images from source.
-- Clients built from this repository do not update themselves. The build links an empty update public key, so the client refuses automatic updates; you rebuild to upgrade.
+- By default, clients built from this repository do not update themselves. The build links an empty update public key, so the client refuses automatic updates; you rebuild to upgrade. A server image signed with your own keys serves clients that do update themselves; see [Security operations](server/security.md).
+- Clients built from this repository without an update or policy public key do not apply server policies either. A policy that moves clients to new server addresses is verified with those keys, so a client built with your own key applies it. See [Sync daemon](client/sync.md#server-policy), and [Security operations](server/security.md#sign-a-server-policy) for signing one.
 
 The dashboard stores conversation content. Decide retention and redaction before you connect a team: see [Privacy](reference/privacy.md).
 

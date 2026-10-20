@@ -150,6 +150,17 @@ else
   echo "        설치하면 self-update 가 'update public key is not configured' 로 영구 실패합니다."
   exit 1
 fi
+
+# 정책 공개키도 봅니다. 빠져도 자동 업데이트는 되고 다음 업데이트로 채워지므로
+# 경고만 합니다. 그때까지 정책 키로만 서명한 서버 정책은 적용되지 않습니다.
+POLICY_PUB=$(make -s print-policy-public-key)
+if [ -z "$POLICY_PUB" ]; then
+  echo "[INFO] 이 체크아웃에는 정책 공개키가 선언되어 있지 않습니다."
+elif grep -aqF "$POLICY_PUB" /tmp/cctrace-new; then
+  echo "Policy key OK"
+else
+  echo "[WARN] 정책 공개키가 없는 바이너리입니다. 정책 키로만 서명한 서버 정책을 받지 못합니다."
+fi
 ```
 
 ### Step 4: 바이너리 설치

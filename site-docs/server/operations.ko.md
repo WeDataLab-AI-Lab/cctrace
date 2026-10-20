@@ -1,6 +1,6 @@
 # 서버 운영
 
-로그 위치, DB 백업과 복원, 업그레이드, 데이터 보존 기간.
+로그 위치, DB 백업과 복원, 업그레이드, 서버 정책 배포, 데이터 보존 기간.
 
 모든 명령은 저장소 루트에서 실행하고 [설치](install.md)와 같은 compose 인자를 쓴다.
 
@@ -28,6 +28,7 @@ HTTPS 오버레이를 쓴다면 기본 파일 뒤에 `-f deploy/docker-compose.t
 | `[cctraced] database ready` | 마이그레이션 완료 |
 | `[cctraced] initial administrator setup token: ...` | 아직 사용자 없음. [첫 관리자](../dashboard/first-admin.md) 참조 |
 | `[cctraced] notice: session_records (conversation content) has no retention policy ...` | 대화 내용 보존 기간이 정해지지 않음. [데이터 보존](#data-retention) 참조 |
+| `[api] client policy report refused: ...` | 서버가 정책 대상 보고를 HTTP 400으로 거부. 콜론 뒤 문구가 이유이며 대개 필드 이름을 가리킴. [서버 정책](#server-policy) 참조 |
 
 ## 백업과 복원 {#backup-and-restore}
 
@@ -82,6 +83,8 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
     $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml ps
     ```
 
+2단계의 빌드는 서명하지 않는다. 클라이언트가 스스로 업데이트하게 하려면 [보안 운영](security.md#build-a-signed-server-image)대로, 직전 릴리스보다 높은 `VERSION`으로 빌드한다.
+
 `cctraced`는 시작할 때 포트를 열기 전에 스키마 마이그레이션을 적용한다. 별도 마이그레이션 명령은 없다. 마이그레이션 중에는 컨테이너가 `Up`이지만 `unhealthy`로 표시되고 응답하지 않는다. 무엇을 기다리는지는 로그에 나온다.
 
 이전 이미지를 남겨 두려면 새 이미지를 새 태그로 빌드하고 서버 env 파일의 `IMAGE_TAG`(새 DB 이미지라면 `DB_IMAGE_TAG`도)를 바꾼다. 마이그레이션은 정방향만 있다. 이전 버전과 그 데이터로 돌아가려면 업그레이드 전에 받은 백업을 복원한다.
@@ -91,6 +94,28 @@ DB의 `shm_size`처럼 컨테이너 생성 시점에만 적용되는 compose 설
 ```console
 $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --force-recreate timescaledb
 ```
+
+## 서버 정책 {#server-policy}
+
+서버는 서명된 정책을 선택한 클라이언트에 전달할 수 있다. 예를 들어 프로필을 HTTPS 주소로 옮기는 정책이다. 업데이트 공개키 또는 정책 공개키를 링크한 클라이언트만 이를 읽는다. 이 저장소에서 업데이트 공개키도 정책 공개키도 넘기지 않고 빌드한 클라이언트는 빈 공개키를 링크하므로([개요](../index.md) 참고) 이 절은 그 클라이언트에 거의 영향이 없다. 정책을 요청하지 않으며 `cctrace config policy apply`는 "policy public key is not configured"로 시작하는 오류로 끝난다. 이런 클라이언트에서 손으로 실행한 `cctrace config policy apply`도 프로필이 로그인되어 있으면 그 실패에 대한 보고를 보낸다([개인정보](../reference/privacy.md#what-is-collected) 참고). 서명된 정책 파일을 만드는 방법은 [보안 운영](security.md#sign-a-server-policy)에 있다.
+
+서버는 파일을 전달만 하며 서명도 유효 기간도 검사하지 않는다. 검증은 각 클라이언트가 한다.
+
+서버 env 파일의 `CCTRACE_SERVER_POLICY_FILE`에 `cctraced` 컨테이너에서 보이는 파일 경로를 지정한 뒤 컨테이너를 다시 만든다. 배포된 compose 파일은 이 변수를 컨테이너에 전달하지만 파일을 컨테이너에 마운트하지는 않으므로, 컨테이너에서 파일이 보이게 하는 일은 직접 해야 한다. 파일 하나가 아니라 그 파일이 든 디렉터리를 마운트한다. 파일 하나만 마운트하면 이름 바꾸기로 교체해도 컨테이너에는 옛 파일이 계속 보인다. 변수가 비어 있으면 서버는 정책을 배포하지 않는다.
+
+클라이언트는 `/api/client-config-policy`로 설치 식별자와 프로필 이름을 쿼리에 담아 토큰 없이 요청한다. 서버는 요청마다 파일을 열므로 파일을 바꿔도 재시작이 필요 없다. 응답은 다음과 같다.
+
+| 상황 | 응답 |
+|------|------|
+| 변수가 비어 있음 | 204, 본문 없음 |
+| 파일의 대상 목록에 요청한 설치 식별자와 프로필이 있음 | 200, 파일 내용 |
+| 파일의 대상 목록에 없음 | 204 |
+| 파일을 열 수 없거나, 256 KiB를 넘거나, 형식이 올바른 정책이 아님 | 503 `policy unavailable` |
+| GET이 아닌 요청 | 405 |
+
+읽거나 해석할 수 없는 파일은 고칠 때까지 503으로 답하므로 교체 파일은 한 번에 제자리에 둔다. 예를 들어 마운트한 디렉터리 안에서 완성된 파일을 이름 바꾸기로 기존 파일 위에 덮어쓴다.
+
+키를 링크한 클라이언트는 정책을 확인할 때마다 서버에 보고도 보낸다. 보고에 담기는 내용과 저장 위치는 [개인정보](../reference/privacy.md#what-is-collected)에 있다. 서버는 거부한 보고를 로그에 남긴다. [로그](#logs) 참고.
 
 ## 데이터 보존 {#data-retention}
 

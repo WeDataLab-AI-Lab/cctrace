@@ -40,6 +40,20 @@ func offerCodexSync(ir *inputReader, p *profile.Profile, profileName string) {
 // runCodexPatch updates only the Codex-related parts of an existing profile.
 // It does NOT prompt for password or re-authenticate; reuses the stored AuthToken.
 func runCodexPatch(p *profile.Profile, isNamed bool, profileName string) error {
+	if p.HomesVersion == 1 {
+		if len(p.ProviderHomes("codex", "")) == 0 {
+			return fmt.Errorf("enroll a Codex home through profile onboard before patching")
+		}
+		if err := checkStoredCACertFile(p); err != nil {
+			return err
+		}
+		p.SetCollectionEnabled("codex", true)
+		if err := saveProfile(p, profileName); err != nil {
+			return err
+		}
+		return p.WithDefinitionFence(func() error { return applyConfirmedCodexHomes(p) })
+	}
+
 	codexDir := codexlog.DefaultCodexDir()
 	if _, err := os.Stat(codexDir); err != nil {
 		fmt.Println()

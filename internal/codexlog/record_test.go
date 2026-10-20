@@ -51,8 +51,8 @@ func TestParseNewFormat_TurnContext(t *testing.T) {
 
 	rec := parseNewFormatLine(line, state)
 
-	if rec != nil {
-		t.Errorf("turn_context should not produce a record, got %+v", rec)
+	if rec == nil || rec.RecordType != "context" || !strings.Contains(string(rec.Raw), `"effort":"medium"`) {
+		t.Errorf("turn_context should preserve execution settings, got %+v", rec)
 	}
 	if state.model != "gpt-5" {
 		t.Errorf("model = %q, want gpt-5", state.model)

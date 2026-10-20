@@ -244,6 +244,28 @@ func (s *OmoSyncer) noteScanProgress(filePath string, offset, newOffset int64, r
 	}
 }
 
+// skipExisting records a file the state has never seen at size, its end when it
+// was looked at, so that what was on disk then is not collected: the skip of a
+// first run. The skipped bytes are noted in the state, where `cctrace status` can
+// still read them after the log has rotated. The caller saves the state.
+func (s *OmoSyncer) skipExisting(ctx context.Context, filePath string, size int64) error {
+	meta, err := omolog.ScanMetadataContext(ctx, filePath, size)
+	if err != nil {
+		return err
+	}
+	s.state.SetOffsetWithMetadata(filePath, size, meta.CWD, "")
+	if size > 0 {
+		// See the Codex-side note: the log copy of this fact rotates
+		// away, the state copy is what `cctrace status` can still
+		// read later.
+		s.state.Files[filePath].SkippedAtFirstSync = size
+	}
+	if size > 0 {
+		log.Printf("[omo-syncer] %s: skipped (pre-existing at first sync -- earlier content is not collected) bytes=%d", filePath, size)
+	}
+	return nil
+}
+
 func (s *OmoSyncer) syncFile(ctx context.Context, filePath string, firstRun bool) (int, error) {
 	// On first run (new state), skip existing files to EOF. omo has no
 	// SessionStart-style lifecycle hook, so enabling the integration is
@@ -254,23 +276,13 @@ func (s *OmoSyncer) syncFile(ctx context.Context, filePath string, firstRun bool
 	// surface the skip.
 	if !s.state.HasFile(filePath) && firstRun {
 		fi, err := os.Stat(filePath)
-		if err == nil {
-			meta, err := omolog.ScanMetadataContext(ctx, filePath, fi.Size())
-			if err != nil {
-				return 0, err
-			}
-			s.state.SetOffsetWithMetadata(filePath, fi.Size(), meta.CWD, "")
-			if fi.Size() > 0 {
-				// See the Codex-side note: the log copy of this fact rotates
-				// away, the state copy is what `cctrace status` can still
-				// read later.
-				s.state.Files[filePath].SkippedAtFirstSync = fi.Size()
-			}
-			_ = s.state.Save()
-			if fi.Size() > 0 {
-				log.Printf("[omo-syncer] %s: skipped (pre-existing at first sync -- earlier content is not collected) bytes=%d", filePath, fi.Size())
-			}
+		if err != nil {
+			return 0, nil
 		}
+		if err := s.skipExisting(ctx, filePath, fi.Size()); err != nil {
+			return 0, err
+		}
+		_ = s.state.Save()
 		return 0, nil
 	}
 

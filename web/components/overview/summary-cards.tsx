@@ -23,18 +23,20 @@ const SummaryCards = ({
   return (
     <div className="grid grid-cols-4 gap-4">
       <SummaryCard
+        compact
         title={isToken ? 'Total Tokens' : 'Total Cost'}
         value={isToken ? fmt(totalTokens) : `$${totalCost.toFixed(2)}`}
         subtitle={subtitle}
         note="API 사용량 기반 추정치이며, 구독 요금제 사용시 별도 금액이 사전결제됩니다."
       />
       <SummaryCard
+        compact
         title={isToken ? 'Total Cost' : 'Total Tokens'}
         value={isToken ? `$${totalCost.toFixed(2)}` : fmt(totalTokens)}
         subtitle={subtitle}
       />
-      <SummaryCard title="Active Users" value={activeUsers} subtitle={subtitle} />
-      <SummaryCard title="Total Events" value={totalEvents} subtitle={subtitle} />
+      <SummaryCard compact title="Active Users" value={activeUsers} subtitle={subtitle} />
+      <SummaryCard compact title="Total Events" value={totalEvents} subtitle={subtitle} />
     </div>
   );
 };

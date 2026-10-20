@@ -101,6 +101,40 @@ func TestResolveCodexScanDirsUnionsEnvAndProfile(t *testing.T) {
 	}
 }
 
+func TestResolveCodexScanDirsIncludesOnlyExplicitCodexHomeSeparately(t *testing.T) {
+	base := t.TempDir()
+	envHome := t.TempDir()
+	profileHome := t.TempDir()
+	codexHome, err := profile.NormalizeCodexHome(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("CODEX_CONFIG_DIR", base)
+	t.Setenv("CODEX_HOME", envHome)
+	p := profile.NewDefault()
+	p.CodexHome = codexHome
+	p.Options.CodexDirs = []string{profileHome}
+	var buf bytes.Buffer
+	got := resolveCodexScanDirs(&buf, p)
+	want := []string{base, envHome, profileHome, codexHome}
+	if len(got) != len(want) {
+		t.Fatalf("resolveCodexScanDirs = %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("resolveCodexScanDirs = %v, want %v", got, want)
+		}
+	}
+	if buf.Len() != 0 {
+		t.Fatalf("unexpected warning output: %q", buf.String())
+	}
+	p.CodexHome = ""
+	got = resolveCodexScanDirs(&buf, p)
+	if len(got) != 3 || got[2] != profileHome {
+		t.Fatalf("empty explicit CodexHome changed scan roots: %v", got)
+	}
+}
+
 func TestResolveCodexScanDirsWarnsOnUnscannableDir(t *testing.T) {
 	base := t.TempDir()
 	t.Setenv("CODEX_CONFIG_DIR", base)
@@ -132,7 +166,7 @@ func TestPrintCodexDryRunListsHomesAndFileCounts(t *testing.T) {
 	p.Options.CodexDirs = []string{extra}
 
 	var buf bytes.Buffer
-	printCodexDryRun(&buf, p)
+	printCodexDryRun(&buf, p, nil)
 	out := buf.String()
 	if !strings.Contains(out, base+" (0 session files)") {
 		t.Fatalf("dry-run output = %q, want base home with 0 files", out)
@@ -152,7 +186,7 @@ func TestPrintCodexDryRunReportsDisabledCodexSync(t *testing.T) {
 	p.Options.CodexDirs = []string{t.TempDir()}
 
 	var buf bytes.Buffer
-	printCodexDryRun(&buf, p)
+	printCodexDryRun(&buf, p, nil)
 	if !strings.Contains(buf.String(), "Codex sync is disabled") {
 		t.Fatalf("dry-run output = %q, want disabled notice", buf.String())
 	}

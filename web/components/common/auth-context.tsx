@@ -1,9 +1,11 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { useIsRestoring, useQueryClient } from '@tanstack/react-query';
 import { fetchSetupStatus, fetchMe, login as apiLogin, logout as apiLogout, refreshToken, setAuthFailureHandler } from '@/lib/api';
 import type { AuthUser } from '@/lib/types';
+import { readSessionsReturnState } from '@/lib/sessions-return-state';
+import { clearReadingMemory } from '@/lib/conversation-reading';
 import {
   reconcileWeeklyQueriesAfterAuth,
   WEEKLY_QUERY_STORAGE_KEY,
@@ -42,6 +44,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [needsSetup, setNeedsSetup] = useState(false);
   const queryClient = useQueryClient();
   const isRestoring = useIsRestoring();
+  const previousOwner = useRef<number | null | undefined>(undefined);
+  const previousRoleKey = useRef<string | null | undefined>(undefined);
 
   const handleLogin = async (email: string, password: string) => {
     const result = await apiLogin(email, password);
@@ -119,6 +123,25 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!(error instanceof DOMException)) throw error;
     }
   }, [isLoading, isRestoring, queryClient, user?.id]);
+
+  /** Return positions and trace cache belong to one authenticated user and never survive logout. */
+  useEffect(() => {
+    if (isLoading) return;
+    readSessionsReturnState(user?.id ?? null);
+    const roleKey = user?.role ?? null;
+    const previousRole = previousRoleKey.current;
+    previousRoleKey.current = roleKey;
+    // A role change keeps the user id, but admin and owner views authorize differently.
+    if (previousOwner.current !== undefined && (previousOwner.current !== (user?.id ?? null) || (previousRole !== undefined && previousRole !== roleKey))) {
+      clearReadingMemory();
+      queryClient.removeQueries({ queryKey: ['session-records'] });
+      queryClient.removeQueries({ queryKey: ['session-overview'] });
+      queryClient.removeQueries({ queryKey: ['conversation-window'] });
+      queryClient.removeQueries({ queryKey: ['session-inspection'] });
+    }
+    previousOwner.current = user?.id ?? null;
+    queryClient.removeQueries({ predicate: query => query.queryKey[0] === 'session-trace' && query.queryKey[1] !== user?.id });
+  }, [isLoading, queryClient, user?.id]);
 
   return (
     <AuthContext.Provider

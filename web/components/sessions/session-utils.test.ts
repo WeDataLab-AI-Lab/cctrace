@@ -120,6 +120,14 @@ describe('AssembledNode.key', () => {
 });
 
 describe('buildConversation', () => {
+  it('keeps the exact collected source file for message and tool inspection', () => {
+    const items = buildConversation([
+      userRec('2026-08-10T00:00:01Z', 'read this', { source_file: 'main.jsonl' }),
+      toolRec('2026-08-10T00:00:02Z', 'tool-1', { source_file: 'agent.jsonl' }),
+    ]);
+    expect(items.map(item => item.sourceFile)).toEqual(['main.jsonl', 'agent.jsonl']);
+  });
+
   it('pairs an assistant tool call with its result and carries the call id', () => {
     const items = buildConversation([
       toolRec('2026-08-10T00:00:01Z', 'tu1', { uuid: 'u1' }),

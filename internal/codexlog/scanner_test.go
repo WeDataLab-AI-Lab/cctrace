@@ -151,6 +151,7 @@ func TestScanFile_ForkedSessionSkipsInheritedHistory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 2 {
 		t.Fatalf("records = %d, want child message and usage only", len(recs))
 	}
@@ -185,6 +186,7 @@ func TestScanFile_LegacyForkWithoutCopiedHistoryKeepsChildRecords(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 2 {
 		t.Fatalf("records = %d, want child message and usage", len(recs))
 	}
@@ -217,6 +219,7 @@ func TestScanFile_LegacyForkWithoutCopiedHistoryAcrossIncrementalScans(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 0 {
 		t.Fatalf("initial records = %d, want 0", len(recs))
 	}
@@ -237,6 +240,7 @@ func TestScanFile_LegacyForkWithoutCopiedHistoryAcrossIncrementalScans(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 2 {
 		t.Fatalf("incremental records = %d, want child message and usage", len(recs))
 	}
@@ -269,6 +273,7 @@ func TestScanFile_ForkedSessionPreservesBoundaryAcrossIncrementalScans(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 0 {
 		t.Fatalf("inherited records = %d, want 0", len(recs))
 	}
@@ -287,6 +292,7 @@ func TestScanFile_ForkedSessionPreservesBoundaryAcrossIncrementalScans(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 1 || recs[0].RecordType != "usage" {
 		t.Fatalf("incremental records = %+v, want one child usage", recs)
 	}
@@ -315,6 +321,7 @@ func TestScanFile_NestedForkSkipsInheritedHistoryUntilGrandchildBoundary(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 2 {
 		t.Fatalf("records = %d, want grandchild message and usage", len(recs))
 	}
@@ -351,6 +358,7 @@ func TestScanFile_NoCopyForkWithEmbeddedParentMetaKeepsChildRecords(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 2 {
 		t.Fatalf("records = %d, want child message and usage", len(recs))
 	}
@@ -382,6 +390,7 @@ func TestScanFile_NoCopyForkStartingWithAgentMessageKeepsChildRecords(t *testing
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 2 {
 		t.Fatalf("records = %d, want child message and usage", len(recs))
 	}
@@ -406,6 +415,7 @@ func TestScanFile_NoCopyForkAcrossIncrementalScans(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 0 {
 		t.Fatalf("initial records = %d, want 0", len(recs))
 	}
@@ -425,6 +435,7 @@ func TestScanFile_NoCopyForkAcrossIncrementalScans(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 2 {
 		t.Fatalf("incremental records = %d, want child message and usage", len(recs))
 	}
@@ -448,6 +459,7 @@ func TestScanFile_SubagentWithoutForkKeepsUsage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	recs = transcriptAndUsage(recs)
 	if len(recs) != 1 || recs[0].RecordType != "usage" {
 		t.Fatalf("records = %+v, want one usage record", recs)
 	}

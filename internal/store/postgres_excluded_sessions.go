@@ -94,8 +94,20 @@ func (s *PgStore) recomputeExcludedSessionsTx(ctx context.Context, tx pgx.Tx, em
 	}
 	// Account exclusion changes visibility rather than source rows. Rebuild in this
 	// transaction so the overview fast path changes atomically with excluded_sessions.
+	// The facts of the same sessions are recomputed from the rows still visible
+	// (p1b-design §5.2): the ones rebuilt below, or after a full rebuild every
+	// session with facts and every session already queued, whose first
+	// computation may be under way (rebuildAllLoginEmailDerivedRows says why).
 	if full {
 		if err := rebuildAllSessionOverviewRollups(ctx, tx); err != nil {
+			return nil, err
+		}
+		computed, err := querySessionIDs(ctx, tx, `SELECT session_id FROM session_analysis_facts
+			UNION SELECT session_id FROM session_fact_dirty`)
+		if err != nil {
+			return nil, err
+		}
+		if err := markSessionFactsDirty(ctx, tx, computed, nil, dirtyExclusion); err != nil {
 			return nil, err
 		}
 		return linked, nil
@@ -110,6 +122,9 @@ func (s *PgStore) recomputeExcludedSessionsTx(ctx context.Context, tx pgx.Tx, em
 	}
 	affected = append(affected, symmetricDifference(before, after)...)
 	if err := replaceSessionOverviewRollups(ctx, tx, affected); err != nil {
+		return nil, err
+	}
+	if err := markSessionFactsDirty(ctx, tx, affected, nil, dirtyExclusion); err != nil {
 		return nil, err
 	}
 	return linked, nil
@@ -181,12 +196,19 @@ func symmetricDifference(a, b []string) []string {
 // a "ts > watermark" query would never see it and an excluded account's session would
 // leak permanently. id is assigned at insert time (BIGSERIAL), so a replayed row
 // always gets a fresh id above the watermark regardless of its ts.
+//
+// It takes the shared source lock first, as applyExclusionChange does and for
+// the same reason: the sessions it newly excludes are queued for session
+// analysis at the end.
 func (s *PgStore) RefreshExcludedSessionsIncremental(ctx context.Context) error {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
+	if err := lockSessionOverviewSourceMutation(ctx, tx, false); err != nil {
+		return err
+	}
 
 	var lastID int64
 	err = tx.QueryRow(ctx, `SELECT last_event_id FROM excluded_sessions_refresh_state WHERE id`).Scan(&lastID)
@@ -240,6 +262,9 @@ func (s *PgStore) RefreshExcludedSessionsIncremental(ctx context.Context) error 
 		return err
 	}
 	if err := refreshSessionOverviewRollups(ctx, tx, newlyExcluded); err != nil {
+		return err
+	}
+	if err := markSessionFactsDirty(ctx, tx, newlyExcluded, nil, dirtyExclusion); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)

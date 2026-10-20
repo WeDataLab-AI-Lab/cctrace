@@ -63,7 +63,7 @@ jobs:
       - name: Verify version injection
         run: |
           mkdir -p dist
-          go build -ldflags "-X main.version=$(git describe --tags --always 2>/dev/null || echo dev-ci)" -o dist/cctrace ./cmd/cctrace
+          go build -ldflags "-X main.version=$(git describe --tags --match 'v[0-9]*' --always 2>/dev/null || echo dev-ci)" -o dist/cctrace ./cmd/cctrace
           VERSION=$(./dist/cctrace --version 2>&1)
           echo "Built version: $VERSION"
           echo "$VERSION" | grep -v " dev$" || (echo "ERROR: version injection failed, got 'dev'" && exit 1)
@@ -84,4 +84,10 @@ jobs:
       # test-integration 과 같은 300s 로 맞춘다. 같은 스위트에 같은 상한이고,
       # 통과하는 run 의 청구 시간은 바뀌지 않는다(상한이지 대기가 아니다).
       - name: Unit Tests
-        run: go test -count=1 -timeout 300s ./internal/... ./cmd/...
+        shell: bash
+        env:
+          CCTRACE_TEST_PROFILE_FIXTURES: "1"
+        run: |
+          set -o pipefail
+          mkdir -p artifacts
+          go test -json -count=1 -timeout 300s ./internal/... ./cmd/... | tee artifacts/unit-tests.jsonl

@@ -470,6 +470,9 @@ func (t *turn) create(ctx context.Context) (*apiResponse, error) {
 		"model":    t.model,
 		"messages": t.messages,
 	}
+	if t.req.MaxOutputTokens > 0 {
+		body["max_tokens"] = t.req.MaxOutputTokens
+	}
 	if len(t.req.Tools) > 0 {
 		tools := make([]map[string]any, 0, len(t.req.Tools))
 		for _, tool := range t.req.Tools {
@@ -522,11 +525,15 @@ func (t *turn) send(ctx context.Context, body map[string]any) (*apiResponse, err
 	}
 	var resp apiResponse
 	if err := json.Unmarshal(raw, &resp); err != nil {
-		limit := len(raw)
-		if limit > 500 {
-			limit = 500
+		if airuntime.HasSensitiveInput(t.runCtx) {
+			t.r.cfg.Logger.Warn("response could not be decoded", "error", err, "raw", "[provider response omitted for sensitive input]")
+		} else {
+			limit := len(raw)
+			if limit > 500 {
+				limit = 500
+			}
+			t.r.cfg.Logger.Warn("response could not be decoded", "error", err, "raw", string(raw[:limit]))
 		}
-		t.r.cfg.Logger.Warn("response could not be decoded", "error", err, "raw", string(raw[:limit]))
 		return nil, fmt.Errorf("%w: decode response: %v", airuntime.ErrProtocol, err)
 	}
 	return &resp, nil
@@ -578,7 +585,11 @@ func (r *Runtime) do(ctx context.Context, key, method, path string, body any) ([
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		r.cfg.Logger.Warn("request rejected", "method", method, "path", path, "status", resp.StatusCode, "body", loggedBody(raw, key))
+		bodyLog := loggedBody(raw, key)
+		if airuntime.HasSensitiveInput(ctx) {
+			bodyLog = "[provider response omitted for sensitive input]"
+		}
+		r.cfg.Logger.Warn("request rejected", "method", method, "path", path, "status", resp.StatusCode, "body", bodyLog)
 		// The body is kept, bounded, because a 404 means two different things:
 		// this provider has no such model, or the base URL points somewhere with
 		// no chat/completions at all. Only the body tells them apart.

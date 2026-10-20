@@ -6,6 +6,9 @@ import (
 	"os"
 	"time"
 
+	"cctrace/internal/localdaemon"
+	"cctrace/internal/profile"
+
 	"github.com/spf13/cobra"
 )
 
@@ -52,6 +55,11 @@ func killCmd() *cobra.Command {
 // that the daemon that took it is still alive, so the pid is only trusted while
 // the lock says the process behind it exists.
 func runKill(profileName string) error {
+	if running, err := localdaemon.Running(profile.DefaultDir()); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("check local daemon ownership: %w", err)
+	} else if running {
+		return errors.New("one local daemon owns all profiles; use 'cctrace sync --stop --profile NAME' for a job or 'cctrace sync --stop' for the whole daemon")
+	}
 	if profileName == "" {
 		profileName = os.Getenv("CCTRACE_PROFILE")
 	}

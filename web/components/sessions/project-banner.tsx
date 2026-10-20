@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { usePersistedState } from '@/lib/use-persisted-state';
 import { projectIdentityKey, projectIdentityLabel } from '@/lib/project-identity';
 import type { Project, SessionOverview } from '@/lib/types';
+import type { SessionClassification } from '@/lib/session-analysis-types';
 import { POLL_NORMAL } from '@/lib/query-config';
 import { fmt } from './session-utils';
 import { PROJECT_TREND_COLLAPSED_KEY, projectTrendView } from './project-trend';
@@ -16,22 +17,26 @@ import { PROJECT_TREND_COLLAPSED_KEY, projectTrendView } from './project-trend';
 interface ProjectBannerProps {
   selectedProject: string;
   selectedAccount: string;
+  userId?: number;
   projects: Project[];
   filtered: SessionOverview[];
   assembled: boolean;
   source?: string;
   agent?: string;
+  classification?: SessionClassification;
 }
 
 interface ProjectBannerRangeQueryInput {
   selectedProject: string;
   selectedAccount: string;
+  userId?: number;
   projectHashes: readonly string[];
   since: string;
   until?: string;
   assembled: boolean;
   source?: string;
   agent?: string;
+  classification?: SessionClassification;
 }
 
 const dateFmt = (d: Date): string => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -49,9 +54,11 @@ const projectBannerRangeQuery = (scope: ProjectBannerRangeQueryInput) => ({
     'project-sessions-range',
     scope.selectedProject,
     scope.selectedAccount,
+    scope.userId ?? null,
     scope.projectHashes.join(','),
     scope.source ?? '',
     scope.agent ?? '',
+    scope.classification ?? '',
     scope.assembled,
     scope.since,
     scope.until ?? '',
@@ -65,10 +72,11 @@ const projectBannerRangeQuery = (scope: ProjectBannerRangeQueryInput) => ({
     assembled: scope.assembled,
     source: scope.source || undefined,
     agent: scope.agent || undefined,
+    classification: scope.classification,
   },
 });
 
-const ProjectBanner = ({ selectedProject, selectedAccount, projects, filtered, assembled, source, agent }: ProjectBannerProps) => {
+const ProjectBanner = ({ selectedProject, selectedAccount, userId, projects, filtered, assembled, source, agent, classification }: ProjectBannerProps) => {
   // Collapsed by default. Picking a project is usually a step toward finding a
   // session, not toward reading a cost chart, and the chart pushed the list down on
   // every selection. Collapsed it also costs nothing: the range query below is gated
@@ -88,12 +96,14 @@ const ProjectBanner = ({ selectedProject, selectedAccount, projects, filtered, a
   const rangeQuery = projectBannerRangeQuery({
     selectedProject,
     selectedAccount,
+    userId,
     projectHashes,
     since: selectedSince,
     until: selectedUntil,
     assembled,
     source,
     agent,
+    classification,
   });
   const { data: selectedSessions = [] } = useQuery<SessionOverview[]>({
     queryKey: rangeQuery.queryKey,

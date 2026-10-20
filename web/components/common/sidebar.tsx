@@ -58,7 +58,9 @@ const navItems = [
   { href: '/settings', label: 'Settings', icon: Settings, group: 'SYSTEM' },
 ];
 
-const Sidebar = () => {
+interface SidebarProps { collapsed?: boolean }
+
+const Sidebar = ({ collapsed = false }: SidebarProps) => {
   const pathname = usePathname();
   const normalized = pathname.replace(/\/+$/, '') || '/';
   const { showLogoMark } = useAppearance();
@@ -90,11 +92,13 @@ const Sidebar = () => {
   }, [pathname]);
 
   return (
-    <aside className="hidden w-[248px] min-w-[248px] min-h-screen bg-surface border-r border-border flex-col md:flex">
+    <aside id="app-menu" aria-label="앱 메뉴" data-collapsed={collapsed} className={cn('hidden min-h-screen bg-surface border-r border-border flex-col md:flex', collapsed ? 'w-16 min-w-16' : 'w-[248px] min-w-[248px]')}>
       <Link
         href="/"
+        aria-label="cctrace · 필터 초기화"
+        title={collapsed ? 'cctrace · 필터 초기화' : undefined}
         onClick={handleLogoClick}
-        className="block px-4 py-[18px] hover:bg-surface-sunk transition-colors"
+        className={cn('py-[18px] hover:bg-surface-sunk transition-colors', collapsed ? 'flex justify-center px-2' : 'block px-4')}
       >
         {/* No divider under the lockup: the name and the nav below it are one
             block, and a rule there cut the sidebar into two headers.
@@ -142,17 +146,17 @@ const Sidebar = () => {
             measurement, and a number invented here would read as measured. Check
             it on screen and re-measure if the mark reads low. */}
         <span className="flex w-fit items-center gap-0.5 [-webkit-mask-image:linear-gradient(to_top_right,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.90)_100%)] [mask-image:linear-gradient(to_top_right,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.90)_100%)]">
-          {showLogoMark && <CctraceIcon size={52} className="translate-y-[2px]" />}
-          <span>
-            <span className="block text-[20px] font-semibold leading-none text-ink tracking-[-0.02em]">cctrace</span>
-            <span className="mt-[3px] block text-[10px] font-semibold uppercase leading-[1.1] tracking-[0.09em] text-ink-3">
+          {showLogoMark && <CctraceIcon size={collapsed ? 32 : 52} className="translate-y-[2px]" />}
+          <span className={collapsed && showLogoMark ? 'sr-only' : undefined}>
+            <span className="block text-[20px] font-semibold leading-none text-ink tracking-[-0.02em]">{collapsed && !showLogoMark ? 'cc' : 'cctrace'}</span>
+            <span className={cn('mt-[3px] block text-[10px] font-semibold uppercase leading-[1.1] tracking-[0.09em] text-ink-3', collapsed && 'sr-only')}>
               Analytics Engine
             </span>
           </span>
         </span>
       </Link>
 
-      <nav className="flex flex-col gap-1.5 px-4 pt-3.5">
+      <nav className={cn('flex flex-col gap-1.5 pt-3.5', collapsed ? 'px-2' : 'px-4')}>
         {navItems.filter((i) => !('adminOnly' in i) || isAdmin).map(({ href, label, icon: Icon, group, ...item }, index, visible) => {
           const active = normalized === href;
           const locked = passwordLocked && href !== '/settings';
@@ -164,6 +168,7 @@ const Sidebar = () => {
                   className={cn(
                     'text-[11px] font-semibold text-ink-3 tracking-[0.05em] uppercase mb-1 px-3',
                     index === 0 ? '' : 'mt-6',
+                    collapsed && 'sr-only',
                   )}
                 >
                   {group}
@@ -172,17 +177,21 @@ const Sidebar = () => {
               {locked ? (
                 <span
                   aria-disabled="true"
+                  aria-label={collapsed ? label : undefined}
                   title="Change your temporary password to open this page"
-                  className="relative flex cursor-not-allowed items-center gap-3 rounded-md px-3 py-3 text-[13px] text-ink-3"
+                  className={cn('relative flex cursor-not-allowed items-center gap-3 rounded-md py-3 text-[13px] text-ink-3', collapsed ? 'justify-center px-0' : 'px-3')}
                 >
                   <Icon size={18} />
-                  {label}
+                  <span className={collapsed ? 'sr-only' : undefined}>{label}</span>
                 </span>
               ) : (
                 <Link
                   href={href}
+                  aria-label={collapsed ? label : undefined}
+                  title={collapsed ? label : undefined}
                   className={cn(
-                    'relative flex items-center gap-3 px-3 py-3 rounded-md text-[13px] transition-colors',
+                    'relative flex items-center gap-3 py-3 rounded-md text-[13px] transition-colors',
+                    collapsed ? 'justify-center px-0' : 'px-3',
                     active
                       ? 'bg-brand-soft text-brand font-medium'
                       : 'text-ink-2 hover:bg-surface-sunk',
@@ -192,10 +201,10 @@ const Sidebar = () => {
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2px] rounded-full bg-brand" />
                   )}
                   <Icon size={18} />
-                  {label}
+                  <span className={collapsed ? 'sr-only' : undefined}>{label}</span>
                 </Link>
               )}
-              {'children' in item && item.children && active && (
+              {'children' in item && item.children && active && !collapsed && (
                 <div className="ml-5 mt-1 border-l border-border pl-4">
                   {item.children.map((child) => {
                     const childActive = activeHash === child.href;
@@ -225,7 +234,7 @@ const Sidebar = () => {
         })}
       </nav>
 
-      <div className="mt-auto px-4 py-3 text-[11px] text-ink-3">
+      <div className={cn('mt-auto px-4 py-3 text-[11px] text-ink-3', collapsed && 'sr-only')}>
         {appVersion ? `cctrace ${appVersion}` : 'cctrace'}
       </div>
     </aside>

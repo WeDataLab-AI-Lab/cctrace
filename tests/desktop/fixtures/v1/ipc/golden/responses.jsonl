@@ -1,0 +1,3 @@
+{"version":1,"kind":"response","id":"gold-hello","result":{"protocol_version":1,"self_update":false,"capabilities":{"fixture_only":true,"progress":false,"cancellation":false}}}
+{"version":1,"kind":"response","id":"gold-status","result":{"mode":"fixture","sync":{"state":"disabled"}}}
+{"version":1,"kind":"response","id":"gold-update","result":{"owner":"app","self_update":false,"state":"delegated"}}

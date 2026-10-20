@@ -6,16 +6,26 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // PgStore implements Store with PostgreSQL/TimescaleDB.
 type PgStore struct {
-	pool       *pgxpool.Pool
-	classifier TaskClassifier
+	pool               *pgxpool.Pool
+	classifier         TaskClassifier
+	tracePoolOnce      sync.Once
+	tracePool          *pgxpool.Pool
+	tracePoolErr       error
+	traceWakeOnce      sync.Once
+	traceWake          chan struct{}
+	turnContextKeyOnce sync.Once
+	turnContextKey     [32]byte
+	turnContextKeyErr  error
 
 	// How Migrate behaves when something else holds the lock it needs. Fields
 	// rather than constants so the test that reproduces #613 does not have to
@@ -25,6 +35,10 @@ type PgStore struct {
 	migrateLockRetryDelay time.Duration
 	migrateProgressEvery  time.Duration
 	migrateLockWaitBudget time.Duration
+
+	// What BackfillSessionRecordMessageIDs has walked in this process, across the
+	// calls a caller retries it with, for the line logged when the walk completes.
+	messageIDWalk messageIDWalk
 }
 
 // The lock budget for boot migrations, split into a short wait and many retries.
@@ -94,6 +108,9 @@ func (s *PgStore) Pool() *pgxpool.Pool {
 }
 
 func (s *PgStore) Close() error {
+	if s.tracePool != nil {
+		s.tracePool.Close()
+	}
 	s.pool.Close()
 	return nil
 }
@@ -101,6 +118,29 @@ func (s *PgStore) Close() error {
 func (s *PgStore) Ping(ctx context.Context) error {
 	return s.pool.Ping(ctx)
 }
+
+// plannedPerCall is the exec mode of a read PostgreSQL should plan for each
+// call's own arguments. A read passes it ahead of its arguments: the
+// date-filtered session list, the usage aggregates, the session summaries, and
+// the project statements of WeeklyInsights and OrganizationInsights.
+//
+// In pgx's default mode a statement is prepared once per connection. PostgreSQL
+// plans its first five executions for their arguments, and from the sixth it
+// may use one generic plan instead, built for no period and no identity. For
+// these reads that plan is much slower. In the P1t-8 rehearsal the calls after
+// the fifth of the first three ran 1.2 to 8.9 times slower than the first five,
+// on both builds (ListSessionSummaries 1.05 s, then 8.6 to 9.3 s); locally the
+// generic plan of the date-filtered list is serial where the planned one is
+// parallel.
+//
+// DescribeExec is not unprepared. On every call pgx parses and describes the
+// unnamed statement, then binds and executes it in a second round trip. A
+// statement parsed anew has no executions behind it, so each call is planned
+// with its arguments. That costs the planning, 3 to 25 ms against reads of 0.1
+// to 5 s, and the one extra round trip. The describe is also what keeps the
+// results in the binary format the default mode decodes, so no value comes back
+// in another shape: Exec, the mode without it, asks for text.
+const plannedPerCall = pgx.QueryExecModeDescribeExec
 
 // Migrate creates tables and hypertables. Safe to call multiple times.
 //
@@ -170,7 +210,7 @@ func (s *PgStore) Migrate(ctx context.Context) error {
 	}
 	spent := &lockWait{budget: budget}
 
-	for _, group := range [][]string{dropDependentViews, migrations, dependentViews} {
+	for _, group := range [][]string{dropDependentViews, migrations, sessionP4FactMigrations, sessionProcessIOMigrations, sessionTraceMigrations, dependentViews} {
 		for _, ddl := range group {
 			if err := s.execMigration(ctx, conn, ddl, timeout, attempts, retryDelay, spent, selfPID); err != nil {
 				return err

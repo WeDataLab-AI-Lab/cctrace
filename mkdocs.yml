@@ -53,9 +53,11 @@ plugins:
             Install: 설치
             Configuration: 설정
             Operations: 운영
+            Security: 보안
             Connect: 연결
             Profiles: 프로필
             Sync daemon: 동기화 데몬
+            Local analysis: 로컬 분석
             Reset and uninstall: 초기화와 제거
             GJC and OMO: GJC와 OMO
             First admin: 첫 관리자
@@ -96,11 +98,13 @@ nav:
       - Install: server/install.md
       - Configuration: server/configuration.md
       - Operations: server/operations.md
+      - Security: server/security.md
   - Client:
       - Install: client/install.md
       - Connect: client/setup.md
       - Profiles: client/profiles.md
       - Sync daemon: client/sync.md
+      - Local analysis: client/local.md
       - Reset and uninstall: client/uninstall.md
   - Agents:
       - Claude Code: agents/claude-code.md

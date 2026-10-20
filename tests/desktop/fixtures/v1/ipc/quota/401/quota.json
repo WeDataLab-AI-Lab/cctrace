@@ -1,0 +1,14 @@
+{
+  "claude": {
+    "state": "unavailable",
+    "last_success_at": null,
+    "windows": [],
+    "error": {"code": "authentication_required", "message": "provider authorization is required"}
+  },
+  "codex": {
+    "state": "unavailable",
+    "last_success_at": null,
+    "windows": [],
+    "error": {"code": "authentication_required", "message": "provider authorization is required"}
+  }
+}

@@ -6,9 +6,9 @@ import { EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { listObservedBillingAccounts, removeSelfExcludedBillingAccount, selfExcludeBillingAccount } from '@/lib/api';
 import { selfExclusionState } from '@/lib/self-exclusion';
-import { keepKnownRebuildPending, usageRebuildPollInterval } from '@/lib/usage-rebuild';
+import { keepKnownRebuildPending, USAGE_REBUILD_NOTE, usageRebuildPollInterval } from '@/lib/usage-rebuild';
 import { useRefreshWhenRebuilt } from '@/lib/use-refresh-when-rebuilt';
-import { UsageRebuildNote } from '@/components/common/usage-rebuild-note';
+import { CatchingUpNote } from '@/components/common/catching-up-note';
 import type { SelfExclusionState } from '@/lib/self-exclusion';
 import type { ExclusionList, ObservedBillingAccount } from '@/lib/types';
 
@@ -112,7 +112,7 @@ const BillingSelfExclusion = () => {
       </header>
 
       {accountsQuery.isLoading && <p className="text-[12px] text-ink-3">Loading…</p>}
-      <UsageRebuildNote pending={accountsQuery.data?.usage_rebuild_pending} className="mb-4" />
+      <CatchingUpNote pending={accountsQuery.data?.usage_rebuild_pending} message={USAGE_REBUILD_NOTE} className="mb-4" />
       {confirming && (
         <div className="mb-4 rounded-lg border border-warning/40 bg-warning-soft p-4" role="alert">
           <p className="text-[13px] font-medium text-warning-strong">Exclude “{confirming.account_id}”?</p>

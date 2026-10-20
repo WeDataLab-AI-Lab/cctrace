@@ -201,6 +201,7 @@ func TestEventCopySource_NextValues(t *testing.T) {
 			ToolName:     "Read",
 			ToolSuccess:  &success,
 			Attrs:        map[string]interface{}{"key": "val"},
+			Envelope:     json.RawMessage(`{"trace_id":"source-trace"}`),
 		},
 		{
 			Ts:        time.Date(2025, 3, 2, 12, 0, 0, 0, time.UTC),
@@ -219,9 +220,8 @@ func TestEventCopySource_NextValues(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Values() error at index %d: %v", i, err)
 		}
-		// 25 columns in eventCopySource (added agent, billing_provider)
-		if len(vals) != 25 {
-			t.Fatalf("expected 25 values, got %d", len(vals))
+		if len(vals) != 26 {
+			t.Fatalf("expected 26 values, got %d", len(vals))
 		}
 		// Check first few fields
 		if vals[0] != e.Ts {
@@ -233,7 +233,7 @@ func TestEventCopySource_NextValues(t *testing.T) {
 		if vals[2] != e.SessionID {
 			t.Errorf("row %d: session_id mismatch", i)
 		}
-		// Last value is JSON-encoded attrs
+		// Derived attributes and the optional original envelope stay separate.
 		attrsJSON, ok := vals[22].([]byte)
 		if !ok {
 			t.Fatalf("row %d: expected []byte for attrs, got %T", i, vals[22])
@@ -244,6 +244,13 @@ func TestEventCopySource_NextValues(t *testing.T) {
 			if decoded["key"] != "val" {
 				t.Errorf("row %d: attrs mismatch: %v", i, decoded)
 			}
+		}
+		if len(e.Envelope) == 0 {
+			if vals[25] != nil {
+				t.Errorf("row %d: absent envelope should be SQL NULL", i)
+			}
+		} else if raw, ok := vals[25].([]byte); !ok || string(raw) != string(e.Envelope) {
+			t.Errorf("row %d: source envelope mismatch: %v", i, vals[25])
 		}
 	}
 

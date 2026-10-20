@@ -86,44 +86,96 @@ func rootDir(t *testing.T) string {
 	return filepath.Dir(dir)
 }
 
-// setupHome creates an isolated HOME directory and returns cleanup info.
-// initAnswers builds the stdin for `cctrace init`, one answer per prompt in
-// prompt order.
-//
-// It exists in one place because a prompt that is added — or, as happened here,
-// made required — shifts every later answer by one, and the shift is silent: the
-// wrong answers still produce a plausible profile. Five tests fed a blank line
-// for the OTEL endpoint after it stopped accepting one. Init rejected the blank,
-// re-asked, and from there "testuser" was stored as the OTEL endpoint, the
-// password as the user id, and the final "n" landed on the sync prompt — turning
-// sync off in a test named for sync being on.
-//
-// Only one assertion was specific enough to notice. The other four kept passing
-// while exercising a configuration nobody meant to test.
-//
-// The other half of the trap: some prompts are conditional. The PATH-install
-// question is skipped when the binary is already reachable, and the gjc/omo
-// questions appear only when ~/.gjc and ~/.omo exist. Feeding an answer for a
-// question that is not asked shifts everything after it just as surely as
-// missing one -- an extra line is harmless only when nothing follows it.
-//
-// So this helper covers the prompts a plain `init` always asks, in order, and
-// stops. A test that expects conditional prompts appends its own answers and
-// must decide, for its own environment, whether the PATH question is among them.
+// initAnswers enrolls the two marked Claude homes from setupInitHome. Sorted
+// discovery lists .claude before .claude-personal. Transmission and usage
+// consent are explicit and independent; neither implies collection consent.
+// The read-token offer is always asked after commit. PATH is conditional and
+// last; gjc/omo/Codex are absent in this fixture.
 func initAnswers(syncEndpoint, otelEndpoint, userID, password, enableSync, installPath string) string {
 	return strings.Join([]string{
+		"all",         // explicitly select discovered homes
+		"allow", "no", // default: transmission allowed, usage lookup off
+		"exclude", "yes", // personal: transmission excluded, usage lookup on
+		"yes", // confirm complete per-home summary
 		syncEndpoint,
 		otelEndpoint,
 		userID,
 		password,
 		enableSync,
+		"yes", // confirm shared home/server commit
+		"n",   // decline the separate read token
 		installPath,
 	}, "\n") + "\n"
+}
+
+const fixtureSettings = "{\"env\":{\"FIXTURE_KEEP\":\"original\"},\"fixturePreference\":true}\n"
+
+// Provider markers are required for discovery. Both homes and their existing
+// settings are private and contain no credentials. No provider process is run.
+func setupInitHome(t *testing.T) (string, string) {
+	t.Helper()
+	home, bin := setupHome(t)
+	for _, name := range []string{".claude", ".claude-personal"} {
+		dir := filepath.Join(home, name)
+		if err := os.Mkdir(dir, 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(fixtureSettings), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return home, bin
+}
+
+// Check effective collection separately from the legacy collector fence. A
+// personal membership stays visible and quota-enrolled even with collection off.
+func assertInitConsent(t *testing.T, home string, collecting bool) {
+	t.Helper()
+	for _, name := range []string{"default", "personal"} {
+		path := filepath.Join(home, ".cctrace", "profile.json")
+		if name != "default" {
+			path = filepath.Join(home, ".cctrace", "profiles", name, "profile.json")
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var p profile.Profile
+		if err := json.Unmarshal(data, &p); err != nil {
+			t.Fatal(err)
+		}
+		wantCollection := name == "default" && collecting
+		if p.HomesVersion != 1 || len(p.Homes) != 1 || p.CollectionEnabled("claude") != wantCollection || p.CollectionEnabled("codex") {
+			t.Fatalf("%s effective consent mismatch: %+v", name, p)
+		}
+		wantPolicy, wantHome := "allow", ".claude"
+		if name == "personal" {
+			wantPolicy, wantHome = "exclude", ".claude-personal"
+		}
+		canonical, err := filepath.EvalSymlinks(filepath.Join(home, wantHome))
+		if err != nil {
+			t.Fatal(err)
+		}
+		h := p.Homes[0]
+		if h.Provider != "claude" || h.Home != canonical || h.Transmission != wantPolicy || h.QuotaEnabled != (name == "personal") {
+			t.Fatalf("%s home decision mismatch: %+v", name, h)
+		}
+		if p.Options.SyncEnabled || p.Options.CodexSyncEnabled || !p.Options.CodexSyncDeclined {
+			t.Fatalf("%s legacy collector fence missing: %+v", name, p.Options)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(home, ".claude-personal", "settings.json"))
+	if err != nil || string(data) != fixtureSettings {
+		t.Fatalf("excluded provider settings changed: %q, %v", data, err)
+	}
 }
 
 func setupHome(t *testing.T) (home string, bin string) {
 	t.Helper()
 	home = t.TempDir()
+	if err := os.Chmod(home, 0700); err != nil {
+		t.Fatal(err)
+	}
 	bin = buildBinary(t)
 	return
 }
@@ -173,7 +225,7 @@ func startAuthServer(t *testing.T, name, email, team string) *httptest.Server {
 }
 
 func TestInitCreatesValidJSON(t *testing.T) {
-	home, bin := setupHome(t)
+	home, bin := setupInitHome(t)
 
 	ts := startAuthServer(t, "Test User", "test@example.com", "engineering")
 	// Prompts: sync endpoint, otel endpoint (default), userID, password, sync toggle (y), decline PATH install
@@ -182,6 +234,8 @@ func TestInitCreatesValidJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("init failed: %v\noutput: %s", err, out)
 	}
+
+	assertInitConsent(t, home, true)
 
 	// Verify profile.json exists and is valid
 	profilePath := filepath.Join(home, ".cctrace", "profile.json")
@@ -214,11 +268,11 @@ func TestInitEnvShIsSourceable(t *testing.T) {
 		t.Skip("bash not available on Windows")
 	}
 
-	home, bin := setupHome(t)
+	home, bin := setupInitHome(t)
 
 	ts := startAuthServer(t, "Test User", "test@example.com", "engineering")
-	// sync no, decline PATH install
-	input := initAnswers(ts.URL, ts.URL, "testuser", "testpass", "n", "n")
+	// collection yes to generate telemetry, decline PATH install
+	input := initAnswers(ts.URL, ts.URL, "testuser", "testpass", "y", "n")
 	out, err := runCctrace(t, bin, home, input, "init")
 	if err != nil {
 		t.Fatalf("init failed: %v\noutput: %s", err, out)
@@ -244,7 +298,7 @@ func TestInitEnvShIsSourceable(t *testing.T) {
 }
 
 func TestReInitUsesExistingDefaults(t *testing.T) {
-	home, bin := setupHome(t)
+	home, bin := setupInitHome(t)
 
 	// First init — mock server stays alive via t.Cleanup (registered by startAuthServer)
 	ts := startAuthServer(t, "Original Name", "original@test.com", "alpha")
@@ -256,17 +310,24 @@ func TestReInitUsesExistingDefaults(t *testing.T) {
 		t.Fatal("first init failed:", err)
 	}
 
-	// Re-init: accept defaults for sync/otel, re-enter userID (no default), password, sync no, decline PATH install
-	input2 := "\n\noriguser\ntestpass\nn\nn\n"
+	// No Codex install exists in the fixture: menu 2 is full re-setup. Accept
+	// endpoint defaults, then explicitly review homes and re-enter credentials.
+	input2 := "2\n" + initAnswers("", "", "origuser", "testpass", "n", "n")
 	_, err = runCctrace(t, bin, home, input2, "init")
 	if err != nil {
 		t.Fatal("re-init failed:", err)
 	}
 
+	assertInitConsent(t, home, false)
+
 	// Verify profile unchanged
 	data, _ := os.ReadFile(filepath.Join(home, ".cctrace", "profile.json"))
 	var p profile.Profile
 	json.Unmarshal(data, &p)
+
+	if p.User.ID != "origuser" || p.Server.SyncEndpoint != ts.URL || p.Server.Endpoint != ts.URL {
+		t.Fatalf("full re-init did not accept existing endpoint defaults and new user ID: id=%q sync=%q otel=%q", p.User.ID, p.Server.SyncEndpoint, p.Server.Endpoint)
+	}
 
 	if p.User.Name != "Original Name" {
 		t.Errorf("expected name preserved as 'Original Name', got %q", p.User.Name)
@@ -280,7 +341,7 @@ func TestReInitUsesExistingDefaults(t *testing.T) {
 }
 
 func TestInitWritesSettingsJSON(t *testing.T) {
-	home, bin := setupHome(t)
+	home, bin := setupInitHome(t)
 
 	ts := startAuthServer(t, "Test User", "test@example.com", "eng")
 	// sync yes, decline PATH install
@@ -289,6 +350,8 @@ func TestInitWritesSettingsJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("init failed: %v\noutput: %s", err, out)
 	}
+
+	assertInitConsent(t, home, true)
 
 	// Verify settings.json has OTEL env vars and sync hooks
 	settingsPath := filepath.Join(home, ".claude", "settings.json")
@@ -318,6 +381,10 @@ func TestInitWritesSettingsJSON(t *testing.T) {
 			"assertion below this is testing a configuration nobody asked for", got, ts.URL)
 	}
 
+	if env["FIXTURE_KEEP"] != "original" || settings["fixturePreference"] != true {
+		t.Fatalf("existing provider settings were not preserved: %s", data)
+	}
+
 	// Sync hooks should be present (sync was enabled)
 	content := string(data)
 	if !strings.Contains(content, "cctrace sync") {
@@ -326,7 +393,7 @@ func TestInitWritesSettingsJSON(t *testing.T) {
 }
 
 func TestInitDeclineShell(t *testing.T) {
-	home, bin := setupHome(t)
+	home, bin := setupInitHome(t)
 
 	// Create shell profile
 	shellProfile := filepath.Join(home, ".zshrc")
@@ -340,7 +407,9 @@ func TestInitDeclineShell(t *testing.T) {
 		t.Fatalf("init failed: %v\noutput: %s", err, out)
 	}
 
-	// settings.json should exist (init writes OTEL env to Claude settings)
+	assertInitConsent(t, home, false)
+
+	// Collection off preserves the existing settings; it does not configure exporters.
 	settingsPath := filepath.Join(home, ".claude", "settings.json")
 	if _, err := os.Stat(settingsPath); err != nil {
 		t.Error("settings.json should exist after init")
@@ -354,18 +423,24 @@ func TestInitDeclineShell(t *testing.T) {
 
 	// Sync hooks should NOT be present (sync was declined)
 	settingsData, _ := os.ReadFile(settingsPath)
+	if string(settingsData) != fixtureSettings {
+		t.Fatalf("stopped provider settings changed: %s", settingsData)
+	}
+	if string(data) != "# my zshrc\n" {
+		t.Fatalf("declined shell profile changed: %s", data)
+	}
 	if strings.Contains(string(settingsData), "cctrace sync") {
 		t.Error("settings.json should NOT contain cctrace sync hooks when sync declined")
 	}
 }
 
 func TestEnvUrlEncoding(t *testing.T) {
-	home, bin := setupHome(t)
+	home, bin := setupInitHome(t)
 
 	// Name and team with spaces come from server response → get URL-encoded in OTEL_RESOURCE_ATTRIBUTES
 	ts := startAuthServer(t, "Alice Doe", "alice@example.com", "platform team")
-	// sync no, decline PATH install
-	input := initAnswers(ts.URL, ts.URL, "alice", "testpass", "n", "n")
+	// collection yes to generate telemetry, decline PATH install
+	input := initAnswers(ts.URL, ts.URL, "alice", "testpass", "y", "n")
 	out, err := runCctrace(t, bin, home, input, "init")
 	if err != nil {
 		t.Fatalf("init failed: %v\noutput: %s", err, out)

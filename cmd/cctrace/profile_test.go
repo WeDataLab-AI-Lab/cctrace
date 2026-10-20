@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"cctrace/internal/desktop"
 	"cctrace/internal/profile"
 )
 
@@ -61,48 +63,31 @@ func runProfileCmd(t *testing.T, args ...string) (string, error) {
 	return buf.String(), err
 }
 
-// TestProfileAdd_CreatesProfile verifies that add creates profile.json with correct claude_config_dir.
-func TestProfileAdd_CreatesProfile(t *testing.T) {
-	home := setupTestHome(t)
-	claudeHome := filepath.Join(home, ".claude-test")
-	if err := os.MkdirAll(claudeHome, 0700); err != nil {
-		t.Fatalf("mkdir claude home: %v", err)
-	}
-
-	_, err := runProfileCmd(t, "add", "myprofile", "--home", claudeHome)
+// Existing legacy definitions remain readable with their original server identity.
+func seedLegacyNamedProfile(t *testing.T, name, home string) {
+	t.Helper()
+	p, err := profile.Load()
 	if err != nil {
-		t.Fatalf("profile add: %v", err)
+		t.Fatal(err)
 	}
-
-	p, err := profile.LoadNamed("myprofile")
-	if err != nil {
-		t.Fatalf("load named profile: %v", err)
-	}
-	if p.ClaudeConfigDir != claudeHome {
-		t.Errorf("ClaudeConfigDir = %q, want %q", p.ClaudeConfigDir, claudeHome)
-	}
-	if p.User.Email != "testuser@example.com" {
-		t.Errorf("user.email = %q, want %q", p.User.Email, "testuser@example.com")
+	p.ClaudeConfigDir = home
+	if err = profile.SaveNamed(p, name); err != nil {
+		t.Fatal(err)
 	}
 }
-
-// TestProfileAdd_InheritsDefaultServer verifies server settings are copied from default profile.
-func TestProfileAdd_InheritsDefaultServer(t *testing.T) {
+func TestLegacyNamedProfileRemainsReadable(t *testing.T) {
 	home := setupTestHome(t)
-	claudeHome := filepath.Join(home, ".claude-test")
-	_ = os.MkdirAll(claudeHome, 0700)
-
-	_, err := runProfileCmd(t, "add", "myprofile", "--home", claudeHome)
+	source := filepath.Join(home, ".claude-existing")
+	if err := os.Mkdir(source, 0700); err != nil {
+		t.Fatal(err)
+	}
+	seedLegacyNamedProfile(t, "existing", source)
+	p, err := profile.LoadNamed("existing")
 	if err != nil {
-		t.Fatalf("profile add: %v", err)
+		t.Fatal(err)
 	}
-
-	p, _ := profile.LoadNamed("myprofile")
-	if p.Server.AuthToken != "cct_test" {
-		t.Errorf("AuthToken = %q, want %q", p.Server.AuthToken, "cct_test")
-	}
-	if p.Server.SyncEndpoint != "http://localhost:18080" {
-		t.Errorf("SyncEndpoint = %q", p.Server.SyncEndpoint)
+	if p.ClaudeConfigDir != source || p.User.Email != "testuser@example.com" || p.Server.AuthToken != "cct_test" || p.Server.SyncEndpoint != "http://localhost:18080" {
+		t.Fatal("legacy identity/server compatibility changed")
 	}
 }
 
@@ -132,9 +117,7 @@ func TestProfileAdd_RejectsDuplicate(t *testing.T) {
 	claudeHome := filepath.Join(home, ".claude-a")
 	_ = os.MkdirAll(claudeHome, 0700)
 
-	if _, err := runProfileCmd(t, "add", "dup", "--home", claudeHome); err != nil {
-		t.Fatalf("first add: %v", err)
-	}
+	seedLegacyNamedProfile(t, "dup", claudeHome)
 	_, err := runProfileCmd(t, "add", "dup", "--home", claudeHome)
 	if err == nil {
 		t.Fatal("expected error adding duplicate profile name")
@@ -147,9 +130,7 @@ func TestProfileAdd_RejectsConflictingHome(t *testing.T) {
 	claudeHome := filepath.Join(home, ".claude-shared")
 	_ = os.MkdirAll(claudeHome, 0700)
 
-	if _, err := runProfileCmd(t, "add", "first", "--home", claudeHome); err != nil {
-		t.Fatalf("first add: %v", err)
-	}
+	seedLegacyNamedProfile(t, "first", claudeHome)
 	_, err := runProfileCmd(t, "add", "second", "--home", claudeHome)
 	if err == nil {
 		t.Fatal("expected error: two profiles with same Claude home")
@@ -184,9 +165,7 @@ func TestProfileList_ShowsAddedProfile(t *testing.T) {
 	claudeHome := filepath.Join(home, ".claude-list")
 	_ = os.MkdirAll(claudeHome, 0700)
 
-	if _, err := runProfileCmd(t, "add", "listtest", "--home", claudeHome); err != nil {
-		t.Fatalf("profile add: %v", err)
-	}
+	seedLegacyNamedProfile(t, "listtest", claudeHome)
 
 	out, err := runProfileCmd(t, "list")
 	if err != nil {
@@ -219,9 +198,7 @@ func TestProfileRemove_DeletesProfile(t *testing.T) {
 	claudeHome := filepath.Join(home, ".claude-rm")
 	_ = os.MkdirAll(claudeHome, 0700)
 
-	if _, err := runProfileCmd(t, "add", "rmtest", "--home", claudeHome); err != nil {
-		t.Fatalf("profile add: %v", err)
-	}
+	seedLegacyNamedProfile(t, "rmtest", claudeHome)
 	if _, err := runProfileCmd(t, "remove", "--force", "rmtest"); err != nil {
 		t.Fatalf("profile remove: %v", err)
 	}
@@ -234,15 +211,13 @@ func TestProfileRemove_DeletesProfile(t *testing.T) {
 	}
 }
 
-// TestProfileAdd_WritesValidJSON verifies the written profile.json is valid JSON with expected fields.
-func TestProfileAdd_WritesValidJSON(t *testing.T) {
+// Existing stored legacy JSON retains its readable fields and identity.
+func TestLegacyNamedProfile_WritesValidJSON(t *testing.T) {
 	home := setupTestHome(t)
 	claudeHome := filepath.Join(home, ".claude-json")
 	_ = os.MkdirAll(claudeHome, 0700)
 
-	if _, err := runProfileCmd(t, "add", "jsontest", "--home", claudeHome); err != nil {
-		t.Fatalf("profile add: %v", err)
-	}
+	seedLegacyNamedProfile(t, "jsontest", claudeHome)
 
 	path, _ := profile.NamedPath("jsontest")
 	data, err := os.ReadFile(path)
@@ -259,5 +234,127 @@ func TestProfileAdd_WritesValidJSON(t *testing.T) {
 	}
 	if raw["version"] != float64(1) {
 		t.Errorf("version = %v, want 1", raw["version"])
+	}
+}
+
+func TestProfileRegisterAndEditShareDisabledRegistry(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	claude := filepath.Join(home, "provider-claude")
+	codex := filepath.Join(home, "provider-codex")
+	for _, dir := range []string{claude, codex} {
+		if err := os.Mkdir(dir, 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	sentinel := filepath.Join(claude, "settings.json")
+	if err := os.WriteFile(sentinel, []byte(`{"fixture":true}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runProfileCmd(t, "register", "gui", "--home", claude, "--codex-home", codex); err != nil {
+		t.Fatal(err)
+	}
+	entry, err := (profile.Registry{Root: profile.DefaultDir()}).Load("gui")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if entry.ID != "named:gui" || entry.CollectionState != "registered" || entry.Profile.Options.SyncEnabled || entry.Profile.CodexHome != codex {
+		t.Fatal("registration changed collection semantics")
+	}
+	next := filepath.Join(home, "next-claude")
+	if err := os.Mkdir(next, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runProfileCmd(t, "edit", "gui", "--home", next, "--revision", entry.Revision); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runProfileCmd(t, "edit", "gui", "--home", claude, "--revision", entry.Revision); err == nil {
+		t.Fatal("stale CLI edit accepted")
+	}
+	out, err := runProfileCmd(t, "list")
+	if err != nil || !strings.Contains(out, "named:gui") || !strings.Contains(out, next) || !strings.Contains(out, "registered") {
+		t.Fatalf("shared list=%q err=%v", out, err)
+	}
+	after, _ := os.ReadFile(sentinel)
+	if string(after) != `{"fixture":true}` {
+		t.Fatal("registration or edit modified provider settings")
+	}
+}
+
+func TestProfileCommandsAndDesktopShareBothHomeEdits(t *testing.T) {
+	home := setupTestHome(t)
+	claude := filepath.Join(home, "claude-fixture")
+	codex := filepath.Join(home, "codex-fixture")
+	nextClaude := filepath.Join(home, "claude-next")
+	nextCodex := filepath.Join(home, "codex-next")
+	for _, dir := range []string{claude, codex, nextClaude, nextCodex} {
+		if err := os.Mkdir(dir, 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	marker := filepath.Join(claude, "settings.json")
+	if err := os.WriteFile(marker, []byte(`{"fixture":true}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runProfileCmd(t, "register", "cli", "--home", claude, "--codex-home", codex); err != nil {
+		t.Fatal(err)
+	}
+	svc, err := desktop.New(desktop.Config{AppSupportRoot: filepath.Join(home, "app-support"), ProfileRoot: profile.DefaultDir()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := func(op string, payload any) desktop.Response {
+		raw, err := json.Marshal(payload)
+		if err != nil {
+			t.Fatal(err)
+		}
+		response := svc.Handle(context.Background(), desktop.Request{Version: 1, Kind: "request", ID: "fixture", Op: op, Payload: raw})
+		if response.Error != nil {
+			t.Fatal(response.Error)
+		}
+		return response
+	}
+	list := request("profiles.list", map[string]any{})
+	raw, _ := json.Marshal(list.Result)
+	var mappings struct {
+		Profiles []struct {
+			Name     string `json:"name"`
+			ID       string `json:"id"`
+			Revision string `json:"revision"`
+			Claude   string `json:"claude_home"`
+			Codex    string `json:"codex_home"`
+		}
+	}
+	if err := json.Unmarshal(raw, &mappings); err != nil {
+		t.Fatal(err)
+	}
+	if len(mappings.Profiles) != 2 || mappings.Profiles[1].ID != "named:cli" || mappings.Profiles[1].Claude != claude || mappings.Profiles[1].Codex != codex {
+		t.Fatal("actual CLI registration missing from desktop")
+	}
+	request("profiles.add", map[string]any{"name": "gui", "claude_home": claude, "codex_home": codex})
+	output, err := runProfileCmd(t, "list")
+	if err != nil || !strings.Contains(output, "named:gui collection=registered") || !strings.Contains(output, "id=default") {
+		t.Fatalf("actual CLI list=%s err=%v", output, err)
+	}
+	if _, err := runProfileCmd(t, "edit", "cli", "--home", nextClaude, "--codex-home", nextCodex, "--revision", mappings.Profiles[1].Revision); err != nil {
+		t.Fatal(err)
+	}
+	list = request("profiles.list", map[string]any{})
+	raw, _ = json.Marshal(list.Result)
+	if err := json.Unmarshal(raw, &mappings); err != nil {
+		t.Fatal(err)
+	}
+	if mappings.Profiles[1].Claude != nextClaude || mappings.Profiles[1].Codex != nextCodex {
+		t.Fatal("actual CLI both-home edit missing from desktop")
+	}
+	request("profiles.update", map[string]any{"name": "gui", "revision": mappings.Profiles[2].Revision, "claude_home": nextClaude, "codex_home": nextCodex})
+	output, err = runProfileCmd(t, "list")
+	if err != nil || strings.Count(output, nextCodex) != 2 || strings.Count(output, nextClaude) != 2 {
+		t.Fatalf("desktop edit missing from actual CLI list: %s %v", output, err)
+	}
+	after, _ := os.ReadFile(marker)
+	if string(after) != `{"fixture":true}` {
+		t.Fatal("shared management touched provider config")
 	}
 }

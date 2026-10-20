@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -24,6 +25,33 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		log.Printf("[api] json encode error: %v", err)
 	}
+}
+
+// writeLargeJSON compresses transcripts when the caller accepts it. A thousand records
+// is roughly 750KB of JSON, most of it repeated keys and prose, so gzip halves the
+// transfer without changing what the reader sees.
+func writeLargeJSON(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+	if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		writeJSON(w, status, v)
+		return
+	}
+	var buf bytes.Buffer
+	enc := gzip.NewWriter(&buf)
+	if err := json.NewEncoder(enc).Encode(v); err != nil {
+		_ = enc.Close()
+		log.Printf("[api] json encode error: %v", err)
+		return
+	}
+	if err := enc.Close(); err != nil {
+		log.Printf("[api] gzip close error: %v", err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Encoding", "gzip")
+	w.Header().Set("Vary", "Accept-Encoding")
+	w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
+	w.WriteHeader(status)
+	_, _ = w.Write(buf.Bytes())
 }
 
 func writeErr(w http.ResponseWriter, err error) {
@@ -156,7 +184,7 @@ func (s *Server) withCORS(next http.Handler) http.Handler {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-Setup-Token")
 		}
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
@@ -184,13 +212,20 @@ func (s *Server) isAllowedOrigin(origin string) bool {
 // The measured long-string fixture uses about 5.4x allocation after rounding.
 // Eight 8 MiB requests of that shape use about 346 MiB; neither amplification
 // for other JSON shapes nor concurrency is bounded here.
+//
+// Session observations get the 8 MiB of sync's compiled default, and keep it:
+// CCTRACE_MAX_SYNC_BODY_BYTES raises /api/sync alone (WithSyncBodyLimit). The
+// budget is not the product of the per-item caps -- 200 snapshots at the 64 KiB
+// cap alone are 12.5 MiB -- so a client has to split a large request, as the
+// sync client does on a 413.
 const (
-	maxRequestBodyBytes             = 1 << 20
-	maxSyncRequestBodyBytes         = 8 << 20
-	maxQuotaRequestBodyBytes        = 64 << 10
-	maxQuotaSamplesRequestBodyBytes = 4 << 20
-	maxProjectRulesRequestBodyBytes = 8 << 20
-	maxExclusionQueryBodyBytes      = 64 << 10
+	maxRequestBodyBytes                    = 1 << 20
+	maxSyncRequestBodyBytes                = 8 << 20
+	maxQuotaRequestBodyBytes               = 64 << 10
+	maxQuotaSamplesRequestBodyBytes        = 4 << 20
+	maxProjectRulesRequestBodyBytes        = 8 << 20
+	maxExclusionQueryBodyBytes             = 64 << 10
+	maxSessionObservationsRequestBodyBytes = 8 << 20
 )
 
 // MaxConfigurableSyncBodyBytes bounds what WithSyncBodyLimit will honour. The
@@ -256,8 +291,15 @@ func withRequestBodyLimit(limit int64, next http.Handler) http.Handler {
 			return
 		}
 		if nearBodyLimit(int64(len(body)), limit) {
-			log.Printf("[api] %s body %d bytes is %.0f%% of the %d limit; raise CCTRACE_MAX_SYNC_BODY_BYTES before it is exceeded",
-				r.URL.Path, len(body), float64(len(body))/float64(limit)*100, limit)
+			// Only /api/sync's limit can be raised (WithSyncBodyLimit); naming the
+			// variable for any other route would send an operator to a setting
+			// that changes nothing there.
+			advice := "the limit is fixed; its client has to send smaller requests"
+			if r.URL.Path == "/api/sync" {
+				advice = "raise CCTRACE_MAX_SYNC_BODY_BYTES before it is exceeded"
+			}
+			log.Printf("[api] %s body %d bytes is %.0f%% of the %d limit; %s",
+				r.URL.Path, len(body), float64(len(body))/float64(limit)*100, limit, advice)
 		}
 		r.Body = io.NopCloser(bytes.NewReader(body))
 		next.ServeHTTP(w, r)

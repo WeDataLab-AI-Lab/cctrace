@@ -1,0 +1,3 @@
+{"version":1,"kind":"request","id":"gold-hello","op":"hello","payload":{}}
+{"version":1,"kind":"request","id":"gold-status","op":"status","payload":{}}
+{"version":1,"kind":"request","id":"gold-update","op":"update.check","payload":{}}

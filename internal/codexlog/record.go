@@ -17,20 +17,28 @@ const (
 
 // Record is a normalized Codex session record.
 type Record struct {
-	SessionID       string
-	Timestamp       time.Time
-	RecordType      string // "user" | "assistant" | "agent_task" | "tool_call" | "tool_output" | "reasoning" | "usage"
-	CWD             string
-	Model           string
-	Content         string
-	ToolName        string
-	CallID          string // pairs a tool_call with its tool_output
-	ToolArgs        string
-	ToolOutput      string
-	InputTokens     *int
-	OutputTokens    *int
-	CacheReadTokens *int
-	Raw             json.RawMessage
+	SessionID         string
+	Timestamp         time.Time
+	TurnID            string `json:"-"`
+	RootTurnID        string `json:"-"`
+	TurnMetadataKnown bool   `json:"-"`
+	RecordType        string // "user" | "assistant" | "agent_task" | "tool_call" | "tool_output" | "reasoning" | "usage"
+	CWD               string
+	Model             string
+	Content           string
+	ToolName          string
+	CallID            string // pairs a tool_call with its tool_output
+	ToolArgs          string
+	ToolOutput        string
+	InputTokens       *int
+	OutputTokens      *int
+	CacheReadTokens   *int
+	Raw               json.RawMessage
+	// SupplementalUsage was never emitted by the legacy parser and must not
+	// consume an ordinal in its timestamp conflict ledger.
+	SupplementalUsage bool `json:"-"`
+	// Offset identifies the source line for consent-bounded context recovery.
+	Offset int64 `json:"-"`
 }
 
 // scanState carries per-file mutable state during a scan pass.
@@ -39,6 +47,9 @@ type scanState struct {
 	cwd                    string
 	originator             string
 	model                  string
+	activeTurnID           string
+	activeRootTurnID       string
+	turnMetadataScanned    bool
 	format                 Format
 	hasTotalTokenUsage     bool
 	totalInputTokens       int
@@ -55,6 +66,22 @@ type scanState struct {
 	// It is not part of Metadata: metadata is persisted into the sync state
 	// between passes, and a slice that grows every scan does not belong there.
 	rateLimits []RateLimitSample
+	// turns accumulates the turn lifecycle entries found during the pass, for
+	// the same reason outside Metadata. offset is where the line being parsed
+	// starts, which each entry records. metadataOnly marks a metadata scan, which
+	// collects no turn (noteTurn).
+	turns        []TurnEvent
+	offset       int64
+	metadataOnly bool
+}
+
+func (s *scanState) withTurnMetadata(record *Record) *Record {
+	if record != nil && s.turnMetadataScanned && s.format == FormatNew {
+		record.TurnMetadataKnown = true
+		record.TurnID = s.activeTurnID
+		record.RootTurnID = s.activeRootTurnID
+	}
+	return record
 }
 
 // DetectFormat returns the format based on the type field of a first record.
@@ -124,9 +151,13 @@ type tokenUsage struct {
 	InputTokens       int `json:"input_tokens"`
 	CachedInputTokens int `json:"cached_input_tokens"`
 	OutputTokens      int `json:"output_tokens"`
+	CacheWriteTokens  int `json:"cache_write_input_tokens"`
+	ReasoningTokens   int `json:"reasoning_output_tokens"`
 }
 
 type tokenUsageRecordPayload struct {
+	TurnID           string      `json:"turn_id"`
+	RootTurnID       string      `json:"root_turn_id"`
 	Usage            *tokenUsage `json:"usage"`
 	TurnTokenUsage   *tokenUsage `json:"turn_token_usage"`
 	ThreadTokenUsage *tokenUsage `json:"thread_token_usage"`
@@ -156,6 +187,7 @@ func parseNewFormatLine(line []byte, state *scanState) *Record {
 
 	switch rl.Type {
 	case "session_meta":
+		inherited := state.isSubagentFork
 		var p sessionMetaPayload
 		if err := json.Unmarshal(rl.Payload, &p); err == nil {
 			if state.isSubagentFork {
@@ -177,6 +209,9 @@ func parseNewFormatLine(line []byte, state *scanState) *Record {
 				state.isSubagentFork = true
 			}
 		}
+		if !inherited {
+			return instructionContextRecord(rl, ts, state)
+		}
 		return nil
 
 	case "turn_context":
@@ -188,6 +223,10 @@ func parseNewFormatLine(line []byte, state *scanState) *Record {
 			if p.Model != "" {
 				state.model = p.Model
 			}
+		}
+		state.noteTurn(rl.Type, ts, rl.Payload)
+		if !state.isSubagentFork || !state.forkHasTriggerTurn || state.forkBoundaryReached {
+			return instructionContextRecord(rl, ts, state)
 		}
 		return nil
 
@@ -209,6 +248,9 @@ func parseNewFormatLine(line []byte, state *scanState) *Record {
 		if err := json.Unmarshal(rl.Payload, &p); err != nil {
 			return nil
 		}
+		if turnEventKinds[p.Type] {
+			state.noteTurn(p.Type, ts, rl.Payload)
+		}
 		if p.Type == "token_count" && p.RateLimits != nil {
 			if s, ok := p.RateLimits.sample(ts); ok {
 				state.rateLimits = append(state.rateLimits, s)
@@ -227,7 +269,7 @@ func parseNewFormatLine(line []byte, state *scanState) *Record {
 			if state.isSubagentFork && state.forkHasTriggerTurn && !state.forkBoundaryReached {
 				return nil
 			}
-			return &Record{
+			return state.withTurnMetadata(&Record{
 				SessionID:       state.sessionID,
 				Timestamp:       ts,
 				RecordType:      "usage",
@@ -237,7 +279,7 @@ func parseNewFormatLine(line []byte, state *scanState) *Record {
 				OutputTokens:    &out,
 				CacheReadTokens: &cache,
 				Raw:             line,
-			}
+			})
 		}
 		return nil
 
@@ -261,23 +303,32 @@ func parseNewFormatLine(line []byte, state *scanState) *Record {
 			updateTotalTokenUsage(state, p.Usage)
 		}
 		in, cache, out := tokenUsageAmounts(p.Usage)
-		if !hasTokenUsage(in, cache, out) {
+		if !hasTokenUsage(in, cache, out) && p.Usage.CacheWriteTokens <= 0 && p.Usage.ReasoningTokens <= 0 {
 			return nil
 		}
 		if state.isSubagentFork && state.forkHasTriggerTurn && !state.forkBoundaryReached {
 			return nil
 		}
-		return &Record{
-			SessionID:       state.sessionID,
-			Timestamp:       ts,
-			RecordType:      "usage",
-			CWD:             state.cwd,
-			Model:           state.model,
-			InputTokens:     &in,
-			OutputTokens:    &out,
-			CacheReadTokens: &cache,
-			Raw:             line,
+		record := state.withTurnMetadata(&Record{
+			SupplementalUsage: !hasTokenUsage(in, cache, out),
+			SessionID:         state.sessionID,
+			Timestamp:         ts,
+			RecordType:        "usage",
+			CWD:               state.cwd,
+			Model:             state.model,
+			InputTokens:       &in,
+			OutputTokens:      &out,
+			CacheReadTokens:   &cache,
+			Raw:               line,
+		})
+		// The source's explicit membership takes precedence over scanner state.
+		// Both remain in raw for audit; a response id is not a message item id.
+		if p.TurnID != "" {
+			record.TurnID = p.TurnID
+			record.RootTurnID = p.RootTurnID
+			record.TurnMetadataKnown = true
 		}
+		return record
 
 	case "compacted":
 		return nil
@@ -293,6 +344,7 @@ func parseNewFormatLine(line []byte, state *scanState) *Record {
 			state.forkHasTriggerTurn = true
 			if state.isSubagentFork {
 				state.forkBoundaryReached = true
+				state.activeTurnID, state.activeRootTurnID = "", ""
 			}
 		}
 		return nil
@@ -305,10 +357,71 @@ func parseNewFormatLine(line []byte, state *scanState) *Record {
 		if state.isSubagentFork && state.forkHasTriggerTurn && !state.forkBoundaryReached {
 			return nil
 		}
-		return responseItemToRecord(p, ts, state, line)
+		return state.withTurnMetadata(responseItemToRecord(p, ts, state, line))
 	}
 
 	return nil
+}
+
+// instructionContextRecord keeps the instruction-bearing part of metadata.
+// Session metadata can grow unrelated fields; only these named members belong
+// in inspection, rather than uploading every metadata line wholesale.
+func instructionContextRecord(line rawLine, ts time.Time, state *scanState) *Record {
+	if state.metadataOnly {
+		return nil
+	}
+	var payload map[string]json.RawMessage
+	if json.Unmarshal(line.Payload, &payload) != nil {
+		return nil
+	}
+	kept := make(map[string]json.RawMessage)
+	// Preserve declared lineage and turn execution settings independently of
+	// instruction text. Unrelated metadata still never leaves the machine.
+	for _, key := range []string{"parent_thread_id", "forked_from_id", "history_base", "history_mode", "agent_path", "agent_nickname", "source", "thread_source", "root_turn_id", "context_window", "model_context_window", "effort", "approval_policy", "approvals_reviewer", "permission_profile", "sandbox_policy", "runtime_workspace_roots", "multi_agent_version"} {
+		if value := payload[key]; len(value) != 0 && string(value) != "null" {
+			kept[key] = value
+		}
+	}
+	for _, key := range []string{"base_instructions", "developer_instructions", "user_instructions"} {
+		if value := payload[key]; len(value) != 0 && string(value) != "null" && string(value) != `""` {
+			kept[key] = value
+		}
+	}
+	var collaboration struct {
+		Mode     json.RawMessage            `json:"mode"`
+		Settings map[string]json.RawMessage `json:"settings"`
+	}
+	if json.Unmarshal(payload["collaboration_mode"], &collaboration) == nil {
+		if instructions := collaboration.Settings["developer_instructions"]; len(instructions) != 0 && string(instructions) != "null" && string(instructions) != `""` {
+			value, err := json.Marshal(struct {
+				Mode     json.RawMessage            `json:"mode,omitempty"`
+				Settings map[string]json.RawMessage `json:"settings"`
+			}{collaboration.Mode, map[string]json.RawMessage{"developer_instructions": instructions}})
+			if err == nil {
+				kept["collaboration_mode"] = value
+			}
+		}
+	}
+	if len(kept) == 0 {
+		return nil
+	}
+	for _, key := range []string{"id", "turn_id", "cwd", "model", "cli_version", "originator", "model_provider"} {
+		if value := payload[key]; len(value) != 0 {
+			kept[key] = value
+		}
+	}
+	raw, err := json.Marshal(struct {
+		Type      string                     `json:"type"`
+		Timestamp string                     `json:"timestamp,omitempty"`
+		Payload   map[string]json.RawMessage `json:"payload"`
+	}{line.Type, line.Timestamp, kept})
+	if err != nil {
+		return nil
+	}
+	return state.withTurnMetadata(&Record{
+		SessionID: state.sessionID, Timestamp: ts, RecordType: "context",
+		CWD: state.cwd, Model: state.model, Raw: raw, Offset: state.offset,
+	})
 }
 
 func responseItemToRecord(p responseItemPayload, ts time.Time, state *scanState, raw []byte) *Record {

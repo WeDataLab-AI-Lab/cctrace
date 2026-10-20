@@ -116,6 +116,33 @@ func BuildAppServerQuotaSamples(accountID, profileEmail string, snap *codexappse
 	return out
 }
 
+// BuildAppServerQuotaOwnerSamples is the private, identity-free counterpart to
+// BuildAppServerQuotaSamples. It uses only live app-server readings; historical
+// session-log rows are never converted into personal ownership evidence.
+func BuildAppServerQuotaOwnerSamples(accountID string, snap *codexappserver.Snapshot) []*store.QuotaOwnerSample {
+	if snap == nil || snap.FetchedAt.IsZero() || accountID == "" {
+		return nil
+	}
+	keys := map[string]bool{}
+	out := make([]*store.QuotaOwnerSample, 0, len(snap.Readings))
+	for i, reading := range snap.Readings {
+		minutes := reading.WindowMinutes
+		out = append(out, &store.QuotaOwnerSample{
+			BillingProvider: billingProviderCodex,
+			AccountID:       accountID,
+			WindowKey:       uniqueWindowKey(keys, reading.LimitID, minutes, i),
+			SampledAt:       snap.FetchedAt,
+			UsedPct:         reading.UsedPercent,
+			ResetsAt:        reading.ResetsAt,
+			WindowMinutes:   &minutes,
+			Plan:            reading.PlanType,
+			ScopeLabel:      reading.LimitName,
+			Attribution:     store.AttributionObserved,
+		})
+	}
+	return out
+}
+
 // canonicalLimitID is the bucket the session log has always reported, and the
 // only one it ever names.
 const canonicalLimitID = "codex"
@@ -213,13 +240,13 @@ func (s *CodexSyncer) sendQuotaSamples(ctx context.Context, home, sourcePath str
 // caller to branch on it and retry — which is exactly how the Claude poller's
 // five-minute interval once collapsed into a request per second.
 func (s *CodexSyncer) PollAppServerQuota(ctx context.Context) {
-	if s.quotaUnsupported {
+	if s.quotaUnsupported && s.quotaOwnerUnsupported {
 		return
 	}
 	for _, home := range s.codexDirs {
 		accountID, err := codexauth.ReadAccountID(home)
 		if err != nil {
-			log.Printf("[codex-syncer] app-server quota: read account for %s: %v", home, err)
+			log.Printf("[codex-syncer] app-server quota: local account metadata could not be read")
 			continue
 		}
 		if accountID == "" {
@@ -229,21 +256,34 @@ func (s *CodexSyncer) PollAppServerQuota(ctx context.Context) {
 		}
 		snap, err := codexappserver.Fetch(ctx, home)
 		if err != nil {
-			log.Printf("[codex-syncer] app-server quota: %v", err)
+			log.Printf("[codex-syncer] app-server quota: live reading unavailable")
 			continue
 		}
-		rows := BuildAppServerQuotaSamples(accountID, s.profileEmail, snap)
-		if len(rows) == 0 {
-			continue
+		if !s.quotaUnsupported {
+			rows := BuildAppServerQuotaSamples(accountID, s.profileEmail, snap)
+			if len(rows) > 0 {
+				switch err := s.client.SendQuotaSamples(ctx, rows); {
+				case err == nil:
+				case errors.Is(err, syncer.ErrQuotaSamplesUnsupported):
+					s.quotaUnsupported = true
+					log.Printf("[codex-syncer] server has no shared quota history endpoint; skipping it")
+				default:
+					log.Printf("[codex-syncer] app-server quota history: %v", err)
+				}
+			}
 		}
-		switch err := s.client.SendQuotaSamples(ctx, rows); {
-		case err == nil:
-		case errors.Is(err, syncer.ErrQuotaSamplesUnsupported):
-			s.quotaUnsupported = true
-			log.Printf("[codex-syncer] server has no quota history endpoint; skipping")
-			return
-		default:
-			log.Printf("[codex-syncer] app-server quota history: %v", err)
+		if !s.quotaOwnerUnsupported {
+			ownerRows := BuildAppServerQuotaOwnerSamples(accountID, snap)
+			if len(ownerRows) > 0 {
+				switch err := s.client.SendQuotaOwnerSamples(ctx, ownerRows); {
+				case err == nil:
+				case errors.Is(err, syncer.ErrQuotaOwnerSamplesUnsupported):
+					s.quotaOwnerUnsupported = true
+					log.Printf("[codex-syncer] server has no private quota usage endpoint; skipping it")
+				default:
+					log.Printf("[codex-syncer] app-server private quota upload: %v", err)
+				}
+			}
 		}
 	}
 }

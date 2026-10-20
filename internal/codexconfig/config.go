@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gofrs/flock"
+
 	"cctrace/internal/codexauth"
 )
 
@@ -82,6 +84,15 @@ var ErrMultilineRootOtelKey = errors.New("config.toml has a multi-line root otel
 //
 // caFile is the profile's server.ca_cert_file; empty writes no tls table.
 func EnsureOtelBlock(codexDir, endpoint, authToken, caFile string) (bool, error) {
+	release, err := lockConfig(codexDir, true)
+	if err != nil {
+		return false, err
+	}
+	defer release()
+	return ensureOtelBlockLocked(codexDir, endpoint, authToken, caFile)
+}
+
+func ensureOtelBlockLocked(codexDir, endpoint, authToken, caFile string) (bool, error) {
 	path := filepath.Join(codexDir, "config.toml")
 
 	var existing string
@@ -136,6 +147,15 @@ const (
 // The CA is the profile's, not the home's: the block is cctrace's to write, so a
 // tls table added there by hand goes when the profile has no CA.
 func HealExistingOtelBlock(codexDir, endpoint, authToken, caFile string, keepHomeToken bool) (HealResult, error) {
+	release, err := lockConfig(codexDir, false)
+	if err != nil {
+		return HealUnchanged, err
+	}
+	if release == nil {
+		return HealNoOtel, nil
+	}
+	defer release()
+
 	data, err := os.ReadFile(filepath.Join(codexDir, "config.toml"))
 	if os.IsNotExist(err) {
 		return HealNoOtel, nil
@@ -153,7 +173,7 @@ func HealExistingOtelBlock(codexDir, endpoint, authToken, caFile string, keepHom
 	if token := existingBearerToken(section); keepHomeToken && token != "" {
 		authToken = token
 	}
-	changed, err := EnsureOtelBlock(codexDir, endpoint, authToken, caFile)
+	changed, err := ensureOtelBlockLocked(codexDir, endpoint, authToken, caFile)
 	if changed {
 		return HealWritten, err
 	}
@@ -172,7 +192,13 @@ func OtelBearerToken(codexDir string) string {
 	if err != nil {
 		return ""
 	}
-	return existingBearerToken(otelSectionLines(string(data)))
+	return OtelBearerTokenOf(data)
+}
+
+// OtelBearerTokenOf returns the Bearer token the otel block in config.toml's
+// content sends, or "" when there is none.
+func OtelBearerTokenOf(content []byte) string {
+	return existingBearerToken(otelSectionLines(string(content)))
 }
 
 // existingBearerToken returns the Bearer token the otel section lines send, or "".
@@ -389,4 +415,24 @@ func replaceOrAppendOtelSection(existing, otelBlock string) string {
 	// Normalize to exactly one trailing newline so repeated runs are stable
 	// (idempotent) — EnsureOtelBlock compares this result against the file.
 	return strings.TrimRight(result, "\n") + "\n"
+}
+
+// lockConfig covers the complete read-modify-write, including ownership checks.
+// Healing must not create an unused Codex home just to acquire its lock.
+func lockConfig(dir string, create bool) (func(), error) {
+	if create {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return nil, err
+		}
+	} else if _, err := os.Stat(dir); err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	lock := flock.New(filepath.Join(dir, "config.toml.lock"))
+	if err := lock.Lock(); err != nil {
+		return nil, err
+	}
+	return func() { _ = lock.Unlock() }, nil
 }

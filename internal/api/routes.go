@@ -41,6 +41,13 @@ func (s *Server) routes() {
 	}
 	s.mux.Handle("POST /api/project-rules", syncRL(projectRulesIngestHandler))
 
+	// CLI policy-target report (API_KEY auth, same as sync)
+	clientPolicyReportHandler := withRequestBodyLimit(maxClientPolicyReportBodyBytes, http.HandlerFunc(s.handleClientPolicyReport))
+	if s.authMW != nil {
+		clientPolicyReportHandler = s.authMW(clientPolicyReportHandler)
+	}
+	s.mux.Handle("POST /api/client-policy-report", syncRL(clientPolicyReportHandler))
+
 	// Quota snapshot write route (API_KEY auth, same as sync)
 	quotaWriteHandler := withRequestBodyLimit(maxQuotaRequestBodyBytes, http.HandlerFunc(s.handleQuotaWrite))
 	if s.authMW != nil {
@@ -57,6 +64,14 @@ func (s *Server) routes() {
 		quotaSamplesHandler = s.authMW(quotaSamplesHandler)
 	}
 	s.mux.Handle("POST /api/quota-samples", syncRL(quotaSamplesHandler))
+
+	// Session observation ingest (API_KEY auth, same as sync). Rate-limited like
+	// the sync routes: the collector posts it on its own timer, beside sync.
+	sessionObservationsHandler := withRequestBodyLimit(maxSessionObservationsRequestBodyBytes, http.HandlerFunc(s.handleSessionObservationsWrite))
+	if s.authMW != nil {
+		sessionObservationsHandler = s.authMW(sessionObservationsHandler)
+	}
+	s.mux.Handle("POST /api/session-observations", syncRL(sessionObservationsHandler))
 
 	// CLI user_id check route (public — used during cctrace init before token issuance)
 	checkUIDRL := SyncRateLimiter(1, 5)
@@ -121,6 +136,9 @@ func (s *Server) routes() {
 	s.mux.Handle("DELETE /api/auth/api-tokens/{id}", dashMW(http.HandlerFunc(s.handleDeleteOwnAPIToken)))
 	s.mux.Handle("GET /api/weekly-insights", dashMW(http.HandlerFunc(s.handleDashboardWeeklyInsights)))
 	s.mux.Handle("GET /api/task-segments", dashMW(http.HandlerFunc(s.handleTaskSegments)))
+	// Where the token recount stands, for the note every dashboard page shows
+	// while it runs.
+	s.mux.Handle("GET /api/maintenance/status", dashMW(http.HandlerFunc(s.handleMaintenanceStatus)))
 
 	// Weekly AI reports. Runs are addressed by run id and visible only to their
 	// owner; the events route is SSE and clears its own write deadline.
@@ -133,12 +151,17 @@ func (s *Server) routes() {
 	s.mux.Handle("PUT /api/ai/schedule", dashMW(http.HandlerFunc(s.handleSetAIUserSchedule)))
 	s.mux.Handle("GET /api/admin/ai", dashMW(http.HandlerFunc(s.handleAdminAI)))
 	s.mux.Handle("GET /api/admin/ai/models", dashMW(http.HandlerFunc(s.handleAdminAIModels)))
-	s.mux.Handle("PUT /api/admin/ai/settings", dashMW(http.HandlerFunc(s.handleSetAdminAISettings)))
-	s.mux.Handle("PUT /api/admin/ai/runtime", dashMW(http.HandlerFunc(s.handleSetAdminAIRuntime)))
-	s.mux.Handle("PUT /api/admin/ai/enabled", dashMW(http.HandlerFunc(s.handleSetAdminAIEnabled)))
+	s.mux.Handle("PUT /api/admin/ai/settings", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleSetAdminAISettings))))
+	s.mux.Handle("PUT /api/admin/ai/records", dashMW(http.HandlerFunc(s.handleSetAdminAIRecords)))
+	s.mux.Handle("GET /api/admin/ai/records/vocabulary", dashMW(http.HandlerFunc(s.handleGetAdminAIRecordVocabulary)))
+	s.mux.Handle("PUT /api/admin/ai/records/vocabulary", dashMW(http.HandlerFunc(s.handleSetAdminAIRecordVocabulary)))
+	s.mux.Handle("POST /api/admin/ai/records/vocabulary/merge", dashMW(http.HandlerFunc(s.handleMergeAdminAIRecordVocabulary)))
+	s.mux.Handle("PUT /api/admin/ai/runtime", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleSetAdminAIRuntime))))
+	s.mux.Handle("PUT /api/admin/ai/enabled", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleSetAdminAIEnabled))))
 	s.mux.Handle("PUT /api/admin/ai/schedule", dashMW(http.HandlerFunc(s.handleSetAdminAISchedule)))
-	s.mux.Handle("PUT /api/admin/ai/providers/{provider}/key", dashMW(http.HandlerFunc(s.handleSetAdminAIProviderKey)))
-	s.mux.Handle("DELETE /api/admin/ai/providers/{provider}/key", dashMW(http.HandlerFunc(s.handleDeleteAdminAIProviderKey)))
+	s.mux.Handle("PUT /api/admin/ai/run-policy", dashMW(http.HandlerFunc(s.handleSetAdminAIRunPolicy)))
+	s.mux.Handle("PUT /api/admin/ai/providers/{provider}/key", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleSetAdminAIProviderKey))))
+	s.mux.Handle("DELETE /api/admin/ai/providers/{provider}/key", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleDeleteAdminAIProviderKey))))
 	s.mux.Handle("GET /api/admin/ai/account", dashMW(http.HandlerFunc(s.handleAdminAIAccount)))
 	s.mux.Handle("POST /api/admin/ai/account/login", dashMW(http.HandlerFunc(s.handleAdminAILogin)))
 	s.mux.Handle("GET /api/admin/ai/account/login/{id}", dashMW(http.HandlerFunc(s.handleAdminAILoginStatus)))
@@ -148,7 +171,7 @@ func (s *Server) routes() {
 	// Admin routes
 	s.mux.Handle("GET /api/admin/users", dashMW(http.HandlerFunc(s.handleListDashboardUsers)))
 	s.mux.Handle("POST /api/admin/users", dashMW(http.HandlerFunc(s.handleCreateDashboardUser)))
-	s.mux.Handle("PATCH /api/admin/users/{id}", dashMW(http.HandlerFunc(s.handleUpdateDashboardUser)))
+	s.mux.Handle("PATCH /api/admin/users/{id}", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleUpdateDashboardUser))))
 	s.mux.Handle("POST /api/admin/users/{id}/reset-password", dashMW(http.HandlerFunc(s.handleResetPassword)))
 	s.mux.Handle("POST /api/admin/users/{id}/revoke-token", dashMW(http.HandlerFunc(s.handleRevokeApiToken)))
 	s.mux.Handle("GET /api/admin/otel-user-ids", dashMW(http.HandlerFunc(s.handleOtelUserIDs)))
@@ -163,15 +186,15 @@ func (s *Server) routes() {
 	s.mux.Handle("GET /api/admin/organization-insights", dashMW(http.HandlerFunc(s.handleDashboardOrganizationInsights)))
 	s.mux.Handle("POST /api/admin/task-types/backfill", dashMW(http.HandlerFunc(s.handleTaskTypeBackfill)))
 	s.mux.Handle("GET /api/admin/retention/preview", dashMW(http.HandlerFunc(s.handleRetentionPreview)))
-	s.mux.Handle("PATCH /api/admin/retention", dashMW(http.HandlerFunc(s.handleSetRetention)))
+	s.mux.Handle("PATCH /api/admin/retention", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleSetRetention))))
 	s.mux.Handle("GET /api/admin/excluded-accounts", dashMW(http.HandlerFunc(s.handleListExcludedAccounts)))
-	s.mux.Handle("POST /api/admin/excluded-accounts", dashMW(http.HandlerFunc(s.handleExcludeAccount)))
-	s.mux.Handle("DELETE /api/admin/excluded-accounts", dashMW(http.HandlerFunc(s.handleRemoveExcludedAccount)))
+	s.mux.Handle("POST /api/admin/excluded-accounts", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleExcludeAccount))))
+	s.mux.Handle("DELETE /api/admin/excluded-accounts", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleRemoveExcludedAccount))))
 
 	// The billing-id counterpart, for accounts with no login email to exclude by.
 	s.mux.Handle("GET /api/admin/excluded-billing-accounts", dashMW(http.HandlerFunc(s.handleListExcludedBillingAccounts)))
-	s.mux.Handle("POST /api/admin/excluded-billing-accounts", dashMW(http.HandlerFunc(s.handleExcludeBillingAccount)))
-	s.mux.Handle("DELETE /api/admin/excluded-billing-accounts", dashMW(http.HandlerFunc(s.handleRemoveExcludedBillingAccount)))
+	s.mux.Handle("POST /api/admin/excluded-billing-accounts", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleExcludeBillingAccount))))
+	s.mux.Handle("DELETE /api/admin/excluded-billing-accounts", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleRemoveExcludedBillingAccount))))
 
 	// Usage no rate matched, and the models an admin declared free by design (#441).
 	s.mux.Handle("GET /api/admin/unpriced-models", dashMW(http.HandlerFunc(s.handleListUnpricedModels)))
@@ -183,25 +206,62 @@ func (s *Server) routes() {
 	s.mux.Handle("GET /api/self-exclusions/billing-accounts", dashMW(http.HandlerFunc(s.handleListObservedBillingAccounts)))
 	// One budget for both writes, keyed on the user: alternating them is the loop.
 	selfExclusionRL := UserRateLimiter(selfExclusionRPS, selfExclusionBurst)
-	s.mux.Handle("POST /api/self-exclusions/billing-accounts", dashMW(selfExclusionRL(http.HandlerFunc(s.handleSelfExcludeBillingAccount))))
-	s.mux.Handle("DELETE /api/self-exclusions/billing-accounts", dashMW(selfExclusionRL(http.HandlerFunc(s.handleRemoveSelfExcludedBillingAccount))))
+	s.mux.Handle("POST /api/self-exclusions/billing-accounts", dashMW(s.withSessionRecordPolicyMutation(selfExclusionRL(http.HandlerFunc(s.handleSelfExcludeBillingAccount)))))
+	s.mux.Handle("DELETE /api/self-exclusions/billing-accounts", dashMW(s.withSessionRecordPolicyMutation(selfExclusionRL(http.HandlerFunc(s.handleRemoveSelfExcludedBillingAccount)))))
 
 	// Session deletion. Unlike excluded accounts above -- which hide rows and can be
 	// undone -- these remove rows and write a tombstone ingest honours, so a delete
 	// survives the next sync. Authorization is per-handler, not per-route: deleting
 	// your own session and blocking a whole project are different privileges.
-	s.mux.Handle("DELETE /api/sessions/{session_id}", dashMW(http.HandlerFunc(s.handleDeleteSession)))
+	s.mux.Handle("DELETE /api/sessions/{session_id}", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleDeleteSession))))
 	s.mux.Handle("GET /api/deletion-policy", dashMW(http.HandlerFunc(s.handleGetDeletionPolicy)))
-	s.mux.Handle("DELETE /api/projects", dashMW(http.HandlerFunc(s.handleDeleteProject)))
+	s.mux.Handle("DELETE /api/projects", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleDeleteProject))))
 	s.mux.Handle("GET /api/projects/session-count", dashMW(http.HandlerFunc(s.handleProjectSessionCount)))
 	s.mux.Handle("PUT /api/admin/deletion-policy", dashMW(http.HandlerFunc(s.handleSetDeletionPolicy)))
 	s.mux.Handle("GET /api/blocked-projects", dashMW(http.HandlerFunc(s.handleListBlockedProjects)))
-	s.mux.Handle("DELETE /api/blocked-projects", dashMW(http.HandlerFunc(s.handleUnblockProject)))
+	s.mux.Handle("DELETE /api/blocked-projects", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleUnblockProject))))
+
+	s.mux.Handle("GET /api/sessions/{session_id}/analysis", dashMW(http.HandlerFunc(s.handleSessionAnalysis)))
+	s.mux.Handle("GET /api/sessions/{session_id}/trace/index", dashMW(http.HandlerFunc(s.handleSessionTraceIndex)))
+	s.mux.Handle("GET /api/sessions/{session_id}/conversation/timeline", dashMW(http.HandlerFunc(s.handleConversationTimeline)))
+	s.mux.Handle("GET /api/sessions/{session_id}/inspection", dashMW(http.HandlerFunc(s.handleSessionInspection)))
+	s.mux.Handle("POST /api/sessions/{session_id}/trace/demand", dashMW(http.HandlerFunc(s.handleTraceDemand)))
+	s.mux.Handle("DELETE /api/sessions/{session_id}/trace/demand/{lease_id}", dashMW(http.HandlerFunc(s.handleTraceRelease)))
+	s.mux.Handle("GET /api/sessions/{session_id}/trace/overview", dashMW(http.HandlerFunc(s.handleTraceOverview)))
+	s.mux.Handle("GET /api/sessions/{session_id}/trace/events", dashMW(http.HandlerFunc(s.handleTraceEvents)))
+	s.mux.Handle("GET /api/sessions/{session_id}/trace/context", dashMW(http.HandlerFunc(s.handleTraceContext)))
+	s.mux.Handle("GET /api/sessions/{session_id}/trace/nodes", dashMW(http.HandlerFunc(s.handleTraceNodes)))
+	s.mux.Handle("GET /api/sessions/{session_id}/trace/nodes/{node_id}", dashMW(http.HandlerFunc(s.handleTraceNodeDetail)))
+	s.mux.Handle("GET /api/sessions/{session_id}/turns/{turn_key}/context", dashMW(http.HandlerFunc(s.handleTurnContext)))
+	s.mux.Handle("GET /api/session-calendar", dashMW(http.HandlerFunc(s.handleSessionCalendar)))
+	s.mux.Handle("GET /api/session-search", dashMW(http.HandlerFunc(s.handleSessionRecordSearch)))
+	s.mux.Handle("GET /api/session-records/consent", dashMW(http.HandlerFunc(s.handleGetSessionRecordConsent)))
+	s.mux.Handle("POST /api/session-records/consent", dashMW(http.HandlerFunc(s.handlePostSessionRecordConsent)))
+	s.mux.Handle("DELETE /api/session-records/consent", dashMW(http.HandlerFunc(s.handleDeleteSessionRecordConsent)))
+	s.mux.Handle("GET /api/session-records/status", dashMW(http.HandlerFunc(s.handleSessionRecordStatus)))
+	s.mux.Handle("POST /api/session-records/refresh", dashMW(http.HandlerFunc(s.handleSessionRecordRefresh)))
+	s.mux.Handle("POST /api/sessions/{session_id}/record/regenerate", dashMW(http.HandlerFunc(s.handleSessionRecordRegenerate)))
+	s.mux.Handle("DELETE /api/session-records", dashMW(http.HandlerFunc(s.handleDeleteOwnSessionRecords)))
+
+	// Private dashboard notes and classifications.
+	s.mux.Handle("GET /api/sessions/{session_id}/personal", dashMW(http.HandlerFunc(s.handleGetPersonalSession)))
+	s.mux.Handle("GET /api/sessions/{session_id}/personal/overview", dashMW(http.HandlerFunc(s.handleGetPersonalSessionOverview)))
+	s.mux.Handle("PUT /api/sessions/{session_id}/personal", dashMW(http.HandlerFunc(s.handlePutPersonalSession)))
+	s.mux.Handle("DELETE /api/sessions/{session_id}/personal", dashMW(http.HandlerFunc(s.handleDeletePersonalSession)))
+	s.mux.Handle("GET /api/me/note", dashMW(http.HandlerFunc(s.handleGetPersonalGlobalNote)))
+	s.mux.Handle("PUT /api/me/note", dashMW(http.HandlerFunc(s.handlePutPersonalGlobalNote)))
+	s.mux.Handle("DELETE /api/me/note", dashMW(http.HandlerFunc(s.handleDeletePersonalGlobalNote)))
+	s.mux.Handle("GET /api/me/session-notes", dashMW(http.HandlerFunc(s.handlePersonalSessionNotes)))
+	s.mux.Handle("GET /api/me/session-classifications/counts", dashMW(http.HandlerFunc(s.handlePersonalSessionCounts)))
+	s.mux.Handle("GET /api/me/session-groups", dashMW(http.HandlerFunc(s.handleGetSessionGroups)))
+	s.mux.Handle("GET /api/me/session-groups/members", dashMW(http.HandlerFunc(s.handleGetSessionGroupMembers)))
+	s.mux.Handle("PUT /api/me/session-groups/dismiss", dashMW(http.HandlerFunc(s.handleUpdateSessionGroupDismissals)))
+	s.mux.Handle("DELETE /api/me/session-groups/dismiss", dashMW(http.HandlerFunc(s.handleUpdateSessionGroupDismissals)))
 
 	// Privacy routes
 	s.mux.Handle("GET /api/privacy", dashMW(http.HandlerFunc(s.handleListPrivacy)))
-	s.mux.Handle("POST /api/privacy", dashMW(http.HandlerFunc(s.handleSetPrivacy)))
-	s.mux.Handle("DELETE /api/privacy", dashMW(http.HandlerFunc(s.handleRemovePrivacy)))
+	s.mux.Handle("POST /api/privacy", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleSetPrivacy))))
+	s.mux.Handle("DELETE /api/privacy", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleRemovePrivacy))))
 
 	// Data query routes (JWT auth, with role-based filtering)
 	s.mux.Handle("GET /api/events", dashMW(http.HandlerFunc(s.handleListEvents)))
@@ -225,6 +285,7 @@ func (s *Server) routes() {
 	s.mux.Handle("GET /api/session-summaries", dashMW(http.HandlerFunc(s.handleListSessionSummaries)))
 	s.mux.Handle("GET /api/session-overview", dashMW(http.HandlerFunc(s.handleListSessionOverview)))
 	s.mux.Handle("GET /api/session-overview/count", dashMW(http.HandlerFunc(s.handleCountSessionOverview)))
+	s.mux.Handle("GET /api/session-overview/categories", dashMW(http.HandlerFunc(s.handleSessionOverviewCategories)))
 	s.mux.Handle("GET /api/session-account-segments", dashMW(http.HandlerFunc(s.handleSessionAccountSegments)))
 	s.mux.Handle("GET /api/projects", dashMW(http.HandlerFunc(s.handleListProjects)))
 	s.mux.Handle("GET /api/project-rules", dashMW(http.HandlerFunc(s.handleListProjectRules)))
@@ -235,6 +296,18 @@ func (s *Server) routes() {
 	s.mux.Handle("GET /api/users/names", dashMW(http.HandlerFunc(s.handleUserNameMap)))
 	s.mux.Handle("GET /api/quota", dashMW(http.HandlerFunc(s.handleQuotaRead)))
 	s.mux.Handle("GET /api/quota-samples", dashMW(http.HandlerFunc(s.handleQuotaSamplesRead)))
-	s.mux.Handle("DELETE /api/users/data", dashMW(http.HandlerFunc(s.handleDeleteUserData)))
-	s.mux.Handle("POST /api/users/merge", dashMW(http.HandlerFunc(s.handleMergeUsers)))
+	s.mux.Handle("GET /api/me/quota-bindings", dashMW(http.HandlerFunc(s.handleListMyQuotaBindings)))
+	s.mux.Handle("POST /api/me/quota-bindings", dashMW(http.HandlerFunc(s.handleApplyQuotaBinding)))
+	s.mux.Handle("GET /api/me/quota-usage", dashMW(http.HandlerFunc(s.handleGetMyQuotaUsage)))
+	s.mux.Handle("GET /api/me/quota-usage/window-comparison", dashMW(http.HandlerFunc(s.handleGetMyQuotaWindowComparison)))
+	quotaOwnerSamplesHandler := withRequestBodyLimit(maxQuotaOwnerSamplesBody, http.HandlerFunc(s.handleInsertMyQuotaOwnerSamples))
+	if s.authMW != nil {
+		quotaOwnerSamplesHandler = s.authMW(quotaOwnerSamplesHandler)
+	}
+	s.mux.Handle("POST /api/me/quota-usage/samples", syncRL(quotaOwnerSamplesHandler))
+	s.mux.Handle("GET /api/admin/quota-bindings", dashMW(http.HandlerFunc(s.handleListAdminQuotaBindings)))
+	s.mux.Handle("POST /api/admin/quota-bindings/{id}/approve", dashMW(http.HandlerFunc(s.handleApproveQuotaBinding)))
+	s.mux.Handle("POST /api/admin/quota-bindings/{id}/revoke", dashMW(http.HandlerFunc(s.handleRevokeQuotaBinding)))
+	s.mux.Handle("DELETE /api/users/data", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleDeleteUserData))))
+	s.mux.Handle("POST /api/users/merge", dashMW(s.withSessionRecordPolicyMutation(http.HandlerFunc(s.handleMergeUsers))))
 }

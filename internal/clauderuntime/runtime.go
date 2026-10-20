@@ -203,9 +203,13 @@ func (r *Runtime) requestBody(req airuntime.RunRequest) (map[string]any, error) 
 	if model == "" {
 		model = r.cfg.DefaultModel
 	}
+	maxTokens := r.cfg.MaxTokens
+	if req.MaxOutputTokens > 0 && req.MaxOutputTokens < maxTokens {
+		maxTokens = req.MaxOutputTokens
+	}
 	body := map[string]any{
 		"model":      model,
-		"max_tokens": r.cfg.MaxTokens,
+		"max_tokens": maxTokens,
 		// Automatic caching puts a breakpoint on the last block, so each tool
 		// loop request reads the conversation the previous one wrote.
 		"cache_control": ephemeral,

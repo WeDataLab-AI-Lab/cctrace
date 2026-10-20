@@ -57,6 +57,28 @@ func TestDashboardSessionResponseCarriesView(t *testing.T) {
 	}
 }
 
+func TestDashboardSessionResponseCarriesAssistantMessageID(t *testing.T) {
+	m := &mockStore{
+		getDashboardUserByAPITokenFn: apiUserTokenLookup("admin-token", &store.DashboardUser{Role: "admin", IsActive: true}),
+		listSessionRecordsFn: func(context.Context, store.SessionRecordFilter) ([]*store.SessionRecord, error) {
+			return []*store.SessionRecord{{SessionID: "s1", RecordType: "assistant", Agent: "claude", UUID: "line-1", MessageID: "message-final",
+				Raw: json.RawMessage(`{"message":{"id":"message-final","role":"assistant","content":"done"}}`)}}, nil
+		},
+	}
+	rec := openAPIRequest(t, newTestServer(m, nil), http.MethodGet, "/api/sessions?session_id=s1&raw=0", "")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d; body=%s", rec.Code, rec.Body.String())
+	}
+	var body []map[string]json.RawMessage
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	var messageID string
+	if len(body) != 1 || json.Unmarshal(body[0]["message_id"], &messageID) != nil || messageID != "message-final" {
+		t.Fatalf("assistant message ID witness missing: %s", rec.Body.String())
+	}
+}
+
 // The assembled viewer renders from view alone and polls every loaded page, so it
 // asks for records without raw; everything else still gets raw by default.
 func TestDashboardSessionResponseOmitsRawOnRequest(t *testing.T) {
@@ -74,6 +96,28 @@ func TestDashboardSessionResponseOmitsRawOnRequest(t *testing.T) {
 	}
 	if _, ok := body[0]["raw"]; ok {
 		t.Fatalf("raw present despite raw=0: %s", rec.Body.String())
+	}
+}
+
+func TestDashboardSessionConversationViewIsExplicit(t *testing.T) {
+	var got store.SessionRecordFilter
+	m := &mockStore{listSessionRecordsFn: func(_ context.Context, f store.SessionRecordFilter) ([]*store.SessionRecord, error) {
+		got = f
+		return nil, nil
+	}}
+	srv := newTestServer(m, nil)
+	for _, tc := range []struct {
+		query string
+		want  bool
+	}{
+		{"?session_id=s1&view=conversation", true},
+		{"?session_id=s1", false},
+		{"?session_id=s1&view=other", false},
+	} {
+		openAPIRequest(t, srv, http.MethodGet, "/api/sessions"+tc.query, "")
+		if got.Conversation != tc.want {
+			t.Errorf("query %q Conversation=%v, want %v", tc.query, got.Conversation, tc.want)
+		}
 	}
 }
 

@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -179,11 +180,23 @@ func (s *PgStore) BackfillSessionRecordLoginEmail(ctx context.Context, since tim
 	if err := lockSessionOverviewSourceMutation(ctx, tx, false); err != nil {
 		return 0, err
 	}
-	updated, ids, err := backfillSessionRecordLoginEmailTx(ctx, tx, since)
+	edges, args := backfillEdgesFor(since)
+	var sessions []string
+	if err := tx.QueryRow(ctx, edges+`
+		SELECT COALESCE(array_agg(DISTINCT sr.session_id), '{}')
+		FROM session_records sr
+		JOIN edges e ON sr.session_id = e.session_id`+backfillMatch, args...).Scan(&sessions); err != nil {
+		return 0, err
+	}
+	peers, err := prepareSessionClaimMutation(ctx, tx, sessions)
 	if err != nil {
 		return 0, err
 	}
-	if err := refreshLoginEmailDerivedRows(ctx, tx, ids); err != nil {
+	updated, ids, err := backfillSessionRecordLoginEmailTx(ctx, tx, since, sessions)
+	if err != nil {
+		return 0, err
+	}
+	if err := refreshLoginEmailDerivedRowsWithClaimPeers(ctx, tx, ids, peers); err != nil {
 		return 0, err
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -192,13 +205,17 @@ func (s *PgStore) BackfillSessionRecordLoginEmail(ctx context.Context, since tim
 	return updated, nil
 }
 
-func backfillSessionRecordLoginEmailTx(ctx context.Context, tx pgx.Tx, since time.Time) (int64, []string, error) {
+func backfillSessionRecordLoginEmailTx(ctx context.Context, tx pgx.Tx, since time.Time, sessions []string) (int64, []string, error) {
 	edges, args := backfillEdgesFor(since)
+	// Re-evaluate attribution after the fences, but only inside the discovered
+	// session scope. New sessions are handled by the next periodic pass.
+	args = append(args, sessions)
 	q := edges + `
 	UPDATE session_records sr
 	SET login_email = e.login_email, login_email_source = 'otel'
 	FROM edges e
-	WHERE sr.session_id = e.session_id` + backfillMatch + `
+	WHERE sr.session_id = e.session_id` + backfillMatch +
+		fmt.Sprintf(` AND sr.session_id = ANY($%d::text[])`, len(args)) + `
 	RETURNING sr.session_id`
 	return updateLoginEmailRows(ctx, tx, q, args...)
 }
@@ -227,17 +244,36 @@ func updateLoginEmailRows(ctx context.Context, tx pgx.Tx, query string, args ...
 }
 
 func refreshLoginEmailDerivedRows(ctx context.Context, tx pgx.Tx, ids []string) error {
+	return refreshLoginEmailDerivedRowsWithClaimPeers(ctx, tx, ids)
+}
+
+func refreshLoginEmailDerivedRowsWithClaimPeers(ctx context.Context, tx pgx.Tx, ids []string, claimPeers ...[]string) error {
 	if err := refreshSessionOverviewRollups(ctx, tx, ids); err != nil {
 		return err
 	}
 	if err := refreshPluginInvocationFacts(ctx, tx, ids); err != nil {
 		return err
 	}
-	return refreshTaskSegmentFacts(ctx, tx, ids)
+	if err := refreshTaskSegmentFacts(ctx, tx, ids); err != nil {
+		return err
+	}
+	if len(claimPeers) > 0 {
+		var peers []string
+		for _, ids := range claimPeers {
+			peers = append(peers, ids...)
+		}
+		return markClaimSourceFactsDirty(ctx, tx, ids, nil, dirtyIdentity, peers)
+	}
+	return markSessionFactsDirty(ctx, tx, ids, nil, dirtyIdentity)
 }
 
 // rebuildAllLoginEmailDerivedRows refreshes retained history after an explicit repair.
 // Preserve the overview -> plugin -> task maintenance lock order used by scoped refreshes.
+// The repair does not say which sessions it touched, so the session analysis
+// queue takes every session that may hold facts read before it: those with facts,
+// and those already queued, whose first computation may be under way -- a new
+// generation is what makes its publish start over (p1b-design §5.1, §5.2). A
+// session in neither is computed from current rows when it first is.
 func rebuildAllLoginEmailDerivedRows(ctx context.Context, tx pgx.Tx) error {
 	if err := rebuildAllSessionOverviewRollups(ctx, tx); err != nil {
 		return err
@@ -245,5 +281,13 @@ func rebuildAllLoginEmailDerivedRows(ctx context.Context, tx pgx.Tx) error {
 	if err := rebuildAllPluginInvocationFacts(ctx, tx); err != nil {
 		return err
 	}
-	return rebuildAllTaskSegmentFacts(ctx, tx)
+	if err := rebuildAllTaskSegmentFacts(ctx, tx); err != nil {
+		return err
+	}
+	computed, err := querySessionIDs(ctx, tx, `SELECT session_id FROM session_analysis_facts
+		UNION SELECT session_id FROM session_fact_dirty`)
+	if err != nil {
+		return err
+	}
+	return markSessionFactsDirty(ctx, tx, computed, nil, dirtyIdentity)
 }

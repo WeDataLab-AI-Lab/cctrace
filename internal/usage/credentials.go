@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 const (
@@ -26,11 +27,26 @@ const (
 	tokenFingerprintLen = 12
 )
 
+// refreshPresence retains only whether the owner has a refresh token.
+// The raw value never becomes part of Credentials or any persisted DTO.
+type refreshPresence bool
+
+func (p *refreshPresence) UnmarshalJSON(data []byte) error {
+	var value string
+	if err := json.Unmarshal(data, &value); err != nil {
+		return ErrCredentialAccessRequired
+	}
+	*p = refreshPresence(value != "")
+	return nil
+}
+
 type claudeCredentials struct {
 	ClaudeAiOauth struct {
-		AccessToken      string `json:"accessToken"`
-		SubscriptionType string `json:"subscriptionType"`
-		RateLimitTier    string `json:"rateLimitTier"`
+		AccessToken      string          `json:"accessToken"`
+		ExpiresAt        int64           `json:"expiresAt"`
+		RefreshAvailable refreshPresence `json:"refreshToken"`
+		SubscriptionType string          `json:"subscriptionType"`
+		RateLimitTier    string          `json:"rateLimitTier"`
 	} `json:"claudeAiOauth"`
 }
 
@@ -41,6 +57,8 @@ type claudeCredentials struct {
 // floor; the price-weighted average needs the plan, so they are returned now.
 type Credentials struct {
 	AccessToken      string
+	ExpiresAt        time.Time
+	RefreshAvailable bool
 	SubscriptionType string // "max"
 	RateLimitTier    string // "default_claude_max_20x"
 }
@@ -147,10 +165,15 @@ func parseCredentials(data []byte, source string) (Credentials, error) {
 		return Credentials{}, fmt.Errorf("parse %s: %w", source, err)
 	}
 	if creds.ClaudeAiOauth.AccessToken == "" {
-		return Credentials{}, fmt.Errorf("no Anthropic OAuth token in %s (run 'claude login')", source)
+		return Credentials{}, ErrAccountAuthentication
+	}
+	var expires time.Time
+	if creds.ClaudeAiOauth.ExpiresAt > 0 {
+		expires = time.UnixMilli(creds.ClaudeAiOauth.ExpiresAt)
 	}
 	return Credentials{
-		AccessToken:      creds.ClaudeAiOauth.AccessToken,
+		AccessToken: creds.ClaudeAiOauth.AccessToken,
+		ExpiresAt:   expires, RefreshAvailable: bool(creds.ClaudeAiOauth.RefreshAvailable),
 		SubscriptionType: creds.ClaudeAiOauth.SubscriptionType,
 		RateLimitTier:    creds.ClaudeAiOauth.RateLimitTier,
 	}, nil

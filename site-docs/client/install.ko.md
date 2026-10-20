@@ -20,8 +20,8 @@ make build-client
 
 다른 플랫폼용은 `make build-linux`(linux/amd64), `make build-windows`(windows/amd64). 결과물 위치는 똑같이 `dist/`.
 
-!!! note "자동 갱신 없음"
-    이 저장소에서 빌드한 클라이언트는 업데이트 공개키가 비어 있어 자동 갱신을 거부한다. 새 버전은 직접 다시 빌드해 교체한다. [클라이언트 업그레이드](sync.md#upgrading-the-client) 참고.
+!!! note "자동 갱신은 기본적으로 꺼져 있음"
+    이 저장소에서 업데이트 공개키 없이 빌드한 클라이언트는 자동 갱신을 거부한다. 새 버전은 직접 다시 빌드해 교체한다. [클라이언트 업그레이드](sync.md#upgrading-the-client) 참고. 서명된 서버 이미지에서 받거나 make로 자기 업데이트 공개키를 넣어 빌드한 클라이언트는 스스로 갱신할 수 있다. [보안 운영](../server/security.md#when-a-client-updates-itself) 참고.
 
 ??? note "팀 배포용 기본 엔드포인트"
     `cctrace init`은 서버의 sync 엔드포인트와 OTEL 엔드포인트를 묻는다. 나눠 줄 바이너리에 이 프롬프트의 기본값을 넣으려면 `deploy/local-defaults.env.example`을 같은 디렉터리에 local-defaults.env 라는 이름으로 복사하고 `DEFAULT_SYNC_ENDPOINT`, `DEFAULT_OTEL_ENDPOINT`를 채운 뒤 다시 빌드한다. 이 파일이 없으면 프롬프트가 빈 값으로 시작하고 사용자가 두 주소를 직접 입력한다. 이 파일은 `make`만 읽는다. 서버 이미지가 제공하는 바이너리(아래)에는 대신 `docker build`에 `--build-arg DEFAULT_SYNC_ENDPOINT=...`, `--build-arg DEFAULT_OTEL_ENDPOINT=...`를 넘긴다.
@@ -47,7 +47,7 @@ $ chmod +x cctrace
 
 내려받기는 HTTPS 또는 신뢰할 수 있는 네트워크에서만. 서버 인증서가 사설 CA([서버 설치](../server/install.md#certificates)의 Caddy `tls internal` 기본값)에서 나왔다면 `curl`은 아직 그 CA를 신뢰하지 않으므로 `--cacert cctrace-ca.crt`를 붙인다.
 
-서버 이미지를 `--build-arg VERSION=...` 없이 빌드했다면 이 바이너리의 버전은 `dev`. `cctrace --version`은 `dev`를 출력하고 `cctrace status`는 개발 빌드로 표시한다. 이 저장소에서 빌드한 다른 클라이언트와 마찬가지로 스스로 갱신하지 않는다.
+서버 이미지를 `--build-arg VERSION=...` 없이 빌드했다면 이 바이너리의 버전은 `dev`. `cctrace --version`은 `dev`를 출력하고 `cctrace status`는 개발 빌드로 표시한다. 서버 이미지를 자기 키로 서명하고 릴리스 `VERSION`을 주어 빌드했을 때만 스스로 갱신한다. [보안 운영](../server/security.md) 참고.
 
 ## PATH 등록
 
@@ -74,6 +74,20 @@ cctrace version dev
 거절하거나 복사가 실패하면 `init`이 수동 방법을 출력한다. `go install ./cmd/cctrace` 후 `~/go/bin`을 `PATH`에 추가하거나, 이미 `PATH`에 있는 디렉터리로 바이너리를 복사하는 방법이다.
 
 이 복사는 `init`이 훅을 쓴 뒤에 일어나므로 훅에는 `init`을 실행한 바이너리 경로가 남는다. 설치된 사본으로 `cctrace env apply`를 한 번 실행해 둔다.
+
+## 홈별 전송 선택 온보딩
+
+다중 홈 온보딩 개편은 구현·검증 중이며, 기존 배포 버전의 지원 여부와 구분이 필요합니다.
+
+1. 기본·추가 Claude/Codex 홈을 발견한 목록에서 등록 대상 선택
+2. 각 홈의 세션 전송 허용 또는 제외를 명시적으로 선택
+3. 최초 소속 배정 확인: 허용 홈은 `default`, 제외 홈은 `personal`
+4. 별도 사용량 조회 선택·수집 시작 대상을 최종 요약에서 확인
+5. 서버 설정과 최종 확인 완료 후 허용한 홈만 수집
+
+전송 선택 전에는 새 홈의 수집을 시작하지 않습니다. 전송 제외는 등록 누락이 아니며, 해당 홈과 계정은 목록에 남습니다. 온보딩 후에는 프로필 소속·전송 제외·수집 실행·사용량 조회를 독립적으로 변경합니다. 개인 프로필에서 제외를 해제해도 프로필 이동이나 수집 시작은 발생하지 않습니다.
+
+전송 제외의 켜기·끄기 모두 대상 홈·계정·프로필을 보여주는 확인 단계가 필요합니다. 취소하면 설정을 유지합니다. 인증 정보가 없는 홈도 상태를 표시하며 목록에서 숨기지 않습니다.
 
 ## 다음 단계
 

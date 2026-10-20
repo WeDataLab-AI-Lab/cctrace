@@ -76,6 +76,51 @@ var sessionDeletionTargets = []sessionDeletionTarget{
 	// point of that test (#396).
 	{table: "login_email_history_session_intervals", key: "session_id"},
 	{table: "codex_login_email_repair_candidates", key: "session_id"},
+	// Session observations. Raw rather than derived, and each one says what the
+	// person was doing in that session and when: its title and name, whether it was
+	// busy or waiting on them, when it ended. Ingest refuses a tombstoned session
+	// under the same per-session lock, so a swept session cannot be observed back.
+	//
+	// collector_heartbeats is not here: it is keyed by identity and names no
+	// session, so DeleteUserData is what removes it.
+	{table: "session_commit_claim_coverage", key: "session_id"},
+	{table: "session_commit_claims", key: "session_id"},
+	{table: "session_snapshots", key: "session_id"},
+	{table: "session_live_states", key: "session_id"},
+	{table: "session_observation_events", key: "session_id"},
+	{table: "session_personal_identity_keys", key: "session_id"},
+	{table: "session_personal_state", key: "session_id"},
+	{table: "session_group_dismissal_identity_keys", key: "session_id"},
+	{table: "session_group_dismissals", key: "session_id"},
+	// Session analysis (p1b-design §2). Derived, which is no exemption: the facts
+	// say what the person asked, when and at what cost; a queue row says when the
+	// session last changed; a copy marker says which of its lines another session
+	// keeps.
+	//
+	// Each is swept by session_id, the session the row is about.
+	// session_record_copies names a second session, original_session_id, and that
+	// is not a sweep key: a marker pointing at a deleted original belongs to the
+	// copy's session, and dropping it changes what that session counts, which only
+	// a path that also queues the copy's session for recompute may do (p1b-design
+	// §6.1).
+	{table: "session_analysis_facts", key: "session_id"},
+	{table: "session_turn_facts", key: "session_id"},
+	{table: "session_activity_segments", key: "session_id"},
+	{table: "session_commit_facts", key: "session_id"},
+	{table: "session_task_facts", key: "session_id"},
+	// P5 records are user-written derivatives of session text; jobs can contain
+	// an active claim and therefore must be swept before their record row.
+	{table: "session_ai_record_jobs", key: "session_id"},
+	{table: "session_ai_records", key: "session_id"},
+	// Timeline preparation. Membership names this session's raw rows, provenance
+	// fingerprints them, and a revision row says the session existed and changed.
+	{table: "session_timeline_members", key: "session_id"},
+	{table: "session_timeline_provenance", key: "session_id"},
+	{table: "session_trace_leases", key: "session_id"},
+	{table: "session_trace_snapshots", key: "session_id"},
+	{table: "session_timeline_revisions", key: "session_id"},
+	{table: "session_fact_dirty", key: "session_id"},
+	{table: "session_record_copies", key: "session_id"},
 	// Repair staging. Transient -- both cascade away when their repair-state row is
 	// deleted -- but while they exist they hold this session's login_email and
 	// account_id, and a tombstone marked swept while they do says something untrue.
@@ -138,8 +183,23 @@ func lockSessionDeletionTargets(ctx context.Context, tx pgx.Tx, ids []string) er
 		return nil
 	}
 	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended(session_id, 392))
-		FROM unnest($1::text[]) session_id ORDER BY session_id`, ids); err != nil {
+		FROM unnest($1::text[]) session_id ORDER BY session_id COLLATE "C"`, ids); err != nil {
 		return fmt.Errorf("lock session deletion targets: %w", err)
+	}
+	return nil
+}
+
+// Read-only consumers share the deletion barrier, so a trace chunk cannot delay
+// basic session metadata. Deletion and derived-row writers retain the exclusive
+// barrier above and still wait until every reader has finished.
+func lockSessionDeletionReaders(ctx context.Context, tx pgx.Tx, ids []string) error {
+	ids = uniqueSortedSessionIDs(ids)
+	if len(ids) == 0 {
+		return nil
+	}
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock_shared(hashtextextended(session_id, 392))
+		FROM unnest($1::text[]) session_id ORDER BY session_id COLLATE "C"`, ids); err != nil {
+		return fmt.Errorf("lock session deletion readers: %w", err)
 	}
 	return nil
 }

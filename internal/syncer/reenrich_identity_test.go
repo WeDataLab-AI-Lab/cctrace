@@ -31,8 +31,10 @@ func TestReenrichFile_SendsResolvedIdentityAuthority(t *testing.T) {
 		t.Fatalf("LoadState: %v", err)
 	}
 
+	state.SetOffset(sessionPath, int64(len(line)))
+
 	s := New(claudeDir, "profile@example.com", "claude-user", state, NewClient(srv.URL, "", ""), nil)
-	if _, err := s.ReenrichOnce(context.Background()); err != nil {
+	if _, err := s.ReenrichOnce(context.Background(), false); err != nil {
 		t.Fatalf("ReenrichOnce: %v", err)
 	}
 	if got.RepositoryID != "example.com/org/claude-reenrich" {
@@ -69,8 +71,10 @@ func TestReenrichFile_SendsFallbackIdentityForDeletedCWD(t *testing.T) {
 		t.Fatalf("LoadState: %v", err)
 	}
 
+	state.SetOffset(sessionPath, int64(len(line)))
+
 	s := New(claudeDir, "profile@example.com", "claude-user", state, NewClient(srv.URL, "", ""), nil)
-	if _, err := s.ReenrichOnce(context.Background()); err != nil {
+	if _, err := s.ReenrichOnce(context.Background(), false); err != nil {
 		t.Fatalf("ReenrichOnce: %v", err)
 	}
 	if len(got.RepositoryID) < len("local:") || got.RepositoryID[:len("local:")] != "local:" {

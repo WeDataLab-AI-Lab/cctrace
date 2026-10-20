@@ -181,8 +181,12 @@ func (r *Runtime) do(ctx context.Context, key, method, path string, body, out an
 			} `json:"error"`
 		}
 		_ = json.Unmarshal(raw, &e)
+		bodyLog := loggedBody(raw, key)
+		if airuntime.HasSensitiveInput(ctx) {
+			bodyLog = "[provider response omitted for sensitive input]"
+		}
 		r.cfg.Logf("clauderuntime: %s %s: status %d request-id %q: %s", method, path, resp.StatusCode,
-			resp.Header.Get("request-id"), loggedBody(raw, key))
+			resp.Header.Get("request-id"), bodyLog)
 		return &httpError{status: resp.StatusCode, errType: e.Error.Type}
 	}
 	if err := json.Unmarshal(raw, out); err != nil {

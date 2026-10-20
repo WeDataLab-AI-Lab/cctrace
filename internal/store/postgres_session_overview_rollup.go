@@ -221,7 +221,12 @@ const (
 	sessionOverviewRollupEventScopedFilterSQL = `WHERE e.session_id <> '' AND e.session_id = ANY($1::text[])`
 )
 
-const sessionOverviewRollupBetweenSourcesSQL = `
+// The session-record arm counts requests: attributedRowsSQL gives a request's
+// tokens to its head line and 0 to its other lines, and a Codex usage row the
+// normalized, defended tokens of its codex_imputed_cost row (p1t-design §2.2).
+// The session filters appended after it stay outside lineWhere: session_id is a
+// partition column, so the planner pushes them below the fragment's window.
+var sessionOverviewRollupBetweenSourcesSQL = `
 		AND (sc.scope_type = 'all' OR sc.scope_value <> '')
 		-- The events arm has to refuse deleted sessions itself. Its sibling below reads
 		-- visible_session_records, which anti-joins excluded_sessions; visible_events does
@@ -238,10 +243,13 @@ const sessionOverviewRollupBetweenSourcesSQL = `
 		COALESCE(sr.agent,'claude'), sr.ts, 'srec', COALESCE(sr.source_file,''),
 		COALESCE(sr.prompt_source,''), COALESCE(sr.entrypoint,''),
 		COALESCE(sr.forked_from_session,''), COALESCE(sr.project_hash,''),
-		sr.input_tokens, sr.output_tokens, 0::double precision, ''::text,
+		sr.req_input_tokens, sr.req_output_tokens, 0::double precision, ''::text,
 		COALESCE(sr.cctrace_version,''), ''::text, COALESCE(sr.account_id,''),
 		COALESCE(sr.login_email_source,'')
-	FROM visible_session_records sr
+	FROM (` + attributedRowsSQL("visible_session_records", "TRUE", []string{
+	"session_id", "profile_email", "user_id", "login_email", "model", "agent", "ts", "source_file",
+	"prompt_source", "entrypoint", "forked_from_session", "project_hash", "cctrace_version",
+	"account_id", "login_email_source"}) + `) sr
 	CROSS JOIN LATERAL (VALUES
 		('all'::text, ''::text), ('user', COALESCE(sr.user_id,'')),
 		('profile', COALESCE(sr.profile_email,'')), ('login', COALESCE(sr.login_email,''))
@@ -387,8 +395,43 @@ func (s *PgStore) sessionOverviewRollupsReady(ctx context.Context) (bool, error)
 	return ready, nil
 }
 
+func sessionOverviewRollupPersonalQuery(f SessionOverviewFilter, buckets bool) (string, []interface{}) {
+	scopeType, scopeValue := sessionOverviewRollupScope(f, true)
+	args := []interface{}{scopeType, scopeValue}
+	n := 2
+	filters := appendRollupFilters(f, true, &n, &args)
+	personalSQL, personalArgs := personalOverviewClassificationSQL(f, n+1)
+	args = append(args, personalArgs...)
+	if personalSQL == "" {
+		if buckets {
+			return `SELECT NULL::text, 0 WHERE false`, nil
+		}
+		return `SELECT 0`, nil
+	}
+	// A matching raw record necessarily contributes a user/profile scope row.
+	// Use that cheap necessary condition before probing every raw chunk for
+	// unrelated all-scope sessions. It does not replace the raw ownership proof
+	// or any cross-source conflict/exclusion checks in personalSQL.
+	ownerScope, ownerArg := "user", n+2
+	if f.PersonalUserID == "" {
+		ownerScope, ownerArg = "profile", n+3
+	}
+	filters = append(filters, fmt.Sprintf(`EXISTS (SELECT 1 FROM session_overview_rollups owner_scope
+		WHERE owner_scope.session_id=r.session_id AND owner_scope.scope_type='%s' AND owner_scope.scope_value=$%d)`, ownerScope, ownerArg))
+	base := `WITH candidate AS MATERIALIZED (SELECT r.session_id FROM session_overview_rollups r WHERE r.scope_type=$1 AND r.scope_value=$2 AND ` + strings.Join(filters, " AND ") + `)`
+	base += personalSQL
+	if buckets {
+		return base + ` SELECT personal_classified.classification,count(*) FROM personal_classified GROUP BY personal_classified.classification`, args
+	}
+	args = append(args, f.Classification)
+	return base + fmt.Sprintf(` SELECT count(*) FROM personal_classified WHERE classification=$%d`, len(args)), args
+}
+
 func (s *PgStore) countSessionOverviewRollups(ctx context.Context, f SessionOverviewFilter) (int, error) {
 	q, args := sessionOverviewRollupCountQuery(f)
+	if f.Classification != "" {
+		q, args = sessionOverviewRollupPersonalQuery(f, false)
+	}
 	var count int
 	if err := s.pool.QueryRow(ctx, q, args...).Scan(&count); err != nil {
 		return 0, err
@@ -397,6 +440,9 @@ func (s *PgStore) countSessionOverviewRollups(ctx context.Context, f SessionOver
 }
 
 func sessionOverviewRollupListQuery(f SessionOverviewFilter) (string, []interface{}) {
+	if f.Classification != "" {
+		return sessionOverviewRollupClassListQuery(f)
+	}
 	limit := f.Limit
 	if limit <= 0 {
 		limit = 200
@@ -409,27 +455,84 @@ func sessionOverviewRollupListQuery(f SessionOverviewFilter) (string, []interfac
 	args := []interface{}{scopeType, scopeValue}
 	n := 2
 	filters := appendRollupFilters(f, false, &n, &args)
-	n++
-	limitArg := n
-	args = append(args, limit)
-	n++
-	offsetArg := n
-	args = append(args, offset)
+	pageSQL := ""
+	if !f.IncludeAnalysis {
+		n++
+		limitArg := n
+		args = append(args, limit)
+		n++
+		offsetArg := n
+		args = append(args, offset)
+		pageSQL = fmt.Sprintf("LIMIT $%d OFFSET $%d", limitArg, offsetArg)
+	}
 	q := fmt.Sprintf(`SELECT r.session_id, r.profile_email, r.user_id, r.login_email,
 		r.account_count, r.model, r.agent, r.start_time, r.end_time, r.input_tokens,
 		r.output_tokens, r.cost_usd, r.event_count, r.has_sync, r.project_hash,
-		COALESCE(p.project_name, ''), r.entrypoint, r.has_enriched,
+		COALESCE(p.project_name, '') AS project_name, r.entrypoint, r.has_enriched,
 		r.cctrace_version, r.claude_version, r.login_email_inferred
 	FROM session_overview_rollups r
 	LEFT JOIN projects p ON p.project_hash = r.project_hash
 		AND p.agent = COALESCE(NULLIF(r.agent, ''), 'claude')
 	WHERE r.scope_type = $1 AND r.scope_value = $2 AND %s
-	ORDER BY r.end_time DESC, r.session_id DESC LIMIT $%d OFFSET $%d`,
-		strings.Join(filters, " AND "), limitArg, offsetArg)
+	ORDER BY r.end_time DESC, r.session_id DESC %s`,
+		strings.Join(filters, " AND "), pageSQL)
+	return q, args
+}
+
+func sessionOverviewRollupClassListQuery(f SessionOverviewFilter) (string, []interface{}) {
+	scopeType, scopeValue := sessionOverviewRollupScope(f, false)
+	args := []interface{}{scopeType, scopeValue}
+	n := 2
+	filters := appendRollupFilters(f, false, &n, &args)
+	personalSQL, personalArgs := personalOverviewClassificationSQL(f, n+1)
+	if personalSQL == "" {
+		return `SELECT r.session_id,r.profile_email,r.user_id,r.login_email,r.account_count,r.model,r.agent,
+			r.start_time,r.end_time,r.input_tokens,r.output_tokens,r.cost_usd,r.event_count,r.has_sync,
+			r.project_hash,''::text AS project_name,r.entrypoint,r.has_enriched,r.cctrace_version,r.claude_version,
+			r.login_email_inferred FROM session_overview_rollups r WHERE false`, nil
+	}
+	args = append(args, personalArgs...)
+	n += len(personalArgs)
+	n++
+	classArg := n
+	args = append(args, f.Classification)
+	limit := f.Limit
+	if limit <= 0 {
+		limit = 200
+	}
+	pageSQL := ""
+	if !f.IncludeAnalysis {
+		n++
+		limitArg := n
+		args = append(args, limit)
+		offset := f.Offset
+		if offset < 0 {
+			offset = 0
+		}
+		n++
+		offsetArg := n
+		args = append(args, offset)
+		pageSQL = fmt.Sprintf("LIMIT $%d OFFSET $%d", limitArg, offsetArg)
+	}
+	q := fmt.Sprintf(`WITH candidate AS (SELECT r.session_id FROM session_overview_rollups r
+		WHERE r.scope_type=$1 AND r.scope_value=$2 AND %s)%s
+		SELECT r.session_id,r.profile_email,r.user_id,r.login_email,r.account_count,r.model,r.agent,
+			r.start_time,r.end_time,r.input_tokens,r.output_tokens,r.cost_usd,r.event_count,r.has_sync,
+			r.project_hash,COALESCE(p.project_name,'') AS project_name,r.entrypoint,r.has_enriched,
+			r.cctrace_version,r.claude_version,r.login_email_inferred
+		FROM personal_classified pc JOIN session_overview_rollups r ON r.session_id=pc.session_id
+			AND r.scope_type=$1 AND r.scope_value=$2
+		LEFT JOIN projects p ON p.project_hash=r.project_hash
+			AND p.agent=COALESCE(NULLIF(r.agent,''),'claude')
+		WHERE pc.classification=$%d
+		ORDER BY r.end_time DESC,r.session_id DESC %s`, strings.Join(filters, " AND "), personalSQL, classArg, pageSQL)
 	return q, args
 }
 
 func (s *PgStore) listSessionOverviewRollups(ctx context.Context, f SessionOverviewFilter) ([]*SessionOverview, error) {
+	if f.IncludeAnalysis {
+		return s.listSessionOverviewAnalysis(ctx, f)
+	}
 	q, args := sessionOverviewRollupListQuery(f)
 	rows, err := s.pool.Query(ctx, q, args...)
 	if err != nil {

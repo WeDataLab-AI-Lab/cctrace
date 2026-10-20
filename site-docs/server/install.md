@@ -22,7 +22,7 @@ $ docker build -f deploy/Dockerfile --build-arg UPDATE_SIGNING=optional \
 ```
 
 - The first image is TimescaleDB with the pgmq extension.
-- The second builds the dashboard and the `cctraced` binary inside Docker. `UPDATE_SIGNING=optional` builds without an update-signing key; the default, `required`, fails without one.
+- The second builds the dashboard and the `cctraced` binary inside Docker. `UPDATE_SIGNING=optional` builds without an update-signing key; the default, `required`, fails without one. Clients from an unsigned build do not update themselves. To sign the build, see [Security operations](security.md#build-a-signed-server-image).
 - If you set `IMAGE_TAG` or `DB_IMAGE_TAG` in the server env file, build with exactly that tag (`cctrace/cctraced:<IMAGE_TAG>`, `cctrace/timescaledb-pgmq:<DB_IMAGE_TAG>`). Compose does not fall back to a registry.
 
 ## 2. Write the server env file
@@ -182,3 +182,4 @@ Set `CADDY_TLS_MODE` to an ACME account email address (for example `ops@example.
 
 - [Configuration](configuration.md): every setting in the server env file
 - [Operations](operations.md): logs, backup, upgrades, retention
+- [Security operations](security.md): signed client updates, server policies, and their keys

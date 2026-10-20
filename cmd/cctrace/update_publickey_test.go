@@ -45,3 +45,44 @@ func TestRepoUpdatePublicKeyIsUsable(t *testing.T) {
 	}
 	t.Logf("%s declares %d trust root(s)", path, len(keys))
 }
+
+// deploy/policy-public-key.txt is the policy trust root, read the same way. It
+// is checked only when present: a mirror has none for the reason above, and an
+// internal checkout may not have issued one yet -- the release image build is
+// what refuses to ship without it. A present file must parse with the parser
+// the client uses and must not repeat the update key: a policy key that can
+// also sign updates is not a separate key.
+func TestRepoPolicyPublicKeyIsUsable(t *testing.T) {
+	// Not parallel: usePolicyTrust sets the process-wide key variables.
+	path := filepath.Join("..", "..", "deploy", "policy-public-key.txt")
+	raw, err := os.ReadFile(path)
+	if os.IsNotExist(err) {
+		t.Skipf("%s absent: this checkout declares no policy trust root", path)
+	}
+	if err != nil {
+		t.Fatalf("read %s: %v", path, err)
+	}
+	encoded := strings.TrimSpace(string(raw))
+	if encoded == "" {
+		t.Fatalf("%s is empty", path)
+	}
+	usePolicyTrust(t, encoded, "")
+	keys, err := trustedPolicyKeys()
+	if err != nil {
+		t.Fatalf("%s is not a usable Ed25519 public key set: %v", path, err)
+	}
+	updateRaw, err := os.ReadFile(filepath.Join("..", "..", "deploy", "update-public-key.txt"))
+	if err != nil && !os.IsNotExist(err) {
+		t.Fatal(err)
+	}
+	if updateKeys, err := parseUpdatePublicKeys(string(updateRaw)); err == nil {
+		for _, key := range keys {
+			for _, updateKey := range updateKeys {
+				if key.Equal(updateKey) {
+					t.Fatalf("%s repeats an update public key", path)
+				}
+			}
+		}
+	}
+	t.Logf("%s declares %d trust root(s)", path, len(keys))
+}

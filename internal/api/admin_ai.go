@@ -183,6 +183,18 @@ func (s *Server) handleAdminAI(w http.ResponseWriter, r *http.Request) {
 		}
 		schedule = scheduleJSON(saved)
 	}
+	policy := runPolicyJSON(aireport.RunPolicy{
+		ConsentRequiredSource: aireport.SourceDefault,
+		MaxConcurrent:         aireport.DefaultMaxConcurrent, MaxConcurrentSource: aireport.SourceDefault, DefaultMaxConcurrent: aireport.DefaultMaxConcurrent,
+	})
+	if svc != nil {
+		p, err := svc.RunPolicy(r.Context())
+		if err != nil {
+			writeErr(w, err)
+			return
+		}
+		policy = runPolicyJSON(p)
+	}
 	resp := enablementJSON(enablement)
 	for k, v := range map[string]any{
 		"runtimes":              runtimes,
@@ -195,9 +207,14 @@ func (s *Server) handleAdminAI(w http.ResponseWriter, r *http.Request) {
 		"model":                 model,
 		"settings":              settings,
 		"schedule":              schedule,
+		"run_policy":            policy,
 		"usage_this_week":       usage,
 	} {
 		resp[k] = v
+	}
+	if err := s.addSessionRecordAdminToAIResponse(r.Context(), resp); err != nil {
+		writeErr(w, err)
+		return
 	}
 	writeJSON(w, http.StatusOK, resp)
 }

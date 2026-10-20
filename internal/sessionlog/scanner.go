@@ -89,7 +89,10 @@ func ScanFileWithSkips(ctx context.Context, path string, fromOffset int64) (reco
 			if len(line) > 0 {
 				var r Record
 				if jsonErr := json.Unmarshal(line, &r); jsonErr == nil {
+					r.keepCollected()
 					r.RawLine = append([]byte(nil), line...)
+					// newOffset has not moved past this line yet, so it is where
+					// the line starts.
 					r.Offset = newOffset
 					records = append(records, &r)
 				}

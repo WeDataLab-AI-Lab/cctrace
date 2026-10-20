@@ -255,7 +255,7 @@ func nextStepsLines(syncEnabled bool) []string {
 	)
 }
 
-func runInit(cmd *cobra.Command, profileName string) (runErr error) {
+func runInit(cmd *cobra.Command, profileName string) error {
 	ir := newInputReader()
 
 	isNamed := profileName != ""
@@ -312,33 +312,40 @@ func runInit(cmd *cobra.Command, profileName string) (runErr error) {
 			fmt.Println("  Cancelled.")
 			return nil
 		case reRunFullSetup:
-			// Continue with full init flow below. Create backup first; restore on error.
+			// Continue with the shared transaction flow; retain a private original backup.
 			backupPath, err := backupProfile(isNamed, profileName)
 			if err != nil {
 				return fmt.Errorf("backup existing profile: %w", err)
 			}
-			defer func() {
-				if runErr != nil {
-					if err := restoreFromBackup(backupPath, isNamed, profileName); err != nil {
-						fmt.Fprintf(os.Stderr, "  Warning: failed to restore backup: %v\n", err)
-					} else {
-						fmt.Fprintln(os.Stderr, "  Restored previous profile from backup.")
-					}
-				} else {
-					_ = os.Remove(backupPath)
-				}
-			}()
+			// The shared home transaction owns rollback. Keep this original as
+			// evidence; never overwrite one definition after a failed CAS/apply.
+			fmt.Printf("  Previous profile backup retained: %s\n", backupPath)
 		}
 	}
 
+	if isNamed {
+		return fmt.Errorf("initialize shared homes with cctrace init, then edit the enrolled profile with cctrace config --profile %s", profileName)
+	}
+	homeSetup, err := beginCLIHomeSetup(cmd.Context(), ir, os.Stdout)
+	if err != nil {
+		return err
+	}
 	p := profile.NewDefault()
 	if existing != nil {
 		// Preserve existing values as defaults
 		p.User = existing.User
 		p.Server = existing.Server
 		p.Options = existing.Options
+		p.HomesVersion = existing.HomesVersion
+		p.Homes = append([]profile.HomeMembership{}, existing.Homes...)
+		if existing.HomeCollection != nil {
+			collection := *existing.HomeCollection
+			p.HomeCollection = &collection
+		}
 		p.CreatedAt = existing.CreatedAt
 		p.ClaudeConfigDir = existing.ClaudeConfigDir
+		p.CodexHome = existing.CodexHome
+		p.PreserveBaseline(existing)
 	}
 
 	fmt.Println()
@@ -350,7 +357,6 @@ func runInit(cmd *cobra.Command, profileName string) (runErr error) {
 	fmt.Println("  ========================")
 
 	// Step 1: Server endpoints
-	var err error
 	if p.Server.SyncEndpoint == "" {
 		p.Server.SyncEndpoint = defaultSyncEndpoint
 	}
@@ -392,7 +398,7 @@ func runInit(cmd *cobra.Command, profileName string) (runErr error) {
 	if p.Server.SyncEndpoint == "" || p.User.ID == "" {
 		return fmt.Errorf("sync endpoint and user ID are required")
 	}
-	var authedPassword string
+	authedPassword := ""
 	for attempt := 1; attempt <= 3; attempt++ {
 		password := ir.PromptPassword("  Temporary password")
 		if password == "" {
@@ -417,10 +423,10 @@ func runInit(cmd *cobra.Command, profileName string) (runErr error) {
 				p.Server.AuthToken = info.ApiToken
 			}
 			fmt.Printf("  [OK] Authenticated: %s <%s>\n", info.Name, info.Email)
+			authedPassword = password
 			if info.MustChangePassword {
 				fmt.Println("  [!] Please change your password on the dashboard.")
 			}
-			authedPassword = password
 			break
 		}
 		if attempt < 3 {
@@ -452,50 +458,42 @@ func runInit(cmd *cobra.Command, profileName string) (runErr error) {
 
 	// Session log sync toggle
 	syncDefault := "y"
-	if !p.Options.SyncEnabled {
+	if !p.CollectionEnabled("claude") {
 		syncDefault = "n"
 	}
 	syncInput := ir.Prompt("  Enable session log sync? (y/n)", syncDefault)
-	p.Options.SyncEnabled = strings.ToLower(strings.TrimSpace(syncInput)) != "n"
+	p.SetCollectionEnabled("claude", strings.ToLower(strings.TrimSpace(syncInput)) != "n")
 
+	for _, h := range homeSetup.decisions {
+		if h.Provider == "codex" {
+			choice := "n"
+			if p.CollectionEnabled("codex") {
+				choice = "y"
+			}
+			answer := ir.Prompt("  Enable default Codex session collection? (y/n; usage choice stays separate)", choice)
+			p.SetCollectionEnabled("codex", strings.ToLower(strings.TrimSpace(answer)) == "y")
+			break
+		}
+	}
 	// Validate
 	if err := profile.Validate(p); err != nil {
 		return fmt.Errorf("validation failed: %w", err)
 	}
 
-	if isNamed {
-		if err := profile.EnsureNamedDir(profileName); err != nil {
-			return fmt.Errorf("failed to create profile directory: %w", err)
-		}
-		if err := profile.SaveNamed(p, profileName); err != nil {
-			return fmt.Errorf("failed to save profile: %w", err)
-		}
-		namedPath, _ := profile.NamedPath(profileName)
-		fmt.Printf("\n  [OK] Profile saved to %s\n", namedPath)
-	} else {
-		// Ensure directory
-		if err := profile.EnsureDir(); err != nil {
-			return fmt.Errorf("failed to create config directory: %w", err)
-		}
-		// Save profile
-		if err := profile.Save(p); err != nil {
-			return fmt.Errorf("failed to save profile: %w", err)
-		}
-		fmt.Printf("\n  [OK] Profile saved to %s\n", profile.DefaultPath())
+	fmt.Println("  After confirmation, exporter/hooks are configured only for allowed homes with collection enabled; excluded and stopped homes are not configured.")
+	if err := homeSetup.commit(cmd.Context(), ir, p); err != nil {
+		return err
 	}
-
-	// Apply OTEL environment to Claude Code settings.json
-	if err := envgen.ApplyToClaudeSettings(p); err != nil {
-		return fmt.Errorf("failed to apply settings: %w", err)
+	current, loadErr := profile.Load()
+	if loadErr != nil {
+		return loadErr
 	}
-
-	settingsPath, _ := envgen.ClaudeSettingsPath(p)
-	fmt.Printf("  [OK] OTEL environment applied to %s\n", settingsPath)
-
-	// The upload token just stored cannot read the Open API; offer a read token
-	// while the password is still at hand. This is after the last step that can
-	// fail init: a failure restores the previous profile from backup, which would
-	// otherwise drop a token the server has already issued.
+	p = current
+	if err := applyConfirmedHomeIntegrations(p); err != nil {
+		return fmt.Errorf("onboarding committed; provider integration incomplete: %w", err)
+	}
+	// Offer the separate read token only after the shared home/server commit.
+	// Later errors never restore a single definition over that transaction.
 	previousReadToken := p.Server.ReadToken
 	offerReadToken(p, authedPassword, hostname(), ir.Prompt, os.Stdout)
 	if p.Server.ReadToken != previousReadToken {
@@ -506,8 +504,6 @@ func runInit(cmd *cobra.Command, profileName string) (runErr error) {
 			reportPropagation(os.Stdout, updated, failed)
 		}
 	}
-
-	offerCodexSync(ir, p, profileName)
 
 	// Detect gjc and offer to enable sync. Unlike Codex, gjc has no OTEL
 	// exporter to configure and no session-start hook, so enabling it alone
@@ -547,23 +543,12 @@ func runInit(cmd *cobra.Command, profileName string) (runErr error) {
 		}
 	}
 
-	fmt.Println()
 	if !envgen.IsCctraceInPath() {
 		if !offerInstallToPath(ir) {
 			printPathInstallGuide()
 		}
 	}
-	for _, line := range nextStepsLines(p.Options.SyncEnabled) {
-		fmt.Println(line)
-	}
-	fmt.Println()
-	fmt.Println("  Run 'cctrace status' to verify your configuration.")
-	fmt.Println()
-
-	// Detect additional .claude-* directories and offer to set up named profiles
-	if !isNamed {
-		detectAndOfferAdditionalHomes(ir, p)
-	}
-
+	fmt.Println("  [OK] Shared home onboarding committed; excluded homes remain in personal with collection stopped.")
+	fmt.Println("  Start the shared capable collector with cctrace sync start. Provider credentials were not copied.")
 	return nil
 }

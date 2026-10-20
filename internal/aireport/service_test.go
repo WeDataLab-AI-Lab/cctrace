@@ -223,6 +223,7 @@ func TestStartPreconditions(t *testing.T) {
 	}
 
 	f = newFixture(t, readyRuntime(nil, goodOutput))
+	f.st.RunPolicy = &store.AIRunPolicy{ConsentRequired: boolPtr(true)}
 	noConsent := Scope{DashboardUserID: 2, UserID: "me"}
 	if _, err := f.svc.Start(ctx, noConsent, f.wk); !errors.Is(err, ErrConsentRequired) {
 		t.Fatalf("no consent err = %v", err)
@@ -238,6 +239,126 @@ func TestStartPreconditions(t *testing.T) {
 	}
 	if len(f.st.Runs) != 0 {
 		t.Fatalf("rejected starts created runs: %d", len(f.st.Runs))
+	}
+}
+
+// Consent is the admin's to require. Left unset, a user who never saw the
+// dialog runs like anyone else; once required, the same user is refused before
+// any run row is written.
+func TestStartWithoutConsentUnlessRequired(t *testing.T) {
+	ctx := context.Background()
+	f := newFixture(t, readyRuntime(nil, goodOutput))
+
+	run, err := f.svc.Start(ctx, Scope{DashboardUserID: 2, UserID: "me"}, f.wk)
+	if err != nil {
+		t.Fatalf("start without consent, not required: %v", err)
+	}
+	waitRun(t, f.st, run.ID, store.AIRunCompleted)
+
+	p, err := f.svc.SetRunPolicy(ctx, boolPtr(true), nil, "admin@example.com")
+	if err != nil || !p.ConsentRequired || p.ConsentRequiredSource != SourceAdmin {
+		t.Fatalf("SetRunPolicy = %+v, %v", p, err)
+	}
+	if _, err := f.svc.Start(ctx, Scope{DashboardUserID: 3, UserID: "me"}, f.wk); !errors.Is(err, ErrConsentRequired) {
+		t.Fatalf("start without consent, required: %v", err)
+	}
+	if len(f.st.Runs) != 1 {
+		t.Fatalf("runs = %d, want only the first", len(f.st.Runs))
+	}
+}
+
+// Runs past the admin's limit wait in the order they were started instead of
+// running together, a freed slot lets the next one in, and raising the limit
+// lets the rest in at once.
+func TestRunsBeyondTheLimitWaitTheirTurn(t *testing.T) {
+	ctx := context.Background()
+	f := newFixture(t, readyRuntime([]airuntime.FakeStep{{WaitForCancel: true}}, goodOutput))
+	if _, err := f.svc.SetRunPolicy(ctx, nil, intPtr(1), "admin@example.com"); err != nil {
+		t.Fatal(err)
+	}
+	var runs []*store.AIReportRun
+	for uid := int64(1); uid <= 3; uid++ {
+		run, err := f.svc.Start(ctx, Scope{DashboardUserID: uid, UserID: "me"}, f.wk)
+		if err != nil {
+			t.Fatalf("start user %d: %v", uid, err)
+		}
+		runs = append(runs, run)
+	}
+	if n := f.svc.queue.waiting(); n != 2 {
+		t.Fatalf("waiting = %d, want 2 behind the limit of 1", n)
+	}
+
+	if err := f.svc.Cancel(ctx, Scope{DashboardUserID: 1, UserID: "me"}, runs[0].ID); err != nil {
+		t.Fatal(err)
+	}
+	waitRun(t, f.st, runs[0].ID, store.AIRunCanceled)
+	if n := f.svc.queue.waiting(); n != 1 {
+		t.Fatalf("waiting after one finished = %d, want 1", n)
+	}
+
+	if _, err := f.svc.SetRunPolicy(ctx, nil, intPtr(3), "admin@example.com"); err != nil {
+		t.Fatal(err)
+	}
+	if n := f.svc.queue.waiting(); n != 0 {
+		t.Fatalf("waiting after raising the limit = %d", n)
+	}
+}
+
+// The limit defaults to the server's own setting, and an admin value outside
+// the range is refused before it is stored.
+func TestRunPolicyLimit(t *testing.T) {
+	ctx := context.Background()
+	f := newFixture(t, readyRuntime(nil, goodOutput))
+	p, err := f.svc.RunPolicy(ctx)
+	if err != nil || p.MaxConcurrent != 2 || p.MaxConcurrentSource != SourceDefault || p.DefaultMaxConcurrent != 2 {
+		t.Fatalf("default = %+v, %v", p, err)
+	}
+	for _, n := range []int{0, -1, MaxConcurrentLimit + 1} {
+		if _, err := f.svc.SetRunPolicy(ctx, nil, intPtr(n), "admin@example.com"); !errors.Is(err, ErrInvalidRunPolicy) {
+			t.Fatalf("limit %d: %v", n, err)
+		}
+	}
+	if f.st.RunPolicy != nil {
+		t.Fatalf("a refused limit was stored: %+v", f.st.RunPolicy)
+	}
+	if p, err = f.svc.SetRunPolicy(ctx, nil, intPtr(4), "admin@example.com"); err != nil || p.MaxConcurrent != 4 || p.MaxConcurrentSource != SourceAdmin {
+		t.Fatalf("saved = %+v, %v", p, err)
+	}
+
+	// A row edited by hand to 0 would admit no run at all; it reads as no admin
+	// word instead.
+	f.st.RunPolicy = &store.AIRunPolicy{MaxConcurrent: intPtr(0)}
+	if p, err = f.svc.RunPolicy(ctx); err != nil || p.MaxConcurrent != 2 || p.MaxConcurrentSource != SourceDefault {
+		t.Fatalf("out of range in the row = %+v, %v", p, err)
+	}
+}
+
+// The saved limit is applied once at boot and then only by an admin's save. A
+// start reading it again could land after a save that raced it and put the
+// old limit back, so starting runs never moves the limit.
+func TestRunLimitIsLoadedAtBootNotPerStart(t *testing.T) {
+	ctx := context.Background()
+	f := newFixture(t, readyRuntime([]airuntime.FakeStep{{WaitForCancel: true}}, goodOutput))
+	f.st.RunPolicy = &store.AIRunPolicy{MaxConcurrent: intPtr(1)}
+	start := func(uid int64) {
+		t.Helper()
+		if _, err := f.svc.Start(ctx, Scope{DashboardUserID: uid, UserID: "me"}, f.wk); err != nil {
+			t.Fatalf("start user %d: %v", uid, err)
+		}
+	}
+
+	start(1)
+	start(2)
+	if n := f.svc.queue.waiting(); n != 0 {
+		t.Fatalf("waiting before the boot load = %d, want 0 under the server default of 2", n)
+	}
+
+	if err := f.svc.LoadRunLimit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	start(3)
+	if n := f.svc.queue.waiting(); n != 1 {
+		t.Fatalf("waiting after the boot load = %d, want 1 under the saved limit of 1", n)
 	}
 }
 
@@ -322,8 +443,12 @@ func TestConsentStateAndGrant(t *testing.T) {
 	ctx := context.Background()
 	other := Scope{DashboardUserID: 5, UserID: "x"}
 	cs, err := f.svc.Consent(ctx, other)
-	if err != nil || cs.Granted || cs.RuntimeKey != testRuntimeKey || cs.DisclosureVersion != DisclosureVersion {
+	if err != nil || cs.Granted || cs.Required || cs.RuntimeKey != testRuntimeKey || cs.DisclosureVersion != DisclosureVersion {
 		t.Fatalf("consent = %+v err=%v", cs, err)
+	}
+	f.st.RunPolicy = &store.AIRunPolicy{ConsentRequired: boolPtr(true)}
+	if cs, err = f.svc.Consent(ctx, other); err != nil || !cs.Required {
+		t.Fatalf("consent once required = %+v err=%v", cs, err)
 	}
 	if err := f.svc.GrantConsent(ctx, other, "codex-app-server:api_key", DisclosureVersion); !errors.Is(err, ErrConsentMismatch) {
 		t.Fatalf("mismatch err = %v", err)
@@ -366,7 +491,6 @@ func (p panicRuntime) Run(context.Context, airuntime.RunRequest, func(airuntime.
 func TestRuntimePanicFailsRunAndFreesSlot(t *testing.T) {
 	f := newFixture(t, panicRuntime{readyRuntime(nil, goodOutput)})
 	f.svc.cfg.MaxConcurrent = 1
-	f.svc.sem = make(chan struct{}, 1)
 	for i := 0; i < 2; i++ {
 		run, err := f.svc.Start(context.Background(), f.sc, f.wk)
 		if err != nil {
@@ -515,6 +639,7 @@ func TestStartRefusesConsentToPreviousDisclosure(t *testing.T) {
 	ctx := context.Background()
 	rt := readyRuntime(nil, goodOutput)
 	f := newFixture(t, rt)
+	f.st.RunPolicy = &store.AIRunPolicy{ConsentRequired: boolPtr(true)}
 	if err := f.st.UpsertAIConsent(ctx, 1, testRuntimeKey, "2026-09-14"); err != nil {
 		t.Fatal(err)
 	}

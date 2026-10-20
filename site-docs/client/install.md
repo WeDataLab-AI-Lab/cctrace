@@ -20,8 +20,8 @@ make build-client
 
 To build for another platform, use `make build-linux` (linux/amd64) or `make build-windows` (windows/amd64). Both also write into `dist/`.
 
-!!! note "No automatic updates"
-    A client built from this repository has an empty update public key, so it refuses automatic updates. To upgrade, rebuild and replace the binary yourself. See [Upgrading the client](sync.md#upgrading-the-client).
+!!! note "Automatic updates are off by default"
+    A client built from this repository without an update public key refuses automatic updates. To upgrade it, rebuild and replace the binary yourself. See [Upgrading the client](sync.md#upgrading-the-client). A client built with your own update public key, from a signed server image or with make, can update itself; see [Security operations](../server/security.md#when-a-client-updates-itself).
 
 ??? note "Default endpoints for a team build"
     `cctrace init` asks for the server's sync and OTEL endpoints. To pre-fill those prompts in the binaries you hand out, copy `deploy/local-defaults.env.example` to a file named local-defaults.env in the same directory, set `DEFAULT_SYNC_ENDPOINT` and `DEFAULT_OTEL_ENDPOINT`, then rebuild. Without that file the prompts start empty and each user types both addresses. That file is read only by `make`. For the binaries the server image serves (below), pass `--build-arg DEFAULT_SYNC_ENDPOINT=...` and `--build-arg DEFAULT_OTEL_ENDPOINT=...` to `docker build` instead.
@@ -47,7 +47,7 @@ $ chmod +x cctrace
 
 Use HTTPS or a network you trust for this download. If the server's certificate comes from a private CA (the Caddy `tls internal` default in [Install the server](../server/install.md#certificates)), `curl` does not trust it yet; add `--cacert cctrace-ca.crt`.
 
-These binaries are built with version `dev` unless the server image was built with `--build-arg VERSION=...`. `cctrace --version` then prints `dev`, and `cctrace status` marks the binary as a development build. Like any client built from this repository, they do not update themselves.
+These binaries are built with version `dev` unless the server image was built with `--build-arg VERSION=...`. `cctrace --version` then prints `dev`, and `cctrace status` marks the binary as a development build. They update themselves only when the server image was built signed, with your own keys and a release `VERSION`; see [Security operations](../server/security.md).
 
 ## Put it on PATH
 
@@ -78,3 +78,17 @@ The copy happens after `init` has written the hooks, so they still name the bina
 ## Next step
 
 [Connect the client to your server](setup.md).
+
+## Per-home transmission onboarding
+
+The multi-home onboarding change is under implementation and validation; check support in the installed release before relying on it.
+
+1. Review discovered standard and additional Claude/Codex homes and select enrollment targets.
+2. Explicitly allow or exclude session uploads for every selected home.
+3. Review initial assignment: allowed homes to `default`, excluded homes to `personal`.
+4. Review separate usage-monitoring choices and which collection jobs will start.
+5. Complete server setup and final confirmation before collection starts for approved homes.
+
+Discovery alone never starts collection for a new home. Upload exclusion does not hide or unregister the home or account. After onboarding, membership, upload exclusion, collection execution, and usage monitoring are independent. Allowing uploads in a stopped personal profile neither moves the home nor starts collection.
+
+Both exclusion directions require confirmation showing affected homes, account, and profiles. Cancel preserves settings. Homes without usable credentials remain listed with their actual state.

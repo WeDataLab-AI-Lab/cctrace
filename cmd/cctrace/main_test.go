@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"testing"
+
+	"github.com/spf13/cobra"
 )
 
 // TestMain neutralizes the Codex environment for the whole package before any
@@ -26,4 +29,17 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	os.Exit(m.Run())
+}
+
+type testExitError struct{ code int }
+
+func (e testExitError) Error() string { return "fixture child failed" }
+func (e testExitError) ExitCode() int { return e.code }
+
+func TestExecutePreservesChildExitCode(t *testing.T) {
+	root := &cobra.Command{Use: "test", SilenceUsage: true, RunE: func(*cobra.Command, []string) error { return testExitError{code: 23} }}
+	var stderr bytes.Buffer
+	if got := execute(root, &stderr); got != 23 {
+		t.Fatalf("execute exit code = %d, want child code 23", got)
+	}
 }

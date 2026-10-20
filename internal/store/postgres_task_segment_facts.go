@@ -29,22 +29,38 @@ func lockTaskSegmentFacts(ctx context.Context, tx pgx.Tx, exclusive bool) error 
 // record arriving out of order during sync).
 // Empty input, including nil, is a no-op. Full rebuilds use a separate entry point.
 func refreshTaskSegmentFacts(ctx context.Context, tx pgx.Tx, sessionIDs []string) error {
+	sessionIDs = factRefreshSessions(sessionIDs)
 	if len(sessionIDs) == 0 {
 		return nil
 	}
 	if err := lockTaskSegmentFacts(ctx, tx, false); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended(session_id, 953))
-		FROM unnest($1::text[]) session_id ORDER BY session_id`, sessionIDs); err != nil {
-		return fmt.Errorf("lock task segment sessions: %w", err)
+	if err := lockTaskSegmentSessions(ctx, tx, sessionIDs); err != nil {
+		return err
 	}
 	if _, err := tx.Exec(ctx, `DELETE FROM task_segment_facts
 		WHERE session_id = ANY($1::text[])`, sessionIDs); err != nil {
 		return fmt.Errorf("delete task segment facts: %w", err)
 	}
-	if _, err := tx.Exec(ctx, taskSegmentFactsInsertSQL, sessionIDs, activitylabel.Version); err != nil {
+	// Unprepared, so each list is planned for itself (taskSegmentFactsRefreshSQL).
+	if _, err := tx.Exec(ctx, taskSegmentFactsRefreshSQL, pgx.QueryExecModeExec, sessionIDs, activitylabel.Version); err != nil {
 		return fmt.Errorf("insert task segment facts: %w", err)
+	}
+	return nil
+}
+
+// lockTaskSegmentSessions takes the per-session locks of the sessions' task
+// segment facts, in session_id order, after the shared fact lock:
+// refreshTaskSegmentFacts takes them before it deletes a session's segments, and
+// step 8 of the P1t transition before it updates their tokens, so the two do not
+// interleave on a session. Not every writer takes them first:
+// CleanupOrphanSessionRecords deletes orphaned segment rows before its refresh
+// takes them.
+func lockTaskSegmentSessions(ctx context.Context, tx pgx.Tx, sessionIDs []string) error {
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended(session_id, 953))
+		FROM unnest($1::text[]) session_id ORDER BY session_id`, sessionIDs); err != nil {
+		return fmt.Errorf("lock task segment sessions: %w", err)
 	}
 	return nil
 }
@@ -58,7 +74,7 @@ func rebuildAllTaskSegmentFacts(ctx context.Context, tx pgx.Tx) error {
 	if _, err := tx.Exec(ctx, `DELETE FROM task_segment_facts`); err != nil {
 		return fmt.Errorf("delete task segment facts: %w", err)
 	}
-	if _, err := tx.Exec(ctx, taskSegmentFactsInsertSQL, nil, activitylabel.Version); err != nil {
+	if _, err := tx.Exec(ctx, taskSegmentFactsRebuildSQL, activitylabel.Version); err != nil {
 		return fmt.Errorf("insert task segment facts: %w", err)
 	}
 	return nil
@@ -156,7 +172,16 @@ func (s *PgStore) ReconcileTaskSegmentFactsForRetention(ctx context.Context) (in
 // LEAD over the small per-segment result, never by a per-turn scalar subquery
 // against the full session_records table. Keeping every intermediate CTE
 // materialized keeps that shape locked in even if a future edit adds one.
-const taskSegmentFactsInsertSQL = `
+//
+// The token columns come from seg_tokens (taskSegmentTokensCTEs), which counts a
+// request once, at its head line; every other column comes from the range
+// LATERALs below.
+//
+// sessions names the sessions to rebuild: $1::text[], or NULL::text[] for all --
+// a value the planner sees, as syncAttributedRowsSQL requires -- and labeler the
+// parameter carrying activitylabel.Version.
+func taskSegmentFactsInsertSQL(sessions, labeler string) string {
+	return `
 WITH turns AS MATERIALIZED (
 	SELECT sr.id, sr.session_id, sr.ts,
 		COALESCE(sr.project_hash, '') AS project_hash,
@@ -188,7 +213,7 @@ WITH turns AS MATERIALIZED (
 	          SELECT 1 FROM jsonb_array_elements(sr.raw->'message'->'content') e
 	          WHERE e->>'type' IN ('text', 'input_text')
 	        )))
-	  AND ($1::text[] IS NULL OR sr.session_id = ANY($1))
+	  AND (` + sessions + ` IS NULL OR sr.session_id = ANY(` + sessions + `))
 	WINDOW w AS (PARTITION BY sr.session_id ORDER BY sr.ts)
 ),
 marked AS MATERIALIZED (
@@ -220,7 +245,8 @@ segs AS MATERIALIZED (
 bounded AS MATERIALIZED (
 	SELECT *, LEAD(start_ts) OVER (PARTITION BY session_id ORDER BY start_ts) AS end_ts
 	FROM segs
-)
+),
+` + taskSegmentTokensCTEs("bounded", sessions) + `
 INSERT INTO task_segment_facts (
 	boundary_record_id, session_id, start_ts, end_ts, boundary_reason,
 	profile_email, login_email, user_id, agent,
@@ -235,7 +261,7 @@ SELECT b.boundary_record_id, b.session_id, b.start_ts, b.end_ts, 'gap_or_project
 	COALESCE(jt.tool_call_count, pi.tool_call_count, ev.tool_call_count, 0),
 	COALESCE(pi.tool_fail_count, ev.tool_fail_count, 0),
 	COALESCE(sr.command_count, 0), COALESCE(sr.had_compact, false),
-	COALESCE(sr.input_tokens, 0), COALESCE(sr.output_tokens, 0),
+	COALESCE(st.input_tokens, 0), COALESCE(st.output_tokens, 0),
 	-- Mirrors internal/activitylabel.Classify exactly (first-match-wins); see
 	-- that package for the Stage 3 cluster-centroid citation behind each rule
 	-- and why ship_signal/test_signal/doc_signal are not computed here.
@@ -247,23 +273,17 @@ SELECT b.boundary_record_id, b.session_id, b.start_ts, b.end_ts, 'gap_or_project
 		WHEN COALESCE(ev.read_calls, 0) > 0 THEN 'explore'
 		ELSE 'unknown'
 	END,
-	$2
+	` + labeler + `
 FROM bounded b
 LEFT JOIN LATERAL (
 	SELECT count(*) AS record_count,
 		count(*) FILTER (WHERE r.command_name <> '') AS command_count,
-		bool_or(r.is_compact_summary) AS had_compact,
-		COALESCE(SUM(CASE WHEN b.agent = 'codex' AND r.record_type = 'usage'
-			THEN GREATEST(COALESCE(r.input_tokens, 0) - COALESCE(r.cache_read_tokens, 0), 0)
-			WHEN b.agent <> 'codex' AND r.record_type = 'assistant'
-			THEN COALESCE(r.input_tokens, 0) ELSE 0 END), 0) AS input_tokens,
-		COALESCE(SUM(CASE WHEN (b.agent = 'codex' AND r.record_type = 'usage')
-			OR (b.agent <> 'codex' AND r.record_type = 'assistant')
-			THEN COALESCE(r.output_tokens, 0) ELSE 0 END), 0) AS output_tokens
+		bool_or(r.is_compact_summary) AS had_compact
 	FROM session_records r
 	WHERE r.session_id = b.session_id AND r.ts >= b.start_ts
 	  AND (b.end_ts IS NULL OR r.ts < b.end_ts)
 ) sr ON true
+LEFT JOIN seg_tokens st ON st.boundary_record_id = b.boundary_record_id
 -- Tool events are OTEL, delivered on a separate ingest path from session_records
 -- sync, and this whole INSERT only runs when refreshTaskSegmentFacts is called from
 -- a session_records write -- OTEL ingest does not trigger it. So a segment's
@@ -320,6 +340,84 @@ LEFT JOIN LATERAL (
 	  AND t.ts >= b.start_ts AND (b.end_ts IS NULL OR t.ts < b.end_ts)
 	HAVING b.agent IN ('gjc', 'omo')
 ) pi ON true`
+}
+
+// The per-session refresh runs unprepared and the full rebuild has a text of its
+// own, for the reasons pluginInvocationFactsRefreshSQL gives. Here a whole-table
+// execution also sorts the whole history into requests, which makes it dearer
+// still beside a generic plan, and a prepared refresh likelier to tip as the
+// table grows.
+var (
+	taskSegmentFactsRefreshSQL = taskSegmentFactsInsertSQL("$1::text[]", "$2")
+	taskSegmentFactsRebuildSQL = taskSegmentFactsInsertSQL("NULL::text[]", "$1")
+)
+
+// taskSegmentTokensCTEs is the WITH entries that count each segment's tokens by
+// request (p1t-design §6.2), ending in seg_tokens(boundary_record_id,
+// input_tokens, output_tokens) with a row for every segment of segs. segs names
+// a relation of segments -- session_id, boundary_record_id, start_ts, end_ts --
+// of the sessions sessionFilter names, and covers each session whole;
+// sessionFilter is a text[] expression, NULL for every session.
+//
+// The token rows are syncAttributedRowsSQL's, so a request counts once, at its
+// head line, and a Codex usage row with its defended, normalised tokens. Each
+// becomes a mark, as does each segment's start, and a row belongs to the last
+// segment that starts at or before it -- the range join start_ts <= ts < end_ts
+// this replaced, with the ties ordered:
+//   - at one instant, segment marks sort before token marks, and segments that
+//     start together sort by end, earliest first and an open one last. Of [T, T)
+//     and [T, next), a row at T goes to [T, next), and [T, T) counts 0.
+//   - a row before the session's first segment belongs to none and is dropped.
+//   - input and output are each 0 when NULL, so a line with output and no input
+//     still counts its output.
+//
+// Each segment's own mark falls in its group, so a segment no row falls in still
+// gets its row in seg_tokens, with 0. Only rows with input or output become marks:
+// the rest add nothing and would only lengthen the sort.
+func taskSegmentTokensCTEs(segs, sessionFilter string) string {
+	return `heads AS MATERIALIZED (
+	SELECT session_id, ts, COALESCE(req_input_tokens, 0) AS input, COALESCE(req_output_tokens, 0) AS output
+	FROM (` + syncAttributedRowsSQL(sessionFilter, []string{"session_id", "ts"}) + `) a
+	WHERE req_input_tokens <> 0 OR req_output_tokens <> 0
+),
+marks AS MATERIALIZED (
+	SELECT session_id, ts, 1 AS kind, input, output, NULL::bigint AS seg_id, NULL::timestamptz AS seg_end
+	FROM heads
+	UNION ALL
+	SELECT session_id, start_ts, 0, 0, 0, boundary_record_id, end_ts FROM ` + segs + `
+),
+ordered AS MATERIALIZED (
+	SELECT *, count(seg_id) OVER (PARTITION BY session_id
+		ORDER BY ts, kind, seg_end NULLS LAST, seg_id ROWS UNBOUNDED PRECEDING) AS grp
+	FROM marks
+),
+assigned AS MATERIALIZED (
+	SELECT input, output, max(seg_id) OVER (PARTITION BY session_id, grp) AS seg_id
+	FROM ordered
+),
+seg_tokens AS MATERIALIZED (
+	SELECT seg_id AS boundary_record_id, sum(input)::bigint AS input_tokens, sum(output)::bigint AS output_tokens
+	FROM assigned
+	WHERE seg_id IS NOT NULL
+	GROUP BY seg_id
+)`
+}
+
+// taskSegmentTokensUpdateSQL is step 8 of the P1t transition for the sessions
+// $1 names: the token columns of their stored segments recounted by request,
+// segment by segment as they stand, and no other column. That is why it is an
+// UPDATE and not refreshTaskSegmentFacts: a session whose OTEL has expired would
+// have its tool counts and activity type recomputed from nothing.
+var taskSegmentTokensUpdateSQL = `
+WITH stored AS MATERIALIZED (
+	SELECT session_id, boundary_record_id, start_ts, end_ts FROM task_segment_facts
+	WHERE session_id = ANY($1::text[])
+),
+` + taskSegmentTokensCTEs("stored", "$1::text[]") + `
+UPDATE task_segment_facts f
+SET input_tokens = t.input_tokens, output_tokens = t.output_tokens
+FROM seg_tokens t
+WHERE f.boundary_record_id = t.boundary_record_id`
 
 // codexSegmentToolCountsBackfill names the one-time recompute of Codex facts built
 // before their tool calls were counted from JSONL, which still say 0.

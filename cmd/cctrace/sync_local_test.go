@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -325,6 +326,34 @@ func TestHealExtraCodexHomesSkipsAliasesOfTheDefaultHome(t *testing.T) {
 	stdout, stderr := captureOutput(t, func() { healExtraCodexHomes(p, "http://localhost:4317", true) })
 	if stdout != "" || stderr != "" {
 		t.Fatalf("default home visited as an extra one:\nstdout:\n%s\nstderr:\n%s", stdout, stderr)
+	}
+}
+
+func TestExplicitCodexHomePathIsRedactedFromSyncDiagnostics(t *testing.T) {
+	home := useTempSyncHome(t)
+	codexHome := filepath.Join(home, "private-codex-home")
+	if err := os.Mkdir(codexHome, 0700); err != nil {
+		t.Fatal(err)
+	}
+	canonical, err := profile.NormalizeCodexHome(codexHome)
+	if err != nil {
+		t.Fatal(err)
+	}
+	foreign := "[otel]\nendpoint = \"http://collector.example.com:4318/v1/metrics\"\n"
+	if err := os.WriteFile(filepath.Join(codexHome, "config.toml"), []byte(foreign), 0600); err != nil {
+		t.Fatal(err)
+	}
+	p := profile.NewDefault()
+	p.CodexHome = canonical
+	p.Options.CodexSyncEnabled = true
+	stdout, stderr := captureOutput(t, func() { healExtraCodexHomes(p, "http://localhost:4317", true) })
+	if strings.Contains(stdout+stderr, canonical) || !strings.Contains(stdout, "explicit Codex home uses another OTEL collector") {
+		t.Fatalf("CodexHome path was logged or status missing:\nstdout:%s\nstderr:%s", stdout, stderr)
+	}
+	var dryRun bytes.Buffer
+	printCodexDryRun(&dryRun, p, nil)
+	if strings.Contains(dryRun.String(), canonical) || !strings.Contains(dryRun.String(), "[explicit Codex home]") {
+		t.Fatalf("dry run did not redact explicit home path: %s", dryRun.String())
 	}
 }
 

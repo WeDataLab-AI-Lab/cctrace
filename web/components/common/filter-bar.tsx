@@ -343,7 +343,7 @@ const FilterBar = ({
         </Button>
       )}
 
-      {showProjectFilter && onProjectChange && uniqueProjects.length > 0 && (
+      {showProjectFilter && onProjectChange && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button

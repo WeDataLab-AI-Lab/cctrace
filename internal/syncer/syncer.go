@@ -134,10 +134,13 @@ type Syncer struct {
 	// collectPrefixes, when non-empty, restricts syncing to repositories whose
 	// normalized id starts with one of these prefixes. Empty collects all.
 	collectPrefixes []string
-	mu              sync.Mutex
-	cwdCache        map[string]*projectMeta
-	metaSent        map[string]time.Time
-	rulesSkipUntil  map[string]time.Time
+	// peerPending are the pending directories of other profiles whose session
+	// ends this Syncer sends too (SetPeerPending).
+	peerPending    []string
+	mu             sync.Mutex
+	cwdCache       map[string]*projectMeta
+	metaSent       map[string]time.Time
+	rulesSkipUntil map[string]time.Time
 	// rulesUnsupported is set once the server reports no project-rules endpoint,
 	// so we stop scanning/sending (and logging) for the rest of the session.
 	rulesUnsupported bool
@@ -158,6 +161,29 @@ type Syncer struct {
 	lastPassSummary string
 	// accounts drops the records of excluded accounts before they are sent.
 	accounts *AccountFilter
+	// obs is what FlushObservations keeps between calls. In memory, like
+	// rulesUnsupported: a restarted daemon starts afresh.
+	obs observationFlushState
+	// backfilled counts the session snapshots the last ReenrichOnce changed.
+	backfilled int
+	// codexState and codexHomes are the Codex syncer's state and the Codex
+	// homes it reads, whose snapshots FlushObservations also sends
+	// (ServeCodexSnapshots). Nil when this process does not sync Codex.
+	codexState *State
+	codexHomes []string
+	// claudeLeft: another profile reads this Syncer's Claude home
+	// (LeaveClaudeHome).
+	claudeLeft bool
+	// gitJobs, gitRoots, gitTops and gitRepos are what counting uncommitted
+	// edited files keeps between flushes, in memory: the git and filesystem work
+	// still running, the work tree each directory lies in, the top level git
+	// names for each work tree, and the repository of each, the last three for
+	// metaTTL. gitRepos is counting's own: cwdCache decides which records are
+	// collected.
+	gitJobs  gitJobs
+	gitRoots rootCache
+	gitTops  map[string]gitAnswer
+	gitRepos map[string]gitAnswer
 	// passMeta holds every lookup made in the current pass, so files sharing a
 	// cwd share one lookup. Cleared at the start of each SyncOnce.
 	passMeta map[string]*projectMeta
@@ -405,6 +431,24 @@ func (s *Syncer) logPassSummary(files int) {
 	log.Printf("[syncer] pass %s", summary)
 }
 
+// skipExisting records a file the state has never seen at size, its end when it
+// was looked at, so that what was on disk then is not collected: the skip of a
+// first run. The skipped bytes are noted in the state, where `cctrace status` can
+// still read them after the log has rotated. The caller saves the state.
+func (s *Syncer) skipExisting(filePath string, size int64) {
+	s.state.SetOffset(filePath, size)
+	s.resetLastCWD(filePath, size)
+	if size > 0 {
+		// Recorded in state as well as logged: sync.log rotates at 10MB and
+		// this line is written once per file, so on an active machine the
+		// log copy ages out. `cctrace status` reads the state copy.
+		s.state.Files[filePath].SkippedAtFirstSync = size
+	}
+	if size > 0 {
+		log.Printf("[syncer] %s: skipped (pre-existing at first sync — earlier content is not collected) bytes=%d", filePath, size)
+	}
+}
+
 func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (int, error) {
 	// If state was freshly created (no prior state file), skip existing files to EOF.
 	// But if state already existed and this is just a new file (new session), sync from the start.
@@ -422,21 +466,10 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 	// So say what was dropped. Logged at the moment of the skip; the next pass finds
 	// the file in state, so this cannot become a per-cycle refrain.
 	if !s.state.HasFile(filePath) && firstRun {
-		fi, err := os.Stat(filePath)
-		if err == nil {
-			s.state.SetOffset(filePath, fi.Size())
-			s.resetLastCWD(filePath, fi.Size())
-			if fi.Size() > 0 {
-				// Recorded in state as well as logged: sync.log rotates at 10MB and
-				// this line is written once per file, so on an active machine the
-				// log copy ages out. `cctrace status` reads the state copy.
-				s.state.Files[filePath].SkippedAtFirstSync = fi.Size()
-			}
+		if fi, err := os.Stat(filePath); err == nil {
+			s.skipExisting(filePath, fi.Size())
 			if err := s.state.Save(); err != nil {
 				log.Printf("[syncer] failed to save state: %v", err)
-			}
-			if fi.Size() > 0 {
-				log.Printf("[syncer] %s: skipped (pre-existing at first sync — earlier content is not collected) bytes=%d", filePath, fi.Size())
 			}
 		}
 		return 0, nil
@@ -471,6 +504,7 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 		}
 		offset = fi.Size()
 		s.state.SetOffset(filePath, offset)
+		s.state.Files[filePath].CollectedFrom = offset
 		s.resetLastCWD(filePath, offset)
 		// Whatever was holding this file's tail is no longer on disk.
 		s.state.Files[filePath].Held = nil
@@ -584,8 +618,12 @@ func (s *Syncer) syncFile(ctx context.Context, filePath string, firstRun bool) (
 		return sent, err
 	}
 
-	// Update state only after successful send
-	s.advanceOffset(filePath, newOffset, tailCWD, tailUnknown).LastAttributionSkill = activeAttributionSkill
+	// Update state only after successful send. Without an allowlist the tail
+	// is one identity and all of it was collected, so what is derived from
+	// collected records takes every record of it.
+	fs := s.advanceOffset(filePath, newOffset, tailCWD, tailUnknown)
+	fs.LastAttributionSkill = activeAttributionSkill
+	s.collectAdvanced(ctx, fs, filePath, projectHash, offset, records)
 	if err := s.state.Save(); err != nil {
 		log.Printf("[syncer] failed to save state: %v", err)
 	}
@@ -602,7 +640,9 @@ func (s *Syncer) newRecordConverter(filePath, projectHash string) func(r *sessio
 	// Subagent files carry a sibling <name>.meta.json whose toolUseId links back to
 	// the main-thread Task/Agent tool_use that spawned this sidechain.
 	toolUseID := subagentToolUseID(filePath)
+	captureReferences := s.newReferenceCapture(s.state.GetOffset(filePath))
 	return func(r *sessionlog.Record, attributionCommand string) *store.SessionRecord {
+		captureReferences(r)
 		sr := toStoreRecord(r, s.profileEmail, s.userID, projectHash, attributionCommand)
 		s.classifyCommand(sr, r.CWD)
 		if sr == nil {
@@ -666,6 +706,9 @@ func (s *Syncer) sendRecords(ctx context.Context, filePath, projectHash string, 
 			// rather than only logged: this is the one state a person has to act
 			// on, and sync.log rotates.
 			if errors.Is(err, ErrBodyTooLarge) {
+				if s.state.Files[filePath] == nil {
+					s.state.Files[filePath] = &FileState{}
+				}
 				if fs := s.state.Files[filePath]; fs != nil && !fs.BlockedByBodyLimit {
 					fs.BlockedByBodyLimit = true
 					if saveErr := s.state.Save(); saveErr != nil {
@@ -709,6 +752,30 @@ func (s *Syncer) persistAdvancedOffset(filePath string, offset, newOffset int64,
 	if err := s.state.Save(); err != nil {
 		log.Printf("[syncer] failed to save state: %v", err)
 	}
+}
+
+// collectAdvanced folds the records an advance of the offset collected into
+// what the file's state derives from them: the session snapshot, the paths the
+// session edited and its git commit calls. from is where the advanced bytes
+// begin, and records are the ones among them that were judged to be sent,
+// whatever became of each on the way out: an excluded account's are dropped
+// there, and consumed like sent ones.
+//
+// It is called where the offset moves and nowhere else -- after it has moved,
+// before the save that stores it -- so each record is taken once, and the
+// offset is stored together with what was built from the bytes it passed. It
+// changes the state and does not save.
+//
+// An advance that collected nothing leaves all three alone: the bytes it
+// passed held no record, or only records the allowlist kept back, and a
+// transcript none of whose lines were collected gets no snapshot.
+func (s *Syncer) collectAdvanced(ctx context.Context, fs *FileState, filePath, projectHash string, from int64, records []*sessionlog.Record) {
+	if len(records) == 0 {
+		return
+	}
+	s.advanceSessionSnapshot(ctx, fs, filePath, from, projectHash, records)
+	s.noteSessionEdits(filePath, from, records)
+	s.noteSessionCommits(filePath, from, records)
 }
 
 // resolveProjectMeta returns cwd's metadata from the metaTTL cache, looking git
@@ -1055,6 +1122,7 @@ func subagentToolUseID(filePath string) string {
 // toStoreRecord converts a sessionlog.Record to a store.SessionRecord.
 // Returns nil for record types that should be skipped.
 func toStoreRecord(r *sessionlog.Record, profileEmail, userID, projectHash string, commandOverride ...string) *store.SessionRecord {
+	r.CaptureReferences()
 	raw, err := json.Marshal(r)
 	if err != nil {
 		return nil

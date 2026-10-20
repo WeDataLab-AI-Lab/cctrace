@@ -48,6 +48,8 @@ var migrations = []string{
 		attrs JSONB DEFAULT '{}'::jsonb
 	)`,
 
+	`ALTER TABLE otel_events ADD COLUMN IF NOT EXISTS source_envelope JSONB`,
+
 	// Convert to hypertable (TimescaleDB). Errors silently if already a hypertable.
 	`DO $$ BEGIN
 		PERFORM create_hypertable('otel_events', 'ts', if_not_exists => TRUE);
@@ -502,6 +504,76 @@ END $$`,
 	// (provider first) cannot serve.
 	`CREATE INDEX IF NOT EXISTS idx_quota_samples_sampled_at
 		ON quota_samples (sampled_at DESC)`,
+	// Personal quota readings have a separate trust boundary from the shared
+	// history above. A dashboard owner must have an independently verified
+	// provider-account binding before any row can be written or read as theirs.
+	// The verification epoch fences rows across revocation and re-approval.
+	`CREATE TABLE IF NOT EXISTS quota_account_bindings (
+		id BIGSERIAL PRIMARY KEY,
+		dashboard_user_id BIGINT NOT NULL REFERENCES dashboard_users(id) ON DELETE CASCADE,
+		billing_provider TEXT NOT NULL CHECK (billing_provider IN ('anthropic','openai')),
+		account_id TEXT NOT NULL CHECK (account_id <> '' AND length(account_id) <= 256),
+		status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','revoked')),
+		verified_at TIMESTAMPTZ,
+		approved_by BIGINT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+		verification_method TEXT NOT NULL DEFAULT '',
+		verification_reference TEXT NOT NULL DEFAULT '',
+		requested_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		UNIQUE (dashboard_user_id, billing_provider, account_id),
+		CHECK (length(verification_method) <= 64),
+		CHECK (length(verification_reference) <= 128),
+		CHECK (status <> 'approved' OR
+			(verified_at IS NOT NULL AND verification_method <> '' AND verification_reference <> ''))
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_quota_account_bindings_status
+		ON quota_account_bindings (status, requested_at DESC)`,
+	// The event table stores only the non-secret verification method/reference,
+	// actor, and time. It never receives screenshots, credentials, or tokens.
+	`CREATE TABLE IF NOT EXISTS quota_account_binding_events (
+		id BIGSERIAL PRIMARY KEY,
+		binding_id BIGINT NOT NULL REFERENCES quota_account_bindings(id) ON DELETE CASCADE,
+		owner_dashboard_user_id BIGINT NOT NULL REFERENCES dashboard_users(id) ON DELETE CASCADE,
+		actor_dashboard_user_id BIGINT REFERENCES dashboard_users(id) ON DELETE SET NULL,
+		action TEXT NOT NULL CHECK (action IN ('requested','approved','revoked')),
+		verification_method TEXT NOT NULL DEFAULT '',
+		verification_reference TEXT NOT NULL DEFAULT '',
+		created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		CHECK (length(verification_method) <= 64),
+		CHECK (length(verification_reference) <= 128),
+		CHECK (action <> 'approved' OR
+			(verification_method <> '' AND verification_reference <> ''))
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_quota_account_binding_events_owner
+		ON quota_account_binding_events (owner_dashboard_user_id, created_at DESC)`,
+	// Unlike quota_samples, these rows never contain a login/profile email or a
+	// session id. The exact binding epoch is required for visibility, so samples
+	// from before a revoke cannot return after a later re-approval.
+	`CREATE TABLE IF NOT EXISTS quota_owner_samples (
+		dashboard_user_id BIGINT NOT NULL,
+		billing_provider TEXT NOT NULL,
+		account_id TEXT NOT NULL,
+		window_key TEXT NOT NULL,
+		sampled_at TIMESTAMPTZ NOT NULL,
+		used_pct DOUBLE PRECISION NOT NULL CHECK (used_pct >= 0 AND used_pct <= 100),
+		resets_at TIMESTAMPTZ,
+		window_minutes INT,
+		plan TEXT NOT NULL DEFAULT '',
+		scope_label TEXT NOT NULL DEFAULT '',
+		severity TEXT NOT NULL DEFAULT '',
+		is_active BOOLEAN,
+		attribution TEXT NOT NULL CHECK (attribution IN ('observed','inferred')),
+		source TEXT NOT NULL DEFAULT 'client_reported' CHECK (source = 'client_reported'),
+		binding_verified_at TIMESTAMPTZ NOT NULL,
+		CHECK (account_id <> '' AND length(account_id) <= 256),
+		CHECK (window_key <> '' AND length(window_key) <= 128),
+		CHECK (window_minutes IS NULL OR window_minutes > 0),
+		PRIMARY KEY (dashboard_user_id, billing_provider, account_id, window_key, sampled_at),
+		FOREIGN KEY (dashboard_user_id, billing_provider, account_id)
+			REFERENCES quota_account_bindings (dashboard_user_id, billing_provider, account_id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_quota_owner_samples_window
+		ON quota_owner_samples (dashboard_user_id, billing_provider, account_id, window_minutes, sampled_at DESC)`,
 
 	// client_versions: one row per profile_email, latest cctrace CLI version reported on sync
 	`CREATE TABLE IF NOT EXISTS client_versions (
@@ -527,6 +599,28 @@ END $$`,
 		ADD COLUMN IF NOT EXISTS update_first_failed_at TIMESTAMPTZ,
 		ADD COLUMN IF NOT EXISTS update_last_failed_at TIMESTAMPTZ,
 		ADD COLUMN IF NOT EXISTS update_fail_reason TEXT NOT NULL DEFAULT ''`,
+
+	// client_policy_reports: what each signed-policy target last said about itself
+	// (#848). Keyed by the target, (installation id, profile), because that pair is
+	// what a policy names -- client_versions is keyed by account, and one account
+	// is several targets. profile is '' for the default profile.
+	`CREATE TABLE IF NOT EXISTS client_policy_reports (
+		installation_id  TEXT        NOT NULL,
+		profile          TEXT        NOT NULL DEFAULT '',
+		profile_email    TEXT        NOT NULL DEFAULT '',
+		user_id          TEXT        NOT NULL DEFAULT '',
+		sync_endpoint    TEXT        NOT NULL DEFAULT '',
+		otel_endpoint    TEXT        NOT NULL DEFAULT '',
+		protocol         TEXT        NOT NULL DEFAULT '',
+		applied_sequence BIGINT      NOT NULL DEFAULT 0,
+		check_result     TEXT        NOT NULL DEFAULT '',
+		check_sequence   BIGINT      NOT NULL DEFAULT 0,
+		check_reason     TEXT        NOT NULL DEFAULT '',
+		client_version   TEXT        NOT NULL DEFAULT '',
+		first_seen_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+		last_seen_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+		PRIMARY KEY (installation_id, profile)
+	)`,
 
 	// retention_settings: durable source of truth for admin-chosen retention per
 	// axis (otel | session). A row means "the operator explicitly set this"; the
@@ -687,6 +781,12 @@ END $$`,
 	// sync header). Empty value = collected by a client older than the release that
 	// introduced this column (see CctraceVersionSince), not "unknown".
 	`ALTER TABLE session_records ADD COLUMN IF NOT EXISTS cctrace_version TEXT NOT NULL DEFAULT ''`,
+	// Exact Codex lifecycle context reconstructed from local JSONL order. Empty IDs
+	// with metadata_known=true mean the row was outside an active root turn.
+	`ALTER TABLE session_records
+		ADD COLUMN IF NOT EXISTS codex_turn_id TEXT NOT NULL DEFAULT '',
+		ADD COLUMN IF NOT EXISTS codex_root_turn_id TEXT NOT NULL DEFAULT '',
+		ADD COLUMN IF NOT EXISTS codex_turn_metadata_known BOOLEAN NOT NULL DEFAULT false`,
 
 	// Provider billing account this record is attributed to (Codex:
 	// chatgpt_account_id from the local auth.json). Empty = the account active
@@ -1899,6 +1999,507 @@ CREATE TABLE IF NOT EXISTS ai_consents (
 	FROM session_records
 	WHERE agent = 'omo' AND record_type = 'assistant'
 	UNION ALL` + weeklyUsageArm,
+
+	// Session observations: what the collector reports about a session that is not
+	// a JSONL line with a stable key -- the latest values of its metadata lines, the
+	// process running it, and when that process changed state or ended
+	// (POST /api/session-observations).
+	//
+	// They live here and not in session_records on purpose. A synthetic record there
+	// moves every aggregate that counts rows or reads first and last ts -- the
+	// rollup's start, end and event_count, a segment's record_count, the Weekly
+	// session count -- and the metadata lines have no uuid or ts to key one by.
+	// These four tables hold only what was observed; anything derived from them is
+	// recomputed on read or by a later stage, never stored beside them.
+	//
+	// The three session-scoped tables carry the columns a read will need to filter
+	// them the way session_records is filtered: user_id, profile_email and
+	// login_email for the rollup's scopes, and login_email, billing_provider and
+	// account_id for an account exclusion (excludedAccountPredicateSQL). No read
+	// applies either yet -- nothing reads these tables -- so whatever reads them
+	// first has to. Ingest refuses an excluded account's items, but an exclusion
+	// can be made after a row landed, and only a read-time filter reaches that row.
+	// A privacy delete or a user merge finds a row by user_id or profile_email, the
+	// columns it already uses. The three are on sessionDeletionTargets.
+	//
+	// Every time a client sends is stored as sent, because newer-wins upserts
+	// compare them. The API skips an item dated more than five minutes past its own
+	// clock, so a client clock running ahead pins a row for at most that long.
+	//
+	// session_snapshots: one row per session per identity, overwritten as the
+	// client's view of the metadata lines changes. observed_at is the client's
+	// clock, and the upsert keeps the newer one, so a retry of an older snapshot
+	// cannot undo a newer one.
+	`CREATE TABLE IF NOT EXISTS session_snapshots (
+		session_id       TEXT        NOT NULL,
+		user_id          TEXT        NOT NULL DEFAULT '',
+		profile_email    TEXT        NOT NULL DEFAULT '',
+		login_email      TEXT        NOT NULL DEFAULT '',
+		agent            TEXT        NOT NULL DEFAULT '',
+		project_hash     TEXT        NOT NULL DEFAULT '',
+		billing_provider TEXT        NOT NULL DEFAULT '',
+		account_id       TEXT        NOT NULL DEFAULT '',
+		collect_version  INT         NOT NULL DEFAULT 0,
+		snapshot         JSONB       NOT NULL,
+		observed_at      TIMESTAMPTZ NOT NULL,
+		received_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+		PRIMARY KEY (session_id, user_id, profile_email)
+	)`,
+	// session_live_states: one row per running instance of a session. A session
+	// resumed in two terminals is two processes, so pid and proc_start are part of
+	// the key -- pid alone is reused by the OS once a process exits. heartbeat_at is
+	// when the client last read the process's state file; status_changed_at is
+	// what the file itself says, and the two answer different questions (alive
+	// versus since when).
+	`CREATE TABLE IF NOT EXISTS session_live_states (
+		session_id        TEXT        NOT NULL,
+		user_id           TEXT        NOT NULL DEFAULT '',
+		profile_email     TEXT        NOT NULL DEFAULT '',
+		login_email       TEXT        NOT NULL DEFAULT '',
+		agent             TEXT        NOT NULL DEFAULT '',
+		project_hash      TEXT        NOT NULL DEFAULT '',
+		billing_provider  TEXT        NOT NULL DEFAULT '',
+		account_id        TEXT        NOT NULL DEFAULT '',
+		pid               BIGINT      NOT NULL,
+		proc_start        TEXT        NOT NULL DEFAULT '',
+		status            TEXT        NOT NULL,
+		waiting_kind      TEXT        NOT NULL DEFAULT '',
+		name              TEXT        NOT NULL DEFAULT '',
+		name_source       TEXT        NOT NULL DEFAULT '',
+		status_changed_at TIMESTAMPTZ,
+		heartbeat_at      TIMESTAMPTZ NOT NULL,
+		received_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+		PRIMARY KEY (session_id, user_id, profile_email, pid, proc_start)
+	)`,
+	// session_observation_events: history, written only when something happened --
+	// a state change, a process gone, a SessionEnd hook -- never per heartbeat, so
+	// its size follows activity rather than uptime. The server writes the first two
+	// itself, when an incoming live state is new or changes status (or, while
+	// waiting, its kind of wait), with an event_id derived from that change; a
+	// client may send only the third, with an event_id of its own. Either way a
+	// resend carries the same id and is a no-op.
+	//
+	// Unlike the two tables above it grows without bound, so it has a retention:
+	// cctraced prunes it by observed_at (SessionObservationEventRetention), or
+	// sooner when the session retention is shorter. The two above are pruned only
+	// when session retention is set (PruneSessionObservations).
+	`CREATE TABLE IF NOT EXISTS session_observation_events (
+		session_id       TEXT        NOT NULL,
+		user_id          TEXT        NOT NULL DEFAULT '',
+		profile_email    TEXT        NOT NULL DEFAULT '',
+		login_email      TEXT        NOT NULL DEFAULT '',
+		agent            TEXT        NOT NULL DEFAULT '',
+		project_hash     TEXT        NOT NULL DEFAULT '',
+		billing_provider TEXT        NOT NULL DEFAULT '',
+		account_id       TEXT        NOT NULL DEFAULT '',
+		event_id         TEXT        NOT NULL,
+		kind             TEXT        NOT NULL CHECK (kind IN ('state_change','gone','session_end')),
+		observed_at      TIMESTAMPTZ NOT NULL,
+		payload          JSONB       NOT NULL DEFAULT '{}',
+		received_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+		PRIMARY KEY (session_id, user_id, profile_email, event_id)
+	)`,
+	// The prune is a range delete by observed_at, which the primary key cannot serve.
+	`CREATE INDEX IF NOT EXISTS idx_session_observation_events_observed_at
+		ON session_observation_events (observed_at)`,
+	// A project's sessions are looked up by project_hash in each of the three
+	// tables (projectSessionTables): ProjectSessionCount, DeleteProject, the
+	// sibling purge of DeleteSession, and PurgeBlockedProjects on every maintenance
+	// tick. An update writes back the project_hash the row already holds, so the
+	// index does not take a heartbeat update off its HOT path.
+	`CREATE INDEX IF NOT EXISTS idx_session_snapshots_project_hash
+		ON session_snapshots (project_hash)`,
+	`CREATE INDEX IF NOT EXISTS idx_session_live_states_project_hash
+		ON session_live_states (project_hash)`,
+	`CREATE INDEX IF NOT EXISTS idx_session_observation_events_project_hash
+		ON session_observation_events (project_hash)`,
+	// collector_heartbeats: one row per identity. heartbeat_at says the collector
+	// is running; last_stored_at says a sync of its records committed. They are kept
+	// apart because client_versions.last_seen_at cannot say the second: it is
+	// written before the insert, so a client whose every sync fails still looks
+	// current there. heartbeat_at is the server's time of receipt, never the
+	// client's clock.
+	//
+	// No session column, so the session sweep never reaches it; deleting a user's
+	// data (DeleteUserData) does, by identity. A request with no profile_email
+	// writes no row: every anonymous client would otherwise share the one.
+	`CREATE TABLE IF NOT EXISTS collector_heartbeats (
+		user_id        TEXT        NOT NULL DEFAULT '',
+		profile_email  TEXT        NOT NULL DEFAULT '',
+		heartbeat_at   TIMESTAMPTZ,
+		last_stored_at TIMESTAMPTZ,
+		client_version TEXT        NOT NULL DEFAULT '',
+		PRIMARY KEY (user_id, profile_email)
+	)`,
+	// Provenance is server-set during authenticated observation ingest. Legacy rows
+	// remain unknown and cannot alone establish ownership of a personal note.
+	`ALTER TABLE session_snapshots ADD COLUMN IF NOT EXISTS identity_provenance TEXT NOT NULL DEFAULT 'unknown'`,
+	`ALTER TABLE session_live_states ADD COLUMN IF NOT EXISTS identity_provenance TEXT NOT NULL DEFAULT 'unknown'`,
+	`ALTER TABLE session_observation_events ADD COLUMN IF NOT EXISTS identity_provenance TEXT NOT NULL DEFAULT 'unknown'`,
+	`CREATE TABLE IF NOT EXISTS session_group_dismissals (
+		dashboard_user_id BIGINT NOT NULL REFERENCES dashboard_users(id) ON DELETE CASCADE,
+		session_id TEXT NOT NULL CHECK (session_id <> ''),
+		source_user_id TEXT NOT NULL DEFAULT '',
+		source_profile_email TEXT NOT NULL DEFAULT '',
+		owner_proof TEXT NOT NULL CHECK (owner_proof IN ('session_record','personal_token_observation')),
+		owner_state TEXT NOT NULL DEFAULT 'valid' CHECK (owner_state IN ('valid','invalidated')),
+		CHECK (source_user_id <> '' OR source_profile_email <> ''),
+		grouping_version INT NOT NULL CHECK (grouping_version > 0),
+		ended_at TIMESTAMPTZ NOT NULL,
+		dismissed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		PRIMARY KEY (dashboard_user_id,session_id,grouping_version,ended_at)
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_session_group_dismissals_owner
+		ON session_group_dismissals (dashboard_user_id,dismissed_at DESC)`,
+	`CREATE TABLE IF NOT EXISTS session_group_dismissal_identity_keys (
+		dashboard_user_id BIGINT NOT NULL,
+		session_id TEXT NOT NULL,
+		grouping_version INT NOT NULL,
+		ended_at TIMESTAMPTZ NOT NULL,
+		source_user_id TEXT NOT NULL DEFAULT '',
+		source_profile_email TEXT NOT NULL DEFAULT '',
+		CHECK (source_user_id <> '' OR source_profile_email <> ''),
+		PRIMARY KEY (dashboard_user_id,session_id,grouping_version,ended_at,source_user_id,source_profile_email),
+		FOREIGN KEY (dashboard_user_id,session_id,grouping_version,ended_at)
+			REFERENCES session_group_dismissals (dashboard_user_id,session_id,grouping_version,ended_at)
+			ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_group_dismissal_identity_user
+		ON session_group_dismissal_identity_keys (source_user_id,session_id) WHERE source_user_id <> ''`,
+	`CREATE INDEX IF NOT EXISTS idx_group_dismissal_identity_email
+		ON session_group_dismissal_identity_keys (source_profile_email,session_id) WHERE source_profile_email <> ''`,
+	`CREATE TABLE IF NOT EXISTS session_personal_state (
+		dashboard_user_id BIGINT NOT NULL REFERENCES dashboard_users(id) ON DELETE CASCADE,
+		session_id TEXT NOT NULL CHECK (session_id <> ''),
+		source_user_id TEXT NOT NULL DEFAULT '',
+		source_profile_email TEXT NOT NULL DEFAULT '',
+		owner_proof TEXT NOT NULL CHECK (owner_proof IN ('session_record','personal_token_observation')),
+		owner_state TEXT NOT NULL DEFAULT 'valid' CHECK (owner_state IN ('valid','invalidated')),
+		classification TEXT NOT NULL DEFAULT 'unsorted'
+			CHECK (classification IN ('unsorted','consulting','working','later','done')),
+		note TEXT NOT NULL DEFAULT '' CHECK (octet_length(note) <= 16384),
+		revision BIGINT NOT NULL DEFAULT 1 CHECK (revision > 0),
+		updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		expires_at TIMESTAMPTZ NOT NULL,
+		PRIMARY KEY (dashboard_user_id,session_id),
+		CHECK (source_user_id <> '' OR source_profile_email <> '')
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_session_personal_note_list
+		ON session_personal_state (dashboard_user_id,updated_at DESC,session_id) WHERE note <> ''`,
+	`CREATE TABLE IF NOT EXISTS session_personal_identity_keys (
+		dashboard_user_id BIGINT NOT NULL,
+		session_id TEXT NOT NULL,
+		source_user_id TEXT NOT NULL DEFAULT '',
+		source_profile_email TEXT NOT NULL DEFAULT '',
+		CHECK (source_user_id <> '' OR source_profile_email <> ''),
+		PRIMARY KEY (dashboard_user_id,session_id,source_user_id,source_profile_email),
+		FOREIGN KEY (dashboard_user_id,session_id)
+			REFERENCES session_personal_state (dashboard_user_id,session_id) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_personal_identity_user
+		ON session_personal_identity_keys (source_user_id,session_id) WHERE source_user_id <> ''`,
+	`CREATE INDEX IF NOT EXISTS idx_personal_identity_email
+		ON session_personal_identity_keys (source_profile_email,session_id) WHERE source_profile_email <> ''`,
+	`CREATE TABLE IF NOT EXISTS dashboard_personal_notes (
+		dashboard_user_id BIGINT PRIMARY KEY REFERENCES dashboard_users(id) ON DELETE CASCADE,
+		note TEXT NOT NULL CHECK (octet_length(note) <= 16384),
+		revision BIGINT NOT NULL DEFAULT 1 CHECK (revision > 0),
+		updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+	)`,
+
+	// session_records.message_id; see postgres_message_id_backfill.go. In this
+	// group and not at the end of dependentViews, where the newer statements go:
+	// visible_session_records is SELECT * over session_records and is recreated at
+	// the top of dependentViews, so a column added after it would reach the view
+	// only on the next boot (see PgStore.Migrate).
+	sessionRecordsMessageIDColumnDDL,
+	// How far BackfillSessionRecordMessageIDs has walked. One row, written by its
+	// first call: the range of Claude assistant ts it found then, and the upper end
+	// of the next window, which walks back from range_end to range_start. There is
+	// no row before that first call. Deleting the row together with the
+	// session_records_message_id_v1 marker -- the P1t rollback runbook does both --
+	// makes the next call record a new range and walk it again.
+	//
+	// No session column: the row is the deployment's progress, not anyone's
+	// session, so a privacy delete has nothing to take from it.
+	`CREATE TABLE IF NOT EXISTS session_records_message_id_cursor (
+		only_row BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK (only_row),
+		range_start TIMESTAMPTZ NOT NULL,
+		range_end TIMESTAMPTZ NOT NULL,
+		next_window_end TIMESTAMPTZ NOT NULL
+	)`,
+	// How far step 4 of the P1t transition has recounted the overview
+	// (recountSessionOverviewTokensStep): the last session_id of the last batch it
+	// committed. One row, written by its first batch. Deleting it together with
+	// the session_overview_tokens_v2 marker -- the P1t rollback runbook does both
+	// -- makes the next call recount from the first session again.
+	//
+	// The id is a position in the walk, not anyone's data, so a privacy delete
+	// does not reach it; deleted_sessions keeps a deleted session's id as well.
+	`CREATE TABLE IF NOT EXISTS session_overview_tokens_cursor (
+		only_row BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK (only_row),
+		last_session_id TEXT NOT NULL
+	)`,
+	// The same for step 8 (recountTaskSegmentTokensStep), which updates the token
+	// columns of the stored task segments: the last session_id of its last
+	// committed batch, deleted with the task_segment_tokens_v2 marker by the P1t
+	// rollback runbook. Like the row above, a position in the walk that a privacy
+	// delete does not reach.
+	`CREATE TABLE IF NOT EXISTS task_segment_tokens_cursor (
+		only_row BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK (only_row),
+		last_session_id TEXT NOT NULL
+	)`,
+
+	// Session analysis (p1b-design §2): one row of facts per session, its turns and
+	// activity segments, the worker's queue, and the copy markers. They sit after
+	// the observation tables and the P1t statements, beside the tables they are
+	// computed from -- the snapshots, and session_records with its message_id
+	// request key -- as p1b-design §2.3 places them. Nothing outside this block
+	// orders them: no foreign key or view ties them to another statement, here or
+	// in dependentViews.
+	//
+	// A boot that finds them in place takes no lock at all. IF NOT EXISTS skips an
+	// existing table or sequence by name without locking it, but CREATE INDEX IF
+	// NOT EXISTS takes SHARE on its table before it looks at the name: once these
+	// tables are written, a boot would wait behind their writers, and every writer
+	// queued after it would wait for the boot. So each index statement runs only
+	// when to_regclass finds no index of that name; the IF NOT EXISTS inside stays
+	// for two boots at once.
+	//
+	// All five tables are on sessionDeletionTargets, and session_analysis_facts,
+	// which carries a project_hash, is on projectSessionTables.
+	//
+	// session_analysis_facts: one row per session, computed from all of its visible
+	// rows. user_ids, profile_emails and login_emails collect every value the
+	// contributing rows carry -- JSONL, OTEL api_request, snapshots -- the empty
+	// string included. owner_user_id and owner_profile_email hold a value only when
+	// their array is exactly that one non-empty value, and are NULL when the
+	// contributing identities are mixed or empty: role=user reads match on them, so
+	// a session that is not wholly the caller's is no one's (p1b-design §2.1).
+	// account_keys lets a read re-apply an account exclusion made after the row was
+	// computed.
+	`CREATE TABLE IF NOT EXISTS session_analysis_facts (
+		session_id             TEXT        PRIMARY KEY,
+		agent                  TEXT        NOT NULL,
+		coverage               TEXT        NOT NULL,              -- full | truncated
+		user_ids               TEXT[]      NOT NULL DEFAULT '{}',
+		profile_emails         TEXT[]      NOT NULL DEFAULT '{}',
+		login_emails           TEXT[]      NOT NULL DEFAULT '{}',
+		owner_user_id          TEXT,
+		owner_profile_email    TEXT,
+		login_email_inferred   BOOLEAN     NOT NULL DEFAULT false,
+		account_keys           JSONB       NOT NULL DEFAULT '[]',
+		project_hash           TEXT        NOT NULL DEFAULT '',
+		repository_key         TEXT        NOT NULL DEFAULT '',   -- repository_id, else project_hash
+		branch                 TEXT        NOT NULL DEFAULT '',
+		model                  TEXT        NOT NULL DEFAULT '',
+		transcript             BOOLEAN     NOT NULL,              -- has JSONL rows
+		title                  TEXT,
+		title_source           TEXT        NOT NULL,              -- custom | ai | agent_name | first_request | none
+		title_state            TEXT        NOT NULL,              -- ok | withheld | redacted | none
+		first_activity_at      TIMESTAMPTZ,
+		last_activity_at       TIMESTAMPTZ,
+		first_record_at        TIMESTAMPTZ,                       -- min ts of the session_records read, copies in, 1970 rows out; for retention only
+		active_seconds         INT         NOT NULL DEFAULT 0,
+		turn_boundaries        TEXT        NOT NULL,              -- observed | undeterminable
+		turn_boundaries_reason TEXT        NOT NULL DEFAULT '',
+		turns                  INT,                               -- NULL: undeterminable
+		requests               INT,
+		inputs                 INT,
+		abandoned_turns        INT,
+		api_requests           INT         NOT NULL DEFAULT 0,
+		input_tokens           BIGINT      NOT NULL DEFAULT 0,
+		output_tokens          BIGINT      NOT NULL DEFAULT 0,
+		cache_read_tokens      BIGINT      NOT NULL DEFAULT 0,
+		cache_create_tokens    BIGINT      NOT NULL DEFAULT 0,
+		cost_usd               DOUBLE PRECISION,
+		cost_source            TEXT        NOT NULL,              -- otel | otel_partial | estimate | estimate_pending | none
+		last_turn_key          TEXT        NOT NULL DEFAULT '',
+		last_turn_status       TEXT        NOT NULL DEFAULT '',
+		last_context_tokens    BIGINT,
+		last_context_window    INT,
+		last_context_source    TEXT        NOT NULL DEFAULT 'unknown', -- observed | model_default | unknown
+		large_window_seen      BOOLEAN     NOT NULL DEFAULT false, -- a hint for the session, not a window
+		open_questions         INT,                               -- NULL: undeterminable or not applicable
+		open_question_turn_key TEXT        NOT NULL DEFAULT '',
+		has_plan_file          BOOLEAN     NOT NULL DEFAULT false,
+		used_plan_mode         BOOLEAN     NOT NULL DEFAULT false,
+		detail                 JSONB       NOT NULL DEFAULT '{}',
+		output_hash            BYTEA       NOT NULL,              -- spares an identical rewrite; invalidates nothing
+		compute_ms             INT         NOT NULL DEFAULT 0,
+		recompute_count        BIGINT      NOT NULL DEFAULT 0,
+		source_generation      BIGINT      NOT NULL,
+		rules_version          INT         NOT NULL,
+		computed_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+	)`,
+	// The owner indexes serve role=user lists, newest activity first; user_ids
+	// serves an administrator's pick of a user, mixed sessions included;
+	// project_hash serves projectSessionTables; first_record_at serves the
+	// retention candidates (p1b-design §6.3).
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_analysis_owner_user') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_analysis_owner_user
+				ON session_analysis_facts (owner_user_id, last_activity_at DESC) WHERE owner_user_id IS NOT NULL;
+		END IF;
+	END $$`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_analysis_owner_profile') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_analysis_owner_profile
+				ON session_analysis_facts (owner_profile_email, last_activity_at DESC) WHERE owner_profile_email IS NOT NULL;
+		END IF;
+	END $$`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_analysis_user_ids') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_analysis_user_ids
+				ON session_analysis_facts USING gin (user_ids);
+		END IF;
+	END $$`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_analysis_project_hash') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_analysis_project_hash
+				ON session_analysis_facts (project_hash);
+		END IF;
+	END $$`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_analysis_first_record') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_analysis_first_record
+				ON session_analysis_facts (first_record_at);
+		END IF;
+	END $$`,
+	// session_turn_facts: one row per turn, Claude's keyed by the uuid of the line
+	// that opened it and Codex's by its root turn id. login_email is the opening
+	// line's, so a /login mid-session shows turn by turn; who may read a turn is
+	// decided by its session's row above (p1b-design §2.2).
+	`CREATE TABLE IF NOT EXISTS session_turn_facts (
+		session_id                TEXT        NOT NULL,
+		turn_key                  TEXT        NOT NULL, -- Codex with no turn id: 'cx:' || ts of the opening user row
+		agent                     TEXT        NOT NULL,
+		ordinal                   INT         NOT NULL, -- start order from 1, abandoned branches included
+		request_no                INT,                  -- NULL: not a request
+		branch                    TEXT        NOT NULL, -- active | abandoned
+		opener_copied             BOOLEAN     NOT NULL DEFAULT false,
+		prompt_id                 TEXT        NOT NULL DEFAULT '',
+		prompt_id_shared          BOOLEAN     NOT NULL DEFAULT false, -- another turn has the same prompt_id
+		opener_uuid               TEXT        NOT NULL DEFAULT '',
+		started_at                TIMESTAMPTZ NOT NULL,
+		ended_at                  TIMESTAMPTZ NOT NULL,
+		input_kind                TEXT        NOT NULL,
+		is_request                BOOLEAN     NOT NULL,
+		login_email               TEXT        NOT NULL DEFAULT '',
+		status                    TEXT        NOT NULL, -- ended | interrupted | error | no_response | open | undeterminable
+		status_reason             TEXT        NOT NULL DEFAULT '',
+		permission_mode           TEXT        NOT NULL DEFAULT '',
+		denied                    BOOLEAN     NOT NULL DEFAULT false,
+		image_count               INT         NOT NULL DEFAULT 0,
+		preview                   TEXT,                 -- first line of the first input, 160 bytes
+		preview_state             TEXT        NOT NULL, -- ok | redacted | withheld | none
+		api_requests              INT         NOT NULL DEFAULT 0, -- API calls, not request_no
+		input_tokens              BIGINT      NOT NULL DEFAULT 0,
+		output_tokens             BIGINT      NOT NULL DEFAULT 0,
+		cache_read_tokens         BIGINT      NOT NULL DEFAULT 0,
+		cache_create_tokens       BIGINT      NOT NULL DEFAULT 0,
+		cost_usd                  DOUBLE PRECISION,
+		cost_source               TEXT        NOT NULL,
+		cost_reason               TEXT        NOT NULL DEFAULT '', -- why unattributable: pre_p0 | shared_prompt_id
+		context_tokens            BIGINT,
+		context_window            INT,
+		context_source            TEXT        NOT NULL, -- observed | model_default | unknown
+		tool_calls                INT         NOT NULL DEFAULT 0,
+		subagents                 INT         NOT NULL DEFAULT 0,
+		last_assistant_message_id TEXT        NOT NULL DEFAULT '',
+		detail                    JSONB       NOT NULL DEFAULT '{}',
+		rules_version             INT         NOT NULL,
+		PRIMARY KEY (session_id, turn_key)
+	)`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_turn_facts_started') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_turn_facts_started
+				ON session_turn_facts (session_id, started_at);
+		END IF;
+	END $$`,
+	// session_activity_segments: a session's activity, cut wherever it went quiet
+	// for 15 minutes, for the weekly calendar. The owner columns are copies of the
+	// session row's, so the calendar filters by owner on this table alone
+	// (p1b-design §2.2).
+	`CREATE TABLE IF NOT EXISTS session_activity_segments (
+		session_id          TEXT        NOT NULL,
+		seg_start           TIMESTAMPTZ NOT NULL,
+		seg_end             TIMESTAMPTZ NOT NULL CHECK (seg_end >= seg_start),
+		owner_user_id       TEXT,
+		owner_profile_email TEXT,
+		agent               TEXT        NOT NULL,
+		records             INT         NOT NULL,
+		human_inputs        INT         NOT NULL,
+		rules_version       INT         NOT NULL,
+		PRIMARY KEY (session_id, seg_start)
+	)`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_segments_owner_user') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_segments_owner_user
+				ON session_activity_segments (owner_user_id, seg_end) WHERE owner_user_id IS NOT NULL;
+		END IF;
+	END $$`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_segments_owner_profile') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_segments_owner_profile
+				ON session_activity_segments (owner_profile_email, seg_end) WHERE owner_profile_email IS NOT NULL;
+		END IF;
+	END $$`,
+	// '[]', not the default '[)': a segment of one line starts and ends at the same
+	// instant, and '[)' makes that range empty, so no overlap query would find it.
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_segments_range') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_segments_range
+				ON session_activity_segments USING gist (tstzrange(seg_start, seg_end, '[]'));
+		END IF;
+	END $$`,
+	// session_fact_dirty: the worker's queue, one row per session whose facts are
+	// owed a recompute. No identity column: a row is a session id and its schedule.
+	// generation comes from a sequence, as the rebuild queue's does, so a value is
+	// never handed out twice, even after the row is cleared and queued again.
+	`CREATE SEQUENCE IF NOT EXISTS session_fact_generation`,
+	`CREATE TABLE IF NOT EXISTS session_fact_dirty (
+		session_id         TEXT        PRIMARY KEY,
+		generation         BIGINT      NOT NULL DEFAULT nextval('session_fact_generation'),
+		removal_generation BIGINT      NOT NULL DEFAULT 0, -- generation of the bump that deleted source rows
+		scan_from_id       BIGINT,                         -- least new session_records.id; NULL: none new, 0: all
+		first_dirty_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+		not_before         TIMESTAMPTZ NOT NULL DEFAULT now(),
+		priority           SMALLINT    NOT NULL DEFAULT 0, -- 0 live, 1 bulk
+		reasons            INT         NOT NULL DEFAULT 0, -- bit set
+		attempts           INT         NOT NULL DEFAULT 0,
+		retry_at           TIMESTAMPTZ,                    -- not picked before this; a bump leaves one still ahead alone
+		last_error         TEXT        NOT NULL DEFAULT ''
+	)`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_fact_dirty_order') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_fact_dirty_order
+				ON session_fact_dirty (priority, first_dirty_at);
+		END IF;
+	END $$`,
+	// session_record_copies: the session_records rows judged copies of a line that
+	// another session keeps -- a fork or a resume writes the same lines again under
+	// a new session -- keyed by the copy's row id. original_session_id is the
+	// session that keeps the line. No identity column: a row is about one record.
+	`CREATE TABLE IF NOT EXISTS session_record_copies (
+		srec_id             BIGINT      PRIMARY KEY, -- every row of a copied line's request, not the line alone
+		session_id          TEXT        NOT NULL,
+		original_session_id TEXT        NOT NULL,
+		record_type         TEXT        NOT NULL,
+		ts                  TIMESTAMPTZ NOT NULL
+	)`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_record_copies_session') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_record_copies_session
+				ON session_record_copies (session_id);
+		END IF;
+	END $$`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_record_copies_original') IS NULL THEN
+			CREATE INDEX IF NOT EXISTS idx_session_record_copies_original
+				ON session_record_copies (original_session_id);
+		END IF;
+	END $$`,
 }
 
 // dropDependentViews runs before every migration pass; dependentViews runs after.
@@ -1953,7 +2554,7 @@ var dropDependentViews = []string{
 // resolved (session_records.login_email fully populated): the first NOT EXISTS above
 // would then cover every row and this second condition, and excluded_sessions with
 // it, could be dropped entirely.
-var dependentViews = []string{
+var dependentViews = append([]string{
 	// The three-key exclusion (excludedAccountPredicateSQL). Of unified_events'
 	// arms only codex_imputed_cost projects a billing id; every other arm reports ''
 	// there, so only the login_email key can match them. The quota read path already
@@ -2015,6 +2616,13 @@ var dependentViews = []string{
 	// time bound -- boundary_record_id carries no window -- so a leading ts would
 	// not be usable and a trailing one only widens the entry for nothing.
 	`CREATE INDEX IF NOT EXISTS idx_srec_id ON session_records (id)`,
+
+	// Owner classification reads these scalar columns for every raw row in the
+	// candidate sessions. The session_id index narrows the lookup, and INCLUDE
+	// makes the raw owner basis available without fetching transcript-bearing
+	// heap pages; raw is intentionally excluded from the index.
+	`CREATE INDEX IF NOT EXISTS idx_srec_owner_basis ON session_records (session_id)
+		INCLUDE (user_id, profile_email, login_email, billing_provider, account_id, project_hash)`,
 
 	// The aggregate the dashboards read, kept so that history survives the raw
 	// tables. Today the only reason a 2026-04 cost still renders is that
@@ -2412,4 +3020,344 @@ var dependentViews = []string{
 	`DROP INDEX IF EXISTS idx_ai_report_runs_scheduled`,
 	`CREATE UNIQUE INDEX IF NOT EXISTS uq_ai_report_runs_scheduled
 		ON ai_report_runs (dashboard_user_id, week) WHERE started_by = 'schedule'`,
+	// Snapshot claim index preparation. Existing snapshots are not backfilled here;
+	// session_commit_claims_v1 must remain absent until a complete rebuild is verified.
+	`CREATE TABLE IF NOT EXISTS session_commit_claims (
+		session_id TEXT NOT NULL,
+		user_id TEXT NOT NULL,
+		profile_email TEXT NOT NULL,
+		repository TEXT NOT NULL CHECK(repository <> ''),
+		commit_hash TEXT NOT NULL CHECK(commit_hash ~ '^([0-9a-f]{40}|[0-9a-f]{64})$'),
+		PRIMARY KEY(session_id,user_id,profile_email,repository,commit_hash),
+		FOREIGN KEY(session_id,user_id,profile_email)
+			REFERENCES session_snapshots(session_id,user_id,profile_email) ON DELETE CASCADE
+	)`,
+	`CREATE INDEX IF NOT EXISTS idx_session_commit_claims_key ON session_commit_claims
+		(repository COLLATE "C",commit_hash COLLATE "C",session_id COLLATE "C")`,
+	`CREATE TABLE IF NOT EXISTS session_commit_claim_coverage (
+		session_id TEXT NOT NULL,
+		user_id TEXT NOT NULL,
+		profile_email TEXT NOT NULL,
+		observed_at TIMESTAMPTZ NOT NULL,
+		source_witness BYTEA NOT NULL CHECK(octet_length(source_witness)=32),
+		PRIMARY KEY(session_id,user_id,profile_email),
+		FOREIGN KEY(session_id,user_id,profile_email)
+			REFERENCES session_snapshots(session_id,user_id,profile_email) ON DELETE CASCADE
+	)`,
+	// usage_hourly_rollups as it stood before the P1t transition recounted it
+	// (p1t-design §5.1): the "before" of the P1t-8 report, kept for audit. No
+	// screen reads it. ArchiveUsageHourlyRollups writes it once.
+	//
+	// Summed down to (bucket, agent, billing_provider, model). No user, profile,
+	// login, team, project or session column, on purpose: a table that names no
+	// one has nothing for a user delete or merge to rewrite, and no session for
+	// the privacy sweep to reach (TestEverySessionScopedTableIsJudged).
+	`CREATE TABLE IF NOT EXISTS usage_hourly_rollups_archive_p1t (
+		bucket TIMESTAMPTZ NOT NULL,
+		agent TEXT NOT NULL DEFAULT '',
+		billing_provider TEXT NOT NULL DEFAULT '',
+		model TEXT NOT NULL DEFAULT '',
+		cost_usd DOUBLE PRECISION NOT NULL DEFAULT 0,
+		input_tokens BIGINT NOT NULL DEFAULT 0,
+		output_tokens BIGINT NOT NULL DEFAULT 0,
+		cache_read_tokens BIGINT NOT NULL DEFAULT 0,
+		cache_create_tokens BIGINT NOT NULL DEFAULT 0,
+		event_count BIGINT NOT NULL DEFAULT 0,
+		archived_at TIMESTAMPTZ NOT NULL,
+		PRIMARY KEY (bucket, agent, billing_provider, model)
+	)`,
+	// Whether a weekly report waits for the user's own consent. NULL is no admin
+	// word, and the default is not to ask: the admin already chose to send
+	// records when turning reports on and picking the runtime.
+	`ALTER TABLE ai_settings ADD COLUMN IF NOT EXISTS consent_required BOOLEAN`,
+	// How many report runs go at once; the rest wait in line. NULL leaves it to
+	// the server's CCTRACE_AI_MAX_CONCURRENT.
+	`ALTER TABLE ai_settings ADD COLUMN IF NOT EXISTS max_concurrent INTEGER`,
+}, sessionTimelineMigrations...)
+
+// sessionTimelineMigrations contains the timeline provenance schema. It stays
+// separate so the older timeline shapes can be exercised in tests.
+var sessionTimelineMigrations = []string{
+	// One row per raw unique tuple, not per non-unique BIGSERIAL id: either the
+	// turn it belongs to with its roles there, or the reason it belongs to none.
+	`CREATE TABLE IF NOT EXISTS session_timeline_members (
+		session_id TEXT NOT NULL,
+		source_ts TIMESTAMPTZ NOT NULL,
+		source_record_type TEXT NOT NULL,
+		source_profile_email TEXT NOT NULL,
+		source_uuid TEXT NOT NULL,
+		source_record_id BIGINT NOT NULL,
+		turn_key TEXT NOT NULL,
+		PRIMARY KEY(session_id,source_ts,source_record_type,source_profile_email,source_uuid)
+	)`,
+	// Source revision and account/copy policy epoch are bumped in the same
+	// transaction as every fact writer; the witness also hashes row xmin, snapshot
+	// content and copy markers so a missed dirty bump cannot publish stale facts.
+	`CREATE SEQUENCE IF NOT EXISTS session_timeline_generation`,
+	`CREATE TABLE IF NOT EXISTS session_timeline_revisions (
+		session_id TEXT PRIMARY KEY, revision BIGINT NOT NULL DEFAULT 0
+	)`,
+	`CREATE TABLE IF NOT EXISTS session_timeline_policy_epoch (
+		only_row BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK(only_row), epoch BIGINT NOT NULL DEFAULT 0
+	)`,
+	`INSERT INTO session_timeline_policy_epoch(only_row) VALUES(TRUE) ON CONFLICT DO NOTHING`,
+	`CREATE TABLE IF NOT EXISTS session_timeline_provenance (
+		session_id TEXT PRIMARY KEY,
+		tracking TEXT NOT NULL CHECK(tracking IN ('tracked','untracked')),
+		source_revision BIGINT NOT NULL,
+		policy_epoch BIGINT NOT NULL,
+		source_witness BYTEA NOT NULL CHECK(octet_length(source_witness)=32),
+		source_rows BIGINT NOT NULL,
+		mapping_version INTEGER NOT NULL CHECK(mapping_version>0)
+	)`,
+	// The rows above came only from the preparation helper: every one names a
+	// turn. Unmapped rows join them here, and each CHECK spells out both sides so
+	// a NULL or an empty string cannot pass it.
+	`ALTER TABLE session_timeline_members ALTER COLUMN turn_key DROP NOT NULL`,
+	`ALTER TABLE session_timeline_members ADD COLUMN IF NOT EXISTS roles TEXT[] NOT NULL DEFAULT '{}'`,
+	`ALTER TABLE session_timeline_members ADD COLUMN IF NOT EXISTS unmapped_reason TEXT`,
+	`DO $$ BEGIN
+		IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'session_timeline_members_result'
+			AND conrelid = 'session_timeline_members'::regclass) THEN
+			ALTER TABLE session_timeline_members ADD CONSTRAINT session_timeline_members_result CHECK (
+				((turn_key IS NOT NULL AND turn_key <> '' AND unmapped_reason IS NULL)
+					OR (turn_key IS NULL AND unmapped_reason IS NOT NULL AND unmapped_reason <> '' AND cardinality(roles) = 0))
+				AND array_position(roles, NULL) IS NULL AND array_position(roles, '') IS NULL);
+		END IF;
+	END $$`,
+	`DROP INDEX IF EXISTS idx_session_timeline_members_turn`,
+	`CREATE INDEX IF NOT EXISTS idx_session_timeline_members_mapped ON session_timeline_members
+		(session_id,turn_key,source_ts,source_uuid,source_record_id,source_record_type,source_profile_email)
+		WHERE turn_key IS NOT NULL`,
+	// A provenance row from before these columns is 'prepared': kept, never
+	// usable, never promoted, and carrying nothing a publish writes. Every other
+	// state carries the hashes and the generation it was published with, as
+	// validSessionTimelinePublish requires of it.
+	`ALTER TABLE session_timeline_provenance ADD COLUMN IF NOT EXISTS timeline_state TEXT NOT NULL DEFAULT 'prepared'`,
+	`ALTER TABLE session_timeline_provenance ADD COLUMN IF NOT EXISTS timeline_reason TEXT NOT NULL DEFAULT ''`,
+	`ALTER TABLE session_timeline_provenance ADD COLUMN IF NOT EXISTS timeline_hash BYTEA`,
+	`ALTER TABLE session_timeline_provenance ADD COLUMN IF NOT EXISTS fact_output_hash BYTEA`,
+	`ALTER TABLE session_timeline_provenance ADD COLUMN IF NOT EXISTS source_generation BIGINT`,
+	`ALTER TABLE session_timeline_provenance ADD COLUMN IF NOT EXISTS rules_version INTEGER`,
+	`DO $$ BEGIN
+		IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'session_timeline_provenance_result'
+			AND conrelid = 'session_timeline_provenance'::regclass) THEN
+			ALTER TABLE session_timeline_provenance ADD CONSTRAINT session_timeline_provenance_result CHECK (
+				(timeline_state = 'prepared' AND timeline_reason = '' AND timeline_hash IS NULL
+					AND fact_output_hash IS NULL AND source_generation IS NULL AND rules_version IS NULL)
+				OR (timeline_state IN ('observed', 'undeterminable', 'truncated')
+					AND COALESCE(octet_length(fact_output_hash), 0) = 32
+					AND COALESCE(source_generation, 0) > 0
+					AND COALESCE(rules_version, 0) > 0
+					AND CASE timeline_state
+						WHEN 'truncated' THEN timeline_hash IS NULL
+						WHEN 'observed' THEN COALESCE(octet_length(timeline_hash), 0) = 32 AND timeline_reason = ''
+						ELSE COALESCE(octet_length(timeline_hash), 0) = 32 AND timeline_reason <> ''
+					END));
+		END IF;
+	END $$`,
+	`DO $$ BEGIN
+		IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname='session_timeline_provenance_tracking_check'
+			AND conrelid='session_timeline_provenance'::regclass
+			AND pg_get_constraintdef(oid) NOT LIKE '%tracked%untracked%') THEN
+			ALTER TABLE session_timeline_provenance DROP CONSTRAINT session_timeline_provenance_tracking_check;
+		END IF;
+		IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='session_timeline_provenance_tracking_check'
+			AND conrelid='session_timeline_provenance'::regclass) THEN
+			ALTER TABLE session_timeline_provenance ADD CONSTRAINT session_timeline_provenance_tracking_check
+				CHECK(tracking IN ('tracked','untracked'));
+		END IF;
+	END $$`, // P5 session records. The per-session tables are in the deletion inventory;
+	// usage, consent, range-request and vocabulary rows are deployment/user state.
+	`CREATE TABLE IF NOT EXISTS session_ai_records (
+		session_id TEXT PRIMARY KEY,
+		outcome TEXT NOT NULL CHECK (outcome IN ('ok','redacted')),
+		reason TEXT NOT NULL DEFAULT '',
+		agent TEXT NOT NULL,
+		owner_user_id TEXT,
+		owner_profile_email TEXT,
+		repository_key TEXT NOT NULL DEFAULT '',
+		account_keys JSONB NOT NULL DEFAULT '[]'::jsonb,
+		prompt_version INT NOT NULL,
+		runtime TEXT NOT NULL DEFAULT '',
+		model TEXT NOT NULL DEFAULT '',
+		facts_hash BYTEA NOT NULL,
+		facts_rules_version INT NOT NULL,
+		basis_hash BYTEA NOT NULL,
+		prefix_hash BYTEA,
+		input_hash BYTEA,
+		source_input_hash BYTEA,
+		covers_until TIMESTAMPTZ,
+		covers_turn_key TEXT NOT NULL DEFAULT '',
+		covered_requests INT NOT NULL DEFAULT 0,
+		source_first_at TIMESTAMPTZ,
+		generated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		generations INT NOT NULL DEFAULT 1,
+		folds INT NOT NULL DEFAULT 0,
+		language TEXT NOT NULL DEFAULT '',
+		headline TEXT,
+		content JSONB,
+		kinds TEXT[] NOT NULL DEFAULT '{}',
+		components TEXT[] NOT NULL DEFAULT '{}',
+		screens TEXT[] NOT NULL DEFAULT '{}',
+		work_total INT NOT NULL DEFAULT 0,
+		work_done INT NOT NULL DEFAULT 0,
+		work_open INT NOT NULL DEFAULT 0,
+		work_unsettled INT NOT NULL DEFAULT 0,
+		uncovered_requests INT NOT NULL DEFAULT 0,
+		search_text TEXT NOT NULL DEFAULT '',
+		calls INT NOT NULL DEFAULT 0,
+		input_bytes INT NOT NULL DEFAULT 0,
+		tokens_reported BOOLEAN NOT NULL DEFAULT false,
+		input_tokens BIGINT,
+		cached_input_tokens BIGINT,
+		output_tokens BIGINT,
+		duration_ms INT NOT NULL DEFAULT 0,
+		CHECK ((outcome = 'ok' AND content IS NOT NULL AND headline IS NOT NULL)
+			OR (outcome = 'redacted' AND content IS NULL AND headline IS NULL))
+	)`,
+	`DO $$ BEGIN
+		IF to_regclass('idx_session_ai_records_owner_user') IS NULL THEN
+			CREATE INDEX idx_session_ai_records_owner_user ON session_ai_records (owner_user_id, repository_key)
+				WHERE owner_user_id IS NOT NULL;
+		END IF;
+		IF to_regclass('idx_session_ai_records_owner_profile') IS NULL THEN
+			CREATE INDEX idx_session_ai_records_owner_profile ON session_ai_records (owner_profile_email, repository_key)
+				WHERE owner_profile_email IS NOT NULL;
+		END IF;
+	END $$`,
+	`CREATE SEQUENCE IF NOT EXISTS session_ai_record_claim`,
+	`CREATE TABLE IF NOT EXISTS session_ai_record_jobs (
+		session_id TEXT PRIMARY KEY,
+		lane TEXT NOT NULL DEFAULT 'live' CHECK (lane IN ('live','backfill','manual')),
+		requested_at TIMESTAMPTZ,
+		requested_by BIGINT,
+		force BOOLEAN NOT NULL DEFAULT false,
+		claim BIGINT,
+		claimed_at TIMESTAMPTZ,
+		attempts INT NOT NULL DEFAULT 0,
+		attempts_basis BYTEA,
+		retry_at TIMESTAMPTZ,
+		last_error TEXT NOT NULL DEFAULT '',
+		updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+	)`,
+	`CREATE TABLE IF NOT EXISTS session_ai_record_budget_reservations (
+		reservation_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+		day DATE NOT NULL,
+		lane TEXT NOT NULL CHECK (lane IN ('live','backfill','manual')),
+		reserved_tokens BIGINT NOT NULL CHECK (reserved_tokens > 0),
+		created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+	)`,
+	`CREATE TABLE IF NOT EXISTS session_ai_record_usage (
+		day DATE NOT NULL,
+		runtime TEXT NOT NULL,
+		model TEXT NOT NULL,
+		lane TEXT NOT NULL,
+		outcome TEXT NOT NULL,
+		sessions BIGINT NOT NULL DEFAULT 0,
+		calls BIGINT NOT NULL DEFAULT 0,
+		unreported_calls BIGINT NOT NULL DEFAULT 0,
+		estimated_cap_tokens BIGINT NOT NULL DEFAULT 0,
+		input_bytes BIGINT NOT NULL DEFAULT 0,
+		input_tokens BIGINT NOT NULL DEFAULT 0,
+		cached_input_tokens BIGINT NOT NULL DEFAULT 0,
+		output_tokens BIGINT NOT NULL DEFAULT 0,
+		duration_ms BIGINT NOT NULL DEFAULT 0,
+		dropped_items BIGINT NOT NULL DEFAULT 0,
+		uncovered_requests BIGINT NOT NULL DEFAULT 0,
+		new_terms BIGINT NOT NULL DEFAULT 0,
+		PRIMARY KEY (day,runtime,model,lane,outcome)
+	)`,
+	`CREATE TABLE IF NOT EXISTS session_ai_record_consents (
+		dashboard_user_id BIGINT NOT NULL REFERENCES dashboard_users(id) ON DELETE CASCADE,
+		runtime_key TEXT NOT NULL,
+		disclosure_version TEXT NOT NULL,
+		consented_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		PRIMARY KEY (dashboard_user_id,runtime_key)
+	)`,
+	`CREATE TABLE IF NOT EXISTS session_ai_record_range_requests (
+		dashboard_user_id BIGINT PRIMARY KEY REFERENCES dashboard_users(id) ON DELETE CASCADE,
+		range_from TIMESTAMPTZ NOT NULL,
+		range_to TIMESTAMPTZ NOT NULL,
+		requested_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		served INT NOT NULL DEFAULT 0,
+		finished_at TIMESTAMPTZ,
+		CHECK (range_to > range_from)
+	)`,
+	`CREATE TABLE IF NOT EXISTS session_ai_record_vocab_pins (
+		repository_key TEXT NOT NULL,
+		axis TEXT NOT NULL CHECK (axis IN ('component','screen')),
+		term TEXT NOT NULL,
+		position INT NOT NULL DEFAULT 0,
+		created_by TEXT NOT NULL DEFAULT '',
+		created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+		PRIMARY KEY (repository_key,axis,term)
+	)`,
+	`ALTER TABLE ai_settings ADD COLUMN IF NOT EXISTS record_enabled BOOLEAN NOT NULL DEFAULT false`,
+	`ALTER TABLE ai_settings ADD COLUMN IF NOT EXISTS record_runtime TEXT NOT NULL DEFAULT ''`,
+	`ALTER TABLE ai_settings ADD COLUMN IF NOT EXISTS record_daily_token_cap BIGINT`,
+	`ALTER TABLE ai_settings ADD COLUMN IF NOT EXISTS record_backfill_enabled BOOLEAN NOT NULL DEFAULT false`,
+	`ALTER TABLE ai_settings ADD COLUMN IF NOT EXISTS record_backfill_days INT`,
+	`ALTER TABLE ai_settings ADD COLUMN IF NOT EXISTS record_backfill_token_budget BIGINT`,
+	`ALTER TABLE ai_settings ADD COLUMN IF NOT EXISTS record_backfill_since TIMESTAMPTZ`,
+	`ALTER TABLE ai_runtime_settings ADD COLUMN IF NOT EXISTS record_model TEXT NOT NULL DEFAULT ''`,
+	`ALTER TABLE ai_runtime_settings ADD COLUMN IF NOT EXISTS record_reasoning_effort TEXT NOT NULL DEFAULT ''`,
+}
+
+var sessionP4FactMigrations = []string{
+	`DO $$ BEGIN
+		IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema=current_schema()
+			AND table_name='session_analysis_facts' AND column_name='commits_state') THEN
+			ALTER TABLE session_analysis_facts ADD COLUMN commits_state TEXT NOT NULL DEFAULT 'not_collected';
+		END IF;
+		IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema=current_schema()
+			AND table_name='session_analysis_facts' AND column_name='commit_count') THEN
+			ALTER TABLE session_analysis_facts ADD COLUMN commit_count INT;
+		END IF;
+		IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema=current_schema()
+			AND table_name='session_analysis_facts' AND column_name='commits_truncated') THEN
+			ALTER TABLE session_analysis_facts ADD COLUMN commits_truncated BOOLEAN NOT NULL DEFAULT false;
+		END IF;
+		IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema=current_schema()
+			AND table_name='session_analysis_facts' AND column_name='tasks_state') THEN
+			ALTER TABLE session_analysis_facts ADD COLUMN tasks_state TEXT NOT NULL DEFAULT 'not_collected';
+		END IF;
+	END $$`,
+	`CREATE TABLE IF NOT EXISTS session_commit_facts (
+		session_id TEXT NOT NULL,
+		ordinal INT NOT NULL,
+		turn_key TEXT NOT NULL DEFAULT '',
+		call_id TEXT NOT NULL DEFAULT '',
+		call_srec_id BIGINT,
+		hash TEXT NOT NULL DEFAULT '',
+		short TEXT NOT NULL DEFAULT '',
+		subject TEXT NOT NULL DEFAULT '',
+		subject_state TEXT NOT NULL,
+		committed_at TIMESTAMPTZ NOT NULL,
+		kind TEXT NOT NULL,
+		source TEXT NOT NULL,
+		repository TEXT NOT NULL DEFAULT '',
+		branch TEXT NOT NULL DEFAULT '',
+		refs TEXT[] NOT NULL DEFAULT '{}',
+		rules_version INT NOT NULL,
+		PRIMARY KEY(session_id,ordinal)
+	)`,
+	`CREATE TABLE IF NOT EXISTS session_task_facts (
+		session_id TEXT NOT NULL,
+		item_key TEXT NOT NULL,
+		kind TEXT NOT NULL,
+		display_id TEXT NOT NULL,
+		title TEXT NOT NULL DEFAULT '',
+		title_state TEXT NOT NULL,
+		summary TEXT NOT NULL DEFAULT '',
+		url TEXT NOT NULL DEFAULT '',
+		added BOOLEAN NOT NULL DEFAULT false,
+		completed BOOLEAN NOT NULL DEFAULT false,
+		edited BOOLEAN NOT NULL DEFAULT false,
+		commit_linked BOOLEAN NOT NULL DEFAULT false,
+		first_ts TIMESTAMPTZ NOT NULL,
+		touches JSONB NOT NULL DEFAULT '[]',
+		rules_version INT NOT NULL,
+		PRIMARY KEY(session_id,item_key)
+	)`,
 }

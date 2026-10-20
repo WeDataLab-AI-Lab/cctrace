@@ -78,6 +78,27 @@ func TestBaseURL_V1SuffixIsNotDoubled(t *testing.T) {
 	}
 }
 
+func TestSensitiveSessionInputSuppressesProviderErrorBodyFromLogs(t *testing.T) {
+	const marker = "SYNTHETIC_PRIVATE_ECHO"
+	f := newFake(t, func(string, int, map[string]any) (int, string) {
+		return http.StatusBadRequest, `{"error":{"message":"` + marker + `"}}`
+	})
+	var logs bytes.Buffer
+	rt := New(Config{APIKey: func(context.Context) (string, error) { return "test-key", nil }, RuntimeKey: "litellm-api",
+		BaseURL: func(context.Context) (string, error) { return f.srv.URL, nil }, ProviderName: "litellm",
+		HTTPClient: f.srv.Client(), Logger: slog.New(slog.NewTextHandler(&logs, nil))})
+	_, err := rt.Run(airuntime.WithSensitiveInput(context.Background()), airuntime.RunRequest{Prompt: "synthetic prompt"}, func(airuntime.Event) {})
+	if err == nil {
+		t.Fatal("expected provider error")
+	}
+	if strings.Contains(logs.String(), marker) {
+		t.Fatalf("provider response echoed sensitive content into logs: %s", logs.String())
+	}
+	if !strings.Contains(logs.String(), "provider response omitted for sensitive input") {
+		t.Fatalf("missing safe diagnostic marker: %s", logs.String())
+	}
+}
+
 // The instructions hold the report's rules and the demand to use the tools. A
 // request that carries only the prompt leaves the model with a schema and no
 // task: it answers with a plan, calls nothing, and the run completes empty

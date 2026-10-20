@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -20,6 +21,10 @@ func execute(root *cobra.Command, stderr io.Writer) int {
 	root.SilenceErrors = true
 	if err := root.Execute(); err != nil {
 		fmt.Fprintln(stderr, "Error:", err)
+		var childExit interface{ ExitCode() int }
+		if errors.As(err, &childExit) && childExit.ExitCode() >= 0 {
+			return childExit.ExitCode()
+		}
 		return 1
 	}
 	return 0
@@ -57,7 +62,9 @@ func newRootCmd() *cobra.Command {
 	rootCmd.AddCommand(killCmd())
 	rootCmd.AddCommand(uninstallCmd())
 	rootCmd.AddCommand(profileCmd())
+	rootCmd.AddCommand(launchCmd())
 	rootCmd.AddCommand(envCmd())
+	rootCmd.AddCommand(localCmd())
 
 	return rootCmd
 }

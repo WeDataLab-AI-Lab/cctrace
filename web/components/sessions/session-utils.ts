@@ -10,7 +10,7 @@ interface ToolPair { id?: string; name: string; input: string; result: string; i
 // ts = the record timestamp this item came from. anchorId = the record's view anchor_id
 // (its uuid, or a server-computed stable hash when it has none); render keys and scroll
 // anchors both use it.
-interface ConversationItem { role: 'user' | 'assistant'; text: string; tools: ToolPair[]; toolUseIds?: string[]; command?: string; commandArgs?: string; compactSummary?: boolean; agentTask?: boolean; anchorId: string; ts?: string }
+interface ConversationItem { role: 'user' | 'assistant'; text: string; tools: ToolPair[]; toolUseIds?: string[]; command?: string; commandArgs?: string; compactSummary?: boolean; agentTask?: boolean; anchorId: string; ts?: string; sourceFile?: string }
 
 const fmt = (n?: number): string => {
   if (n == null || n === 0) return '-';
@@ -86,7 +86,7 @@ const buildConversation = (records: SessionRecord[]): ConversationItem[] => {
     const v = r.view;
     // reasoning has no UI yet; hidden is scaffolding/bookkeeping.
     if (!v || v.kind === 'hidden' || v.kind === 'reasoning') continue;
-    const base = { anchorId: v.anchor_id, ts: r.ts };
+    const base = { anchorId: v.anchor_id, ts: r.ts, ...(r.source_file ? { sourceFile: r.source_file } : {}) };
     const text = v.text ?? '';
 
     // A Codex tool_call record is an assistant turn with calls and no text.
@@ -334,6 +334,10 @@ interface UserPrompt {
   command?: string;
   commandArgs?: string;
   ts?: string;
+  /** The request's ordinal on the whole-session rail, when the metadata index supplied it. */
+  requestNo?: number;
+  tools?: number;
+  subagents?: number;
 }
 
 /**
@@ -378,21 +382,25 @@ const collectUserPrompts = (nodes: AssembledNode[]): UserPrompt[] => {
  * The day is repeated on the right only when the session crossed midnight -- printing
  * it twice for the usual case is noise, and its absence is what marks the unusual one.
  */
-const fmtSessionPeriod = (startTime: string, endTime?: string): string => {
+const createSessionPeriodFormatters = () => ({
+  day: new Intl.DateTimeFormat(undefined, { month: '2-digit', day: '2-digit' }),
+  clock: new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }),
+});
+
+const fmtSessionPeriod = (startTime: string, endTime?: string, formatters = createSessionPeriodFormatters()): string => {
   const start = new Date(startTime);
   if (Number.isNaN(start.getTime())) return '';
 
-  const day = (d: Date) => d.toLocaleString(undefined, { month: '2-digit', day: '2-digit' });
-  const clock = (d: Date) => d.toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' });
-  const startLabel = `${day(start)} ${clock(start)}`;
+  const startDay = formatters.day.format(start);
+  const startLabel = `${startDay} ${formatters.clock.format(start)}`;
 
   const end = endTime ? new Date(endTime) : null;
   // A session still running, or one whose end never made it into the record, has no
   // span to show. Inventing one from "now" would make the row change every render.
   if (!end || Number.isNaN(end.getTime()) || end.getTime() <= start.getTime()) return startLabel;
 
-  const sameDay = day(end) === day(start);
-  return `${startLabel} – ${sameDay ? clock(end) : `${day(end)} ${clock(end)}`}`;
+  const endDay = formatters.day.format(end);
+  return `${startLabel} – ${startDay === endDay ? '' : `${endDay} `}${formatters.clock.format(end)}`;
 };
 
 
@@ -433,4 +441,4 @@ const needsAccountNotice = (s: { login_email_inferred?: boolean; account_count?:
   !!s.login_email_inferred || (s.account_count ?? 1) > 1;
 
 export type { ToolPair, ConversationItem, FileGroup, AssembledNode, UserPrompt };
-export { recordKey, keyRecords, conversationItemKey, dedupeKeys, fmt, fmtCost, fmtSessionPeriod, needsAccountNotice, projectLabel, buildConversation, buildAssembled, collectUserPrompts, groupFilesByFile, isLegacySession, dedupeRecords, isRecentlyActive, anchorAtOrAfter };
+export { recordKey, keyRecords, conversationItemKey, dedupeKeys, fmt, fmtCost, fmtSessionPeriod, createSessionPeriodFormatters, needsAccountNotice, projectLabel, buildConversation, buildAssembled, collectUserPrompts, groupFilesByFile, isLegacySession, dedupeRecords, isRecentlyActive, anchorAtOrAfter };

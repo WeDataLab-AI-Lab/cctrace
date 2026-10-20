@@ -62,6 +62,13 @@ func TestAIEnvParsesValues(t *testing.T) {
 	if env.MaxConcurrent != 2 || env.WallClock != 8*time.Minute {
 		t.Fatalf("unusable values must keep defaults: %+v", env)
 	}
+
+	// Above the range an admin may choose, the environment is held to its top:
+	// the admin screen offers no option that could show a larger value.
+	t.Setenv("CCTRACE_AI_MAX_CONCURRENT", "16")
+	if env = aiEnvFromEnv("/data"); env.MaxConcurrent != aireport.MaxConcurrentLimit {
+		t.Fatalf("over the limit = %d, want %d", env.MaxConcurrent, aireport.MaxConcurrentLimit)
+	}
 }
 
 // CCTRACE_AI_ENABLED is unset, true or false; any other value is off, so a typo

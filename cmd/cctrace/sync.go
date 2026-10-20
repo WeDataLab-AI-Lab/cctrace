@@ -53,8 +53,8 @@ const syncWatchStartWait = 250 * time.Millisecond
 var watchUpdateCheckInterval = 5 * time.Minute
 
 var (
-	runSyncStartFn          = runSyncStart
-	runSyncFinalizeFn       = runSyncFinalize
+	runSyncStartFn          = runManagedStart
+	runSyncFinalizeFn       = runManagedFinalize
 	runSyncFinalizeWorkerFn = runSyncFinalizeWorker
 	runSyncReenrichFn       = runSyncReenrich
 	runSyncAllFn            = runSyncAll
@@ -76,6 +76,12 @@ type syncRunOptions struct {
 	local          bool
 	startAckFile   string
 	finalizeWorker bool
+	// includeContent is `sync reenrich --include-content`; see runSyncReenrich.
+	includeContent bool
+	supervisor     bool
+	profileID      string
+	// jsonOutput is `sync status --json`: the snapshot as the daemon wrote it.
+	jsonOutput bool
 }
 
 func syncCmd() *cobra.Command {
@@ -89,9 +95,34 @@ func syncCmd() *cobra.Command {
 			action := ""
 			if len(args) == 1 {
 				action = args[0]
-				if action != "start" && action != "finalize" && action != "reenrich" {
+				if action != "start" && action != "finalize" && action != "reenrich" && action != "restart" && action != "status" {
 					return fmt.Errorf("unknown sync action %q", action)
 				}
+			}
+			if opts.includeContent && action != "reenrich" {
+				return fmt.Errorf("--include-content applies only to 'cctrace sync reenrich'")
+			}
+			if opts.jsonOutput && action != "status" {
+				return fmt.Errorf("--json applies only to 'cctrace sync status'")
+			}
+			if opts.profileID != "" {
+				if opts.daemonOnce || opts.dryRun || opts.finalizeWorker || action == "reenrich" || action != "start" && action != "finalize" && action != "restart" && !opts.daemon && !opts.watch && !opts.stop && !opts.supervisor {
+					return errors.New("profile-id is only supported for collection control")
+				}
+				name, err := daemonProfileFlag(opts.profileID)
+				if err != nil {
+					return err
+				}
+				if opts.profileName != "" && opts.profileName != name {
+					return errors.New("profile and profile-id disagree")
+				}
+				opts.profileName = name
+			}
+			if opts.supervisor {
+				return runSupervisor(opts)
+			}
+			if action == "restart" || action == "status" {
+				return runManagedAction(cmd.Context(), action, opts.profileName, opts.jsonOutput)
 			}
 
 			if opts.autoProfile && opts.profileName == "" {
@@ -100,7 +131,11 @@ func syncCmd() *cobra.Command {
 					resolvedDir = os.Getenv("CLAUDE_CONFIG_DIR")
 				}
 				if resolvedDir != "" {
-					if name, err := profile.ResolveByClaudeConfigDir(resolvedDir); err == nil && name != "" {
+					name, err := profile.ResolveByClaudeConfigDir(resolvedDir)
+					if err != nil {
+						return err
+					}
+					if name != "" {
 						opts.profileName = name
 					}
 				}
@@ -116,7 +151,7 @@ func syncCmd() *cobra.Command {
 			case "finalize":
 				return runSyncFinalizeFn(opts.claudeDir, opts.profileName, opts.profileEmail, opts.endpoint, opts.local)
 			case "reenrich":
-				return runSyncReenrichFn(opts.claudeDir, opts.profileName, opts.profileEmail, opts.endpoint, opts.local)
+				return runSyncReenrichFn(opts.claudeDir, opts.profileName, opts.profileEmail, opts.endpoint, opts.local, opts.includeContent)
 			}
 
 			// No profile specified + one-shot mode: sync all profiles.
@@ -133,17 +168,24 @@ func syncCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&opts.daemon, "daemon", false, "Run sync in background as a daemon process")
 	cmd.Flags().BoolVar(&opts.daemonOnce, "once", false, "With --daemon: sync once then exit (for SessionEnd hook)")
 	cmd.Flags().BoolVar(&opts.stop, "stop", false, "Stop a running daemon")
+	cmd.Flags().BoolVar(&opts.jsonOutput, "json", false, "With status: print the daemon's snapshot as JSON instead of a table")
 	cmd.Flags().DurationVar(&opts.interval, "interval", 30*time.Second, "Poll interval for --watch mode")
 	cmd.Flags().StringVar(&opts.profileName, "profile", "", "Named profile to use (overrides CCTRACE_PROFILE env var)")
 	cmd.Flags().BoolVar(&opts.autoProfile, "auto-profile", false, "Auto-select profile from CLAUDE_CONFIG_DIR environment variable")
 	cmd.Flags().StringVar(&opts.profileEmail, "profile-email", "", "Override profile email (overrides CCTRACE_PROFILE_EMAIL env var)")
 	cmd.Flags().StringVar(&opts.endpoint, "endpoint", "", "Override server HTTP endpoint (e.g. http://localhost:8080)")
 	cmd.Flags().BoolVar(&opts.local, "local", false, "Use local cctraced endpoints from env/.env (or localhost defaults)")
+	cmd.Flags().BoolVar(&opts.includeContent, "include-content", false, "With reenrich: also recover instruction files, hook output, system messages, answers, queued prompts, plans and recaps within the permitted collection range, under the current redaction options")
 	cmd.Flags().StringVar(&opts.startAckFile, "start-ack-file", "", "Internal start acknowledgement file")
 	cmd.Flags().StringVar(&hookCollectFile, "collect-file", "", "Internal: session file to collect from the start on the first pass")
 	_ = cmd.Flags().MarkHidden("collect-file")
 	cmd.Flags().BoolVar(&opts.finalizeWorker, "finalize-worker", false, "Internal finalize worker mode")
+	cmd.Flags().BoolVar(&syncPolicyHandoff, "policy-handoff", false, "Internal policy restart")
+	_ = cmd.Flags().MarkHidden("policy-handoff")
 	cmd.Flags().BoolVar(&syncLogToFile, "log-to-file", false, "Internal: route diagnostics to the profile log file")
+	cmd.Flags().BoolVar(&opts.supervisor, "supervisor", false, "Internal singleton local collection daemon")
+	cmd.Flags().StringVar(&opts.profileID, "profile-id", "", "Stable profile ID for collection control")
+	_ = cmd.Flags().MarkHidden("supervisor")
 	_ = cmd.Flags().MarkHidden("start-ack-file")
 	_ = cmd.Flags().MarkHidden("finalize-worker")
 	_ = cmd.Flags().MarkHidden("log-to-file")
@@ -152,7 +194,9 @@ func syncCmd() *cobra.Command {
 
 // hookCollectFile names the session file the first pass must read whole rather than
 // skip to EOF. Set from the hidden --collect-file flag that the daemon parent adds
-// when a Claude Code hook gave it the running session's transcript path.
+// when a Claude Code hook gave it the running session's transcript path. In the
+// daemon parent it is that path, read from the hook's stdin -- or, in a
+// replacement started after a self-update, from the same flag.
 var hookCollectFile string
 
 // newSyncClient builds the upload client with the profile's privacy policy already
@@ -172,6 +216,7 @@ func newSyncClient(p *profile.Profile, endpoint, version, profileName string) (*
 		return nil, err
 	}
 	client := syncer.NewClient(endpoint, p.Server.AuthToken, version)
+	_ = client.SetTransferDiagnostics(filepath.Join(syncProfileDir(profileName), "transfer-diagnostics.json"))
 	if tr != nil {
 		client.SetTransport(tr)
 	}
@@ -257,6 +302,89 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 		return nil
 	}
 
+	if syncPolicyHandoff && (!watch || startAckFile == "" || daemon || dryRun || local || endpointOverride != "" || finalizeWorker) {
+		return errors.New("invalid policy handoff invocation")
+	}
+	// The hook's payload is read first, and once: before the self-update check,
+	// which can hand this process over to a replacement whose stdin this one has
+	// drained, and before anything that takes a lock. A session end goes to the
+	// pending directory here because the --once child exits at once when a daemon
+	// holds the sync lock; the daemon's next flush sends it then, and the child's
+	// own flush otherwise. It is recorded before the policy barrier too: a startup
+	// that gives up waiting on the barrier would otherwise lose the one report the
+	// hook makes.
+	if daemon {
+		hook := readHookPayload()
+		if hook.HookEventName == "SessionEnd" && hook.SessionID != "" {
+			recordSessionEnd(profileName, claudeDir, hook)
+		}
+		// Kept where a replacement parent finds it on its command line
+		// (daemonParentReexecArgs); it is the running session's transcript,
+		// which the child below collects from the start.
+		if hook.TranscriptPath != "" {
+			hookCollectFile = hook.TranscriptPath
+		}
+	}
+	// A foreground `sync --watch` has no daemon parent to update it. Check before
+	// collection starts and replace this exact invocation, preserving all flags,
+	// environment and stream semantics. The marker is consumed by the replacement
+	// process so a stale version response cannot create a re-exec loop.
+	//
+	// The check, and the download behind it, run before the policy barrier: they
+	// take as long as the server and the network like, and the barrier is the
+	// global policy lock every other profile's startup and policy run waits on.
+	var lastWatchUpdateCheck time.Time
+	if watch && version != "dev" && !syncPolicyHandoff {
+		lastWatchUpdateCheck = time.Now()
+		reexeced := os.Getenv(daemonParentReexecEnv) == "1"
+		if reexeced {
+			_ = os.Unsetenv(daemonParentReexecEnv)
+		}
+		executable, executableErr := syncExecutablePathFn()
+		update := applyDaemonParentUpdateFn(context.Background(), profileName, endpointOverride, local)
+		if update.Applied && !reexeced {
+			if executableErr != nil {
+				diagf("update: resolve watch executable: %v; continuing with running process", executableErr)
+			} else if err := reexecDaemonParentFn(executable); err == nil {
+				return nil
+			} else {
+				diagf("update: restart watch process: %v; continuing with running process", err)
+			}
+		}
+	}
+
+	releasePolicyBarrier, barrierErr := policySyncStartupBarrier(context.Background(), profileName, startAckFile, syncPolicyHandoff)
+	if barrierErr != nil {
+		return barrierErr
+	}
+	releaseBarrier := func() {
+		if releasePolicyBarrier != nil {
+			releasePolicyBarrier()
+			releasePolicyBarrier = nil
+		}
+	}
+	defer releaseBarrier()
+	// The barrier makes a startup wait out a policy application and its recovery.
+	// The daemon parent has nothing the barrier protects to do after that: it checks
+	// for an update and starts the watcher, which takes the barrier for itself.
+	if daemon {
+		releaseBarrier()
+	}
+
+	var lastPolicyCheck time.Time
+	if syncPolicyHandoff {
+		lastPolicyCheck = time.Now()
+	}
+	if !daemon && !syncPolicyHandoff {
+		if watch {
+			maybeStartPolicyCoordinator(profileName, true, dryRun, local, finalizeWorker, endpointOverride, &lastPolicyCheck)
+		} else {
+			// Register before acquiring the sync lock: deferred lock cleanup runs
+			// first, so one-shot policy checks never race their own collection.
+			defer maybeStartPolicyCoordinator(profileName, true, dryRun, local, finalizeWorker, endpointOverride, &lastPolicyCheck)
+		}
+	}
+
 	if daemon {
 		reexeced := os.Getenv(daemonParentReexecEnv) == "1"
 		if reexeced {
@@ -313,8 +441,8 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 		// skip: the skip is meant for history that predates the install, and the
 		// session the user is sitting in is not history. Only the parent can read
 		// this — the child's stdin is redirected away.
-		if collect := hookTranscriptPath(); collect != "" {
-			args = append(args, "--collect-file", collect)
+		if hookCollectFile != "" {
+			args = append(args, "--collect-file", hookCollectFile)
 		}
 		pid, err := spawnSyncProcessFn(args, profileName)
 		if err != nil {
@@ -345,12 +473,22 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 		}
 	}
 
-	if !p.Options.SyncEnabled {
+	processIOSource := *p // immutable persisted consent before explicit runtime endpoint overrides
+	if (p.HomesVersion != 0 || p.Homes != nil) && p.CollectionEnabled("claude") {
+		homes := p.TransmissionHomes("claude")
+		if len(homes) != 1 || claudeDir != "" && filepath.Clean(claudeDir) != homes[0] {
+			return fmt.Errorf("explicit multi-home collection requires the shared managed daemon")
+		}
+		claudeDir = homes[0]
+	}
+	if !p.CollectionEnabled("claude") {
 		// Codex telemetry has its own direct OTLP/HTTP exporter and must not
 		// depend on Claude JSONL collection being enabled. This lets upgrades
 		// repair an existing Codex installation even for users who opted out of
 		// Claude session-log sync.
-		autoMigrateCodex(p, profileName, p.Server.Endpoint)
+		if !syncPolicyHandoff && p.HomesVersion == 0 && p.Homes == nil {
+			autoMigrateCodex(p, profileName, p.Server.Endpoint)
+		}
 		fmt.Println("  Session log sync is disabled in profile. Run 'cctrace init' to enable.")
 		return nil
 	}
@@ -363,38 +501,32 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 		return fmt.Errorf("no server endpoint configured; run 'cctrace init' to set one")
 	}
 
-	// A foreground `sync --watch` has no daemon parent to update it. Check before
-	// collection starts and replace this exact invocation, preserving all flags,
-	// environment and stream semantics. The marker is consumed by the replacement
-	// process so a stale version response cannot create a re-exec loop.
-	var lastWatchUpdateCheck time.Time
-	if watch && version != "dev" {
-		lastWatchUpdateCheck = time.Now()
-		reexeced := os.Getenv(daemonParentReexecEnv) == "1"
-		if reexeced {
-			_ = os.Unsetenv(daemonParentReexecEnv)
-		}
-		executable, executableErr := syncExecutablePathFn()
-		update := applyDaemonParentUpdateFn(context.Background(), profileName, endpointOverride, local)
-		if update.Applied && !reexeced {
-			if executableErr != nil {
-				diagf("update: resolve watch executable: %v; continuing with running process", executableErr)
-			} else if err := reexecDaemonParentFn(executable); err == nil {
-				return nil
-			} else {
-				diagf("update: restart watch process: %v; continuing with running process", err)
-			}
-		}
+	if !syncPolicyHandoff && p.HomesVersion == 0 && p.Homes == nil {
+		autoMigrateCodex(p, profileName, runtimeEndpoint)
 	}
-
-	autoMigrateCodex(p, profileName, runtimeEndpoint)
 
 	resolvedClaudeDir := resolveClaudeDir(p, claudeDir)
 	resolvedEmail := resolveProfileEmail(p, profileEmail)
 	resolvedUserID := resolveUserID(p)
 
 	if dryRun {
-		return runSyncDry(resolvedClaudeDir, resolvedEmail, p)
+		return runSyncDry(resolvedClaudeDir, resolvedEmail, p, newLineGate(profileName, true))
+	}
+
+	// The daemon lets one profile read a source at a time, and a run outside it
+	// holds nothing that keeps it off a source another profile owns. So it reads
+	// what the daemon allows the profile, line by line, and a profile that is
+	// allowed nothing uploads nothing: the session end the hook's parent recorded
+	// waits in the pending directory.
+	var gate *lineGate
+	if !watch || daemonOnce {
+		gate = newLineGate(profileName, false)
+		defer gate.close()
+		if gate.allHeld() {
+			label, _ := managedProfile(profileName)
+			diagf("profile=%s [sync] every source of this profile is held by another profile (duplicate_route); nothing was collected or uploaded", label)
+			return nil
+		}
 	}
 
 	lockWait := syncLockWaitDuration
@@ -438,7 +570,7 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 	// different hooks/env (content-hash mismatch). Best-effort and non-fatal.
 	// Runs on the watch child and one-shot paths — the daemon parent already
 	// returned and dry-run/stop exited earlier; skip the finalize worker.
-	if !finalizeWorker {
+	if !finalizeWorker && !syncPolicyHandoff {
 		// Self-heal the settings.json for the claude dir actually being synced:
 		// the --claude-dir flag wins over the profile's configured dir.
 		hp := *p
@@ -456,11 +588,22 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 			InstanceID: newSyncInstanceID(),
 			StartedAt:  time.Now().UTC(),
 			Version:    version,
+			Interval:   interval, ClaudeDir: resolvedClaudeDir, ProfileEmail: resolvedEmail, EndpointOverride: endpointOverride, Local: local,
 		}
 		if err := startWatchRuntime(profileName, watcherRuntime); err != nil {
 			_ = writeSyncStartAck(startAckFile, syncStartAck{Status: syncStartAckError, Error: err.Error()})
 			return fmt.Errorf("write pid file: %w", err)
 		}
+	}
+
+	// What the barrier protects is done: the profile was read and the settings
+	// repaired from it under the barrier, and the sync lock and, for a watcher, its
+	// runtime are published, so a policy application now finds this startup and
+	// stops or hands it over. Loading cursors, building the client and the update
+	// check below can take longer and need no barrier. A policy handoff keeps its
+	// per-profile startup lock until it has acknowledged its start.
+	if !syncPolicyHandoff {
+		releaseBarrier()
 	}
 
 	statePath := syncer.DefaultStatePath()
@@ -499,8 +642,11 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 
 	ctx := context.Background()
 	var stopCh <-chan struct{}
+	var localAnalysisAPI *localAnalysis
 	if watch {
 		ctx, stopCh = newWatchSyncContext(ctx, profileName, watcherRuntime.InstanceID)
+		localAnalysisAPI = startLocalAnalysis(ctx, profileName, p, resolvedClaudeDir)
+		defer func() { localAnalysisAPI.Close() }()
 	}
 
 	// Check for updates before syncing (skip in daemon/watch/dry-run mode).
@@ -509,13 +655,26 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 	}
 
 	s := syncer.New(resolvedClaudeDir, resolvedEmail, resolvedUserID, state, client, p.Options.CollectRepositoryPrefixes)
+	// The Claude folder is one line. When another profile reads it, this run has no
+	// Claude pass, and does not send that folder's session ends either: the
+	// profile that reads the folder sends them, under its own filters.
+	claudeHeld := len(gate.apply(ctx, "claude", []string{resolvedClaudeDir})) == 0
 	if watch {
 		_ = writeSyncStartAck(startAckFile, syncStartAck{Status: syncStartAckStarted, InstanceID: watcherRuntime.InstanceID})
 	}
 
+	releaseBarrier()
+	if syncPolicyHandoff {
+		os.Args = withoutPolicyHandoffArgs(os.Args)
+		syncPolicyHandoff = false
+	}
+
 	total := 0
 	initialErr := error(nil)
-	n, err := s.SyncOnce(ctx)
+	n, err := 0, error(nil)
+	if !claudeHeld {
+		n, err = s.SyncOnce(ctx)
+	}
 	if err != nil {
 		if watch && errors.Is(err, context.Canceled) {
 			return nil
@@ -536,14 +695,25 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 
 	// Codex syncer (opt-in via CCTRACE_CODEX_SYNC=true or profile.Options.CodexSyncEnabled)
 	var cs *codexsyncer.CodexSyncer
-	if os.Getenv("CCTRACE_CODEX_SYNC") == "true" || p.Options.CodexSyncEnabled {
+	if p.CollectionEnabled("codex") || p.HomesVersion == 0 && os.Getenv("CCTRACE_CODEX_SYNC") == "true" {
 		codexDirs := resolveCodexScanDirs(diagWriter(), p)
+		codexHeld := false
+		if all := codexDirs; gate != nil {
+			codexDirs = gate.apply(ctx, "codex", all)
+			codexHeld = len(codexDirs) == 0 && len(all) > 0
+		}
 		codexStatePath := codexsyncer.StatePathForProfile(profileName)
 		codexState, cerr := syncer.LoadState(codexStatePath)
-		if cerr != nil {
+		if codexHeld {
+			// Every Codex folder is another profile's to read.
+		} else if cerr != nil {
 			diagf("[codex-sync] load state: %v", cerr)
 		} else {
 			cs = codexsyncer.New(codexDirs, resolvedEmail, resolvedUserID, codexState, client, p.Options.CollectRepositoryPrefixes)
+			cs.SetRedactedHomes(p.CodexHome)
+			// The Codex session snapshots go in this process's one flush, under
+			// the accounts of the Codex homes this syncer reads.
+			s.ServeCodexSnapshots(codexState, codexDirs)
 			cn, cerr := cs.SyncOnce(ctx)
 			if cerr != nil {
 				if !watch || !errors.Is(cerr, context.Canceled) {
@@ -559,8 +729,15 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 	var gs *gjcsyncer.GjcSyncer
 	if os.Getenv("CCTRACE_GJC_SYNC") == "true" || p.Options.GjcSyncEnabled {
 		gjcDirs := resolveGjcScanDirs(diagWriter(), p)
+		gjcHeld := false
+		if all := gjcDirs; gate != nil {
+			gjcDirs = gate.apply(ctx, "gjc", all)
+			gjcHeld = len(gjcDirs) == 0 && len(all) > 0
+		}
 		gjcState, gerr := syncer.LoadState(gjcStatePathForProfile(profileName))
-		if gerr != nil {
+		if gjcHeld {
+			// Every gjc folder is another profile's to read.
+		} else if gerr != nil {
 			diagf("[gjc-sync] load state: %v", gerr)
 		} else {
 			gs = gjcsyncer.New(gjcDirs, resolvedEmail, resolvedUserID, gjcState, client, p.Options.CollectRepositoryPrefixes)
@@ -579,10 +756,17 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 	var om *omosyncer.OmoSyncer
 	if os.Getenv("CCTRACE_OMO_SYNC") == "true" || p.Options.OmoSyncEnabled {
 		omoState, oerr := syncer.LoadState(omoStatePathForProfile(profileName))
-		if oerr != nil {
+		omoDirs := resolveOmoScanDirs(diagWriter(), p)
+		omoHeld := false
+		if all := omoDirs; gate != nil {
+			omoDirs = gate.apply(ctx, "omo", all)
+			omoHeld = len(omoDirs) == 0 && len(all) > 0
+		}
+		if omoHeld {
+			// Every omo folder is another profile's to read.
+		} else if oerr != nil {
 			diagf("[omo-sync] load state: %v", oerr)
 		} else {
-			omoDirs := resolveOmoScanDirs(diagWriter(), p)
 			om = omosyncer.New(omoDirs, resolvedEmail, resolvedUserID, omoState, client, p.Options.CollectRepositoryPrefixes)
 			on, oerr := om.SyncOnce(ctx)
 			if oerr != nil {
@@ -596,6 +780,28 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 	}
 
 	infof("Synced %d records", total)
+
+	// Session observations go once after the pass, whether or not it sent
+	// anything: the heartbeat says the collector is running, which a failing
+	// record sync does not change. A one-shot run -- `cctrace sync`, each profile
+	// of runSyncAll, the --once child the SessionEnd hook starts, the finalize
+	// worker -- gets no other chance; watch mode then keeps its own interval
+	// below. Every one of them holds the sync lock here, so no two flush at once.
+	if claudeHeld {
+		// The Claude folder's items are the holder's to send. This run's own
+		// Codex snapshots and its heartbeat still go.
+		s.LeaveClaudeHome()
+	}
+	switch {
+	case watch:
+		flushSessionObservations(ctx, s)
+	default:
+		flushSessionObservationsBeforeExit(ctx, s)
+	}
+	if err := flushProcessIOQueue(ctx, processIOQueue(profileName), client, resolvedEmail, resolvedUserID, p.Options.ExcludeAccounts, &processIOSource); err != nil {
+		diagf("[process-io] observation upload: %v", err)
+	}
+	lastObservationFlush := time.Now()
 
 	if !watch {
 		return nil
@@ -648,6 +854,7 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 			progressf("[sync] stopped (%d records total)\n", cumulative)
 			return nil
 		case <-ticker.C:
+			maybeStartPolicyCoordinator(profileName, watch, dryRun, local, finalizeWorker, endpointOverride, &lastPolicyCheck)
 			// Direct watch deployments have no recurring daemon parent invocation.
 			// Check at a pass boundary, never while a sync pass is in flight. A
 			// successful signed update releases runtime ownership before re-exec so
@@ -660,6 +867,7 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 					if executableErr != nil {
 						diagf("[update] resolve watch executable: %v; continuing with running process", executableErr)
 					} else {
+						localAnalysisAPI.Close()
 						runtimeToRestore := watcherRuntime
 						finishWatchRuntime(profileName, watcherRuntime)
 						watcherRuntime = nil
@@ -687,6 +895,7 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 						if err := startWatchRuntime(profileName, watcherRuntime); err != nil {
 							return fmt.Errorf("restore watch runtime after failed update handoff: %w", err)
 						}
+						localAnalysisAPI = startLocalAnalysis(ctx, profileName, p, resolvedClaudeDir)
 					}
 				}
 			}
@@ -722,6 +931,20 @@ func runSync(dryRun bool, claudeDir string, watch bool, daemon bool, daemonOnce 
 					cs.PollAppServerQuota(ctx)
 				}
 				lastUsagePoll = time.Now()
+			}
+
+			// Session observations ride their own interval beside the quota poll,
+			// outside the sync branches below, for the same reasons: a failing or
+			// backing-off record sync must not stop the collector's heartbeat, and
+			// the stamp advances whether or not the flush worked, so a failure
+			// costs one attempt per interval rather than one per tick. The syncer
+			// parks the flush itself on a 404, a 429 or a refused envelope.
+			if time.Since(lastObservationFlush) >= observationFlushInterval {
+				flushSessionObservations(ctx, s)
+				if err := flushProcessIOQueue(ctx, processIOQueue(profileName), client, resolvedEmail, resolvedUserID, p.Options.ExcludeAccounts, &processIOSource); err != nil {
+					diagf("[process-io] observation upload: %v", err)
+				}
+				lastObservationFlush = time.Now()
 			}
 
 			if bo.shouldSkip() {
@@ -887,6 +1110,26 @@ func replaceOutdatedWatchChild(profileName string, serverVer string) bool {
 // resolveClaudeDir resolves the Claude config directory with precedence:
 // 1. --claude-dir flag, 2. profile.ClaudeConfigDir, 3. sessionlog default.
 func resolveClaudeDir(p *profile.Profile, flagValue string) string {
+	if p.HomesVersion != 0 || p.Homes != nil {
+		allowed := p.TransmissionHomes("claude")
+		chosen := flagValue
+		if chosen == "" {
+			chosen = p.ClaudeConfigDir
+		}
+		for _, home := range allowed {
+			if home == filepath.Clean(chosen) {
+				return home
+			}
+		}
+		if chosen != "" {
+			return ""
+		}
+		if len(allowed) == 1 {
+			return allowed[0]
+		}
+		return ""
+	}
+
 	if flagValue != "" {
 		return flagValue
 	}
@@ -956,10 +1199,47 @@ func fetchAndSendQuota(ctx context.Context, client *syncer.Client, claudeDir, pr
 	sendQuotaSamples(ctx, client, claudeDir, profileEmail, u)
 }
 
+// observationFlushInterval is how often watch mode sends the collector heartbeat
+// and the dirty session snapshots. Var, not const, so tests can shrink it.
+var observationFlushInterval = 60 * time.Second
+
+// flushSessionObservations is watch mode's flush of the heartbeat and the dirty
+// session snapshots. A failure is reported and dropped, as the quota poll's is:
+// what did not go stays dirty for the next flush, and the syncer parks itself
+// where the server asked it to wait.
+func flushSessionObservations(ctx context.Context, s *syncer.Syncer) {
+	if err := s.FlushObservations(ctx); err != nil && ctx.Err() == nil {
+		progressf("[observations] %v", err)
+	}
+}
+
+// oneShotObservationFlushTimeout bounds the flush of a run about to exit. It
+// runs with the sync lock held, so an observations route that hangs would hold
+// off the next run the hook starts; what it did not send stays dirty for the
+// next flush. Var, not const, so tests can shrink it.
+var oneShotObservationFlushTimeout = 10 * time.Second
+
+// flushSessionObservationsBeforeExit is the flush of a run that exits right
+// after it: `cctrace sync`, each profile of runSyncAll, the --once child, the
+// finalize worker and `cctrace sync reenrich`. An older server's 404 is not
+// reported -- the park it starts ends with the process, and there is nothing to
+// do about it -- and any other failure is printed as a whole line on stderr, not
+// as watch mode's status line, which a terminal leaves open for the shell prompt
+// to land on.
+func flushSessionObservationsBeforeExit(ctx context.Context, s *syncer.Syncer) {
+	ctx, cancel := context.WithTimeout(ctx, oneShotObservationFlushTimeout)
+	defer cancel()
+	if err := s.FlushObservations(ctx); err != nil && !errors.Is(err, syncer.ErrSessionObservationsUnsupported) {
+		diagf("[observations] %v", err)
+	}
+}
+
 // quotaSamplesUnsupported latches once an older server has answered 404, so the
 // history attempt is made at most once per process rather than every five
 // minutes for the life of the daemon.
 var quotaSamplesUnsupported atomic.Bool
+
+var quotaOwnerSamplesUnsupported atomic.Bool
 
 // sendQuotaSamples posts the same reading as history rows.
 //
@@ -971,9 +1251,6 @@ var quotaSamplesUnsupported atomic.Bool
 // from the profile and the other from the default location is what turns a
 // missing label into a wrong one.
 func sendQuotaSamples(ctx context.Context, client *syncer.Client, claudeDir, profileEmail string, u *usage.Response) {
-	if quotaSamplesUnsupported.Load() {
-		return
-	}
 	acct, err := claudeauth.ReadAccount(claudeDir)
 	if err != nil {
 		progressf("[quota] account read failed: %v", err)
@@ -994,7 +1271,9 @@ func sendQuotaSamples(ctx context.Context, client *syncer.Client, claudeDir, pro
 		// rate is what put it in reach of the `tail` the troubleshooting docs
 		// ask for; a once-per-process line would have been scrolled away by the
 		// watch loop long before anyone looked.
-		progressf("[quota] no account uuid for %s; history skipped", claudeDir)
+		if !quotaSamplesUnsupported.Load() {
+			progressf("[quota] no account uuid for %s; history skipped", claudeDir)
+		}
 		return
 	}
 
@@ -1005,6 +1284,20 @@ func sendQuotaSamples(ctx context.Context, client *syncer.Client, claudeDir, pro
 		// ones out afterwards. Until now this condition wrote the rows and said
 		// nothing at all, which is how it took a chart artefact to find it.
 		progressf("[quota] %v; history for this tick discarded", err)
+		return
+	}
+	ownerSamples := u.OwnerSamples(acct.AccountUUID)
+	if len(ownerSamples) > 0 && !quotaOwnerSamplesUnsupported.Load() {
+		switch err := client.SendQuotaOwnerSamples(ctx, ownerSamples); {
+		case err == nil:
+		case errors.Is(err, syncer.ErrQuotaOwnerSamplesUnsupported):
+			quotaOwnerSamplesUnsupported.Store(true)
+			progressf("[quota] server has no private usage endpoint; private upload skipped")
+		default:
+			progressf("[quota] private sample upload failed: %v", err)
+		}
+	}
+	if quotaSamplesUnsupported.Load() {
 		return
 	}
 
@@ -1188,7 +1481,14 @@ func acquireWatchSyncLock(profileName string) (*flock.Flock, error) {
 	return acquireSyncLock(profileName, syncWatchStartWait)
 }
 
-func runSyncDry(claudeDir, profileEmail string, p *profile.Profile) error {
+func runSyncDry(claudeDir, profileEmail string, p *profile.Profile, gate *lineGate) error {
+	if len(gate.apply(context.Background(), "claude", []string{claudeDir})) == 0 {
+		fmt.Printf("\n  Claude sessions are held by another profile; not scanned\n")
+		printCodexDryRun(os.Stdout, p, gate)
+		printGjcDryRun(os.Stdout, p, gate)
+		printOmoDryRun(os.Stdout, p, gate)
+		return nil
+	}
 	files, err := sessionlog.FindJSONLFiles(claudeDir)
 	if err != nil {
 		return fmt.Errorf("find jsonl files: %w", err)
@@ -1211,34 +1511,46 @@ func runSyncDry(claudeDir, profileEmail string, p *profile.Profile) error {
 		}
 	}
 	fmt.Printf("\n  Total new records: %d (dry run, not sent)\n", total)
-	printCodexDryRun(os.Stdout, p)
-	printGjcDryRun(os.Stdout, p)
-	printOmoDryRun(os.Stdout, p)
+	printCodexDryRun(os.Stdout, p, gate)
+	printGjcDryRun(os.Stdout, p, gate)
+	printOmoDryRun(os.Stdout, p, gate)
 	return nil
 }
 
 // printCodexDryRun reports which Codex homes a real sync would scan and how
 // many session files each holds, so a misconfigured options.codex_dirs is
 // visible without running an actual sync.
-func printCodexDryRun(w io.Writer, p *profile.Profile) {
+func printCodexDryRun(w io.Writer, p *profile.Profile, gate *lineGate) {
 	if p == nil {
 		return
 	}
-	if os.Getenv("CCTRACE_CODEX_SYNC") != "true" && !p.Options.CodexSyncEnabled {
+	if !p.CollectionEnabled("codex") && (p.HomesVersion != 0 || os.Getenv("CCTRACE_CODEX_SYNC") != "true") {
 		if len(p.Options.CodexDirs) > 0 {
 			fmt.Fprintf(w, "\n  Codex sync is disabled; %d configured codex dir(s) would not be scanned\n", len(p.Options.CodexDirs))
 		}
 		return
 	}
-	dirs := resolveCodexScanDirs(w, p)
+	all := resolveCodexScanDirs(w, p)
+	dirs := gate.apply(context.Background(), "codex", all)
 	fmt.Fprintf(w, "\n  Codex homes scanned: %d\n", len(dirs))
+	if held := len(all) - len(dirs); held > 0 {
+		fmt.Fprintf(w, "    %d held by another profile; not scanned\n", held)
+	}
 	for _, dir := range dirs {
+		display := dir
+		if isExplicitCodexHome(p, dir) {
+			display = "[explicit Codex home]"
+		}
 		files, err := codexlog.FindJSONLFiles(dir)
 		if err != nil {
-			fmt.Fprintf(w, "    [SKIP] %s: %v\n", dir, err)
+			if display == "[explicit Codex home]" {
+				fmt.Fprintln(w, "    [SKIP] explicit Codex home could not be scanned")
+			} else {
+				fmt.Fprintf(w, "    [SKIP] %s: %v\n", display, err)
+			}
 			continue
 		}
-		fmt.Fprintf(w, "    %s (%d session files)\n", dir, len(files))
+		fmt.Fprintf(w, "    %s (%d session files)\n", display, len(files))
 	}
 }
 
@@ -1344,7 +1656,7 @@ func resolveOmoScanDirs(w io.Writer, p *profile.Profile) []string {
 // printGjcDryRun reports which gjc homes a real sync would scan and how many
 // session files each holds, so a misconfigured options.gjc_dirs is visible
 // without running an actual sync.
-func printGjcDryRun(w io.Writer, p *profile.Profile) {
+func printGjcDryRun(w io.Writer, p *profile.Profile, gate *lineGate) {
 	if p == nil {
 		return
 	}
@@ -1354,8 +1666,12 @@ func printGjcDryRun(w io.Writer, p *profile.Profile) {
 		}
 		return
 	}
-	dirs := resolveGjcScanDirs(w, p)
+	all := resolveGjcScanDirs(w, p)
+	dirs := gate.apply(context.Background(), "gjc", all)
 	fmt.Fprintf(w, "\n  Gjc homes scanned: %d\n", len(dirs))
+	if held := len(all) - len(dirs); held > 0 {
+		fmt.Fprintf(w, "    %d held by another profile; not scanned\n", held)
+	}
 	for _, dir := range dirs {
 		files, err := gjclog.FindSessionFiles(dir)
 		if err != nil {
@@ -1369,7 +1685,7 @@ func printGjcDryRun(w io.Writer, p *profile.Profile) {
 // printOmoDryRun reports whether the omo home a real sync would scan holds
 // any session files, so a disabled or empty setup is visible without running
 // an actual sync. Omo, unlike Codex and gjc, only ever scans a single home.
-func printOmoDryRun(w io.Writer, p *profile.Profile) {
+func printOmoDryRun(w io.Writer, p *profile.Profile, gate *lineGate) {
 	if p == nil {
 		return
 	}
@@ -1379,8 +1695,12 @@ func printOmoDryRun(w io.Writer, p *profile.Profile) {
 		}
 		return
 	}
-	dirs := resolveOmoScanDirs(w, p)
+	all := resolveOmoScanDirs(w, p)
+	dirs := gate.apply(context.Background(), "omo", all)
 	fmt.Fprintf(w, "\n  Omo homes scanned: %d\n", len(dirs))
+	if held := len(all) - len(dirs); held > 0 {
+		fmt.Fprintf(w, "    %d held by another profile; not scanned\n", held)
+	}
 	for _, dir := range dirs {
 		files, err := omolog.FindSessionFiles(dir)
 		if err != nil {

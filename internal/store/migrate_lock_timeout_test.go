@@ -217,12 +217,13 @@ func TestExceptionBlocksDoNotSwallowLockTimeouts(t *testing.T) {
 	// widens on its own every time a new failure becomes possible, which is
 	// exactly what happened when lock_timeout was introduced.
 	//
-	// All three groups, because Migrate runs all three.
+	// Every group, because Migrate runs them all.
 	catchAll := 0
 	for name, group := range map[string][]string{
-		"dropDependentViews": dropDependentViews,
-		"migrations":         migrations,
-		"dependentViews":     dependentViews,
+		"dropDependentViews":         dropDependentViews,
+		"migrations":                 migrations,
+		"sessionProcessIOMigrations": sessionProcessIOMigrations,
+		"dependentViews":             dependentViews,
 	} {
 		for _, ddl := range group {
 			handlers := strings.Count(ddl, "WHEN others")

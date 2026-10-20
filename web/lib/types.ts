@@ -1,3 +1,5 @@
+import type { SessionRowAnalysis } from './session-analysis-types';
+
 export interface UserInfo {
   user_id: string;
   profile_email: string;
@@ -120,6 +122,10 @@ export interface TaskSegment {
   command_count: number;
   input_tokens: number;
   output_tokens: number;
+  /** False until the server has recounted stored segments by request (token
+   *  recount step 8); until then a segment's tokens may count a response once
+   *  per JSONL line, so they are not shown. */
+  tokens_ready: boolean;
   /** Whether tool_call_count was measured. Claude calls come from OTEL and
    *  tokens from the JSONL sync, so a machine without an exporter reports real
    *  tokens and zero calls — which is not the same as having used no tools.
@@ -232,6 +238,11 @@ export interface SessionRecord {
   agent?: string;
   tool_name?: string;
   tool_call_id?: string;
+  /** Exact Claude assistant message ID used by session turn facts as the final-output witness. */
+  message_id?: string;
+  codex_turn_id?: string;
+  codex_root_turn_id?: string;
+  codex_turn_metadata_known?: boolean;
   // Absent only from servers that predate it; such a record is treated as hidden.
   view?: SessionRecordView;
   // Lineage/source fields (forward-only; absent on records collected before the update).
@@ -451,6 +462,11 @@ export interface SessionOverview {
   cctrace_version?: string;
   // Claude Code client version, aggregated from otel_events.service_version.
   claude_version?: string;
+  // Private values are present only for an overview row the signed-in user owns.
+  classification?: import('./session-analysis-types').SessionClassification;
+  first_line?: string;
+  // Only present when the list was requested with include=analysis (p1b-design §8.3).
+  analysis?: SessionRowAnalysis;
 }
 
 export interface ModelDailyStat {
@@ -520,6 +536,11 @@ export interface AuthUser {
   name: string;
   cctrace_user_id?: string;
   must_change_password?: boolean;
+  /**
+   * The server's access mode from GET /api/auth/me: true reads one user by user_id, false by
+   * profile_email. Absent when the server (or the login response) does not report it.
+   */
+  user_id_access_control?: boolean;
 }
 
 export interface DashboardUserInfo {
@@ -666,6 +687,26 @@ export interface ExclusionList<T> {
   accounts: T[];
   /** Left out (or null) when the server could not read it: not known. */
   usage_rebuild_pending?: boolean | null;
+}
+
+/**
+ * Where the server's recount of token totals under the new counting rule stands
+ * (GET /api/maintenance/status).
+ */
+export interface MaintenanceStatus {
+  /** True until the recount finishes; screens may show different values meanwhile. */
+  token_rule_pending: boolean;
+  /** The step the recount is on, "" once every step the server knows of is done. */
+  step: string;
+  session_analysis?: {
+    enabled: boolean;
+    mode?: 'disabled' | 'on_demand' | 'build';
+    ready?: boolean;
+    waiting_for_request_set?: boolean;
+    waiting_for_commit_claims?: boolean;
+    copy_gate?: boolean;
+  };
+  session_records?: { enabled: boolean; prompt_version: number; state: string; paused_reason: string };
 }
 
 export interface BillingAccountRef {
@@ -863,6 +904,8 @@ export interface AIRuntimeState {
 }
 
 export interface AIConsentState {
+  /** False unless an admin requires consent; the screen asks only then. */
+  required: boolean;
   granted: boolean;
   runtime_key: string;
   disclosure_version: string;
@@ -1125,7 +1168,73 @@ export interface AdminAIResponse {
   /** The default weekly firing every user follows until they change it. Present
    *  even with no runtime built: it still says what turning it on would do. */
   schedule: AdminAISchedule;
+  run_policy: AdminAIRunPolicy;
   usage_this_week: AdminAIUsage;
+  /** P5 session record operating metrics and administrator policy. */
+  records?: AdminSessionRecordView;
+}
+
+export interface AdminSessionRecordLaneUsage {
+  sessions: number;
+  calls: number;
+  input_tokens: number;
+  cached_input_tokens: number;
+  output_tokens: number;
+}
+
+/** Persisted P5 configuration returned by the admin read endpoint, not effective defaults. */
+export interface AdminSessionRecordSettings {
+  enabled: boolean;
+  runtime: string;
+  daily_token_cap: number | null;
+  backfill_enabled: boolean;
+  backfill_days: number | null;
+  backfill_token_budget: number | null;
+}
+
+export interface AdminSessionRecordRuntimeSettings {
+  runtime: string;
+  model: string;
+  reasoning_effort: string;
+}
+
+export interface AdminSessionRecordView {
+  flag: boolean;
+  enabled: boolean;
+  prompt_version: number;
+  runtime: string;
+  runtime_key: string;
+  runtime_ok: boolean;
+  runtime_reason: string;
+  model: string;
+  /** Persisted values needed to safely round-trip the replace-all PUT contract. */
+  settings?: AdminSessionRecordSettings;
+  runtime_settings?: AdminSessionRecordRuntimeSettings;
+  consents: { users: number; current: number };
+  today: {
+    day: string;
+    tz: string;
+    cap_tokens: number;
+    used_tokens: number;
+    reserved_tokens: number;
+    estimated_cap_tokens: number;
+    unreported_calls: number;
+    input_tokens: number;
+    cached_input_tokens: number;
+    output_tokens: number;
+    by_lane: Record<string, AdminSessionRecordLaneUsage>;
+  };
+  last_7_days: { day: string; sessions: number; calls: number; tokens: number; noop: number; rejected: number; errors: number }[];
+  backlog: { due: number; waiting_quiet: number; backfill_remaining: number; requested: number };
+  backfill: { enabled: boolean; days: number; token_budget: number | null; used_tokens: number; since: string | null };
+  failures: { sessions: number; by_code: Record<string, number> };
+  quality_7d: { dropped_items: number; uncovered_requests: number; new_terms: number; redacted: number };
+  worker: { state: string; paused_reason: string; paused_until?: string | null; last_generated_at?: string | null };
+}
+
+export interface UpdateAdminSessionRecordSettingsRequest extends AdminSessionRecordSettings {
+  model: string;
+  reasoning_effort: string;
 }
 
 /** The administrator's default for automatic weekly runs, resolved against the
@@ -1140,6 +1249,27 @@ export interface AdminAISchedule {
   /** The zone the time is read in for a user who has saved none and has no
    *  report yet: the server's CCTRACE_AI_DEFAULT_TZ. Empty is UTC. */
   tz: string;
+}
+
+/** How report runs are admitted, resolved against the defaults. */
+export interface AdminAIRunPolicy {
+  /** Whether a run waits for the user's own consent; off unless an admin sets it. */
+  consent_required: boolean;
+  consent_required_source: AIScheduleSource;
+  /** Runs that go at once; the rest wait in the order they were started. */
+  max_concurrent: number;
+  max_concurrent_source: AIScheduleSource;
+  /** The server's CCTRACE_AI_MAX_CONCURRENT, which stands until an admin sets one. */
+  max_concurrent_default: number;
+  /** Top of the range an admin may choose, from 1. */
+  max_concurrent_max: number;
+}
+
+/** PUT /api/admin/ai/run-policy replaces the whole policy; null hands that part
+ *  back to the default. */
+export interface UpdateAdminAIRunPolicyRequest {
+  consent_required: boolean | null;
+  max_concurrent: number | null;
 }
 
 /** PUT /api/admin/ai/schedule. A null clears that part, handing it back to the

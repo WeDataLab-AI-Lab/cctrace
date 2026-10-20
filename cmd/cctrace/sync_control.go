@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -37,7 +38,13 @@ type syncRuntime struct {
 	StartedAt  time.Time `json:"started_at"`
 	// Version stamps the build version of the running watch child so a daemon
 	// parent can detect an outdated child and replace it after a self-update (#103).
-	Version string `json:"version,omitempty"`
+	Version          string        `json:"version,omitempty"`
+	Interval         time.Duration `json:"interval,omitempty"`
+	ClaudeDir        string        `json:"claude_dir,omitempty"`
+	ProfileEmail     string        `json:"profile_email,omitempty"`
+	EndpointOverride string        `json:"endpoint_override,omitempty"`
+	Local            bool          `json:"local,omitempty"`
+	SupervisorRoot   string        `json:"supervisor_root,omitempty"`
 }
 
 type syncExit struct {
@@ -54,7 +61,7 @@ var (
 	spawnSyncProcessFn        = spawnSyncProcess
 	waitForSyncStartAckFn     = waitForSyncStartAck
 	waitForWatcherExitFn      = waitForWatcherExit
-	runSyncFn                 = runSync
+	runSyncFn                 = runCompatibleSync
 	syncExecutablePathFn      = os.Executable
 	startProcessFn            = os.StartProcess
 	releaseProcessFn          = (*os.Process).Release
@@ -63,7 +70,16 @@ var (
 )
 
 func daemonParentReexecArgs(executable string) []string {
-	return append([]string{executable}, os.Args[1:]...)
+	args := append([]string{executable}, os.Args[1:]...)
+	// The replacement inherits the stdin this parent has already read the hook's
+	// payload from, so it is handed the transcript path the way the child is.
+	given := slices.ContainsFunc(os.Args[1:], func(arg string) bool {
+		return arg == "--collect-file" || strings.HasPrefix(arg, "--collect-file=")
+	})
+	if hookCollectFile != "" && !given {
+		args = append(args, "--collect-file", hookCollectFile)
+	}
+	return args
 }
 
 func daemonParentReexecEnvironment() []string {
@@ -82,7 +98,7 @@ func runSyncStart(claudeDir string, interval time.Duration, profileName string, 
 	if err != nil {
 		return err
 	}
-	if !p.Options.SyncEnabled {
+	if !p.CollectionEnabled("claude") {
 		fmt.Println("  Session log sync is disabled in profile. Run 'cctrace init' to enable.")
 		return nil
 	}

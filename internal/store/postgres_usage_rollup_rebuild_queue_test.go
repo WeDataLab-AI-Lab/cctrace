@@ -28,14 +28,18 @@ func TestMigrateDoesNotLockAnUpToDateRebuildQueue(t *testing.T) {
 		t.Fatalf("hold the queue row: %v", err)
 	}
 
-	// Several attempts, not one: the lock wait covers every table Migrate touches,
-	// and a transient lock conflict on a session_records chunk (e.g. autovacuum, or
-	// a lock held by another test on the same DB) blocks CREATE INDEX there. A retry
-	// rides that out; the queue lock held above does not release, so a Migrate that
-	// waited on it fails every attempt. Only conflicts that clear within ~6s
-	// (20 x 300ms) are absorbed; why autovacuum is not cancelled sooner (the 300ms
-	// lock_timeout is under the default 1s deadlock_timeout) is an unmeasured hypothesis.
-	restore := shrinkMigrateBudget(t, s, 300*time.Millisecond, 20, 10*time.Millisecond)
+	// The lock wait covers every table Migrate touches, and two things besides the
+	// queue lock held above can block it for a moment. An autovacuum worker on a
+	// chunk the migrations lock -- one starts every 10s in the test image -- is
+	// cancelled by Postgres only for a lock request that has waited longer than
+	// deadlock_timeout (1s), as on a real boot: below that it failed this test with
+	// nothing holding the queue, 4 of 9 full package runs once the message_id tests
+	// were added, the one caught in the act a VACUUM ANALYZE of a session_records
+	// chunk. So the wait is 2s. And a lock another test still holds on the same
+	// database clears on its own, so there are a few attempts rather than one. The
+	// queue lock held above does not release, and a Migrate that waited on it fails
+	// every attempt.
+	restore := shrinkMigrateBudget(t, s, 2*time.Second, 3, 10*time.Millisecond)
 	defer restore()
 	if err := s.Migrate(ctx); err != nil {
 		t.Errorf("Migrate waited on the rebuild queue while a rebuild held it: %v", err)

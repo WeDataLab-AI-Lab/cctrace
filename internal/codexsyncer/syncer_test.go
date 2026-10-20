@@ -439,6 +439,92 @@ func TestCodexSyncer_SyncOnce_NewFile(t *testing.T) {
 	}
 }
 
+func TestCodexSyncer_SyncOnceBackfillsActiveRootForLegacyOffset(t *testing.T) {
+	srv, captured := newTestServer(t)
+	state := newTestState(t)
+	client := syncer.NewClient(srv.URL, "", "")
+	codexDir := t.TempDir()
+	sessDir := filepath.Join(codexDir, "sessions")
+	if err := os.MkdirAll(sessDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	start := `{"type":"event_msg","timestamp":"2026-10-09T06:20:01.339Z","payload":{"type":"task_started","turn_id":"root-a","root_turn_id":"root-a","started_at":1791526801}}`
+	path := writeCodexFixture(t, sessDir, "rollout-2026-10-09T06-20-01-aaaaaaaa-0000-0000-0000-000000000001.jsonl", []string{
+		start,
+		`{"type":"response_item","timestamp":"2026-10-09T06:20:01.345Z","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"inside the root"}]}}`,
+		`{"type":"event_msg","timestamp":"2026-10-09T06:20:01.352Z","payload":{"type":"task_complete","turn_id":"root-a","root_turn_id":"root-a","completed_at":1791526801}}`,
+	})
+	state.SetOffset(path, int64(len(start)+1))
+	if err := state.Save(); err != nil {
+		t.Fatal(err)
+	}
+	cs := New([]string{codexDir}, "profile", "user", state, client, nil)
+	if _, err := cs.SyncOnce(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	for _, request := range *captured {
+		items, ok := request["records"].([]interface{})
+		if !ok || len(items) == 0 {
+			continue
+		}
+		for _, value := range items {
+			record := value.(map[string]interface{})
+			if record["record_type"] != "user" {
+				continue
+			}
+			if record["codex_turn_id"] != "root-a" || record["codex_root_turn_id"] != "root-a" || record["codex_turn_metadata_known"] != true {
+				t.Fatalf("resumed record turn metadata=%v", record)
+			}
+			return
+		}
+	}
+	t.Fatalf("no resumed user record in captured requests: %v", *captured)
+}
+
+func TestCodexSyncer_SyncOnceRecoversActiveRootForStoredOffset(t *testing.T) {
+	srv, captured := newTestServer(t)
+	state := newTestState(t)
+	client := syncer.NewClient(srv.URL, "", "")
+	codexDir := t.TempDir()
+	sessDir := filepath.Join(codexDir, "sessions")
+	if err := os.MkdirAll(sessDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	metaLine := `{"type":"session_meta","timestamp":"2026-10-09T06:20:00.000Z","payload":{"cwd":"` + codexDir + `","model_provider":"openai","originator":"codex-tui"}}`
+	startLine := `{"type":"event_msg","timestamp":"2026-10-09T06:20:01.339Z","payload":{"type":"task_started","turn_id":"root-a","root_turn_id":"root-a","started_at":1791526801}}`
+	path := writeCodexFixture(t, sessDir, "rollout-2026-10-09T06-20-00-aaaaaaaa-0000-0000-0000-000000000001.jsonl", []string{
+		metaLine,
+		startLine,
+		`{"type":"response_item","timestamp":"2026-10-09T06:20:01.345Z","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"inside root"}]}}`,
+		`{"type":"event_msg","timestamp":"2026-10-09T06:20:01.352Z","payload":{"type":"task_complete","turn_id":"root-a","root_turn_id":"root-a","completed_at":1791526801}}`,
+	})
+	state.SetOffset(path, int64(len(metaLine)+1+len(startLine)+1))
+	if err := state.Save(); err != nil {
+		t.Fatal(err)
+	}
+	cs := New([]string{codexDir}, "profile", "user", state, client, nil)
+	if _, err := cs.SyncOnce(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	for _, request := range *captured {
+		items, ok := request["records"].([]interface{})
+		if !ok {
+			continue
+		}
+		for _, value := range items {
+			record := value.(map[string]interface{})
+			if record["record_type"] != "user" {
+				continue
+			}
+			if record["codex_turn_id"] != "root-a" || record["codex_root_turn_id"] != "root-a" || record["codex_turn_metadata_known"] != true {
+				t.Fatalf("resumed record turn metadata=%v", record)
+			}
+			return
+		}
+	}
+	t.Fatalf("no resumed user record in captured requests: %v", *captured)
+}
+
 // TestCodexSyncer_SyncOnce_SendsSourceFileAndEntrypoint guards the realtime scan
 // path (not toStoreRecord in isolation): the enrichment columns were previously
 // filled only in reenrich.go, so a function-level test would have passed while
@@ -952,6 +1038,35 @@ func TestCodexSyncer_PersistsForkHistoryCopied(t *testing.T) {
 	}
 }
 
+func TestCodexSyncer_PersistsActiveRootTurnAcrossRestart(t *testing.T) {
+	statePath := filepath.Join(t.TempDir(), "state.json")
+	state, err := syncer.LoadState(statePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "rollout.jsonl")
+	meta := codexlog.Metadata{TurnMetadataScanned: true, ActiveTurnID: "child", ActiveRootTurnID: "root"}
+	setStateFileMetadata(state, path, 42, meta)
+	if err := state.Save(); err != nil {
+		t.Fatal(err)
+	}
+	state, err = syncer.LoadState(statePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := (&CodexSyncer{state: state}).fileMetadata(path)
+	if !got.TurnMetadataScanned || got.ActiveTurnID != "child" || got.ActiveRootTurnID != "root" {
+		t.Fatalf("restored lifecycle metadata=%+v", got)
+	}
+	if !metadataChanged(codexlog.Metadata{}, got) {
+		t.Fatal("lifecycle metadata change was not detected for old offsets")
+	}
+	merged := mergeMetadata(codexlog.Metadata{}, got)
+	if merged.ActiveRootTurnID != "root" || merged.ActiveTurnID != "child" {
+		t.Fatalf("merged lifecycle metadata=%+v", merged)
+	}
+}
+
 func TestCodexSyncer_toStoreRecord_User(t *testing.T) {
 	r := &codexlog.Record{
 		SessionID:  "ses-001",
@@ -979,6 +1094,18 @@ func TestCodexSyncer_toStoreRecord_User(t *testing.T) {
 	}
 	if sr.Model != "gpt-5" {
 		t.Errorf("Model = %q, want gpt-5", sr.Model)
+	}
+}
+
+func TestCodexSyncer_toStoreRecordCarriesExactTurnMetadata(t *testing.T) {
+	record := &codexlog.Record{
+		SessionID: "session", Timestamp: time.Now().UTC(), RecordType: "tool_call",
+		TurnID: "child", RootTurnID: "root", TurnMetadataKnown: true,
+		ToolName: "exec_command", CallID: "call",
+	}
+	got := toStoreRecord(record, "profile", "user", "session", "rollout.jsonl", "cli")
+	if got == nil || got.CodexTurnID != "child" || got.CodexRootTurnID != "root" || !got.CodexTurnMetadataKnown {
+		t.Fatalf("stored turn metadata=%+v", got)
 	}
 }
 

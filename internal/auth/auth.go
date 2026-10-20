@@ -52,6 +52,9 @@ func (a *Authenticator) Enabled() bool {
 
 // HTTPMiddleware protects REST API endpoints. Health endpoint is always public.
 // Checks global API key first, then falls back to per-user token validation.
+// A per-user token it accepts is left in the request context, as the gRPC
+// interceptor leaves it (IngestTokenFromContext). The global key, the health
+// endpoint and disabled authentication leave none.
 func (a *Authenticator) HTTPMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !a.Enabled() || r.URL.Path == "/api/health" {
@@ -82,7 +85,12 @@ func (a *Authenticator) HTTPMiddleware(next http.Handler) http.Handler {
 				return
 			}
 			if ok {
-				next.ServeHTTP(w, r)
+				// The handler needs to know whose token this was, as on the gRPC
+				// path below: a route that binds rows to the token's account
+				// (#535) has to bind them to the token this check accepted.
+				// Parsing the header again would also mean knowing which token is
+				// the global key, which only this middleware does.
+				next.ServeHTTP(w, r.WithContext(ContextWithIngestToken(r.Context(), token)))
 				return
 			}
 		}
@@ -143,9 +151,10 @@ func (a *Authenticator) GRPCUnaryInterceptor() grpc.UnaryServerInterceptor {
 
 type ingestTokenKey struct{}
 
-// ContextWithIngestToken carries a token the interceptor already verified.
-// Only the interceptor should call it: a token in this context means
-// authentication accepted it, and anything downstream may rely on that.
+// ContextWithIngestToken carries a per-user token an authenticator already
+// verified: GRPCUnaryInterceptor and HTTPMiddleware put it there. Only an
+// authenticator should call it: a token in this context means authentication
+// accepted it, and anything downstream may rely on that.
 func ContextWithIngestToken(ctx context.Context, token string) context.Context {
 	return context.WithValue(ctx, ingestTokenKey{}, token)
 }

@@ -109,6 +109,31 @@ func TestScheduleTickFiresOncePerWeek(t *testing.T) {
 	onlyRun(t, f.st) // still exactly one
 }
 
+// The scheduler asks for consent only when an admin requires it. Required, a
+// user who never consented is passed over without a run row; not required, the
+// same user's week runs by itself.
+func TestScheduleTickConsentFollowsThePolicy(t *testing.T) {
+	f := tickFixture(t)
+	f.st.AutoSchedule = &store.AIAutoSchedule{Enabled: boolPtr(true)}
+	c := candidate(f.wk.TZ)
+	c.DashboardUserID = 2
+	f.st.Candidates = []store.AIScheduleCandidate{c}
+	now := firingOf(t, ResolveSchedule(f.st.AutoSchedule, nil, f.wk.TZ), f.wk)
+	ctx := context.Background()
+	stranger := scopeOf(Scope{DashboardUserID: 2, UserID: "me"})
+
+	f.st.RunPolicy = &store.AIRunPolicy{ConsentRequired: boolPtr(true)}
+	if started, err := f.svc.ScheduleTick(ctx, now, stranger); err != nil || started != 0 || len(f.st.Runs) != 0 {
+		t.Fatalf("required: started %d, runs %d, err %v", started, len(f.st.Runs), err)
+	}
+
+	f.st.RunPolicy = nil
+	if started, err := f.svc.ScheduleTick(ctx, now, stranger); err != nil || started != 1 {
+		t.Fatalf("not required: started %d, err %v", started, err)
+	}
+	waitRun(t, f.st, onlyRun(t, f.st).ID, store.AIRunCompleted)
+}
+
 // Off is off: an admin turns automatic runs on, and a user can turn their own
 // back off without the admin's default reaching them.
 func TestScheduleTickRespectsTheSwitch(t *testing.T) {

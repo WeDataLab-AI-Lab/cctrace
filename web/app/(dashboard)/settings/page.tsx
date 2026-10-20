@@ -7,6 +7,7 @@ import { useAuth } from '@/components/common/auth-context';
 import { AppearanceControls } from '@/components/common/appearance-controls';
 import { APITokenManagement } from '@/components/settings/api-token-management';
 import { BillingSelfExclusion } from '@/components/settings/billing-self-exclusion';
+import { QuotaAccountBindings } from '@/components/settings/quota-account-bindings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -79,6 +80,8 @@ export default function SettingsPage() {
       <APITokenManagement />
 
       <BillingSelfExclusion />
+
+      <QuotaAccountBindings />
 
       <div className="bg-surface rounded-lg border border-border p-8">
         <div className="flex items-center gap-2.5 mb-1">

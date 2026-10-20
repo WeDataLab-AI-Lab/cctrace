@@ -86,3 +86,47 @@ func (r *Response) Samples(accountID, loginEmail, profileEmail string) []*store.
 
 	return out
 }
+
+// OwnerSamples builds the identity-free rows sent through the dashboard user's
+// private quota endpoint. Unlike Samples, it never adds email or session
+// provenance fields and it does not infer an owner from the process profile.
+func (r *Response) OwnerSamples(accountID string) []*store.QuotaOwnerSample {
+	if r == nil || accountID == "" || r.FetchedAt.IsZero() {
+		return nil
+	}
+	seen := map[string]bool{}
+	var out []*store.QuotaOwnerSample
+	add := func(key string, window *UsageWindow) {
+		if window == nil || seen[key] {
+			return
+		}
+		seen[key] = true
+		sample := &store.QuotaOwnerSample{
+			BillingProvider: BillingProviderAnthropic,
+			AccountID:       accountID,
+			WindowKey:       key,
+			SampledAt:       r.FetchedAt,
+			UsedPct:         window.Utilization,
+			Plan:            r.Plan,
+			ScopeLabel:      window.ScopeLabel,
+			Severity:        window.Severity,
+			IsActive:        window.IsActive,
+			Attribution:     store.AttributionObserved,
+		}
+		if minutes, ok := windowMinutes[key]; ok {
+			sample.WindowMinutes = &minutes
+		}
+		if resets, err := time.Parse(time.RFC3339Nano, window.ResetsAt); err == nil && !resets.IsZero() {
+			sample.ResetsAt = &resets
+		}
+		out = append(out, sample)
+	}
+	for i := range r.Limits {
+		if r.Limits[i].Kind != "" {
+			add(r.Limits[i].Kind, r.Window(r.Limits[i].Kind))
+		}
+	}
+	add(KindSession, r.Window(KindSession))
+	add(KindWeeklyAll, r.Window(KindWeeklyAll))
+	return out
+}

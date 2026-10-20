@@ -8,7 +8,7 @@ import (
 )
 
 func TestResetRemovesAllArtifacts(t *testing.T) {
-	home, bin := setupHome(t)
+	home, bin := setupInitHome(t)
 
 	shellProfile := filepath.Join(home, ".zshrc")
 	os.WriteFile(shellProfile, []byte("# existing config\n"), 0644)
@@ -19,6 +19,8 @@ func TestResetRemovesAllArtifacts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("init failed: %v\noutput: %s", err, initOut)
 	}
+
+	assertInitConsent(t, home, true)
 
 	cctraceDir := filepath.Join(home, ".cctrace")
 	if _, err := os.Stat(filepath.Join(cctraceDir, "profile.json")); err != nil {

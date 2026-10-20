@@ -141,6 +141,9 @@ func removePIDFileIfCurrent(path string, pid int) error {
 // A profile whose owner turned Codex sync off is left alone entirely: neither
 // the default home nor an extra one is written (#765).
 func autoMigrateCodex(p *profile.Profile, profileName string, otelEndpoint string) {
+	if p.HomesVersion != 0 || p.Homes != nil {
+		return
+	}
 	if otelEndpoint == "" || p.Server.AuthToken == "" || p.Options.CodexSyncDeclined {
 		return
 	}
@@ -158,8 +161,7 @@ func autoMigrateCodex(p *profile.Profile, profileName string, otelEndpoint strin
 // remembered as a decline, which autoMigrateCodex honours; turning it on clears
 // that.
 func setCodexSync(p *profile.Profile, enabled bool) {
-	p.Options.CodexSyncEnabled = enabled
-	p.Options.CodexSyncDeclined = !enabled
+	p.SetCollectionEnabled("codex", enabled)
 }
 
 // healExtraCodexHomes self-heals every other home the sync scans (CODEX_HOME,
@@ -174,23 +176,48 @@ func setCodexSync(p *profile.Profile, enabled bool) {
 func healExtraCodexHomes(p *profile.Profile, otelEndpoint string, keepHomeToken bool) (wrote bool) {
 	defaultDir, _ := filepath.Abs(codexlog.ExpandHome(codexlog.DefaultCodexDir()))
 	for _, dir := range resolveCodexScanDirs(io.Discard, p) {
-		if dir == defaultDir || skipSymlinkedCodexConfig(dir) {
+		if dir == defaultDir {
+			continue
+		}
+		explicitHome := isExplicitCodexHome(p, dir)
+		if explicitHome {
+			if codexConfigIsSymlink(dir) {
+				fmt.Fprintln(os.Stderr, "  [codex] explicit Codex home config is a symlink; it was not modified")
+				continue
+			}
+		} else if skipSymlinkedCodexConfig(dir) {
 			continue
 		}
 		result, err := codexconfig.HealExistingOtelBlock(dir, otelEndpoint, p.Server.AuthToken, p.Server.CACertFile, keepHomeToken)
 		if err == nil && keepHomeToken && (result == codexconfig.HealWritten || result == codexconfig.HealUnchanged) {
 			if token := codexconfig.OtelBearerToken(dir); token != "" && token != p.Server.AuthToken {
-				fmt.Printf("  [codex] %s/config.toml 의 토큰이 현재 프로필과 다릅니다. 토큰을 재발급했다면 'cctrace init' 으로 갱신하세요.\n", dir)
+				if explicitHome {
+					fmt.Println("  [codex] explicit Codex home has a different OTEL token; rerun 'cctrace init' after token rotation")
+				} else {
+					fmt.Printf("  [codex] %s/config.toml 의 토큰이 현재 프로필과 다릅니다. 토큰을 재발급했다면 'cctrace init' 으로 갱신하세요.\n", dir)
+				}
 			}
 		}
 		switch {
 		case err != nil:
-			fmt.Fprintf(os.Stderr, "  [codex] config self-heal %s: %v\n", dir, err)
+			if explicitHome {
+				fmt.Fprintln(os.Stderr, "  [codex] explicit Codex home config could not be checked")
+			} else {
+				fmt.Fprintf(os.Stderr, "  [codex] config self-heal %s: %v\n", dir, err)
+			}
 		case result == codexconfig.HealWritten:
-			fmt.Printf("  [codex] %s/config.toml otel 블록을 현재 형식으로 정리했습니다.\n", dir)
+			if explicitHome {
+				fmt.Println("  [codex] explicit Codex home OTEL config was updated")
+			} else {
+				fmt.Printf("  [codex] %s/config.toml otel 블록을 현재 형식으로 정리했습니다.\n", dir)
+			}
 			wrote = true
 		case result == codexconfig.HealForeign:
-			fmt.Printf("  [codex] %s/config.toml otel 블록이 다른 수집기를 가리켜 그대로 둡니다.\n", dir)
+			if explicitHome {
+				fmt.Println("  [codex] explicit Codex home uses another OTEL collector; config was left unchanged")
+			} else {
+				fmt.Printf("  [codex] %s/config.toml otel 블록이 다른 수집기를 가리켜 그대로 둡니다.\n", dir)
+			}
 		}
 	}
 	return wrote
@@ -200,12 +227,25 @@ func healExtraCodexHomes(p *profile.Profile, otelEndpoint string, keepHomeToken 
 // so in one line. Such a file (a dotfile manager's) cannot be replaced
 // atomically, and retrying it only repeats the same error on every sync.
 func skipSymlinkedCodexConfig(dir string) bool {
-	info, err := os.Lstat(filepath.Join(dir, "config.toml"))
-	if err != nil || info.Mode()&os.ModeSymlink == 0 {
+	if !codexConfigIsSymlink(dir) {
 		return false
 	}
 	fmt.Printf("  [codex] %s/config.toml 이 심볼릭 링크라 otel 블록을 고치지 않습니다. 링크 대상을 직접 수정하세요.\n", dir)
 	return true
+}
+
+func codexConfigIsSymlink(dir string) bool {
+	info, err := os.Lstat(filepath.Join(dir, "config.toml"))
+	return err == nil && info.Mode()&os.ModeSymlink != 0
+}
+
+func isExplicitCodexHome(p *profile.Profile, dir string) bool {
+	if p == nil || p.CodexHome == "" {
+		return false
+	}
+	a, errA := filepath.Abs(filepath.Clean(p.CodexHome))
+	b, errB := filepath.Abs(filepath.Clean(dir))
+	return errA == nil && errB == nil && a == b
 }
 
 // migrateDefaultCodexHome is autoMigrateCodex for the default home: it heals an

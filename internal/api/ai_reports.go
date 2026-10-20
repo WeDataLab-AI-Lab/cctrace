@@ -107,6 +107,8 @@ type aiRuntimeJSON struct {
 }
 
 type aiConsentStateJSON struct {
+	// Required is false unless an admin requires consent; the screen asks only then.
+	Required          bool   `json:"required"`
 	Granted           bool   `json:"granted"`
 	RuntimeKey        string `json:"runtime_key"`
 	DisclosureVersion string `json:"disclosure_version"`
@@ -371,7 +373,7 @@ func (s *Server) handleGetAIReports(w http.ResponseWriter, r *http.Request) {
 	resp := aiReportsResponse{
 		Week: wk.ID, TZ: wk.TZ, Since: wk.Since, Until: wk.Until, InProgress: wk.InProgress(time.Now()),
 		Runtime:      aiRuntimeJSON{Enabled: enablement.Enabled, Key: info.Key, Configured: status.Configured, Available: status.Available, Reason: reason},
-		Consent:      aiConsentStateJSON{Granted: consent.Granted, RuntimeKey: consent.RuntimeKey, DisclosureVersion: consent.DisclosureVersion},
+		Consent:      aiConsentStateJSON{Required: consent.Required, Granted: consent.Granted, RuntimeKey: consent.RuntimeKey, DisclosureVersion: consent.DisclosureVersion},
 		SegmentCount: view.SegmentCount,
 		Schedule:     userScheduleJSON(schedule, time.Now()),
 	}

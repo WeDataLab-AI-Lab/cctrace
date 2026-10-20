@@ -1,0 +1,29 @@
+{
+  "next_cursor": null,
+  "revision": "33333333333333333333333333333333",
+  "sessions": [
+    {
+      "agent": "claude",
+      "canonical_id": "11111111111111111111111111111111",
+      "cost_usd": null,
+      "end_time": "2026-01-01T00:00:02Z",
+      "entrypoint": null,
+      "event_count": null,
+      "has_sync": false,
+      "input_tokens": null,
+      "local_id": "11111111111111111111111111111111",
+      "model": "test-model",
+      "name": null,
+      "native_session_id": "native-id",
+      "output_tokens": null,
+      "profile_fingerprint": "22222222222222222222222222222222",
+      "project_hash": "-sample",
+      "project_name": null,
+      "revision": "44444444444444444444444444444444",
+      "server_match": null,
+      "session_id": "native-id",
+      "start_time": "2026-01-01T00:00:00Z",
+      "title": "hello"
+    }
+  ]
+}

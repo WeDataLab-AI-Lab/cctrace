@@ -9,7 +9,14 @@ import (
 
 // pluginUsageRawQuery is the exact pre-fact response-window query. PluginUsage keeps
 // serving it until the fact backfill and its completion marker commit atomically.
-const pluginUsageRawQuery = `
+//
+// It stands in for the facts, so it counts what pluginInvocationFactsInsertSQL
+// counts for the same commands: the same rows, syncAttributedRowsSQL over the
+// commands' sessions -- a Codex usage row behind its own defences, never waiting
+// for codex_imputed_cost's refresh (p1t-design §2.2, row 6) -- and the same
+// window, its request branch included: an implicit command whose response began
+// before $1 gets that response, as its fact does.
+var pluginUsageRawQuery = `
 WITH login_user_ids AS (
   -- Map login_email → user_ids via otel_events. session_records.login_email is
   -- backfilled from otel and only for single-login sessions, so the event side
@@ -27,6 +34,7 @@ cmd_records AS MATERIALIZED (
     sr.session_id,
     sr.ts,
     sr.record_type AS command_record_type,
+    CASE WHEN ` + claudeRequestLineSQL("sr") + ` THEN ` + claudeRequestKeySQL("sr") + ` END AS req_key,
     sr.command_name,
     sr.profile_email,
     sr.user_id,
@@ -103,25 +111,21 @@ attributed AS (
     c.repo_subpath,
     c.has_git,
     COUNT(DISTINCT c.ts) AS invocation_count,
-    COALESCE(SUM(
-      CASE
-        WHEN c.agent = 'codex' THEN GREATEST(COALESCE(r.input_tokens,0) - COALESCE(r.cache_read_tokens,0), 0)
-        ELSE COALESCE(r.input_tokens,0)
-      END + COALESCE(r.output_tokens,0)
-    ), 0) AS total_tokens,
-    COALESCE(SUM(CASE
-      WHEN c.agent = 'codex' THEN GREATEST(COALESCE(r.input_tokens,0) - COALESCE(r.cache_read_tokens,0), 0)
-      ELSE COALESCE(r.input_tokens,0)
-    END), 0) AS input_tokens,
-    COALESCE(SUM(COALESCE(r.output_tokens,0)), 0) AS output_tokens
+    COALESCE(SUM(COALESCE(r.req_input_tokens,0) + COALESCE(r.req_output_tokens,0)), 0) AS total_tokens,
+    COALESCE(SUM(COALESCE(r.req_input_tokens,0)), 0) AS input_tokens,
+    COALESCE(SUM(COALESCE(r.req_output_tokens,0)), 0) AS output_tokens
   FROM cmd_records c
-  LEFT JOIN session_records r ON
+  LEFT JOIN (` + syncAttributedRowsSQL(
+	// Cast, so that = ANY reads one array rather than a subquery's rows.
+	`(SELECT COALESCE(array_agg(DISTINCT session_id), '{}') FROM cmd_records)::text[]`,
+	[]string{"session_id", "ts"}) + `) r ON
     r.session_id = c.session_id AND
-    r.ts >= $1 AND
-    COALESCE(NULLIF(r.agent, ''), 'claude') = c.agent AND
-    ((c.agent = 'codex' AND r.record_type = 'usage') OR (c.agent != 'codex' AND r.record_type = 'assistant')) AND
-    ((c.command_record_type = 'assistant' AND r.ts >= c.ts) OR (c.command_record_type != 'assistant' AND r.ts > c.ts)) AND
-    (c.next_user_ts IS NULL OR r.ts < c.next_user_ts)
+    -- No agent or record-type condition, as in pluginInvocationFactsInsertSQL, and
+    -- no condition on $1: the window starts at the command, which is inside the
+    -- period, and the request branch is bounded by the command's own request.
+    ((((c.command_record_type = 'assistant' AND r.ts >= c.ts) OR (c.command_record_type != 'assistant' AND r.ts > c.ts)) AND
+      (c.next_user_ts IS NULL OR r.ts < c.next_user_ts)) OR
+     r.req_key = c.req_key)
   GROUP BY c.command_name, c.agent, c.profile_email, c.user_id,
     c.project_hash, c.project_name, c.repository_id, c.repository_name, c.repo_subpath, c.has_git
 )

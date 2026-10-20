@@ -27,6 +27,19 @@ type Runtime interface {
 	Run(ctx context.Context, req RunRequest, sink func(Event)) (*Result, error)
 }
 
+type sensitiveInputContextKey struct{}
+
+// WithSensitiveInput marks a context whose provider response may echo private
+// input. API runtimes use it to suppress raw response bodies in logs.
+func WithSensitiveInput(ctx context.Context) context.Context {
+	return context.WithValue(ctx, sensitiveInputContextKey{}, true)
+}
+
+func HasSensitiveInput(ctx context.Context) bool {
+	sensitive, _ := ctx.Value(sensitiveInputContextKey{}).(bool)
+	return sensitive
+}
+
 // Info is static identity: Key such as "codex-app-server", Model, AuthMode.
 type Info struct {
 	Key      string
@@ -59,6 +72,9 @@ type RunRequest struct {
 	MaxToolCalls    int
 	// MaxTotalTokens caps cumulative input+output tokens for the turn.
 	MaxTotalTokens int64
+	// MaxOutputTokens caps generated output per provider response when the API
+	// supports an explicit output limit. Zero preserves the runtime default.
+	MaxOutputTokens int64
 }
 
 type Tool struct {

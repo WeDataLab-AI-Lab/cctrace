@@ -25,6 +25,9 @@ type FileState struct {
 	CodexForkHistoryCopied   bool      `json:"codex_fork_history_copied,omitempty"`
 	CodexForkBoundaryReached bool      `json:"codex_fork_boundary_reached,omitempty"`
 	CodexForkHasTriggerTurn  bool      `json:"codex_fork_has_trigger_turn,omitempty"`
+	CodexTurnMetadataScanned bool      `json:"codex_turn_metadata_scanned,omitempty"`
+	CodexActiveTurnID        string    `json:"codex_active_turn_id,omitempty"`
+	CodexActiveRootTurnID    string    `json:"codex_active_root_turn_id,omitempty"`
 	// CodexHasTokenUsageRecord remembers that this file carries Codex's own
 	// token_usage_record rows. The scanner learns it by reading one, and an
 	// incremental pass only reads the new tail -- so without keeping it here the
@@ -56,6 +59,23 @@ type FileState struct {
 	// written exactly once per file — on an active machine the only evidence would
 	// age out. Zero means nothing was skipped.
 	SkippedAtFirstSync int64 `json:"skipped_at_first_sync,omitempty"`
+	// CollectedFrom marks a prefix sync never saw: where sync reset the offset
+	// when it found this file shrunk (see syncFile). The bytes in front of it are
+	// a prefix of what sync read before (a truncation) or the remnant of a
+	// rewrite, which it never read -- so re-enrichment, which reads from byte
+	// zero, and the session snapshot rebuild start here. Zero means the file
+	// never shrank, or shrank to nothing.
+	//
+	// A Claude file's lines of a repository the allowlist does not collect do
+	// not move it. Records are judged one by one there (syncJudgedTail), such
+	// lines can lie anywhere in a file and any number of times, and collection
+	// restarting behind each run of them would give up the allowed lines in
+	// front of it. They are recorded in ExcludedSeen, and a file that carries
+	// it is not read again at all, whatever the settings later become
+	// (keptBackForGood). The Codex syncer still judges a tail whole, and still
+	// moves this past one it consumed without collecting
+	// (CodexSyncer.collectTurns).
+	CollectedFrom int64 `json:"collected_from,omitempty"`
 	// BlockedByBodyLimit records that this file stopped at a record the server
 	// refused as too large, and how many records were in the group when the split
 	// ran out of halves. Nothing is lost while it is set: the bytes are still on
@@ -72,6 +92,44 @@ type FileState struct {
 	// before this field existed says -- and ConflictSeed reads that as a reason
 	// to give up the nudge, never as a count of zero.
 	ConflictTail *ConflictTail `json:"conflict_tail,omitempty"`
+	// SessionSnapshot is what a main transcript's metadata lines say about its
+	// session, kept with what sending it takes (see SessionSnapshotState). It is
+	// here, beside Offset, so the Save that stores the offset stores the snapshot
+	// built from the same lines: after a crash the two still describe the same
+	// prefix of the file. Absent on subagent transcripts and in Codex, gjc and
+	// omo state, and on a main transcript until a pass adds lines to it or
+	// re-enrichment finds metadata lines in it.
+	SessionSnapshot *SessionSnapshotState `json:"session_snapshot,omitempty"`
+	// NoSessionSnapshot records that the lines of this main transcript read so
+	// far hold no metadata line, so its snapshot would be empty. It stands in for
+	// an empty SessionSnapshotState, and it tells the next pass the collected
+	// part has been read already (advanceSessionSnapshot).
+	NoSessionSnapshot bool `json:"no_session_snapshot,omitempty"`
+	// RebuildDeclined records that this main transcript's snapshot was to be
+	// rebuilt from the part sync collected and was not, because a repository
+	// allowlist was configured: that part may hold lines an earlier cctrace
+	// consumed unsent without saying so, and only re-enrichment, which looks
+	// every cwd of the file up, can vouch for it (Syncer.mayRebuild). The
+	// snapshot is then what the advances build, with its titles left out --
+	// unknown, not "" -- and no rebuild reads the part from then on, also once
+	// the allowlist is gone. Cleared when re-enrichment under an allowlist has
+	// backfilled the file (backfillSessionSnapshot).
+	RebuildDeclined bool `json:"rebuild_declined,omitempty"`
+	// SessionGit holds, on a main transcript, the paths its session's main and
+	// subagent transcripts edited, to count how many are still uncommitted (see
+	// SessionGitState). Absent until the session edits a file, and dropped a
+	// week after its last activity.
+	SessionGit *SessionGitState `json:"session_git,omitempty"`
+	// EditsFrom is where this transcript's edits began to be collected into its
+	// session's set: where the first advance that collected lines of it began,
+	// since this client collected them, or the start of its collected part once
+	// re-enrichment filled the set from there. Unset, none of its edits were.
+	// Past 0, the session's counts are partial (editsPartial).
+	EditsFrom *int64 `json:"edits_from,omitempty"`
+	// CallsFrom and SessionCommits describe only consumed transcript bytes.
+	// Pending call evidence stays local until the bounded commit collector runs.
+	CallsFrom      *int64               `json:"calls_from,omitempty"`
+	SessionCommits *SessionCommitsState `json:"session_commits,omitempty"`
 	// CWDUnknown records that the cwd the consumed bytes ended in could not be
 	// established: the offset moved without the records being read (the first
 	// sync's skip, a shrink reset) and no line before it carries one. A Claude
@@ -194,6 +252,10 @@ type State struct {
 	// because the tail they are asked about can be older than the process.
 	CWDIdentity map[string]*CWDIdentity `json:"cwd_identity,omitempty"`
 	Taints      map[string][]Taint      `json:"taints,omitempty"`
+
+	// Sources records, per source folder (the folder part of the profile's
+	// Spec.Sources entry), how this state came to read it. See SourceMark.
+	Sources map[string]SourceMark `json:"sources,omitempty"`
 
 	path  string
 	isNew bool // true when loaded from a non-existent file
@@ -472,26 +534,8 @@ func (s *State) ClearRulesDenied(repositoryKey string) bool {
 }
 
 func LoadState(path string) (*State, error) {
-	s := &State{Files: make(map[string]*FileState), path: path}
-	data, err := os.ReadFile(path)
-	if os.IsNotExist(err) {
-		s.isNew = true
-		return s, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal(data, s); err != nil {
-		// Corrupt state: treat as new to avoid re-sending historical sessions
-		s.isNew = true
-		s.Files = make(map[string]*FileState)
-		return s, nil
-	}
-	s.path = path
-	if s.Files == nil {
-		s.Files = make(map[string]*FileState)
-	}
-	return s, nil
+	s, _, err := LoadStateStrict(path)
+	return s, err
 }
 
 // Save persists the state to disk atomically.

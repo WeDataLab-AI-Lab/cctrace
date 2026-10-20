@@ -2,10 +2,33 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { Sidebar } from '@/components/common/sidebar';
 import { Header } from '@/components/common/header';
 import { useAuth } from '@/components/common/auth-context';
 import { CollectingLoader } from '@/components/common/collecting-loader';
+import { CatchingUpNote } from '@/components/common/catching-up-note';
+import { fetchMaintenanceStatus } from '@/lib/api';
+import { POLL_LIVE } from '@/lib/query-config';
+import { TOKEN_RULE_NOTE } from '@/lib/token-rule';
+import { cn } from '@/lib/utils';
+import { useRefreshWhenRebuilt } from '@/lib/use-refresh-when-rebuilt';
+import { SessionLayoutProvider, useSessionLayout } from '@/components/common/session-layout-context';
+
+const DashboardChrome = ({ children, compatibilityRoute, pending }: { children: React.ReactNode; compatibilityRoute: boolean; pending?: boolean }) => {
+  const { menuCollapsed, expanded } = useSessionLayout();
+  const hideChrome = expanded || compatibilityRoute;
+  return <div className="flex h-screen overflow-hidden bg-canvas">
+    <div hidden={hideChrome} className={hideChrome ? 'hidden' : 'contents'}><Sidebar collapsed={menuCollapsed} /></div>
+    <div className="flex min-w-0 flex-1 flex-col">
+      <div hidden={hideChrome} className={hideChrome ? 'hidden' : 'contents'}><Header /></div>
+      {!hideChrome && <CatchingUpNote pending={pending} message={TOKEN_RULE_NOTE} className="mx-4 mt-4 md:mx-8" />}
+      <main className={cn('min-h-0 min-w-0 flex-1', hideChrome ? 'overflow-hidden' : 'overflow-auto p-4 md:p-8')}>
+        {children}
+      </main>
+    </div>
+  </div>;
+};
 
 export default function DashboardLayout({
   children,
@@ -15,7 +38,25 @@ export default function DashboardLayout({
   const { user, isLoading, needsSetup } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const dashboardPath = pathname?.replace(/\/+$/, '');
+  const analysisWorkspace = dashboardPath === '/sessions/analysis';
+  const sessionPage = dashboardPath === '/sessions';
 
+  // While the server recounts token totals under the new counting rule, screens
+  // that read its stored aggregates and screens that count live can disagree, so
+  // every page says so. Polled only while that is pending. A failed read keeps
+  // the last answer -- react-query keeps data through an error -- so it neither
+  // hides the note nor reads as finished; before the first answer nothing shows.
+  // When the recount finishes, every query refetches.
+  const { data: maintenance } = useQuery({
+    queryKey: ['maintenance-status'],
+    queryFn: fetchMaintenanceStatus,
+    enabled: Boolean(user),
+    refetchInterval: (query) => (query.state.data?.token_rule_pending === true ? POLL_LIVE : false),
+  });
+  useRefreshWhenRebuilt(maintenance?.token_rule_pending);
+
+  /** 인증과 초기 암호 상태에 따라 접근 가능한 페이지로 이동한다. */
   useEffect(() => {
     if (isLoading) return;
     if (needsSetup) {
@@ -40,19 +81,8 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-canvas">
-      <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Header />
-        {/* min-w-0 as well as min-h-0: a flex child defaults to min-width:auto, so
-            without it main sizes to its widest descendant and the page grows a
-            horizontal scrollbar instead of its contents narrowing. Every shrink rule
-            further in -- the session split, the filter toolbar -- is inert until the
-            container agrees to be narrower than its contents. */}
-        <main className="min-h-0 min-w-0 flex-1 overflow-auto p-4 md:p-8">
-          {children}
-        </main>
-      </div>
-    </div>
+    <SessionLayoutProvider userId={user.id} sessionPage={sessionPage}>
+      <DashboardChrome compatibilityRoute={analysisWorkspace} pending={maintenance?.token_rule_pending}>{children}</DashboardChrome>
+    </SessionLayoutProvider>
   );
 }

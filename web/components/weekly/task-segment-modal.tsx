@@ -28,6 +28,15 @@ const segmentToolLabel = (segment: TaskSegment): string => {
   return `${calls} (${numberFormat.format(segment.tool_fail_count)} failed)`;
 };
 
+/** Until the server has recounted the stored segments by request, their token
+ *  numbers may still count a response once per line, so the row says the tokens
+ *  are being recalculated instead of showing them. Korean, like the numbers it
+ *  stands in for. */
+const segmentTokensLabel = (segment: TaskSegment): string => {
+  if (!segment.tokens_ready) return '구간 토큰 재계산 중';
+  return `구간 ${formatTokens(segment.input_tokens)} in / ${formatTokens(segment.output_tokens)} out`;
+};
+
 interface TaskSegmentModalProps {
   readonly taskType: string;
   readonly since: string;
@@ -42,6 +51,8 @@ export const TaskSegmentModal = ({ taskType, since, until, onClose }: TaskSegmen
   });
 
   const segments = page?.segments;
+  // One server-side marker sets tokens_ready, so a page's segments all agree.
+  const tokensReady = segments?.every((segment) => segment.tokens_ready) ?? false;
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -63,9 +74,12 @@ export const TaskSegmentModal = ({ taskType, since, until, onClose }: TaskSegmen
               {' '}· 위 카드의 수는 프롬프트 수라 이 수와 다를 수 있습니다
             </p>
           )}
-          {page && page.total > 0 && (
+          {/* The rule the numbers follow, shown with the numbers: while they are
+              being recalculated the rows say so, and there is nothing to read
+              the rule against. */}
+          {page && page.total > 0 && tokensReady && (
             <p className="mt-1 text-[11px] text-ink-3">
-              구간 토큰은 모델 레코드만 셉니다. Codex 는 캐시 읽기를 뺀 값입니다.
+              구간 토큰은 API 요청마다 한 번 셉니다. Codex 는 캐시 읽기를 뺀 값입니다.
             </p>
           )}
         </header>
@@ -124,9 +138,9 @@ export const TaskSegmentModal = ({ taskType, since, until, onClose }: TaskSegmen
                     {segmentToolLabel(segment)}
                   </span>
                   {/* A different contract from the Projects card's "기록 토큰":
-                      this counts only the segment's model rows, and for Codex it
-                      subtracts cache reads (postgres_task_segment_facts.go:255). */}
-                  <span className="tabular-nums">구간 {formatTokens(segment.input_tokens)} in / {formatTokens(segment.output_tokens)} out</span>
+                      this counts the segment's requests, each once, and for Codex
+                      it subtracts cache reads (taskSegmentTokensCTEs). */}
+                  <span className="tabular-nums">{segmentTokensLabel(segment)}</span>
                 </div>
               </li>
             ))}
@@ -141,4 +155,4 @@ export const TaskSegmentModal = ({ taskType, since, until, onClose }: TaskSegmen
   );
 };
 
-export { segmentToolLabel };
+export { segmentTokensLabel, segmentToolLabel };

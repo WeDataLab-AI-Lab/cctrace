@@ -619,9 +619,30 @@ func countUnsweptTombstones(t *testing.T, s *PgStore) int {
 func seedStrictDeletionTargets(t *testing.T, s *PgStore, ts time.Time, sessionID string) {
 	t.Helper()
 	ctx := context.Background()
+	for _, table := range []string{"session_ai_record_jobs", "session_ai_records"} {
+		if _, err := s.pool.Exec(ctx, `DELETE FROM `+table+` WHERE session_id=$1`, sessionID); err != nil {
+			t.Fatalf("clear prior %s fixture: %v", table, err)
+		}
+	}
+	t.Cleanup(func() {
+		for _, table := range []string{"session_ai_record_jobs", "session_ai_records"} {
+			if _, err := s.pool.Exec(context.Background(), `DELETE FROM `+table+` WHERE session_id=$1`, sessionID); err != nil {
+				t.Errorf("clear %s fixture: %v", table, err)
+			}
+		}
+	})
 	var sourceID int64
 	if err := s.pool.QueryRow(ctx, `SELECT id FROM session_records WHERE session_id=$1 LIMIT 1`, sessionID).Scan(&sourceID); err != nil {
 		t.Fatalf("source record id: %v", err)
+	}
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_ai_records
+		(session_id,outcome,reason,agent,prompt_version,facts_hash,facts_rules_version,basis_hash)
+		VALUES ($1,'redacted','prompt_policy','claude',1,decode(repeat('00',32),'hex'),1,decode(repeat('11',32),'hex'))`, sessionID); err != nil {
+		t.Fatalf("seed P5 record: %v", err)
+	}
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_ai_record_jobs (session_id,lane,claim,claimed_at)
+		VALUES ($1,'manual',$2,$3)`, sessionID, sourceID, ts); err != nil {
+		t.Fatalf("seed active P5 job: %v", err)
 	}
 	statements := []struct {
 		q    string
@@ -657,6 +678,107 @@ func seedStrictDeletionTargets(t *testing.T, s *PgStore, ts time.Time, sessionID
 	}}); err != nil {
 		t.Fatalf("seed quota target: %v", err)
 	}
+	// The session observation tables joined the target list with their ingest, and
+	// the rule above holds for them too: seeded through the writer that fills them.
+	if _, err := s.IngestSessionObservations(ctx, SessionObservationBatch{
+		Snapshots:  []*SessionSnapshot{{SessionID: sessionID, Snapshot: json.RawMessage(`{"commits":{"trees":[{"repository":"strict"}],"items":[{"hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","tree":0,"proof":"output_hash","at":1759836153,"parents":1,"kind":"commit","call":"strict-call","transcript":"strict.jsonl"}]}}`), ObservedAt: ts}},
+		LiveStates: []*SessionLiveState{{SessionID: sessionID, PID: 1, Status: "busy", HeartbeatAt: ts}},
+		Events:     []*SessionObservationEvent{{SessionID: sessionID, EventID: "end", Kind: "session_end", ObservedAt: ts}},
+	}); err != nil {
+		t.Fatalf("seed observation targets: %v", err)
+	}
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_commit_claim_coverage
+		(session_id,user_id,profile_email,observed_at,source_witness)
+		SELECT session_id,user_id,profile_email,observed_at,sha256(convert_to(snapshot::text,'UTF8'))
+		FROM session_snapshots WHERE session_id=$1`, sessionID); err != nil {
+		t.Fatalf("seed claim coverage: %v", err)
+	}
+	var dashboardID int64
+	if err := s.pool.QueryRow(ctx, `INSERT INTO dashboard_users (email,password_hash,role)
+		VALUES ($1,'fixture','user') ON CONFLICT (email) DO UPDATE SET email=EXCLUDED.email RETURNING id`,
+		"strict-personal@example.com").Scan(&dashboardID); err != nil {
+		t.Fatalf("seed personal user: %v", err)
+	}
+	sourceUserID := "strict-owner-" + sessionID
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_personal_state
+		(dashboard_user_id,session_id,source_user_id,owner_proof,expires_at)
+		VALUES ($1,$2,$3,'session_record',now()+interval '90 days')`, dashboardID, sessionID, sourceUserID); err != nil {
+		t.Fatalf("seed personal state: %v", err)
+	}
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_personal_identity_keys
+		(dashboard_user_id,session_id,source_user_id) VALUES ($1,$2,$3)`, dashboardID, sessionID, sourceUserID); err != nil {
+		t.Fatalf("seed personal identity: %v", err)
+	}
+	// Group preferences are also strict deletion targets. Seed both sides with
+	// distinct identities so the kept preference is genuinely unrelated.
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_group_dismissals
+		(dashboard_user_id,session_id,source_user_id,owner_proof,grouping_version,ended_at)
+		VALUES ($1,$2,$3,'session_record',1,$4)`, dashboardID, sessionID, sourceUserID, ts); err != nil {
+		t.Fatalf("seed group dismissal: %v", err)
+	}
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_group_dismissal_identity_keys
+		(dashboard_user_id,session_id,grouping_version,ended_at,source_user_id)
+		VALUES ($1,$2,1,$3,$4)`, dashboardID, sessionID, ts, sourceUserID); err != nil {
+		t.Fatalf("seed group dismissal identity: %v", err)
+	}
+	// The rule above holds for the session analysis tables too. Their rows are
+	// written directly rather than through the worker that computes them.
+	seedSessionAnalysisRows(t, s, sessionID, "", sourceID)
+	// Trace cache roots, independent screen leases, and normalized children all
+	// participate in the same privacy sweep; the latter disappear by FK cascade.
+	if _, err := s.pool.Exec(ctx, `DELETE FROM session_trace_snapshots WHERE session_id=$1`, sessionID); err != nil {
+		t.Fatal(err)
+	}
+	snapshotID := "strict-trace-" + sessionID
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_trace_snapshots(snapshot_id,session_id,scope_key,access,mode,source_revision,policy_epoch,rules_version)
+ VALUES($1,$2,'fixture','{}','overview',0,0,$3)`, snapshotID, sessionID, TraceRulesVersion); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_trace_leases(lease_id,session_id,scope_key,snapshot_id,expires_at)
+ VALUES($1,$2,'fixture',$3,now()+interval '15 seconds')`, "strict-lease-"+sessionID, sessionID, snapshotID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_trace_events(snapshot_id,event_id,kind,ts,source_ref,event,metadata,source_key)
+ VALUES($1,'fixture-event','input',$2,'fixture-source','{}','{}','[]')`, snapshotID, ts); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_, _ = s.pool.Exec(context.Background(), `DELETE FROM session_trace_snapshots WHERE session_id=$1`, sessionID)
+	})
+
+	// Timeline preparation rows are written directly as well; nothing tracks
+	// revisions yet. truncateTables does not reach them, so clear both sides.
+	clearTimeline := func() {
+		for _, table := range []string{"session_timeline_members", "session_timeline_provenance", "session_timeline_revisions"} {
+			if _, err := s.pool.Exec(context.Background(), `DELETE FROM `+table+` WHERE session_id=$1`, sessionID); err != nil {
+				t.Fatalf("clear %s: %v", table, err)
+			}
+		}
+	}
+	clearTimeline()
+	t.Cleanup(clearTimeline)
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_timeline_members
+		(session_id,source_ts,source_record_type,source_profile_email,source_uuid,source_record_id,turn_key)
+		SELECT session_id,ts,record_type,profile_email,uuid,id,'fixture-turn'
+		FROM session_records WHERE session_id=$1`, sessionID); err != nil {
+		t.Fatalf("seed timeline membership: %v", err)
+	}
+	// One unplaced row beside the placed ones, and a published provenance: the
+	// sweep must take both kinds and every provenance column.
+	if _, err := s.pool.Exec(ctx, `UPDATE session_timeline_members SET turn_key=NULL, unmapped_reason='not_loaded'
+		WHERE session_id=$1 AND source_record_id=(SELECT max(source_record_id) FROM session_timeline_members WHERE session_id=$1)`, sessionID); err != nil {
+		t.Fatalf("seed unplaced timeline row: %v", err)
+	}
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_timeline_provenance
+		(session_id,tracking,source_revision,policy_epoch,source_witness,source_rows,mapping_version,
+		 timeline_state,timeline_hash,fact_output_hash,source_generation,rules_version)
+		VALUES($1,'untracked',0,0,decode(repeat('00',32),'hex'),1,1,
+		 'observed',decode(repeat('11',32),'hex'),decode(repeat('22',32),'hex'),1,2)`, sessionID); err != nil {
+		t.Fatalf("seed timeline provenance: %v", err)
+	}
+	if _, err := s.pool.Exec(ctx, `INSERT INTO session_timeline_revisions(session_id) VALUES($1)`, sessionID); err != nil {
+		t.Fatalf("seed timeline revision: %v", err)
+	}
 }
 
 func TestPgStore_StrictDeletionSweepsAuthoritativeTargetsAndIsolatesAccountData(t *testing.T) {
@@ -672,6 +794,23 @@ func TestPgStore_StrictDeletionSweepsAuthoritativeTargetsAndIsolatesAccountData(
 		SampledAt: ts.Add(time.Second), SourceSessionID: "",
 	}}); err != nil {
 		t.Fatalf("seed account quota: %v", err)
+	}
+
+	keptCounts := make(map[string]int, len(sessionDeletionTargets))
+	for _, target := range sessionDeletionTargets {
+		q := "SELECT count(*) FROM " + target.table + " WHERE " + target.key + "=$1"
+		for _, sessionID := range []string{"doomed", "kept"} {
+			var n int
+			if err := s.pool.QueryRow(ctx, q, sessionID).Scan(&n); err != nil {
+				t.Fatalf("count seeded %s for %s: %v", target.table, sessionID, err)
+			}
+			if n == 0 {
+				t.Fatalf("fixture did not seed %s for %s", target.table, sessionID)
+			}
+			if sessionID == "kept" {
+				keptCounts[target.table] = n
+			}
+		}
 	}
 
 	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "strict", false, false); err != nil {
@@ -692,8 +831,8 @@ func TestPgStore_StrictDeletionSweepsAuthoritativeTargetsAndIsolatesAccountData(
 		if err := s.pool.QueryRow(ctx, q, "kept").Scan(&n); err != nil {
 			t.Fatalf("count kept %s: %v", target.table, err)
 		}
-		if n == 0 {
-			t.Errorf("%s cleanup reached the unrelated kept session", target.table)
+		if n != keptCounts[target.table] {
+			t.Errorf("%s cleanup changed the unrelated kept session: got %d rows, want %d", target.table, n, keptCounts[target.table])
 		}
 	}
 	var accountRows int
@@ -732,6 +871,13 @@ func TestPgStore_PostSweepWritersCannotResurrectStrictTargets(t *testing.T) {
 	if n, err := s.InsertQuotaSamples(ctx, []*QuotaSample{{BillingProvider: "codex", AccountID: "late",
 		WindowKey: "5h", SampledAt: ts.Add(time.Hour), SourceSessionID: "doomed"}}); err != nil || n != 0 {
 		t.Fatalf("guarded quota writer = (%d,%v), want dropped", n, err)
+	}
+	if res, err := s.IngestSessionObservations(ctx, SessionObservationBatch{
+		Snapshots:  []*SessionSnapshot{{SessionID: "doomed", Snapshot: json.RawMessage(`{}`), ObservedAt: ts.Add(time.Hour)}},
+		LiveStates: []*SessionLiveState{{SessionID: "doomed", PID: 1, Status: "busy", HeartbeatAt: ts.Add(time.Hour)}},
+		Events:     []*SessionObservationEvent{{SessionID: "doomed", EventID: "late", Kind: "gone", ObservedAt: ts.Add(time.Hour)}},
+	}); err != nil || res.Stored != 0 {
+		t.Fatalf("guarded observation writer = (%d,%v), want dropped", res.Stored, err)
 	}
 	if err := s.RefreshClaudeImputedCost(ctx); err != nil {
 		t.Fatalf("claude imputed refresh: %v", err)
@@ -831,8 +977,10 @@ func TestPgStore_ConcurrentSweepClaimsOnceAndWriterCannotResurrect(t *testing.T)
 		}
 		reclaimed += r.n
 	}
-	if reclaimed != 3 {
-		t.Fatalf("concurrent sweeps reclaimed %d rows, want the original three exactly once", reclaimed)
+	// The event, metric, source record, timeline revision and session analysis
+	// queue row are all authoritative targets and are reclaimed exactly once.
+	if reclaimed != 5 {
+		t.Fatalf("concurrent sweeps reclaimed %d rows, want the original five exactly once", reclaimed)
 	}
 	if n := countRows(t, s, "otel_metrics", "doomed"); n != 0 {
 		t.Fatalf("writer resurrected %d metrics after sweep", n)

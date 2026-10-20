@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"cctrace/internal/sessionlog"
 	"cctrace/internal/syncer"
 
 	"golang.org/x/term"
@@ -22,43 +23,93 @@ const maxHookPayload = 64 * 1024
 // hook until something arrives.
 const hookStdinDeadline = 200 * time.Millisecond
 
-// parseHookTranscriptPath pulls transcript_path out of a Claude Code hook payload.
-// It returns "" for anything it does not recognise, and never fails: this runs
-// while starting the sync daemon, and a daemon that refuses to start because stdin
-// looked odd would be a worse outcome than one that starts without the exemption.
-func parseHookTranscriptPath(r io.Reader) string {
+// hookPayload is what cctrace reads from a Claude Code hook's stdin payload.
+type hookPayload struct {
+	// TranscriptPath is the running session's transcript, absolute or "".
+	TranscriptPath string
+	SessionID      string
+	HookEventName  string
+	// Reason is why the session ended (SessionEnd only).
+	Reason string
+	CWD    string
+}
+
+// parseHookPayload reads a Claude Code hook payload. It returns the zero payload
+// for anything it does not recognise, and never fails: this runs while starting
+// the sync daemon, and a daemon that refuses to start because stdin looked odd
+// would be a worse outcome than one that starts without what the payload says.
+//
+// Each field is read on its own, so one of an unexpected type is missing alone:
+// a reason that is not a string still leaves the transcript path to collect.
+func parseHookPayload(r io.Reader) hookPayload {
 	data, err := io.ReadAll(io.LimitReader(r, maxHookPayload))
 	if err != nil || len(data) == 0 {
-		return ""
+		return hookPayload{}
 	}
-	var payload struct {
-		TranscriptPath string `json:"transcript_path"`
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return hookPayload{}
 	}
-	if err := json.Unmarshal(data, &payload); err != nil {
-		return ""
+	text := func(name string) string {
+		var v string
+		_ = json.Unmarshal(fields[name], &v)
+		return v
+	}
+	payload := hookPayload{
+		TranscriptPath: text("transcript_path"),
+		SessionID:      text("session_id"),
+		HookEventName:  text("hook_event_name"),
+		Reason:         text("reason"),
+		CWD:            text("cwd"),
 	}
 	// Absolute only. A relative path would be resolved against whatever directory
 	// the daemon happens to start in, which is not the one the hook meant.
-	if payload.TranscriptPath == "" || !filepath.IsAbs(payload.TranscriptPath) {
-		return ""
+	if !filepath.IsAbs(payload.TranscriptPath) {
+		payload.TranscriptPath = ""
 	}
-	return payload.TranscriptPath
+	return payload
 }
 
-// hookTranscriptPath reads the current session's transcript path from stdin when
-// this process was started by a Claude Code hook, and "" otherwise.
-func hookTranscriptPath() string {
+// readHookPayload reads the hook payload from stdin when this process was
+// started by a Claude Code hook, and returns the zero payload otherwise.
+func readHookPayload() hookPayload {
 	if term.IsTerminal(int(os.Stdin.Fd())) {
-		return ""
+		return hookPayload{}
 	}
-	type result struct{ path string }
-	done := make(chan result, 1)
-	go func() { done <- result{parseHookTranscriptPath(os.Stdin)} }()
+	done := make(chan hookPayload, 1)
+	go func() { done <- parseHookPayload(os.Stdin) }()
 	select {
-	case r := <-done:
-		return r.path
+	case payload := <-done:
+		return payload
 	case <-time.After(hookStdinDeadline):
-		return ""
+		return hookPayload{}
+	}
+}
+
+// recordSessionEnd leaves the SessionEnd hook's report in the profile's pending
+// directory, beside its sync-state.json, where that profile's flush picks it up
+// (syncer.SessionEndDir). Its home is the one the transcript sits in
+// (syncer.RecordSessionEnd); without a transcript, the one the --once child
+// syncs, resolved the same way, so that home's Syncer is the one that sends it.
+func recordSessionEnd(profileName, claudeDir string, hook hookPayload) {
+	home := claudeDir
+	if home == "" {
+		if p, err := loadSyncProfile(profileName); err == nil {
+			home = resolveClaudeDir(p, "")
+		} else {
+			home = sessionlog.DefaultClaudeDir()
+		}
+	}
+	end := syncer.SessionEnd{
+		SessionID:      hook.SessionID,
+		Reason:         hook.Reason,
+		EndedAt:        time.Now(),
+		TranscriptPath: hook.TranscriptPath,
+		CWD:            hook.CWD,
+		ClaudeHome:     home,
+	}
+	if err := syncer.RecordSessionEnd(syncer.SessionEndDir(syncStatePathForProfile(profileName)), end); err != nil {
+		diagf("[session-end] %v", err)
 	}
 }
 

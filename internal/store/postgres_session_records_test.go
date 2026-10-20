@@ -3,9 +3,20 @@ package store
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 )
+
+func TestConversationProjectionPredicateRetainsNullableValues(t *testing.T) {
+	predicate := ConversationProjectionPredicate()
+	if !strings.Contains(predicate, "agent IS NOT NULL") || !strings.Contains(predicate, "record_type IS NOT NULL") {
+		t.Fatalf("projection predicate does not explicitly preserve nullable values: %s", predicate)
+	}
+	if AlwaysHiddenConversationRecord("future", "system") || AlwaysHiddenConversationRecord("claude", "custom") {
+		t.Fatal("unknown agents and record types must not enter the hidden whitelist")
+	}
+}
 
 func TestPgStore_InsertSessionRecords_classifiesOnlyHumanPrompts(t *testing.T) {
 	s := acquireTestStore(t)
@@ -40,6 +51,27 @@ func TestPgStore_InsertSessionRecords_classifiesOnlyHumanPrompts(t *testing.T) {
 		if record.UUID == "prompt" && record.TaskType != "implementation" {
 			t.Fatalf("listed task_type = %q, want implementation", record.TaskType)
 		}
+	}
+}
+
+func TestPgStore_ListSessionRecordsIncludesAssistantMessageID(t *testing.T) {
+	s := acquireTestStore(t)
+	truncateTables(t, s)
+	ctx := context.Background()
+	for _, row := range []struct{ uuid, messageID string }{{"assistant-a", "message-a"}, {"assistant-b", "message-b"}} {
+		if err := s.InsertSessionRecords(ctx, []*SessionRecord{{Ts: time.Now().UTC(), SessionID: "message-id-session", UUID: row.uuid,
+			RecordType: "assistant", Agent: "claude", ProfileEmail: "owner@example.com", UserID: "owner",
+			Raw: json.RawMessage(`{"message":{"id":"` + row.messageID + `","role":"assistant","content":"response"}}`)}}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	records, err := s.ListSessionRecords(ctx, SessionRecordFilter{SessionID: "message-id-session", Order: "asc"})
+	if err != nil || len(records) != 2 {
+		t.Fatalf("ListSessionRecords rows=%d err=%v", len(records), err)
+	}
+	got := map[string]string{records[0].UUID: records[0].MessageID, records[1].UUID: records[1].MessageID}
+	if got["assistant-a"] != "message-a" || got["assistant-b"] != "message-b" {
+		t.Fatalf("assistant message ID witnesses: %v", got)
 	}
 }
 
@@ -393,6 +425,80 @@ func TestPgStore_ListSessionLineage_appliesOffsetAcrossPages(t *testing.T) {
 				t.Fatalf("page %d UUIDs = %v, want %v", page, got, want)
 			}
 		}
+	}
+}
+
+func TestPgStore_ConversationProjectionFiltersBeforePagination(t *testing.T) {
+	s := acquireTestStore(t)
+	truncateTables(t, s)
+	ctx := context.Background()
+	base := time.Date(2026, 8, 21, 12, 0, 0, 0, time.UTC)
+	records := make([]*SessionRecord, 0, len(conversationClaudeBookkeepingTypes)+3)
+	for i, recordType := range conversationClaudeBookkeepingTypes {
+		records = append(records, &SessionRecord{Ts: base.Add(time.Duration(i) * time.Minute), SessionID: "conversation-page", ProfileEmail: "user@example.com", UUID: "meta-" + recordType, Agent: "claude", RecordType: recordType})
+	}
+	visibleAt := time.Duration(len(records)) * time.Minute
+	records = append(records,
+		&SessionRecord{Ts: base.Add(visibleAt), SessionID: "conversation-page", ProfileEmail: "user@example.com", UUID: "message-1", Agent: "claude", RecordType: "user"},
+		&SessionRecord{Ts: base.Add(visibleAt + time.Minute), SessionID: "conversation-page", ProfileEmail: "user@example.com", UUID: "unknown-system", Agent: "future", RecordType: "system"},
+		&SessionRecord{Ts: base.Add(visibleAt + 2*time.Minute), SessionID: "conversation-page", ProfileEmail: "user@example.com", UUID: "attachment", Agent: "claude", RecordType: "attachment"},
+		&SessionRecord{Ts: base.Add(visibleAt + 3*time.Minute), SessionID: "conversation-page", ProfileEmail: "user@example.com", UUID: "reasoning", Agent: "codex", RecordType: "reasoning"},
+		&SessionRecord{Ts: base.Add(visibleAt + 4*time.Minute), SessionID: "conversation-page", ProfileEmail: "user@example.com", UUID: "tool-call", Agent: "codex", RecordType: "tool_call"},
+		&SessionRecord{Ts: base.Add(visibleAt + 5*time.Minute), SessionID: "conversation-page", ProfileEmail: "user@example.com", UUID: "tool-output", Agent: "codex", RecordType: "tool_output"},
+		&SessionRecord{Ts: base.Add(visibleAt + 6*time.Minute), SessionID: "conversation-page", ProfileEmail: "user@example.com", UUID: "message-2", Agent: "codex", RecordType: "assistant"},
+	)
+	if err := s.InsertSessionRecords(ctx, records); err != nil {
+		t.Fatalf("InsertSessionRecords: %v", err)
+	}
+	for page, want := range [][]string{{"message-1"}, {"unknown-system"}, {"attachment"}, {"reasoning"}, {"tool-call"}, {"tool-output"}, {"message-2"}} {
+		got, err := s.ListSessionRecords(ctx, SessionRecordFilter{SessionID: "conversation-page", ProfileEmail: "user@example.com", Order: "asc", Limit: 1, Offset: page, Conversation: true})
+		if err != nil {
+			t.Fatalf("ListSessionRecords page %d: %v", page, err)
+		}
+		if len(got) != len(want) {
+			t.Fatalf("page %d UUID count=%d want=%d", page, len(got), len(want))
+		}
+		for i := range want {
+			if got[i].UUID != want[i] {
+				t.Fatalf("page %d UUIDs differ: got %q want %q", page, got[i].UUID, want[i])
+			}
+		}
+	}
+	// Opting out preserves the historical offset over all records.
+	plain, err := s.ListSessionRecords(ctx, SessionRecordFilter{SessionID: "conversation-page", ProfileEmail: "user@example.com", Order: "asc", Limit: 1, Offset: 0})
+	if err != nil || len(plain) != 1 || plain[0].UUID != "meta-"+conversationClaudeBookkeepingTypes[0] {
+		t.Fatalf("default page changed: records=%v err=%v", plain, err)
+	}
+}
+
+func TestPgStore_ConversationProjectionFiltersLineageBeforePaginationAndKeepsOwnerScope(t *testing.T) {
+	s := acquireTestStore(t)
+	truncateTables(t, s)
+	ctx := context.Background()
+	base := time.Date(2026, 8, 21, 12, 0, 0, 0, time.UTC)
+	records := []*SessionRecord{
+		{Ts: base, SessionID: "conversation-root", ProfileEmail: "owner@example.com", UUID: "hidden-root", Agent: "claude", RecordType: "system"},
+		{Ts: base.Add(time.Minute), SessionID: "conversation-root", ProfileEmail: "owner@example.com", UUID: "hidden-prompt", Agent: "claude", RecordType: "last-prompt"},
+		{Ts: base.Add(2 * time.Minute), SessionID: "conversation-root", ProfileEmail: "owner@example.com", UUID: "root-user", Agent: "claude", RecordType: "user"},
+		{Ts: base.Add(3 * time.Minute), SessionID: "conversation-branch", ProfileEmail: "owner@example.com", UUID: "branch-message", ForkedFromSession: "conversation-root", Agent: "claude", RecordType: "assistant"},
+		{Ts: base.Add(4 * time.Minute), SessionID: "conversation-root", ProfileEmail: "other@example.com", UUID: "other-owner", Agent: "claude", RecordType: "user"},
+	}
+	if err := s.InsertSessionRecords(ctx, records); err != nil {
+		t.Fatalf("InsertSessionRecords: %v", err)
+	}
+	got, err := s.ListSessionLineage(ctx, SessionRecordFilter{SessionID: "conversation-branch", ProfileEmail: "owner@example.com", Limit: 1, Offset: 0, Conversation: true})
+	if err != nil {
+		t.Fatalf("ListSessionLineage: %v", err)
+	}
+	if len(got) != 1 || got[0].UUID != "root-user" {
+		t.Fatalf("first projected lineage page=%v, want root-user only", got)
+	}
+	got, err = s.ListSessionLineage(ctx, SessionRecordFilter{SessionID: "conversation-branch", ProfileEmail: "owner@example.com", Limit: 1, Offset: 1, Conversation: true})
+	if err != nil {
+		t.Fatalf("ListSessionLineage offset: %v", err)
+	}
+	if len(got) != 1 || got[0].UUID != "branch-message" {
+		t.Fatalf("second projected lineage page=%v, want branch-message only", got)
 	}
 }
 

@@ -29,6 +29,7 @@ Every server setting covered by this guide, in one table. Details and caveats ar
 | `COOKIE_SECURE` | env file | `0` | `1` forces Secure auth cookies |
 | `CCTRACE_ALLOWED_ORIGINS` | env file | empty (CORS off) | Comma-separated exact browser origins |
 | `API_KEY` | env file | empty | Optional shared API token |
+| `CCTRACE_SERVER_POLICY_FILE` | env file | empty (no policy served) | Path of a signed server policy file, as the `cctraced` container sees it. Read on every request; see [Operations](../server/operations.md#server-policy) |
 | `CCTRACE_MAX_SYNC_BODY_BYTES` | env file | `8388608` | Maximum `POST /api/sync` body in bytes, up to `268435456` |
 | `CADDY_SITE_ADDRESS` | env file, TLS | none (required by the overlay) | Hostname or IP address clients use |
 | `CADDY_TLS_MODE` | env file, TLS | `internal` | `internal` (Caddy's own CA) or `acme` |
@@ -44,6 +45,9 @@ Every server setting covered by this guide, in one table. Details and caveats ar
 | `OTEL_RETENTION_DAYS` | not passed | unset | Retention days for OpenTelemetry events and metrics |
 | `SESSION_RETENTION_DAYS` | not passed | unset | Retention days for session records; `0` keeps forever |
 | `CCTRACE_USERID_ACCESS_CONTROL` | not passed | `true` | Per-user data isolation; only `false` disables it |
+| `STORAGE_VOLUME_PATH` | not passed | value of `WAL_DIR` | Path on the volume whose total, used and free space the Admin > Storage tab shows |
+| `ACCESS_LOG_FILE` | not passed | `/data/logs/access.log` | File the HTTP access log is appended to, besides standard output; standard output only if it cannot be opened |
+| `EMAIL_ALIASES` | not passed | empty | Comma-separated `<alias>=<canonical>` email pairs; the profile email on incoming telemetry and sync uploads is replaced by the canonical address |
 | `CCTRACE_ALLOW_EMPTY_DASHBOARD` | not passed | empty | `1` starts without embedded dashboard assets |
 
-`CCTRACE_AI_*` variables and `CCTRACE_SECRETS_KEY` belong to an area that is under active development and are not documented here.
+`CCTRACE_AI_*` variables, `CODEX_API_KEY` and `CCTRACE_SECRETS_KEY` belong to an area that is under active development and are not documented here.

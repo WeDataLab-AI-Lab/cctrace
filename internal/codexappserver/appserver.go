@@ -480,3 +480,9 @@ func (s *rawSnapshot) readings() []Reading {
 	}
 	return out
 }
+
+// FetchUncached binds a response to the caller's immediately checked credential epoch.
+// Account-scoped quota owns its own coalescing and must not reuse a home-only cache.
+func FetchUncached(ctx context.Context, home string) (*Snapshot, error) {
+	return run(ctx, home, nowFn())
+}

@@ -17,6 +17,7 @@ func (s *Server) handleQuotaWrite(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "profile_email required"})
 		return
 	}
+	snap.ProfileEmail = s.aliases.Resolve(snap.ProfileEmail)
 	if err := s.store.UpsertQuotaSnapshot(r.Context(), &snap); err != nil {
 		writeErr(w, err)
 		return

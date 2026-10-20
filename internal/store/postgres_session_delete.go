@@ -166,11 +166,20 @@ func (s *PgStore) DeleteSession(ctx context.Context, sessionID, actor, reason st
 		return nil, err
 	}
 
+	// session_records is asked first, in projectSessionTables order: its hash is the
+	// one the session synced under. A session observed but never synced has a hash
+	// only on its observation rows, and without it the block and the purge below
+	// would have no project to act on.
+	arms := make([]string, len(projectSessionTables))
+	for i, table := range projectSessionTables {
+		arms[i] = fmt.Sprintf(`(SELECT project_hash, %d AS pref FROM %s
+			WHERE session_id = $1 AND session_id <> '' AND project_hash <> '' LIMIT 1)`, i, table)
+	}
 	err = tx.QueryRow(ctx, `
-		SELECT COALESCE(sr.project_hash,''), COALESCE(p.project_name,'')
-		FROM session_records sr
-		LEFT JOIN projects p ON p.project_hash = sr.project_hash
-		WHERE sr.session_id = $1 AND sr.session_id <> '' AND sr.project_hash <> ''
+		SELECT src.project_hash, COALESCE(p.project_name,'')
+		FROM (`+strings.Join(arms, " UNION ALL ")+`) src
+		LEFT JOIN projects p ON p.project_hash = src.project_hash
+		ORDER BY src.pref
 		LIMIT 1`, sessionID).Scan(&res.ProjectHash, &res.ProjectName)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, fmt.Errorf("delete session: resolve project: %w", err)
@@ -186,7 +195,8 @@ func (s *PgStore) DeleteSession(ctx context.Context, sessionID, actor, reason st
 		res.PurgedSessions = int64(len(siblings))
 	}
 
-	if err := tombstoneTx(ctx, tx, ids, res.ProjectHash, actor, reason); err != nil {
+	neighbours, err := tombstoneTx(ctx, tx, ids, res.ProjectHash, actor, reason)
+	if err != nil {
 		return nil, err
 	}
 
@@ -197,6 +207,9 @@ func (s *PgStore) DeleteSession(ctx context.Context, sessionID, actor, reason st
 		res.ProjectBlocked = true
 	}
 
+	if err := markSessionFactsDirty(ctx, tx, neighbours, nil, dirtyDeletionPeer); err != nil {
+		return nil, fmt.Errorf("delete session: %w", err)
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("delete session: commit: %w", err)
 	}
@@ -247,19 +260,31 @@ func (s *PgStore) DeleteProject(ctx context.Context, projectHashes []string, act
 		return nil, fmt.Errorf("delete project: resolve name: %w", err)
 	}
 
+	byProject := make(map[string][]string, len(hashes))
+	var allIDs []string
 	for _, hash := range hashes {
-		// Empty exclude: there is no clicked session to hold back.
 		ids, err := projectSessionIDsTx(ctx, tx, hash, "")
 		if err != nil {
 			return nil, err
 		}
+		byProject[hash] = ids
+		allIDs = append(allIDs, ids...)
+	}
+	neighbours, err := prepareSessionClaimMutation(ctx, tx, allIDs)
+	if err != nil {
+		return nil, err
+	}
+	for _, hash := range hashes {
+		ids := byProject[hash]
 		// A project with nothing left to tombstone still gets blocked when asked. That
 		// is the case the picker hits most: the sessions are already gone and what the
 		// user wants is for the project to stop coming back.
 		if len(ids) > 0 {
-			if err := tombstoneTx(ctx, tx, ids, hash, actor, reason); err != nil {
+			n, err := tombstonePreparedTx(ctx, tx, ids, hash, actor, reason)
+			if err != nil {
 				return nil, err
 			}
+			neighbours = append(neighbours, n...)
 			res.MarkedSessions += int64(len(ids))
 		}
 		if blockProject {
@@ -271,17 +296,43 @@ func (s *PgStore) DeleteProject(ctx context.Context, projectHashes []string, act
 	}
 	res.PurgedSessions = res.MarkedSessions
 
+	// After every hash's tombstones: a neighbour of one project's session can be a
+	// session of the next, and a tombstoned session is never queued.
+	if err := markSessionFactsDirty(ctx, tx, neighbours, nil, dirtyDeletionPeer); err != nil {
+		return nil, fmt.Errorf("delete project: %w", err)
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("delete project: commit: %w", err)
 	}
 	return res, nil
 }
 
+// projectSessionTables are the tables that tie a session to a project by
+// project_hash. session_records alone is not enough: a session the collector has
+// observed but whose records have not synced -- or never will, because the client
+// stopped first -- exists only in the observation tables, and a project delete or
+// block that missed it would leave its titles and states behind.
+//
+// session_analysis_facts carries the project_hash its facts were computed with,
+// so it can tie a session to a project after the session's other rows are gone,
+// and a delete or block that missed it would leave the session's title and
+// requests behind. It comes last: DeleteSession takes the first hash it finds in
+// this order, and this one is derived.
+var projectSessionTables = []string{"session_records", "session_snapshots", "session_live_states", "session_observation_events", "session_analysis_facts"}
+
+// projectSessionIDsSQL selects, across projectSessionTables, the distinct
+// non-empty session ids of rows that satisfy cond, written against the alias t.
+func projectSessionIDsSQL(cond string) string {
+	arms := make([]string, len(projectSessionTables))
+	for i, table := range projectSessionTables {
+		arms[i] = fmt.Sprintf(`SELECT t.session_id FROM %s t WHERE t.session_id <> '' AND %s`, table, cond)
+	}
+	return strings.Join(arms, "\n\t\tUNION ")
+}
+
 // projectSessionIDsTx lists a project's other sessions.
 func projectSessionIDsTx(ctx context.Context, tx pgx.Tx, projectHash, exclude string) ([]string, error) {
-	rows, err := tx.Query(ctx, `
-		SELECT DISTINCT session_id FROM session_records
-		WHERE project_hash = $1 AND session_id <> '' AND session_id <> $2`, projectHash, exclude)
+	rows, err := tx.Query(ctx, projectSessionIDsSQL(`t.project_hash = $1 AND t.session_id <> $2`), projectHash, exclude)
 	if err != nil {
 		return nil, fmt.Errorf("delete session: list project sessions: %w", err)
 	}
@@ -312,13 +363,24 @@ func projectSessionIDsTx(ctx context.Context, tx pgx.Tx, projectHash, exclude st
 // would hide the new rows from the 60-second backstop, which finds its work by
 // reading that column -- they would sit until the daily verification noticed,
 // invisible but not deleted, which is the state this mechanism exists to prevent.
-func tombstoneTx(ctx context.Context, tx pgx.Tx, ids []string, projectHash, actor, reason string) error {
+//
+// It returns the sessions the deleted copy markers tied these to, for the caller
+// to queue once every tombstone of its transaction is written (see below).
+func tombstoneTx(ctx context.Context, tx pgx.Tx, ids []string, projectHash, actor, reason string) ([]string, error) {
 	if len(ids) == 0 {
-		return nil
+		return nil, nil
 	}
-	if err := lockSessionDeletionTargets(ctx, tx, ids); err != nil {
-		return err
+	claimPeers, err := prepareSessionClaimMutation(ctx, tx, ids)
+	if err != nil {
+		return nil, err
 	}
+	neighbours, err := tombstonePreparedTx(ctx, tx, ids, projectHash, actor, reason)
+	return uniqueSortedSessionIDs(append(neighbours, claimPeers...)), err
+}
+
+// All original sessions, identities, and claim keys are already locked by the
+// caller, including every project when this transaction deletes multiple projects.
+func tombstonePreparedTx(ctx context.Context, tx pgx.Tx, ids []string, projectHash, actor, reason string) ([]string, error) {
 	if _, err := tx.Exec(ctx, `
 		INSERT INTO deleted_sessions (session_id, project_hash, deleted_by, reason)
 		SELECT unnest($1::text[]), $2, $3, $4
@@ -329,21 +391,35 @@ func tombstoneTx(ctx context.Context, tx pgx.Tx, ids []string, projectHash, acto
 			deleted_at   = now(),
 			swept_at     = NULL,
 			verified_at  = NULL`, ids, projectHash, actor, reason); err != nil {
-		return fmt.Errorf("delete session: tombstone: %w", err)
+		return nil, fmt.Errorf("delete session: tombstone: %w", err)
 	}
 	if _, err := tx.Exec(ctx, `
 		INSERT INTO excluded_sessions (session_id)
 		SELECT unnest($1::text[]) ON CONFLICT DO NOTHING`, ids); err != nil {
-		return fmt.Errorf("delete session: hide: %w", err)
+		return nil, fmt.Errorf("delete session: hide: %w", err)
 	}
 	// The overview rollup is derived and write-maintained, so hiding the source rows
 	// does not by itself change what it holds. Re-derive these sessions inside the same
 	// transaction: both source arms now exclude them, so the refresh deletes the rows
 	// and finds nothing to put back.
 	if err := refreshSessionOverviewRollups(ctx, tx, ids); err != nil {
-		return fmt.Errorf("delete session: refresh overview rollup: %w", err)
+		return nil, fmt.Errorf("delete session: refresh overview rollup: %w", err)
 	}
-	return nil
+	// The deletion contract of session analysis, minus what the sweep does
+	// (p1b-design §6.2): the copy markers naming these sessions go now, and the
+	// sessions on their other side are queued as peers by the caller. Queued from
+	// here, a neighbour that the same transaction tombstones next would stay
+	// queued, and a tombstoned session never is. The facts wait for the sweep: the
+	// tombstone in excluded_sessions already hides them. Every caller holds the
+	// source lock exclusively.
+	neighbours, err := takeCopyMarkers(ctx, tx, ids)
+	if err != nil {
+		return nil, fmt.Errorf("delete session: %w", err)
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM session_commit_claims WHERE session_id=ANY($1::text[])`, ids); err != nil {
+		return nil, err
+	}
+	return neighbours, nil
 }
 
 func blockProjectTx(ctx context.Context, tx pgx.Tx, projectHash, projectName, actor, reason string) error {
@@ -516,10 +592,10 @@ func (s *PgStore) LoadIngestBlocklist(ctx context.Context) (*IngestBlocklist, er
 // anyway -- a sync already in flight when the block landed, or a record that
 // arrived without the project hash the envelope would have carried.
 //
-// It resolves sessions through session_records because otel_events and
-// otel_metrics have no project_hash of their own; they are only reachable by
-// session id. The non-empty guard is repeated here for the same reason it
-// exists everywhere else in this file.
+// It resolves sessions through the tables that carry a project_hash
+// (projectSessionTables) because otel_events and otel_metrics have none of their
+// own; they are only reachable by session id. The non-empty guard is repeated
+// here for the same reason it exists everywhere else in this file.
 // SweepDeletedSessions reclaims the rows behind the tombstones, in batches.
 //
 // This is the 15-to-30-second half of a delete, moved off the request. It is
@@ -678,7 +754,11 @@ func (s *PgStore) sweepOne(ctx context.Context, sessionID string) (int64, error)
 		return 0, fmt.Errorf("sweep %s: begin: %w", sessionID, err)
 	}
 	defer tx.Rollback(ctx)
-	if err := lockSessionDeletionTargets(ctx, tx, []string{sessionID}); err != nil {
+	if err := lockSessionOverviewSourceMutation(ctx, tx, false); err != nil {
+		return 0, err
+	}
+	claimPeers, err := prepareSessionClaimMutation(ctx, tx, []string{sessionID})
+	if err != nil {
 		return 0, fmt.Errorf("sweep %s: claim: %w", sessionID, err)
 	}
 	var unswept bool
@@ -727,6 +807,9 @@ func (s *PgStore) sweepOne(ctx context.Context, sessionID string) (int64, error)
 		`UPDATE deleted_sessions SET swept_at = now(), verified_at = NULL WHERE session_id = $1`, sessionID); err != nil {
 		return total, fmt.Errorf("sweep %s: mark swept: %w", sessionID, err)
 	}
+	if err := markSessionFactsDirty(ctx, tx, claimPeers, nil, dirtyDeletionPeer); err != nil {
+		return 0, err
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return total, fmt.Errorf("sweep %s: commit: %w", sessionID, err)
 	}
@@ -740,11 +823,10 @@ func (s *PgStore) PurgeBlockedProjects(ctx context.Context) (int64, error) {
 	// Avoid canceling an idle login-history repair when there is no deletion work.
 	// This is only a gate; candidates are rediscovered under the exclusive source
 	// lock below so a writer cannot change the deletion set mid-transaction.
+	blockedLive := projectSessionIDsSQL(`t.project_hash IN (SELECT project_hash FROM blocked_projects)
+		AND NOT EXISTS (SELECT 1 FROM deleted_sessions d WHERE d.session_id = t.session_id)`)
 	var pending bool
-	if err := s.pool.QueryRow(ctx, `SELECT EXISTS (
-		SELECT 1 FROM session_records sr JOIN blocked_projects b ON b.project_hash = sr.project_hash
-		WHERE sr.session_id <> ''
-		  AND NOT EXISTS (SELECT 1 FROM deleted_sessions d WHERE d.session_id = sr.session_id))`).Scan(&pending); err != nil {
+	if err := s.pool.QueryRow(ctx, `SELECT EXISTS (`+blockedLive+`)`).Scan(&pending); err != nil {
 		return 0, fmt.Errorf("purge blocked projects: check: %w", err)
 	}
 	if !pending {
@@ -758,14 +840,15 @@ func (s *PgStore) PurgeBlockedProjects(ctx context.Context) (int64, error) {
 	if err := beginStrictDeletion(ctx, tx); err != nil {
 		return 0, err
 	}
-	ids, err := querySessionIDs(ctx, tx, `SELECT DISTINCT sr.session_id
-		FROM session_records sr JOIN blocked_projects b ON b.project_hash = sr.project_hash
-		WHERE sr.session_id <> ''
-		  AND NOT EXISTS (SELECT 1 FROM deleted_sessions d WHERE d.session_id = sr.session_id)`)
+	ids, err := querySessionIDs(ctx, tx, blockedLive)
 	if err != nil {
 		return 0, fmt.Errorf("purge blocked projects: list: %w", err)
 	}
-	if err := tombstoneTx(ctx, tx, ids, "", "sweep", "blocked project"); err != nil {
+	neighbours, err := tombstoneTx(ctx, tx, ids, "", "sweep", "blocked project")
+	if err != nil {
+		return 0, fmt.Errorf("purge blocked projects: %w", err)
+	}
+	if err := markSessionFactsDirty(ctx, tx, neighbours, nil, dirtyDeletionPeer); err != nil {
 		return 0, fmt.Errorf("purge blocked projects: %w", err)
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -783,9 +866,8 @@ func (s *PgStore) ProjectSessionCount(ctx context.Context, projectHash, excludeS
 		return 0, nil
 	}
 	var n int
-	err := s.pool.QueryRow(ctx, `
-		SELECT count(DISTINCT session_id) FROM session_records
-		WHERE project_hash = $1 AND session_id <> '' AND session_id <> $2`,
+	err := s.pool.QueryRow(ctx,
+		`SELECT count(*) FROM (`+projectSessionIDsSQL(`t.project_hash = $1 AND t.session_id <> $2`)+`) s`,
 		projectHash, excludeSessionID).Scan(&n)
 	if err != nil {
 		return 0, fmt.Errorf("project session count: %w", err)

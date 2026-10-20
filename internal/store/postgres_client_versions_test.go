@@ -299,3 +299,181 @@ func TestListClientVersions_CountsVersionsSeenTogether(t *testing.T) {
 		t.Fatalf("ordinary account = %d versions, want 1", seen["fine@example.test"])
 	}
 }
+
+// The row names an account and carries the client's own update error text, which
+// names local paths. Deleting a user's data has to reach it by either key.
+func TestDeleteUserData_removesClientVersions(t *testing.T) {
+	s := acquireTestStore(t)
+	truncateTables(t, s)
+	ctx := context.Background()
+	for _, u := range []ClientVersionUpdate{
+		{UserID: "u-gone", ProfileEmail: "gone@example.com", ClientVersion: "v0.7.60",
+			UpdateStall: &ClientUpdateStall{Consecutive: 2, Reason: "rename /Users/alice/.local/bin/cctrace: permission denied"}},
+		{UserID: "u-by-id", ProfileEmail: "by-id@example.com", ClientVersion: "v0.7.61"},
+		{UserID: "u-kept", ProfileEmail: "kept@example.com", ClientVersion: "v0.7.62"},
+	} {
+		if err := s.UpsertClientVersion(ctx, u); err != nil {
+			t.Fatalf("UpsertClientVersion(%s): %v", u.ProfileEmail, err)
+		}
+	}
+
+	if err := s.DeleteUserData(ctx, "gone@example.com", ""); err != nil {
+		t.Fatalf("DeleteUserData: %v", err)
+	}
+	if n := countWhere(t, s, "client_versions", "profile_email = 'gone@example.com'"); n != 0 {
+		t.Error("the deleted profile's version row is still there")
+	}
+	if err := s.DeleteUserData(ctx, "", "u-by-id"); err != nil {
+		t.Fatalf("DeleteUserData by user_id: %v", err)
+	}
+	if n := countWhere(t, s, "client_versions", "user_id = 'u-by-id'"); n != 0 {
+		t.Error("the deleted user_id's version row is still there")
+	}
+	if n := countWhere(t, s, "client_versions", "profile_email = 'kept@example.com'"); n != 1 {
+		t.Error("another account's version row was deleted")
+	}
+}
+
+// profile_email is the row's key, so a merge cannot rename the row when the target
+// already has one: the two rows become one. They are combined the way
+// UpsertClientVersion combines a sync with the row it lands on, the newer row in
+// the place of the sync: an empty header value does not erase a known one,
+// update_reported never goes back to false, and the update fields come from the
+// newer row only when it carries a report.
+func TestMergeUsers_mergesClientVersions(t *testing.T) {
+	s := acquireTestStore(t)
+	ctx := context.Background()
+	now := time.Now().UTC().Truncate(time.Second)
+	failedAt := now.Add(-48 * time.Hour)
+	// known and other report everything, each with its own values; headerless is
+	// a build that sends no headers and no update report.
+	known := ClientVersionUpdate{ClientVersion: "v0.7.50", ClientOS: "darwin", ClientArch: "arm64",
+		UpdateStall: &ClientUpdateStall{TargetVersion: "v0.7.63", Consecutive: 3,
+			FirstFailedAt: failedAt, LastFailedAt: failedAt.Add(time.Hour), Reason: "known"}}
+	other := ClientVersionUpdate{ClientVersion: "v0.7.62", ClientOS: "linux", ClientArch: "amd64",
+		UpdateStall: &ClientUpdateStall{TargetVersion: "v0.7.64", Consecutive: 1,
+			FirstFailedAt: failedAt.Add(2 * time.Hour), LastFailedAt: failedAt.Add(3 * time.Hour), Reason: "other"}}
+	headerless := ClientVersionUpdate{}
+	// A report that nothing is wrong: the update succeeded, and the stall it ends
+	// has to go (see UpsertClientVersion).
+	cleared := ClientVersionUpdate{ClientVersion: "v0.7.63", ClientOS: "darwin", ClientArch: "arm64",
+		UpdateStall: &ClientUpdateStall{}}
+
+	seed := func(email string, u ClientVersionUpdate, seen time.Time) {
+		t.Helper()
+		u.ProfileEmail, u.UserID = email, "u-"+email
+		if err := s.UpsertClientVersion(ctx, u); err != nil {
+			t.Fatalf("UpsertClientVersion(%s): %v", email, err)
+		}
+		if _, err := s.pool.Exec(ctx, `UPDATE client_versions SET last_seen_at = $2 WHERE profile_email = $1`, email, seen); err != nil {
+			t.Fatalf("set last_seen_at of %s: %v", email, err)
+		}
+	}
+	row := func(email string) string {
+		t.Helper()
+		var r string
+		if err := s.pool.QueryRow(ctx, `SELECT ROW(user_id, client_version, client_os, client_arch, last_seen_at,
+				update_reported, update_target_version, update_fail_count, update_first_failed_at,
+				update_last_failed_at, update_fail_reason)::text
+			FROM client_versions WHERE profile_email = $1`, email).Scan(&r); err != nil {
+			t.Fatalf("read %s: %v", email, err)
+		}
+		return r
+	}
+	merge := func(t *testing.T) {
+		t.Helper()
+		if err := s.MergeUsers(ctx, "old@example.com", "", "new@example.com"); err != nil {
+			t.Fatalf("MergeUsers: %v", err)
+		}
+		if n := countWhere(t, s, "client_versions", "profile_email = 'old@example.com'"); n != 0 {
+			t.Error("a row is left under the old address")
+		}
+	}
+
+	t.Run("target holds nothing", func(t *testing.T) {
+		truncateTables(t, s)
+		seed("old@example.com", known, now)
+		want := row("old@example.com")
+		merge(t)
+		if got := row("new@example.com"); got != want {
+			t.Errorf("moved row = %s, want the old one unchanged, %s", got, want)
+		}
+	})
+
+	for _, c := range []struct {
+		name             string
+		old, new         ClientVersionUpdate
+		oldSeen, newSeen time.Time
+		// The merged row's user_id and last_seen_at are the newer row's, and
+		// want is where its headers and update report come from.
+		newer string
+		want  ClientVersionUpdate
+	}{
+		{"a headerless merged-in row keeps the target's known values", headerless, known, now, now.Add(-time.Hour), "old@example.com", known},
+		{"a headerless target keeps the merged-in row's known values", known, headerless, now.Add(-time.Hour), now, "new@example.com", known},
+		{"the newer merged-in row's values win", other, known, now, now.Add(-time.Hour), "old@example.com", other},
+		{"the newer target's values win", known, other, now.Add(-time.Hour), now, "new@example.com", other},
+		// A tie goes to the row being merged in, as it does for the session
+		// observation tables, whose upserts also compare with >=.
+		// (collector_heartbeats keeps the target's client_version on a tie.)
+		{"a tie goes to the merged-in row", other, known, now, now, "old@example.com", other},
+		{"a newer report of no failure clears the older failure", cleared, known, now, now.Add(-time.Hour), "old@example.com", cleared},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			truncateTables(t, s)
+			seed("old@example.com", c.old, c.oldSeen)
+			seed("new@example.com", c.new, c.newSeen)
+			merge(t)
+
+			var userID, version, clientOS, arch, target, reason string
+			var seen time.Time
+			var reported bool
+			var count int
+			var first, last *time.Time
+			if err := s.pool.QueryRow(ctx, `SELECT user_id, client_version, client_os, client_arch, last_seen_at,
+					update_reported, update_target_version, update_fail_count, update_first_failed_at,
+					update_last_failed_at, update_fail_reason
+				FROM client_versions WHERE profile_email = 'new@example.com'`).
+				Scan(&userID, &version, &clientOS, &arch, &seen, &reported, &target, &count, &first, &last, &reason); err != nil {
+				t.Fatalf("read merged row: %v", err)
+			}
+			if userID != "u-"+c.newer || !seen.Equal(now) {
+				t.Errorf("user_id %q, last_seen_at %s; want the newer row's, %q and %s", userID, seen, "u-"+c.newer, now)
+			}
+			if version != c.want.ClientVersion || clientOS != c.want.ClientOS || arch != c.want.ClientArch {
+				t.Errorf("headers %q %q %q, want %q %q %q", version, clientOS, arch,
+					c.want.ClientVersion, c.want.ClientOS, c.want.ClientArch)
+			}
+			st := c.want.UpdateStall
+			// A zero time is stored as NULL: "never failed" has no time.
+			sameTime := func(got *time.Time, want time.Time) bool {
+				if want.IsZero() {
+					return got == nil
+				}
+				return got != nil && got.Equal(want)
+			}
+			if !reported || target != st.TargetVersion || count != st.Consecutive || reason != st.Reason ||
+				!sameTime(first, st.FirstFailedAt) || !sameTime(last, st.LastFailedAt) {
+				t.Errorf("update report: reported %v, %q, %d, %v, %v, %q; want reported and %+v",
+					reported, target, count, first, last, reason, *st)
+			}
+		})
+	}
+
+	// A row always has a profile (the sync handler writes none without one), so the
+	// user_id form, which claims only profile-less rows, finds nothing to move.
+	t.Run("by user_id", func(t *testing.T) {
+		truncateTables(t, s)
+		seed("elsewhere@example.com", other, now)
+		want := row("elsewhere@example.com")
+		if err := s.MergeUsers(ctx, "", "u-elsewhere@example.com", "new@example.com"); err != nil {
+			t.Fatalf("MergeUsers by user_id: %v", err)
+		}
+		if got := row("elsewhere@example.com"); got != want {
+			t.Errorf("a row that has a profile changed: %s, want %s", got, want)
+		}
+		if n := countWhere(t, s, "client_versions", "profile_email = 'new@example.com'"); n != 0 {
+			t.Error("the user_id merge wrote a row under the target")
+		}
+	})
+}

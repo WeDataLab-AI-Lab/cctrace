@@ -42,7 +42,7 @@ func (s *PgStore) UsageAggregates(ctx context.Context, f SessionOverviewFilter) 
 		args = append(args, *f.Until)
 	}
 	eventWhere := "WHERE e.session_id != ''"
-	recordWhere := "WHERE sr.session_id != ''"
+	recordWhere := "sr.session_id != ''"
 	if len(eventConds) > 0 {
 		eventWhere += " AND " + strings.Join(eventConds, " AND ")
 		recordWhere += " AND " + strings.Join(recordConds, " AND ")
@@ -62,18 +62,25 @@ func (s *PgStore) UsageAggregates(ctx context.Context, f SessionOverviewFilter) 
 		sessionWhere += " AND " + strings.Join(sessionFilters, " AND ")
 	}
 
-	// Codex session-record input includes cache reads, while its visible event input
-	// is normalized to exclude them. A cache-only Codex visible row therefore still
-	// proves that the OTEL-side source is present; Claude keeps the old input/output
-	// criterion so its session-record fallback remains unchanged.
+	// Codex visible event input is normalized to exclude cache reads. A cache-only
+	// Codex visible row therefore still proves that the OTEL-side source is present;
+	// Claude keeps the old input/output criterion so its session-record fallback
+	// remains unchanged.
+	//
+	// The session-record fallback counts requests. Its arms of session_union are
+	// attributedLinesUnionSQL's: every request line at 0, and a Codex usage row the
+	// tokens of its codex_imputed_cost row, normalized like the event side, so
+	// the union keeps its one parallel scan. Each request's tokens are
+	// request_tokens, one row per request with its head line's session and model
+	// (claudeRequestHeadsSQL), summed by model beside the union's rows: together
+	// they are attributedRowsSQL's sum. recordWhere, the identity and period
+	// filter, is the lineWhere of both.
 	q := fmt.Sprintf(`WITH session_union AS (
 		SELECT session_id, model, ts, 'otel'::text AS src, input_tokens, output_tokens,
 			cache_read_tokens, COALESCE(agent, 'claude') AS agent, event_name
 		FROM visible_events e %s
 		UNION ALL
-		SELECT session_id, COALESCE(model,''), ts, 'srec'::text, input_tokens, output_tokens,
-			cache_read_tokens, COALESCE(agent, 'claude'), ''::text
-		FROM visible_session_records sr %s
+		%s
 	), session_scope AS (
 		SELECT session_id,
 			MIN(ts) AS start_time, MAX(ts) AS end_time,
@@ -85,16 +92,37 @@ func (s *PgStore) UsageAggregates(ctx context.Context, f SessionOverviewFilter) 
 		FROM session_union GROUP BY session_id
 	), eligible_sessions AS (
 		SELECT * FROM session_scope %s
+	), request_tokens AS (
+		-- Only a session without OTEL tokens counts its session records, so only
+		-- its requests are folded. The array names sessions, a partition column of
+		-- the fold, so each kept session's requests come out as they would over
+		-- every session.
+		SELECT h.session_id, COALESCE(h.model,'') AS model, h.input_tokens, h.output_tokens
+		FROM (%s) h
 	), model_totals AS (
-		SELECT COALESCE(NULLIF(u.model,''), 'unknown') AS model,
-			COALESCE(SUM(u.input_tokens),0)::bigint AS input_tokens,
-			COALESCE(SUM(u.output_tokens),0)::bigint AS output_tokens
-		FROM session_union u
-		JOIN eligible_sessions e USING (session_id)
-		WHERE ((e.has_otel_tokens AND u.src = 'otel') OR (NOT e.has_otel_tokens AND u.src = 'srec'))
-			AND (COALESCE(u.input_tokens,0) != 0 OR COALESCE(u.output_tokens,0) != 0
-				OR (u.agent = 'codex' AND COALESCE(u.cache_read_tokens,0) != 0))
-		GROUP BY COALESCE(NULLIF(u.model,''), 'unknown')
+		-- Each source's rows summed by model, then the two sums added: a request
+		-- row is a session-record row of a Claude request, kept by the same rules.
+		SELECT model, SUM(input_tokens)::bigint AS input_tokens, SUM(output_tokens)::bigint AS output_tokens
+		FROM (
+			SELECT COALESCE(NULLIF(u.model,''), 'unknown') AS model,
+				COALESCE(SUM(u.input_tokens),0) AS input_tokens,
+				COALESCE(SUM(u.output_tokens),0) AS output_tokens
+			FROM session_union u
+			JOIN eligible_sessions e USING (session_id)
+			WHERE ((e.has_otel_tokens AND u.src = 'otel') OR (NOT e.has_otel_tokens AND u.src = 'srec'))
+				AND (COALESCE(u.input_tokens,0) != 0 OR COALESCE(u.output_tokens,0) != 0
+					OR (u.agent = 'codex' AND COALESCE(u.cache_read_tokens,0) != 0))
+			GROUP BY 1
+			UNION ALL
+			SELECT COALESCE(NULLIF(r.model,''), 'unknown'),
+				COALESCE(SUM(r.input_tokens),0), COALESCE(SUM(r.output_tokens),0)
+			FROM request_tokens r
+			JOIN eligible_sessions e USING (session_id)
+			WHERE NOT e.has_otel_tokens
+				AND (COALESCE(r.input_tokens,0) != 0 OR COALESCE(r.output_tokens,0) != 0)
+			GROUP BY 1
+		) m
+		GROUP BY model
 	), totals AS (
 		SELECT COUNT(*)::bigint AS session_count,
 			COALESCE((SELECT SUM(input_tokens) FROM model_totals),0)::bigint AS input_tokens,
@@ -105,8 +133,15 @@ func (s *PgStore) UsageAggregates(ctx context.Context, f SessionOverviewFilter) 
 	SELECT t.session_count, t.input_tokens, t.output_tokens, t.work_time_seconds,
 		COALESCE(m.model,''), COALESCE(m.input_tokens,0), COALESCE(m.output_tokens,0)
 	FROM totals t LEFT JOIN model_totals m ON true
-	ORDER BY m.model`, eventWhere, recordWhere, sessionWhere)
-	rows, err := s.pool.Query(ctx, q, args...)
+	ORDER BY m.model`, eventWhere,
+		attributedLinesUnionSQL("visible_session_records", recordWhere, []string{"session_id", "model", "ts", "agent"},
+			`session_id, COALESCE(model,''), ts, 'srec'::text, req_input_tokens, req_output_tokens,
+			req_cache_read_tokens, COALESCE(agent, 'claude'), ''::text`, ""),
+		sessionWhere,
+		claudeRequestHeadsSQL("visible_session_records", recordWhere+
+			" AND sr.session_id = ANY(ARRAY(SELECT session_id FROM eligible_sessions WHERE NOT has_otel_tokens))",
+			[]string{"session_id", "model"}))
+	rows, err := s.pool.Query(ctx, q, append([]any{plannedPerCall}, args...)...)
 	if err != nil {
 		return nil, err
 	}

@@ -7,142 +7,82 @@ import (
 	"strconv"
 	"strings"
 
-	"cctrace/internal/envgen"
 	"cctrace/internal/profile"
 )
 
-// detectAndOfferAdditionalHomes scans $HOME for .claude-* directories
-// that don't have a named profile yet, and offers to create one.
-func detectAndOfferAdditionalHomes(ir *inputReader, baseProfile *profile.Profile) {
+// detectAndOfferAdditionalHomes uses the same read-only candidates and shared
+// registration as the desktop. Collection is configured separately.
+func detectAndOfferAdditionalHomes(ir *inputReader, _ *profile.Profile) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return
 	}
-
-	// Find .claude-* directories (excluding .claude itself and .cctrace)
-	entries, err := os.ReadDir(home)
+	registry := profile.Registry{Root: profile.DefaultDir()}
+	found, err := registry.DiscoverHomes(home)
 	if err != nil {
+		fmt.Println("  [!] Provider homes could not be discovered")
 		return
 	}
-
-	// Collect existing profile ClaudeConfigDirs
-	configuredDirs := map[string]bool{
-		filepath.Join(home, ".claude"): true, // default profile
+	if !found.Complete {
+		fmt.Println("  [!] Some profile definitions could not be read; showing available candidates")
 	}
-	if names, err := profile.ListNamed(); err == nil {
-		for _, name := range names {
-			if np, err := profile.LoadNamed(name); err == nil {
-				dir := np.ClaudeConfigDir
-				if dir == "" {
-					dir = filepath.Join(home, ".claude")
-				}
-				configuredDirs[dir] = true
-			}
-		}
-	}
-
-	// Find unconfigured .claude-* dirs
-	var unconfigured []string
-	for _, e := range entries {
-		if !e.IsDir() {
-			continue
-		}
-		name := e.Name()
-		if !strings.HasPrefix(name, ".claude-") {
-			continue
-		}
-		if name == ".claude-mem" {
-			continue
-		}
-		// Must contain projects/ or settings.json to be a real Claude home
-		dir := filepath.Join(home, name)
-		hasProjects := false
-		hasSettings := false
-		if _, err := os.Stat(filepath.Join(dir, "projects")); err == nil {
-			hasProjects = true
-		}
-		if _, err := os.Stat(filepath.Join(dir, "settings.json")); err == nil {
-			hasSettings = true
-		}
-		if !hasProjects && !hasSettings {
-			continue
-		}
-		if configuredDirs[dir] {
-			continue
-		}
-		unconfigured = append(unconfigured, dir)
-	}
-
-	if len(unconfigured) == 0 {
+	if len(found.Candidates) == 0 {
 		return
 	}
-
-	fmt.Printf("  Detected %d additional Claude home(s):\n", len(unconfigured))
-	for i, dir := range unconfigured {
-		fmt.Printf("    %d. %s\n", i+1, dir)
+	fmt.Printf("  Detected %d unregistered Claude/Codex home(s):\n", len(found.Candidates))
+	for i, candidate := range found.Candidates {
+		state := ""
+		if candidate.Excluded {
+			state = " [excluded]"
+		}
+		fmt.Printf("    %d. %s: %s%s\n", i+1, candidate.Provider, candidate.Home, state)
 	}
-
-	fmt.Println()
-	answer := ir.Prompt("  Set up sync for which? (all/none/1,2,...)", "all")
-	answer = strings.TrimSpace(strings.ToLower(answer))
-	if answer == "none" || answer == "n" || answer == "" {
-		return
+	answer := strings.ToLower(strings.TrimSpace(ir.Prompt("  Register which profiles? Collection stays off (all/none/1,2,...; exclude 1,2; restore 1,2)", "none")))
+	action := "register"
+	for _, verb := range []string{"exclude", "restore"} {
+		if strings.HasPrefix(answer, verb+" ") {
+			action = verb
+			answer = strings.TrimSpace(strings.TrimPrefix(answer, verb+" "))
+			break
+		}
 	}
-
 	selected := make(map[int]bool)
-	if answer == "all" || answer == "y" {
-		for i := range unconfigured {
-			selected[i] = true
+	if answer == "all" {
+		for i := range found.Candidates {
+			selected[i] = action != "register" || !found.Candidates[i].Excluded
 		}
 	} else {
-		for _, s := range strings.Split(answer, ",") {
-			s = strings.TrimSpace(s)
-			idx, err := strconv.Atoi(s)
-			if err != nil || idx < 1 || idx > len(unconfigured) {
-				fmt.Printf("  [!] Invalid selection: %s (skipped)\n", s)
-				continue
+		for _, part := range strings.Split(answer, ",") {
+			index, err := strconv.Atoi(strings.TrimSpace(part))
+			if err == nil && index > 0 && index <= len(found.Candidates) {
+				selected[index-1] = true
 			}
-			selected[idx-1] = true
 		}
 	}
-
-	if len(selected) == 0 {
-		return
-	}
-
-	for i, dir := range unconfigured {
+	for i, candidate := range found.Candidates {
 		if !selected[i] {
 			continue
 		}
-		// Derive profile name from dir: .claude-2 → claude-2
-		dirName := filepath.Base(dir)
-		profileName := strings.TrimPrefix(dirName, ".")
-
-		np := profile.NewDefault()
-		np.User = baseProfile.User
-		np.Server = baseProfile.Server
-		np.Options = baseProfile.Options
-		np.ClaudeConfigDir = dir
-
-		if err := profile.EnsureNamedDir(profileName); err != nil {
-			fmt.Printf("  [!] Failed to create profile %s: %v\n", profileName, err)
+		if action != "register" {
+			if err := registry.SetHomeExcluded(candidate, action == "exclude"); err != nil {
+				fmt.Printf("  [!] Home choice for %q could not be saved; discover homes again\n", candidate.Name)
+			} else if action == "exclude" {
+				fmt.Printf("  [OK] Home %q excluded from registration\n", candidate.Name)
+			} else {
+				fmt.Printf("  [OK] Home %q restored; run init again to explicitly register it\n", candidate.Name)
+			}
 			continue
 		}
-		if err := profile.SaveNamed(np, profileName); err != nil {
-			fmt.Printf("  [!] Failed to save profile %s: %v\n", profileName, err)
+		if candidate.Excluded {
+			fmt.Printf("  [!] Home %q is excluded; use restore %d before selecting registration\n", candidate.Name, i+1)
 			continue
 		}
-
-		// Apply OTEL + hooks to this Claude home's settings.json
-		if err := envgen.ApplyToClaudeSettings(np); err != nil {
-			fmt.Printf("  [!] Failed to apply settings for %s: %v\n", profileName, err)
+		if _, err := registry.RegisterHomeCandidate(candidate, false); err != nil {
+			fmt.Printf("  [!] Profile %q could not be registered; discover homes again\n", candidate.Name)
 			continue
 		}
-
-		settingsPath, _ := envgen.ClaudeSettingsPath(np)
-		fmt.Printf("  [OK] Profile %q → %s\n", profileName, settingsPath)
+		fmt.Printf("  [OK] Profile %q registered; collection and usage lookup stay off\n", candidate.Name)
 	}
-	fmt.Println()
 }
 
 // checkClaudeDirConflict checks if another named profile uses the same ClaudeConfigDir.

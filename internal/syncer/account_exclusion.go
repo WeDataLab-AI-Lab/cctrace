@@ -51,6 +51,14 @@ func (c *Client) excludedLocally(a AccountRef) bool {
 	return c.excludeAccounts[a.Key()] || c.excludeAccounts[a.AccountID]
 }
 
+// exclusionQueryTimeout bounds one exclusion query. The session snapshot flush
+// asks it on the watch loop's goroutine, and a server that accepted the
+// connection and never answered would otherwise hold the loop -- sync, the quota
+// poll, the heartbeat -- for the client's five-minute ceiling. A query that runs
+// out is a failed query: what needs its answer is held. Var, not const, so tests
+// can shrink it.
+var exclusionQueryTimeout = 15 * time.Second
+
 // QueryExcludedAccounts asks the server which of accounts are excluded from
 // collection. Only the named accounts are answered for; the server's list names
 // other people's accounts and is never downloaded.
@@ -59,6 +67,8 @@ func (c *Client) QueryExcludedAccounts(ctx context.Context, accounts []AccountRe
 	if err != nil {
 		return nil, fmt.Errorf("marshal: %w", err)
 	}
+	ctx, cancel := context.WithTimeout(ctx, exclusionQueryTimeout)
+	defer cancel()
 	req, err := c.newJSONPostRequest(ctx, "/api/sync/exclusions", body)
 	if err != nil {
 		return nil, err
@@ -164,11 +174,38 @@ func (f *AccountFilter) Drop(ctx context.Context, defaultProvider string, record
 		return AccountRef{BillingProvider: strings.ToLower(provider), AccountID: r.AccountID}, true
 	}
 
+	accounts := make([]AccountRef, 0, len(records))
+	for _, r := range records {
+		if a, ok := refOf(r); ok {
+			accounts = append(accounts, a)
+		}
+	}
+	if err := f.resolve(ctx, accounts); err != nil {
+		return nil, err
+	}
+
+	kept := make([]*store.SessionRecord, 0, len(records))
+	for _, r := range records {
+		if a, ok := refOf(r); ok && f.excluded(a) {
+			continue
+		}
+		kept = append(kept, r)
+	}
+	return kept, nil
+}
+
+// resolve asks the server about each of accounts that the local list does not
+// exclude and that has no answer younger than exclusionAnswerTTL. A failed query
+// is this pass's answer for everything still unknown (passErr). Drop filters
+// records with it, and the session snapshot flush filters snapshots with it.
+func (f *AccountFilter) resolve(ctx context.Context, accounts []AccountRef) error {
+	if f == nil || f.client == nil {
+		return nil
+	}
 	var unknown []AccountRef
 	pending := map[string]bool{}
-	for _, r := range records {
-		a, ok := refOf(r)
-		if !ok || f.client.excludedLocally(a) || pending[a.Key()] {
+	for _, a := range accounts {
+		if f.client.excludedLocally(a) || pending[a.Key()] {
 			continue
 		}
 		if ans, known := f.asked[a.Key()]; known && nowFn().Sub(ans.at) < exclusionAnswerTTL {
@@ -179,7 +216,7 @@ func (f *AccountFilter) Drop(ctx context.Context, defaultProvider string, record
 	}
 	for len(unknown) > 0 && !nowFn().Before(f.unsupportedUntil) {
 		if f.passErr != nil {
-			return nil, f.passErr
+			return f.passErr
 		}
 		chunk := unknown[:min(len(unknown), maxExclusionQueryAccounts)]
 		unknown = unknown[len(chunk):]
@@ -191,7 +228,7 @@ func (f *AccountFilter) Drop(ctx context.Context, defaultProvider string, record
 		}
 		if err != nil {
 			f.passErr = err
-			return nil, err
+			return err
 		}
 		if f.asked == nil {
 			f.asked = map[string]exclusionAnswer{}
@@ -205,13 +242,14 @@ func (f *AccountFilter) Drop(ctx context.Context, defaultProvider string, record
 		}
 		f.state.NoteServerExclusions(chunk, excluded, now)
 	}
+	return nil
+}
 
-	kept := make([]*store.SessionRecord, 0, len(records))
-	for _, r := range records {
-		if a, ok := refOf(r); ok && (f.client.excludedLocally(a) || f.asked[a.Key()].excluded) {
-			continue
-		}
-		kept = append(kept, r)
+// excluded reports whether a is excluded by the local list or by the server's
+// latest answer about it. resolve has to have asked first.
+func (f *AccountFilter) excluded(a AccountRef) bool {
+	if f == nil || f.client == nil {
+		return false
 	}
-	return kept, nil
+	return f.client.excludedLocally(a) || f.asked[a.Key()].excluded
 }

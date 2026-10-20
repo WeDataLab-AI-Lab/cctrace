@@ -208,6 +208,15 @@ func recentMonday(weeksAgo int) time.Time {
 //     on rows (run_job still drops the old chunk it creates).
 func truncateTables(t *testing.T, s *PgStore) {
 	t.Helper()
+	// CI opt-in separates reset overhead from each test's actual DB work. Keep
+	// both boundaries so a package timeout also identifies an unfinished reset.
+	if os.Getenv("CCTRACE_TEST_PROFILE_FIXTURES") == "1" {
+		started := time.Now()
+		t.Logf("[fixture-reset] start test=%q", t.Name())
+		defer func() {
+			t.Logf("[fixture-reset] end test=%q elapsed=%s", t.Name(), time.Since(started))
+		}()
+	}
 	ctx := context.Background()
 	targets := resetTargets(t, s)
 	tx, err := s.pool.Begin(ctx)
@@ -221,6 +230,9 @@ func truncateTables(t *testing.T, s *PgStore) {
 	for _, table := range targets {
 		stmts += " DELETE FROM " + table + ";"
 	}
+	// A timeline witness reads this singleton directly; restore the seed after
+	// clearing the policy changes from the preceding test.
+	stmts += " INSERT INTO session_timeline_policy_epoch(only_row,epoch) VALUES(TRUE,0);"
 	if _, err := tx.Exec(ctx, stmts); err != nil {
 		t.Fatalf("reset: delete from %v: %v", targets, err)
 	}
@@ -283,7 +295,7 @@ func resetTargets(t *testing.T, s *PgStore) []string {
 
 // resetTables are the tables truncateTables empties (with everything that
 // references them).
-var resetTables = []string{"project_rule_comments", "project_rule_versions", "project_rules", "otel_events", "otel_metrics", "session_records", "dashboard_users", "projects", "user_aliases", "privacy_settings", "quota_snapshots", "quota_samples", "client_versions", "retention_settings", "excluded_accounts", "excluded_billing_accounts", "excluded_billing_links", "excluded_codex_metric_profiles", "excluded_codex_metric_minutes", "flat_rate_models",
+var resetTables = []string{"project_rule_comments", "project_rule_versions", "project_rules", "otel_events", "otel_metrics", "session_records", "dashboard_users", "projects", "user_aliases", "privacy_settings", "quota_snapshots", "quota_samples", "client_versions", "client_policy_reports", "retention_settings", "excluded_accounts", "excluded_billing_accounts", "excluded_billing_links", "excluded_codex_metric_profiles", "excluded_codex_metric_minutes", "flat_rate_models",
 	"excluded_sessions", "excluded_sessions_refresh_state",
 	// Deletion state. deletion_policy is truncated too: GetDeletionPolicy answers
 	// a missing row with the seeded default, so an emptied table is the same as a
@@ -317,7 +329,44 @@ var resetTables = []string{"project_rule_comments", "project_rule_versions", "pr
 	// next as "the cleanup reached an unrelated session" -- a failure that
 	// points at the sweep and is really about the fixture.
 	"login_email_history_session_intervals", "login_email_history_repair_state",
-	"codex_login_email_repair_candidates", "codex_login_email_repair_state"}
+	"codex_login_email_repair_candidates", "codex_login_email_repair_state",
+	// Session observations. Upserts keep the newer row, so a row one test leaves
+	// behind can make the next test's older-dated write a silent no-op.
+	"session_snapshots", "session_live_states", "session_observation_events", "collector_heartbeats",
+	// Session analysis. A row one test leaves behind is a key conflict when the next
+	// seeds the same session, or reads there as a row its own sweep left.
+	"session_commit_facts", "session_task_facts", "session_analysis_facts", "session_turn_facts", "session_activity_segments",
+	"session_fact_dirty", "session_record_copies",
+	// Timeline revisions and policy witnesses have no foreign keys to source
+	// rows. Neither do saved records, jobs, budgets, usage and vocabulary pins.
+	// Clear them explicitly so a later test starts with its own source state.
+	"session_timeline_members", "session_timeline_provenance", "session_timeline_revisions", "session_timeline_policy_epoch",
+	"session_ai_records", "session_ai_record_jobs", "session_ai_record_budget_reservations", "session_ai_record_usage", "session_ai_record_vocab_pins"}
+
+func TestResetTargetsIncludeSessionAnalysisState(t *testing.T) {
+	s := acquireTestStore(t)
+	targets := make(map[string]bool)
+	for _, table := range resetTargets(t, s) {
+		targets[table] = true
+	}
+	for _, table := range []string{
+		"session_timeline_members", "session_timeline_provenance", "session_timeline_revisions", "session_timeline_policy_epoch",
+		"session_ai_records", "session_ai_record_jobs", "session_ai_record_budget_reservations", "session_ai_record_usage",
+		"session_ai_record_consents", "session_ai_record_range_requests", "session_ai_record_vocab_pins",
+	} {
+		if !targets[table] {
+			t.Errorf("reset does not clear %s between tests", table)
+		}
+	}
+	truncateTables(t, s)
+	var epoch int64
+	if err := s.pool.QueryRow(context.Background(), `SELECT epoch FROM session_timeline_policy_epoch WHERE only_row`).Scan(&epoch); err != nil {
+		t.Fatalf("reset timeline policy epoch: %v", err)
+	}
+	if epoch != 0 {
+		t.Errorf("reset timeline policy epoch = %d, want the fresh-install zero", epoch)
+	}
+}
 
 // refreshCodexImputed materialises codex cost so unified_events can see it.
 //

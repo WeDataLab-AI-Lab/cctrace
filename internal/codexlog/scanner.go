@@ -18,6 +18,9 @@ type Metadata struct {
 	CWD                    string
 	Model                  string
 	Originator             string
+	TurnMetadataScanned    bool
+	ActiveTurnID           string
+	ActiveRootTurnID       string
 	TokenUsageScanned      bool
 	HasTotalTokenUsage     bool
 	TotalInputTokens       int
@@ -68,7 +71,34 @@ func ScanFileWithMetadataContext(ctx context.Context, path string, fromOffset in
 // The existing entry points keep their signatures and simply drop the samples,
 // so callers that only want records are unaffected.
 func ScanFileWithSamplesContext(ctx context.Context, path string, fromOffset int64, sessionID string, initial Metadata) ([]*Record, []RateLimitSample, int64, Metadata, error) {
+	records, samples, _, newOffset, meta, err := ScanFileWithTurnsContext(ctx, path, fromOffset, sessionID, initial)
+	return records, samples, newOffset, meta, err
+}
+
+// ScanFileWithTurnsContext is ScanFileWithSamplesContext plus the turn
+// lifecycle entries found in the same pass (TurnEvent), on a return value of
+// their own for the reason the readings have one: they are not records.
+func ScanFileWithTurnsContext(ctx context.Context, path string, fromOffset int64, sessionID string, initial Metadata) ([]*Record, []RateLimitSample, []TurnEvent, int64, Metadata, error) {
+	return scanFile(ctx, path, fromOffset, sessionID, initial, true)
+}
+
+// ScanTurns returns the turn lifecycle entries of the whole file at path, as
+// ScanFileWithTurnsContext finds them reading it from the start, without the
+// Records: a caller rebuilding what the turns say needs none of them, and
+// holding every Record of a large file is the cost ScanRateLimits describes.
+func ScanTurns(ctx context.Context, path, sessionID string) ([]TurnEvent, error) {
+	_, _, turns, _, _, err := scanFile(ctx, path, 0, sessionID, Metadata{}, false)
+	return turns, err
+}
+
+// scanFile is ScanFileWithTurnsContext, keeping the Records it builds only when
+// keepRecords is set.
+func scanFile(ctx context.Context, path string, fromOffset int64, sessionID string, initial Metadata, keepRecords bool) ([]*Record, []RateLimitSample, []TurnEvent, int64, Metadata, error) {
 	state := scanStateFromMetadata(sessionID, initial)
+	if fromOffset == 0 {
+		state.activeTurnID, state.activeRootTurnID = "", ""
+		state.turnMetadataScanned = true
+	}
 
 	// The gate that suppresses inherited fork history keys off whether the file
 	// contains a trigger_turn marker (copied-history fork) or not (no-copy fork).
@@ -78,7 +108,7 @@ func ScanFileWithSamplesContext(ctx context.Context, path string, fromOffset int
 	if !state.forkHasTriggerTurn {
 		found, err := scanForTriggerTurn(ctx, path, fromOffset)
 		if err != nil {
-			return nil, nil, fromOffset, metadataFromState(state), err
+			return nil, nil, nil, fromOffset, metadataFromState(state), err
 		}
 		if found {
 			state.forkHasTriggerTurn = true
@@ -87,13 +117,13 @@ func ScanFileWithSamplesContext(ctx context.Context, path string, fromOffset int
 
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, nil, fromOffset, metadataFromState(state), err
+		return nil, nil, nil, fromOffset, metadataFromState(state), err
 	}
 	defer f.Close()
 
 	if fromOffset > 0 {
 		if _, err := f.Seek(fromOffset, io.SeekStart); err != nil {
-			return nil, nil, fromOffset, metadataFromState(state), err
+			return nil, nil, nil, fromOffset, metadataFromState(state), err
 		}
 	}
 
@@ -108,7 +138,7 @@ func ScanFileWithSamplesContext(ctx context.Context, path string, fromOffset int
 			continue
 		}
 		if readErr != nil && readErr != io.EOF {
-			return records, state.rateLimits, newOffset, metadataFromState(state), readErr
+			return records, state.rateLimits, state.turns, newOffset, metadataFromState(state), readErr
 		}
 		if complete {
 			line := bytes.TrimRight(lineBytes, "\r\n")
@@ -128,6 +158,7 @@ func ScanFileWithSamplesContext(ctx context.Context, path string, fromOffset int
 					}
 				}
 
+				state.offset = newOffset
 				var rec *Record
 				switch state.format {
 				case FormatNew:
@@ -135,7 +166,8 @@ func ScanFileWithSamplesContext(ctx context.Context, path string, fromOffset int
 				case FormatOld:
 					rec = parseOldFormatLine(line, state)
 				}
-				if rec != nil {
+				if rec != nil && keepRecords {
+					rec.Offset = state.offset
 					records = append(records, rec)
 				}
 			}
@@ -146,7 +178,7 @@ func ScanFileWithSamplesContext(ctx context.Context, path string, fromOffset int
 		}
 	}
 
-	return records, state.rateLimits, newOffset, metadataFromState(state), nil
+	return records, state.rateLimits, state.turns, newOffset, metadataFromState(state), nil
 }
 
 // ScanMetadata reads complete records up to uptoOffset and returns the latest
@@ -156,9 +188,21 @@ func ScanMetadata(path string, uptoOffset int64) (Metadata, error) {
 }
 
 func ScanMetadataContext(ctx context.Context, path string, uptoOffset int64) (Metadata, error) {
+	state, err := scanMetadata(ctx, path, uptoOffset)
+	return metadataFromState(state), err
+}
+
+// scanMetadata is ScanMetadataContext's scan, returning its whole state.
+func scanMetadata(ctx context.Context, path string, uptoOffset int64) (*scanState, error) {
+	state := &scanState{metadataOnly: true}
+	found, err := scanForTriggerTurn(ctx, path, 0)
+	if err != nil {
+		return state, err
+	}
+	state.forkHasTriggerTurn = found
 	f, err := os.Open(path)
 	if err != nil {
-		return Metadata{}, err
+		return state, err
 	}
 	defer f.Close()
 
@@ -166,7 +210,6 @@ func ScanMetadataContext(ctx context.Context, path string, uptoOffset int64) (Me
 	if uptoOffset > 0 {
 		r = io.LimitReader(f, uptoOffset)
 	}
-	state := &scanState{}
 	reader := bufio.NewReaderSize(r, 64*1024)
 	for {
 		lineBytes, consumed, complete, readErr := jsonlscan.ReadLine(ctx, reader)
@@ -175,7 +218,7 @@ func ScanMetadataContext(ctx context.Context, path string, uptoOffset int64) (Me
 			continue
 		}
 		if readErr != nil && readErr != io.EOF {
-			return metadataFromState(state), readErr
+			return state, readErr
 		}
 		if complete {
 			line := bytes.TrimRight(lineBytes, "\r\n")
@@ -207,7 +250,8 @@ func ScanMetadataContext(ctx context.Context, path string, uptoOffset int64) (Me
 		}
 	}
 
-	return metadataFromState(state), nil
+	state.turnMetadataScanned = true
+	return state, nil
 }
 
 // scanForTriggerTurn does a lightweight forward pass over path from fromOffset to
@@ -291,6 +335,9 @@ func scanStateFromMetadata(sessionID string, meta Metadata) *scanState {
 		cwd:                    meta.CWD,
 		originator:             meta.Originator,
 		model:                  meta.Model,
+		activeTurnID:           meta.ActiveTurnID,
+		activeRootTurnID:       meta.ActiveRootTurnID,
+		turnMetadataScanned:    meta.TurnMetadataScanned,
 		hasTotalTokenUsage:     meta.HasTotalTokenUsage,
 		totalInputTokens:       meta.TotalInputTokens,
 		totalCachedInputTokens: meta.TotalCachedInputTokens,
@@ -309,6 +356,9 @@ func metadataFromState(state *scanState) Metadata {
 		CWD:                    state.cwd,
 		Model:                  state.model,
 		Originator:             state.originator,
+		TurnMetadataScanned:    state.turnMetadataScanned,
+		ActiveTurnID:           state.activeTurnID,
+		ActiveRootTurnID:       state.activeRootTurnID,
 		TokenUsageScanned:      true,
 		HasTotalTokenUsage:     state.hasTotalTokenUsage,
 		TotalInputTokens:       state.totalInputTokens,

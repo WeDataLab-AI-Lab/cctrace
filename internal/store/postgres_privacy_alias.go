@@ -38,27 +38,31 @@ func (s *PgStore) LoadAliases(ctx context.Context) (map[string]string, error) {
 }
 
 func (s *PgStore) SetPrivacy(ctx context.Context, userID, profileEmail, scopeType, scopeValue string) error {
-	_, err := s.pool.Exec(ctx,
-		`INSERT INTO privacy_settings (user_id, profile_email, scope_type, scope_value)
-		 VALUES ($1, $2, $3, $4)
-		 ON CONFLICT (profile_email, scope_type, scope_value) DO NOTHING`,
-		userID, profileEmail, scopeType, scopeValue)
-	return err
+	return s.withSessionRecordPolicyMutation(ctx, func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx,
+			`INSERT INTO privacy_settings (user_id, profile_email, scope_type, scope_value)
+			 VALUES ($1, $2, $3, $4)
+			 ON CONFLICT (profile_email, scope_type, scope_value) DO NOTHING`,
+			userID, profileEmail, scopeType, scopeValue)
+		return err
+	})
 }
 
 func (s *PgStore) RemovePrivacy(ctx context.Context, userID, profileEmail, scopeType, scopeValue string) error {
-	if userID != "" {
-		_, err := s.pool.Exec(ctx,
+	return s.withSessionRecordPolicyMutation(ctx, func(tx pgx.Tx) error {
+		if userID != "" {
+			_, err := tx.Exec(ctx,
+				`DELETE FROM privacy_settings
+				 WHERE user_id = $1 AND scope_type = $2 AND scope_value = $3`,
+				userID, scopeType, scopeValue)
+			return err
+		}
+		_, err := tx.Exec(ctx,
 			`DELETE FROM privacy_settings
-			 WHERE user_id = $1 AND scope_type = $2 AND scope_value = $3`,
-			userID, scopeType, scopeValue)
+			 WHERE profile_email = $1 AND scope_type = $2 AND scope_value = $3`,
+			profileEmail, scopeType, scopeValue)
 		return err
-	}
-	_, err := s.pool.Exec(ctx,
-		`DELETE FROM privacy_settings
-		 WHERE profile_email = $1 AND scope_type = $2 AND scope_value = $3`,
-		profileEmail, scopeType, scopeValue)
-	return err
+	})
 }
 
 func (s *PgStore) ListPrivacySettings(ctx context.Context, userID, profileEmail string) ([]*PrivacySetting, error) {

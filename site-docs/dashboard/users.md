@@ -69,7 +69,7 @@ Open the row menu on the **Management** tab.
 | **Deactivate** / **Activate** | A deactivated account cannot sign in (`account is disabled`), cannot authenticate `cctrace init`, and its upload token is refused, so its clients stop sending data. Stored data is kept. |
 | **Reset Password** | Issues a new temporary password, shown once. At the next sign-in the person must change it again, and `cctrace init` is refused until then. Collection with the existing upload token continues. |
 | **Revoke API Token** | Shown when the account has a token. Deletes all of the account's tokens, including the upload token. The person's clients stop sending data until they run `cctrace init` again. |
-| **Clear Collected Data** | Deletes the telemetry and session records stored under the account's email. This cannot be undone. |
+| **Clear Collected Data** | Deletes the telemetry, session logs, live state, policy target reports, client version record, latest usage-limit reading and privacy settings stored under the account's email. What stays is listed under [Delete data](../reference/privacy.md#delete-data). This cannot be undone. |
 
 ![Edit User dialog for the admin account with Team and cctrace User ID filled in](../assets/screenshots/21-edit-admin.png){ loading=lazy }
 

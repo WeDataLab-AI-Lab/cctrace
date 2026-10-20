@@ -1,6 +1,8 @@
 package usage
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,6 +15,47 @@ func byWindow(samples []*store.QuotaSample) map[string]*store.QuotaSample {
 		m[s.WindowKey] = s
 	}
 	return m
+}
+
+func TestOwnerSamplesUseLiveWindowsWithoutIdentityFields(t *testing.T) {
+	r := decodeResponse(t, limitsBody)
+	r.FetchedAt = time.Date(2026, 8, 24, 9, 0, 0, 0, time.UTC)
+	r.Plan = "max"
+	got := r.OwnerSamples("acct-local")
+	if len(got) != 3 {
+		t.Fatalf("owner samples=%d, want 3", len(got))
+	}
+	var session *store.QuotaOwnerSample
+	for _, sample := range got {
+		if sample.WindowKey == KindSession {
+			session = sample
+		}
+		if sample.BillingProvider != BillingProviderAnthropic || sample.AccountID != "acct-local" || !sample.SampledAt.Equal(r.FetchedAt) || sample.Attribution != store.AttributionObserved {
+			t.Fatalf("owner sample identity/window = %+v", sample)
+		}
+	}
+	if session == nil || session.UsedPct != 42 || session.ResetsAt == nil || session.WindowMinutes == nil || *session.WindowMinutes != 300 || session.Plan != "max" {
+		t.Fatalf("session owner sample = %+v", session)
+	}
+	data, err := json.Marshal(got[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, forbidden := range []string{"login_email", "profile_email", "source_session_id"} {
+		if strings.Contains(string(data), forbidden) {
+			t.Fatalf("owner sample JSON contains %q: %s", forbidden, data)
+		}
+	}
+}
+
+func TestOwnerSamplesKeepMissingObservationAsEmpty(t *testing.T) {
+	r := decodeResponse(t, limitsBody)
+	if got := r.OwnerSamples(""); got != nil {
+		t.Fatalf("empty account id produced %d samples", len(got))
+	}
+	if got := r.OwnerSamples("acct-local"); got != nil {
+		t.Fatalf("missing fetch time produced %d samples", len(got))
+	}
 }
 
 func TestSamples_oneRowPerReportedWindow(t *testing.T) {

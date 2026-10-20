@@ -1,0 +1,18 @@
+{
+  "claude": {
+    "state": "stale",
+    "last_success_at": "2026-10-04T12:00:00Z",
+    "windows": [
+      {"name": "five_hour", "utilization": 42, "resets_at": "2026-10-04T14:00:00Z"}
+    ],
+    "error": null
+  },
+  "codex": {
+    "state": "stale",
+    "last_success_at": "2026-10-04T12:00:00Z",
+    "windows": [
+      {"name": "seven_day", "utilization": 61, "resets_at": "2026-10-10T12:00:00Z"}
+    ],
+    "error": null
+  }
+}

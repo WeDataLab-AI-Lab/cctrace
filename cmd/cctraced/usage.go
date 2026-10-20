@@ -25,6 +25,7 @@ var envDocs = []envDoc{
 	{key: "COOKIE_SECURE", def: "0", desc: "set to 1 to force Secure auth cookies behind HTTPS proxies"},
 	{key: "API_KEY", def: "", desc: "shared API token; empty disables the global key (per-user tokens still work)"},
 	{key: "CCTRACE_ALLOWED_ORIGINS", def: "", desc: "comma-separated exact browser origins; empty disables CORS; no wildcard"},
+	{key: "CCTRACE_SERVER_POLICY_FILE", def: "", desc: "signed server policy JSON path; unset disables distribution"},
 	{key: "CCTRACE_MAX_SYNC_BODY_BYTES", def: "8388608", desc: "/api/sync body ceiling in bytes; unusable values keep the default"},
 	{key: "HTTP_PORT", def: "8080", desc: "REST API + dashboard port"},
 	{key: "GRPC_PORT", def: "4317", desc: "OTLP/gRPC ingest port"},
@@ -32,10 +33,12 @@ var envDocs = []envDoc{
 	{key: "OTEL_RETENTION_DAYS", def: "", desc: "retention for otel_events/otel_metrics; unset keeps the 90d migration default"},
 	{key: "SESSION_RETENTION_DAYS", def: "", desc: "retention for session_records (conversation content); unset = kept indefinitely, 0 = keep forever"},
 	{key: "CCTRACE_USERID_ACCESS_CONTROL", def: "true", desc: "per-user data isolation; only the literal \"false\" disables it"},
+	{key: "CCTRACE_SESSION_ANALYSIS", def: "off", desc: "opt-in session analysis worker and read API; only the literal \"on\" enables it"},
+	{key: "CCTRACE_SESSION_RECORDS", def: "off", desc: "opt-in session record runtime; only the literal \"on\" enables it"},
 	{key: "WAL_DIR", def: "", desc: "spill directory for the ingest queue"},
 	{key: "STORAGE_VOLUME_PATH", def: "", desc: "volume probed for the admin storage panel; defaults to WAL_DIR"},
-	{key: "ACCESS_LOG_FILE", def: "", desc: "HTTP access log path; empty logs to stdout"},
-	{key: "EMAIL_ALIASES", def: "", desc: "path to an email alias mapping file"},
+	{key: "ACCESS_LOG_FILE", def: "", desc: "HTTP access log file, also written to stdout; empty uses /data/logs/access.log, and stdout only if it cannot be opened"},
+	{key: "EMAIL_ALIASES", def: "", desc: "comma-separated alias=canonical email pairs"},
 	{key: "CCTRACE_ALLOW_EMPTY_DASHBOARD", def: "", desc: "set to 1 to boot without embedded web assets (backend-only)"},
 	{key: "CCTRACE_AI_ENABLED_DEFAULT", def: "", desc: "the default switch for weekly AI reports (true or false): whether they may send data to a provider. Admin > AI's switch is stored in the database and wins from the moment an admin flips it. Empty is off unless CCTRACE_AI_RUNTIME_DEFAULT is set; any other value is off"},
 	{key: "CCTRACE_AI_RUNTIME_DEFAULT", def: "", desc: "the default AI report runtime (codex-app-server, openai-api, claude-api, nvidia-api, litellm-api) until an admin picks one in Admin > AI. Empty chooses none: reports cannot run until someone chooses. Setting it also turns reports on when CCTRACE_AI_ENABLED_DEFAULT is unset"},
@@ -86,6 +89,8 @@ func usageText() string {
 	b.WriteString("                       classify the complete projects identity snapshot without writes\n")
 	b.WriteString("  cctraced project-identity-repair --apply\n")
 	b.WriteString("                       write the recoverable repository ids in one transaction\n")
+	b.WriteString("  cctraced repair session-facts-reset\n")
+	b.WriteString("                       stop the server first; rebuild derived values and clear P1b facts\n")
 	b.WriteString("  cctraced --stop     stop the running server (no-op if none is running)\n")
 	b.WriteString("  cctraced --version  print the build stamp\n")
 	b.WriteString("  cctraced --help     print this text\n\n")

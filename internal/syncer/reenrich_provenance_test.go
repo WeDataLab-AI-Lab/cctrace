@@ -87,6 +87,9 @@ func TestReenrich_skipsFileWithATaintAboveItsOffset(t *testing.T) {
 	lookupInNewPass(s, "/work/r")
 	p := filepath.Join(dir, "s1.jsonl")
 	appendLines(t, p, sessionLine("/work/r", "pending"))
+	// A known file whose collected range is still empty. Unknown files are
+	// ignored before any repository lookup or source read during re-enrichment.
+	s.state.SetOffset(p, 0)
 
 	repos["/work/r"] = repoAt(allowedRepo)
 	expireMetaCache(s)
@@ -118,7 +121,9 @@ func TestReenrich_skipsFileWhoseReplacementCouldNotBeMarked(t *testing.T) {
 	srv, endpoint := newFreshMetaServer(t)
 	s, dir := newTailSyncer(t, endpoint, allowExampleOrg)
 	lookupInNewPass(s, "/work/r")
-	appendLines(t, filepath.Join(dir, "s1.jsonl"), sessionLine("/work/r", "pending"))
+	p := filepath.Join(dir, "s1.jsonl")
+	appendLines(t, p, sessionLine("/work/r", "pending"))
+	s.state.SetOffset(p, 0)
 	prev := listSessionFiles
 	listSessionFiles = func(string) ([]string, error) { return nil, errors.New("listing failed") }
 	t.Cleanup(func() { listSessionFiles = prev })

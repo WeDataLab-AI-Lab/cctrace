@@ -278,3 +278,51 @@ func TestAIMigrationProviderCheckAndBaseURL(t *testing.T) {
 		t.Fatalf("litellm base_url did not round-trip: %+v", got)
 	}
 }
+
+// The run policy shares the single ai_settings row with the switch, the runtime
+// choice and the schedule, so saving it must not wipe them, and a NULL must read
+// as "no admin word" rather than as off.
+func TestAIRunPolicyRoundTrip(t *testing.T) {
+	s := acquireTestStore(t)
+	truncateTables(t, s)
+	ctx := context.Background()
+	const admin = "admin@example.com"
+
+	got, err := s.GetAIRunPolicy(ctx)
+	if err != nil || got != nil {
+		t.Fatalf("empty = %+v, %v", got, err)
+	}
+
+	if err := s.SetAIAutoSchedule(ctx, boolPtr(true), intPtr(1), intPtr(1), intPtr(0), admin); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SetAIRunPolicy(ctx, boolPtr(true), intPtr(4), admin); err != nil {
+		t.Fatalf("SetAIRunPolicy: %v", err)
+	}
+	got, err = s.GetAIRunPolicy(ctx)
+	if err != nil || got == nil || got.ConsentRequired == nil || !*got.ConsentRequired || got.MaxConcurrent == nil || *got.MaxConcurrent != 4 {
+		t.Fatalf("after set = %+v, %v", got, err)
+	}
+	if got.UpdatedBy != admin || got.UpdatedAt.IsZero() {
+		t.Fatalf("actor = %+v", got)
+	}
+	if sch, err := s.GetAIAutoSchedule(ctx); err != nil || sch == nil || sch.Hour == nil || *sch.Hour != 1 {
+		t.Fatalf("schedule after policy write = %+v, %v", sch, err)
+	}
+
+	// Either part alone keeps the row: a limit with no word on consent is still
+	// an admin's policy.
+	if err := s.SetAIRunPolicy(ctx, nil, intPtr(3), admin); err != nil {
+		t.Fatal(err)
+	}
+	if got, err = s.GetAIRunPolicy(ctx); err != nil || got == nil || got.ConsentRequired != nil || got.MaxConcurrent == nil || *got.MaxConcurrent != 3 {
+		t.Fatalf("limit only = %+v, %v", got, err)
+	}
+
+	if err := s.SetAIRunPolicy(ctx, nil, nil, admin); err != nil {
+		t.Fatal(err)
+	}
+	if got, err = s.GetAIRunPolicy(ctx); err != nil || got != nil {
+		t.Fatalf("cleared = %+v, %v", got, err)
+	}
+}

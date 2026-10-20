@@ -3,9 +3,12 @@ package syncer
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"runtime"
 	"strconv"
@@ -33,6 +36,8 @@ var ErrReenrichUnsupported = errors.New("server does not support session reenric
 // should stop sending history rather than treat collection as broken.
 var ErrQuotaSamplesUnsupported = errors.New("server does not support quota samples endpoint")
 
+var ErrQuotaOwnerSamplesUnsupported = errors.New("server does not support private quota usage endpoint")
+
 // ErrBodyTooLarge marks a 413. It is not a RetryableError: resending the same
 // bytes cannot succeed. Send splits the batch on it, which is the only response
 // that makes progress -- a batch is a client-side grouping, so half of one is
@@ -44,6 +49,16 @@ var ErrBodyTooLarge = errors.New("server refused the request body as too large")
 // refusal is answered by splitting the batch, a timeout by looking at the link
 // or the server, and conflating them sends the reader to the wrong place.
 var ErrTransferTimeout = errors.New("request body did not transfer before the deadline")
+
+var ErrAuthentication = errors.New("server rejected collection authentication")
+
+// TransferOutcome is scoped to one client and one pass, including satellite
+// syncers whose per-file errors are intentionally not returned by SyncOnce.
+type TransferOutcome struct {
+	Sent, Failed int
+	LastError    error
+	RetryAfter   time.Duration
+}
 
 // Client sends session records to the cctraced server.
 type Client struct {
@@ -64,7 +79,12 @@ type Client struct {
 	// sends. Nil means this build does not report at all, which the server
 	// stores differently from a report saying nothing is wrong (#750).
 	updateStall func() *store.ClientUpdateStall
+	outcome     TransferOutcome
+	diagnostics *transferRecorder
 }
+
+func (c *Client) ResetTransferOutcome()            { c.outcome = TransferOutcome{} }
+func (c *Client) TransferOutcome() TransferOutcome { return c.outcome }
 
 // SetUpdateStallReporter installs the source of the self-update report. It is a
 // function rather than a value because the state changes while the process
@@ -276,6 +296,14 @@ type QuotaSamplesPayload struct {
 // limitation as before chunking.
 const MaxQuotaSamplesPerRequest = 2000
 
+// MaxQuotaOwnerSamplesPerRequest is kept below the personal endpoint's body
+// limit; identity-free rows are small and this count bounds each transaction.
+const MaxQuotaOwnerSamplesPerRequest = 1000
+
+type QuotaOwnerSamplesPayload struct {
+	Samples []*store.QuotaOwnerSample `json:"samples"`
+}
+
 // SendQuotaSamples posts rate-limit history in chunks of at most
 // MaxQuotaSamplesPerRequest. A 404 is reported as ErrQuotaSamplesUnsupported so
 // the caller can tell an older server from a broken one.
@@ -313,6 +341,36 @@ func (c *Client) sendQuotaSampleChunk(ctx context.Context, samples []*store.Quot
 	}
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("server returned HTTP %d", resp.StatusCode)
+	}
+	return nil
+}
+
+// SendQuotaOwnerSamples uploads client-reported readings through the
+// dashboard-user token route. The server binds ownership from that token and
+// verifies each account's current approval epoch before inserting.
+func (c *Client) SendQuotaOwnerSamples(ctx context.Context, samples []*store.QuotaOwnerSample) error {
+	for len(samples) > 0 {
+		n := min(len(samples), MaxQuotaOwnerSamplesPerRequest)
+		chunk, err := encodeRequestJSON(QuotaOwnerSamplesPayload{Samples: samples[:n]})
+		if err != nil {
+			return fmt.Errorf("marshal quota owner samples: %w", err)
+		}
+		req, err := c.newJSONPostRequest(ctx, "/api/me/quota-usage/samples", chunk)
+		if err != nil {
+			return err
+		}
+		resp, err := c.http.Do(req)
+		if err != nil {
+			return fmt.Errorf("post quota owner samples: %w", err)
+		}
+		_ = resp.Body.Close()
+		if resp.StatusCode == http.StatusNotFound {
+			return ErrQuotaOwnerSamplesUnsupported
+		}
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("quota owner sample endpoint returned HTTP %d", resp.StatusCode)
+		}
+		samples = samples[n:]
 	}
 	return nil
 }
@@ -374,6 +432,15 @@ func (c *Client) CheckVersion(ctx context.Context) (string, error) {
 // nothing. A 413 is the only reliable statement of the limit in force.
 func (c *Client) Send(ctx context.Context, agent, profileEmail, userID, projectHash, projectName string, identity ProjectIdentity, records []*store.SessionRecord) (int, error) {
 	sent, err := c.sendBatch(ctx, agent, profileEmail, userID, projectHash, projectName, identity, records)
+	c.outcome.Sent += sent
+	if err != nil && !errors.Is(err, ErrBodyTooLarge) && !errors.Is(err, context.Canceled) {
+		c.outcome.Failed++
+		c.outcome.LastError = err
+		var retry *RetryableError
+		if errors.As(err, &retry) && retry.RetryAfter > c.outcome.RetryAfter {
+			c.outcome.RetryAfter = retry.RetryAfter
+		}
+	}
 	if err != nil {
 		return sent, err
 	}
@@ -389,6 +456,8 @@ func (c *Client) sendBatch(ctx context.Context, agent, profileEmail, userID, pro
 	if err == nil || !errors.Is(err, ErrBodyTooLarge) || len(records) < 2 {
 		return sent, err
 	}
+	depth, _ := ctx.Value(splitDepthKey{}).(int)
+	ctx = context.WithValue(ctx, splitDepthKey{}, depth+1)
 	mid := len(records) / 2
 	first, err := c.sendBatch(ctx, agent, profileEmail, userID, projectHash, projectName, identity, records[:mid])
 	if err != nil {
@@ -448,16 +517,47 @@ func (c *Client) sendResponse(ctx context.Context, payload SyncPayload) (syncRes
 	// caller because this is where the encoded length is known -- redaction and
 	// the envelope have both been applied by now, so these are the bytes that go
 	// on the wire.
+	deadline := transferDeadline(int64(len(body)))
+	if parentDeadline, ok := ctx.Deadline(); ok && time.Until(parentDeadline) < deadline {
+		deadline = time.Until(parentDeadline)
+		if deadline < 0 {
+			deadline = 0
+		}
+	}
+	depth, _ := ctx.Value(splitDepthKey{}).(int)
+	event := TransferEvent{At: time.Now().UTC(), Provider: transferProvider(payload.Agent), ClientVersion: c.clientVersion, RequestBytes: len(body), RecordCount: len(payload.Records), DeadlineMS: deadline.Milliseconds(), SplitDepth: depth, Outcome: "network_error"}
+	started := time.Now()
+	defer func() { event.DurationMS = time.Since(started).Milliseconds(); c.diagnostics.record(event) }()
 	ctx, cancel := context.WithTimeout(ctx, transferDeadline(int64(len(body))))
 	defer cancel()
 
 	req, err := c.newJSONPostRequest(ctx, "/api/sync", body)
 	if err != nil {
+		event.Failure = "request"
 		return syncResponse{}, err
 	}
 
 	resp, err := c.http.Do(req)
 	if err != nil {
+		event.Failure = "network"
+		var dns *net.DNSError
+		var cert x509.UnknownAuthorityError
+		var certInvalid x509.CertificateInvalidError
+		var hostname x509.HostnameError
+		var tlsHeader tls.RecordHeaderError
+		var op *net.OpError
+		switch {
+		case errors.Is(err, context.DeadlineExceeded):
+			event.Failure = "timeout"
+		case errors.Is(err, context.Canceled):
+			event.Failure = "canceled"
+		case errors.As(err, &dns):
+			event.Failure = "dns"
+		case errors.As(err, &cert), errors.As(err, &certInvalid), errors.As(err, &hostname), errors.As(err, &tlsHeader):
+			event.Failure = "tls"
+		case errors.As(err, &op):
+			event.Failure = "connect"
+		}
 		// Named apart from a refusal. A 413 says the server decided; this says
 		// nobody decided, and the two need different answers -- split the batch
 		// versus look at the link. Without the distinction both arrive as
@@ -469,12 +569,22 @@ func (c *Client) sendResponse(ctx context.Context, payload SyncPayload) (syncRes
 	}
 	defer resp.Body.Close()
 
+	event.HTTPStatus = resp.StatusCode
+	event.Outcome = "http_error"
 	if resp.StatusCode == http.StatusTooManyRequests {
+		event.Outcome = "rate_limited"
 		retryAfter := 5 * time.Second // default
 		if v := resp.Header.Get("Retry-After"); v != "" {
 			if secs, err := strconv.Atoi(v); err == nil {
 				retryAfter = time.Duration(secs) * time.Second
 			}
+		}
+		event.RetryAfterMS = retryAfter.Milliseconds()
+		if event.RetryAfterMS < 0 {
+			event.RetryAfterMS = 0
+		}
+		if event.RetryAfterMS > int64(maxRetryAfterDelay/time.Millisecond) {
+			event.RetryAfterMS = int64(maxRetryAfterDelay / time.Millisecond)
 		}
 		return syncResponse{}, &RetryableError{
 			Err:        fmt.Errorf("server returned 429"),
@@ -482,7 +592,12 @@ func (c *Client) sendResponse(ctx context.Context, payload SyncPayload) (syncRes
 		}
 	}
 	if resp.StatusCode == http.StatusRequestEntityTooLarge {
+		event.Outcome = "body_too_large"
 		return syncResponse{}, ErrBodyTooLarge
+	}
+	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		event.Outcome = "auth_error"
+		return syncResponse{}, ErrAuthentication
 	}
 	if resp.StatusCode != http.StatusOK {
 		return syncResponse{}, fmt.Errorf("server returned %d", resp.StatusCode)
@@ -490,8 +605,11 @@ func (c *Client) sendResponse(ctx context.Context, payload SyncPayload) (syncRes
 
 	var sr syncResponse
 	if err := json.NewDecoder(resp.Body).Decode(&sr); err != nil {
+		event.Outcome = "response_error"
+		event.Failure = "response"
 		return syncResponse{}, fmt.Errorf("decode: %w", err)
 	}
+	event.Outcome = "accepted"
 	return sr, nil
 }
 

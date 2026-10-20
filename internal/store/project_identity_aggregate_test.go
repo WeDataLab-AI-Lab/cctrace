@@ -124,12 +124,16 @@ func TestWeeklyInsights_JoinsProjectMetadataWithinAgentScope(t *testing.T) {
 		}
 	}
 	for _, agent := range []string{"claude", "codex"} {
-		if err := s.InsertSessionRecords(ctx, []*SessionRecord{
-			{Ts: now, SessionID: "s-agent-" + agent, UUID: "u-agent-" + agent, RecordType: "assistant", Agent: agent, UserID: "userA", ProfileEmail: "qa@example.test", ProjectHash: "h-agent-shared", InputTokens: ptrInt(2), OutputTokens: ptrInt(3), Raw: json.RawMessage(`{"message":{"role":"assistant"}}`)},
-		}); err != nil {
+		record := &SessionRecord{Ts: now, SessionID: "s-agent-" + agent, UUID: "u-agent-" + agent, RecordType: "assistant", Agent: agent, UserID: "userA", ProfileEmail: "qa@example.test", ProjectHash: "h-agent-shared", InputTokens: ptrInt(2), OutputTokens: ptrInt(3), Raw: json.RawMessage(`{"message":{"role":"assistant"}}`)}
+		if agent == "codex" {
+			// Codex tokens are on its usage rows, read through codex_imputed_cost.
+			record.RecordType, record.CacheReadTokens = "usage", ptrInt(0)
+		}
+		if err := s.InsertSessionRecords(ctx, []*SessionRecord{record}); err != nil {
 			t.Fatalf("InsertSessionRecords(%s): %v", agent, err)
 		}
 	}
+	refreshCodexImputed(t, s)
 
 	insights, err := s.WeeklyInsights(ctx, now.Add(-time.Minute), now.Add(time.Hour), "qa@example.test", "", "UTC")
 	if err != nil {

@@ -365,6 +365,18 @@ func (s *Syncer) sendJudged(ctx context.Context, filePath, projectHash string, t
 			}
 		}
 		s.noteExpired(filePath, fs, tail, passed, upTo)
+		// What is derived from collected records takes the ones this advance
+		// passed that were sent, and none it passed unsent: a consumed or an
+		// expired record's repository is not collected. Here and not where a
+		// group is sent, because a group that fails is read and sent again,
+		// and only an advance passes each record exactly once.
+		var collected []*sessionlog.Record
+		for i := passed; i < upTo; i++ {
+			if tail.verdicts[i] == verdictSend {
+				collected = append(collected, consumed[i])
+			}
+		}
+		s.collectAdvanced(ctx, fs, filePath, projectHash, position, collected)
 		position, passed = to, upTo
 		s.saveState()
 	}

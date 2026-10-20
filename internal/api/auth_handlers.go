@@ -130,12 +130,13 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	s.setAuthCookies(w, r, user)
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"user": map[string]interface{}{
-			"id":                   user.ID,
-			"email":                user.Email,
-			"role":                 user.Role,
-			"name":                 user.Name,
-			"cctrace_user_id":      user.CctraceUserID,
-			"must_change_password": user.MustChangePassword,
+			"id":                     user.ID,
+			"email":                  user.Email,
+			"role":                   user.Role,
+			"name":                   user.Name,
+			"cctrace_user_id":        user.CctraceUserID,
+			"must_change_password":   user.MustChangePassword,
+			"user_id_access_control": s.useUserIDAccessControl,
 		},
 	})
 }
@@ -174,12 +175,13 @@ func (s *Server) handleRefresh(w http.ResponseWriter, r *http.Request) {
 	s.setAccessCookie(w, r, accessToken)
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"user": map[string]interface{}{
-			"id":                   user.ID,
-			"email":                user.Email,
-			"role":                 user.Role,
-			"name":                 user.Name,
-			"cctrace_user_id":      user.CctraceUserID,
-			"must_change_password": user.MustChangePassword,
+			"id":                     user.ID,
+			"email":                  user.Email,
+			"role":                   user.Role,
+			"name":                   user.Name,
+			"cctrace_user_id":        user.CctraceUserID,
+			"must_change_password":   user.MustChangePassword,
+			"user_id_access_control": s.useUserIDAccessControl,
 		},
 	})
 }
@@ -201,12 +203,13 @@ func (s *Server) handleMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"id":                   user.ID,
-		"email":                user.Email,
-		"role":                 user.Role,
-		"name":                 user.Name,
-		"cctrace_user_id":      user.CctraceUserID,
-		"must_change_password": user.MustChangePassword,
+		"id":                     user.ID,
+		"email":                  user.Email,
+		"role":                   user.Role,
+		"name":                   user.Name,
+		"cctrace_user_id":        user.CctraceUserID,
+		"must_change_password":   user.MustChangePassword,
+		"user_id_access_control": s.useUserIDAccessControl,
 	})
 }
 

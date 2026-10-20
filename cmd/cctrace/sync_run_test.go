@@ -32,8 +32,12 @@ func TestRunSyncOneShotSendsNewSessionAndRefreshesSettings(t *testing.T) {
 		case "/api/project-rules":
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]int{"inserted_rules": 0, "inserted_versions": 0})
+		case "/api/session-observations":
+			// The heartbeat a one-shot run sends after its pass.
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]int{"accepted": 0})
 		default:
-			t.Fatalf("path = %q, want /api/sync or /api/project-rules", r.URL.Path)
+			t.Fatalf("path = %q, want /api/sync, /api/project-rules or /api/session-observations", r.URL.Path)
 		}
 	}))
 	defer srv.Close()
@@ -472,6 +476,10 @@ func TestRunSyncLocalUsesLocalSyncEndpoint(t *testing.T) {
 		case "/api/project-rules":
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]int{"inserted_rules": 0, "inserted_versions": 0})
+		case "/api/session-observations":
+			// The heartbeat a one-shot run sends after its pass.
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]int{"accepted": 0})
 		default:
 			t.Fatalf("unexpected path: %s", r.URL.Path)
 		}
@@ -622,6 +630,9 @@ func TestRunSyncWatchStartsAndStopsFromStopRequest(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(map[string]int{"inserted": 0})
 		case "/api/project-rules":
 			_ = json.NewEncoder(w).Encode(map[string]int{"inserted_rules": 0, "inserted_versions": 0})
+		case "/api/session-observations":
+			// The heartbeat a watcher sends after its first pass.
+			_ = json.NewEncoder(w).Encode(map[string]int{"accepted": 0})
 		default:
 			t.Fatalf("unexpected path: %s", r.URL.Path)
 		}
@@ -665,6 +676,10 @@ func TestRunSyncWatchStopsAfterInitialRetryableFailure(t *testing.T) {
 		case "/api/project-rules":
 			w.Header().Set("Content-Type", "application/json")
 			_ = json.NewEncoder(w).Encode(map[string]int{"inserted_rules": 0, "inserted_versions": 0})
+		case "/api/session-observations":
+			// The heartbeat goes after the first pass even though that pass failed.
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]int{"accepted": 0})
 		default:
 			t.Fatalf("unexpected path: %s", r.URL.Path)
 		}

@@ -16,7 +16,7 @@ import (
 // the exact shape that cost plugin_invocation_facts 12+ minutes inlined.
 func TestTaskSegmentFactsBackfillMaterializesTurns(t *testing.T) {
 	s := acquireTestStore(t)
-	rows, err := s.pool.Query(context.Background(), "EXPLAIN "+taskSegmentFactsInsertSQL, nil, "behavior-v1")
+	rows, err := s.pool.Query(context.Background(), "EXPLAIN "+taskSegmentFactsRebuildSQL, "behavior-v1")
 	if err != nil {
 		t.Fatalf("explain backfill: %v", err)
 	}

@@ -141,7 +141,7 @@ func (s *PgStore) RunPendingUsageRollupRebuild(ctx context.Context) (bool, error
 	defer tx.Rollback(ctx) //nolint:errcheck // no-op after commit
 	var locked bool
 	if err := tx.QueryRow(ctx,
-		`SELECT pg_try_advisory_xact_lock(hashtext('usage_hourly_rollups_writers'))`).Scan(&locked); err != nil {
+		`SELECT pg_try_advisory_xact_lock(hashtext($1))`, usageHourlyRollupWritersLock).Scan(&locked); err != nil {
 		return false, fmt.Errorf("lock usage hourly rollups: %w", err)
 	}
 	if !locked {

@@ -9,12 +9,14 @@ import { CollectingLoader } from '@/components/common/collecting-loader';
 import { useAuth } from '@/components/common/auth-context';
 import { ADMIN_AI_KEY, ADMIN_AI_MODELS_KEY, AccountSection, OUTLINE_BUTTON_CLASS } from '@/components/admin/ai-account-section';
 import { ProviderKeysSection } from '@/components/admin/ai-provider-keys-section';
+import { SessionRecordsAdminPanel } from '@/components/admin/session-records-section';
 import {
   AIReportRequestError,
   fetchAdminAI,
   fetchAdminAIModels,
   setAdminAIEnabled,
   setAdminAIRuntime,
+  updateAdminAIRunPolicy,
   updateAdminAISchedule,
   updateAdminAISettings,
 } from '@/lib/api';
@@ -48,6 +50,7 @@ import type {
   AdminAISettingSource,
   AdminAISettings,
   AdminAIUsage,
+  UpdateAdminAIRunPolicyRequest,
   UpdateAdminAIScheduleRequest,
   UpdateAdminAISettingsRequest,
 } from '@/lib/types';
@@ -144,7 +147,7 @@ const EnablePanel = ({ data }: { data: AdminAIResponse }) => {
         <div>
           <h3 className="text-[13px] font-medium text-ink">AI 리포트 사용</h3>
           <p className="text-[11px] text-ink-3 mt-0.5">
-            켜면 동의한 사용자의 작업 기록이 선택 런타임의 공급자로 전송됩니다. 꺼져 있으면 리포트 생성과 동의를 받지 않습니다.
+            켜면 사용자의 작업 기록이 선택 런타임의 공급자로 전송됩니다. 꺼져 있으면 리포트를 만들지 않습니다.
           </p>
         </div>
         <label className="flex shrink-0 items-center gap-2 text-[13px] text-ink">
@@ -271,6 +274,93 @@ const SchedulePanel = ({ data }: { data: AdminAIResponse }) => {
       <footer className="flex items-center justify-between gap-2">
         <SourceNote source={schedule.when_source === 'admin' ? 'admin' : 'default'} envValue="" />
         {(schedule.when_source === 'admin' || schedule.enabled_source === 'admin') && (
+          <Button variant="outline" onClick={handleClear} disabled={mutation.isPending} className={OUTLINE_BUTTON_CLASS}>
+            관리자 설정 해제
+          </Button>
+        )}
+      </footer>
+      {mutation.error && <p className="text-[12px] text-danger">저장하지 못했습니다. 다시 시도해 주세요.</p>}
+    </section>
+  );
+};
+
+/** Who must agree before a run, and how many runs go at once.
+ *
+ *  A save carries the whole policy, but a part the administrator never set
+ *  goes back as null: sending the shown default would pin it, and a later
+ *  change of the server's own limit would no longer reach this deployment. */
+const RunPolicyPanel = ({ data }: { data: AdminAIResponse }) => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: updateAdminAIRunPolicy,
+    onSuccess: (res) => {
+      // The answer is the saved policy. Written to the cache at once, the next
+      // control builds its whole request from it rather than from the policy
+      // before this save, which would send the part just saved back as unset.
+      queryClient.setQueryData<AdminAIResponse>(ADMIN_AI_KEY, (prev) => (prev ? { ...prev, run_policy: res.run_policy } : prev));
+      void queryClient.invalidateQueries({ queryKey: ADMIN_AI_KEY });
+    },
+  });
+  const policy = data.run_policy;
+  const limits = Array.from({ length: policy.max_concurrent_max }, (_, i) => i + 1);
+
+  const whole = (over: Partial<UpdateAdminAIRunPolicyRequest>): UpdateAdminAIRunPolicyRequest => ({
+    consent_required: policy.consent_required_source === 'admin' ? policy.consent_required : null,
+    max_concurrent: policy.max_concurrent_source === 'admin' ? policy.max_concurrent : null,
+    ...over,
+  });
+
+  const handleConsent = (event: ChangeEvent<HTMLInputElement>) => mutation.mutate(whole({ consent_required: event.target.checked }));
+  const handleLimit = (event: ChangeEvent<HTMLSelectElement>) => mutation.mutate(whole({ max_concurrent: Number(event.target.value) }));
+  const handleClear = () => mutation.mutate({ consent_required: null, max_concurrent: null });
+
+  const sourceLabel = (source: string) => SOURCE_LABEL[source === 'admin' ? 'admin' : 'default'];
+
+  return (
+    <section className={PANEL_CLASS}>
+      <header>
+        <h3 className="text-[13px] font-medium text-ink">실행 정책</h3>
+        <p className="text-[11px] text-ink-3 mt-0.5">
+          사용자 동의를 받으면 동의하지 않은 사용자는 분석과 주간 자동 생성에서 빠집니다. 동시 실행 수를 넘는 분석은 시작한 순서대로 기다립니다.
+        </p>
+      </header>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <label className="flex items-center gap-2 text-[13px] text-ink">
+          <input
+            type="checkbox"
+            role="switch"
+            aria-label="사용자 동의 받기"
+            checked={policy.consent_required}
+            disabled={mutation.isPending}
+            onChange={handleConsent}
+            className="accent-brand"
+          />
+          사용자 동의 받기
+        </label>
+        <label className="flex items-center gap-2 text-[13px] text-ink">
+          동시 실행
+          <select
+            className={scheduleSelectClass}
+            value={policy.max_concurrent}
+            onChange={handleLimit}
+            disabled={mutation.isPending}
+            aria-label="동시 실행 수"
+          >
+            {limits.map((value) => (
+              <option key={value} value={value}>
+                {value}개
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <footer className="flex items-center justify-between gap-2">
+        <p className="text-[11px] text-ink-3">
+          적용 출처: 동의 <span className="font-medium text-ink-2">{sourceLabel(policy.consent_required_source)}</span>
+          {' · '}동시 실행 <span className="font-medium text-ink-2">{sourceLabel(policy.max_concurrent_source)}</span>
+          {` · 서버 기본 동시 실행 ${policy.max_concurrent_default}개`}
+        </p>
+        {(policy.consent_required_source === 'admin' || policy.max_concurrent_source === 'admin') && (
           <Button variant="outline" onClick={handleClear} disabled={mutation.isPending} className={OUTLINE_BUTTON_CLASS}>
             관리자 설정 해제
           </Button>
@@ -539,6 +629,7 @@ const AITab = () => {
     enabled: isAdmin,
   });
   const runtime = data?.selected_runtime ?? '';
+  const sessionRecordSettingsKey = JSON.stringify([data?.records?.settings, data?.records?.runtime_settings]);
   // Keyed by runtime so model IDs of different runtimes never mix.
   const catalog = useQuery({
     queryKey: [...ADMIN_AI_MODELS_KEY, runtime],
@@ -576,6 +667,7 @@ const AITab = () => {
         <>
           <EnablePanel data={data} />
           <SchedulePanel data={data} />
+          <RunPolicyPanel data={data} />
           <RuntimePanel data={data} />
           {data.secrets_reason && (
             <p className="rounded-lg bg-warning-soft px-3 py-2 text-[12px] text-warning-strong">{data.secrets_reason}</p>
@@ -595,6 +687,7 @@ const AITab = () => {
             <section className={cn(PANEL_CLASS, 'text-sm text-ink-3')}>런타임을 선택하면 분석 모델을 설정할 수 있습니다.</section>
           )}
           <UsagePanel usage={data.usage_this_week} />
+          <SessionRecordsAdminPanel key={sessionRecordSettingsKey} data={data} />
         </>
       )}
     </div>

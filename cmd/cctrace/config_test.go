@@ -257,6 +257,66 @@ func TestSetProfileFieldCodexDirsRejectsMissingAndRelative(t *testing.T) {
 	}
 }
 
+func TestSetProfileFieldCodexHomeIsExplicitAndClearable(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	requestedHome := filepath.Join(home, "codex-work")
+	if err := os.Mkdir(requestedHome, 0700); err != nil {
+		t.Fatal(err)
+	}
+	codexHome, err := profile.NormalizeCodexHome(requestedHome)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := profile.NewDefault()
+	if err := setProfileField(p, "codex_home", "~/codex-work"); err != nil {
+		t.Fatalf("set codex_home: %v", err)
+	}
+	if p.CodexHome != codexHome {
+		t.Fatalf("CodexHome = %q, want %q", p.CodexHome, codexHome)
+	}
+	if err := setProfileField(p, "codex_home", ""); err != nil || p.CodexHome != "" {
+		t.Fatalf("clear codex_home: value=%q err=%v", p.CodexHome, err)
+	}
+	for _, invalid := range []string{"relative", filepath.Join(home, "missing")} {
+		if err := setProfileField(p, "codex_home", invalid); err == nil {
+			t.Fatalf("accepted invalid codex_home %q", invalid)
+		}
+	}
+}
+
+func TestCodexHomeConfigDisplayDoesNotExposePath(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "private-codex-home")
+	p := profile.NewDefault()
+	p.CodexHome = path
+	for _, item := range flattenProfile(p) {
+		if item.key == "codex_home" {
+			if item.value != "(configured)" || strings.Contains(item.value, path) {
+				t.Fatalf("codex_home config display = %q, want path-free configured state", item.value)
+			}
+			return
+		}
+	}
+	t.Fatal("codex_home missing from config display")
+}
+
+func TestConfigCodexHomeOutputIsPathFree(t *testing.T) {
+	setupTestHome(t)
+	codexHome := filepath.Join(t.TempDir(), "private-codex-home")
+	if err := os.Mkdir(codexHome, 0700); err != nil {
+		t.Fatal(err)
+	}
+	stdout, stderr := captureOutput(t, func() {
+		if err := runConfigSet("", "codex_home", codexHome); err != nil {
+			t.Errorf("runConfigSet: %v", err)
+		}
+	})
+	if strings.Contains(stdout+stderr, codexHome) || !strings.Contains(stdout, "(configured)") {
+		t.Fatalf("config set output exposed path or omitted configured state: %q %q", stdout, stderr)
+	}
+}
+
 // options.omo_dirs is deliberately unsupported: omosyncer scans a single home
 // and the profile has no such field. It must be rejected like any other
 // unknown key, not silently accepted or dropped.

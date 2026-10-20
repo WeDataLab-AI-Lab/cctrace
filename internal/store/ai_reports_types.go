@@ -138,6 +138,15 @@ type AIEnabledChoice struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// AIRunPolicy is an admin's word on how report runs are admitted. A nil field
+// is no admin word, and the built-in default decides.
+type AIRunPolicy struct {
+	ConsentRequired *bool     `json:"consent_required"`
+	MaxConcurrent   *int      `json:"max_concurrent"`
+	UpdatedBy       string    `json:"updated_by"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
+
 // AIAutoSchedule is the admin's default for the weekly automatic run. Each
 // field stands on its own: a nil is no admin word, so choosing a weekday never
 // implies an opinion about the switch, and the built-in default decides the

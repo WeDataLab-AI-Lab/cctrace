@@ -49,6 +49,7 @@ func stripTextBearingAttrs(events []*store.OtelEvent) []*store.OtelEvent {
 		if event == nil {
 			continue
 		}
+		event.Envelope = nil
 		for key := range event.Attrs {
 			if textBearingEventAttrs[key] {
 				delete(event.Attrs, key)

@@ -16,6 +16,22 @@ type eventAttrsStore struct {
 	events []*store.OtelEvent
 }
 
+func TestPublicEventsNeverExposeSourceEnvelope(t *testing.T) {
+	t.Parallel()
+	events := stripTextBearingAttrs([]*store.OtelEvent{{Envelope: json.RawMessage(`{"log_record":{"body":"private source"}}`)}})
+	data, err := json.Marshal(events)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var decoded []map[string]json.RawMessage
+	if err = json.Unmarshal(data, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if _, present := decoded[0]["source_envelope"]; present {
+		t.Fatal("source envelope leaked into public events")
+	}
+}
+
 func (m *eventAttrsStore) ListEvents(_ context.Context, _ store.EventFilter) ([]*store.OtelEvent, error) {
 	return m.events, nil
 }

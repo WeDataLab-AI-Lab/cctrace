@@ -109,8 +109,10 @@ make lint           # 린트 오류 확인
 user.name / user.email / user.team / user.id
 server.endpoint / server.sync_endpoint / server.protocol / server.auth_token / server.read_token / server.ca_cert_file
 options.sync_enabled / options.codex_sync_enabled / options.gjc_sync_enabled / options.omo_sync_enabled
+options.local_analysis_enabled
 options.redact_user_prompts / options.redact_tool_details
 options.metrics_export_interval / options.logs_export_interval
+codex_home
 options.collect_repository_prefixes / options.exclude_accounts / options.codex_dirs / options.gjc_dirs / options.omo_dirs
 ```
 
@@ -121,9 +123,11 @@ options.collect_repository_prefixes / options.exclude_accounts / options.codex_d
 |---|---|
 | `server.ca_cert_file` | 서버가 사설 CA(Caddy `tls internal` 등) 인증서를 쓸 때 그 루트 PEM 경로. 비우면(`""`) 시스템 루트만 신뢰 |
 | `options.*_sync_enabled` | 에이전트별 세션 수집 on/off. **claude 는 `sync_enabled`** |
+| `options.local_analysis_enabled` | 로컬 분석 API 자동 제공 동의. 서버 동기화와 독립, `local enable --origin`으로 연결 정책 생성 |
 | `options.redact_*` | 업로드 전에 프롬프트·툴 내용을 지운다. 기본 `false`(=수집) |
 | `options.collect_repository_prefixes` | 지정한 경로 접두사의 저장소만 수집. 비면 전체 |
 | `options.exclude_accounts` | 지정한 결제 계정 ID(`provider:account_id` 가능)의 세션 레코드를 전송하지 않음 |
+| `codex_home` | 실행할 Codex home을 명시. 조회에는 경로 대신 설정 여부만 표시 |
 | `options.codex_dirs` / `gjc_dirs` / `omo_dirs` | 기본 위치 외 세션 디렉터리 추가 |
 
 ## 명명된 프로파일 (Named Profile)

@@ -103,6 +103,19 @@ func TestCodexRedactTransport(t *testing.T) {
 					if posts != 1 || n != 2 || len(payload.Records) != 2 || payload.Reenrich != reenrich {
 						t.Fatalf("posts=%d count=%d records=%d reenrich=%v", posts, n, len(payload.Records), payload.Reenrich)
 					}
+					if reenrich {
+						// The server does not merge Codex message raw on metadata
+						// updates. It must stay local under every redaction policy.
+						for _, record := range payload.Records {
+							if len(record.Raw) != 0 && string(record.Raw) != "null" {
+								t.Errorf("existing message raw was unnecessarily re-uploaded: %s", record.Raw)
+							}
+						}
+						if strings.Contains(string(body), "synthetic-new-argument") || strings.Contains(string(body), "synthetic-user-prompt") {
+							t.Error("message content escaped through a metadata field")
+						}
+						return
+					}
 					for secret, redacted := range map[string]bool{"synthetic-new-argument": tc.policy.ToolDetails, "synthetic-user-prompt": tc.policy.UserPrompts} {
 						if strings.Contains(string(body), secret) == redacted {
 							t.Errorf("secret %s presence inconsistent with redacted=%v: %s", secret, redacted, body)

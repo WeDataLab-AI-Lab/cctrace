@@ -1,0 +1,76 @@
+{
+  "local_id": "11111111111111111111111111111111",
+  "revision": "44444444444444444444444444444444",
+  "rules_version": 2,
+  "summary": {
+    "active_seconds": 2,
+    "agent": "claude",
+    "cache_create_tokens": 0,
+    "cache_read_tokens": 0,
+    "cost_source": "none",
+    "cost_usd": null,
+    "end_time": "2026-01-01T00:00:02Z",
+    "input_count": 1,
+    "input_tokens": 10,
+    "model": "test-model",
+    "output_tokens": 2,
+    "request_count": 1,
+    "start_time": "2026-01-01T00:00:00Z",
+    "title": "hello",
+    "title_state": "ok",
+    "tool_calls": 0,
+    "turn_boundaries": "observed",
+    "turn_boundaries_reason": "",
+    "turn_count": 1
+  },
+  "timeline": {
+    "reason": "",
+    "rows": [
+      {
+        "record_type": "user",
+        "roles": [
+          "opener",
+          "input"
+        ],
+        "ts": "2026-01-01T00:00:00Z",
+        "turn_key": "u1",
+        "unmapped": "",
+        "uuid": "u1"
+      },
+      {
+        "record_type": "assistant",
+        "roles": [
+          "assistant_final"
+        ],
+        "ts": "2026-01-01T00:00:02Z",
+        "turn_key": "u1",
+        "unmapped": "",
+        "uuid": "a1"
+      }
+    ],
+    "state": "observed"
+  },
+  "turns": [
+    {
+      "branch": "active",
+      "cache_create_tokens": 0,
+      "cache_read_tokens": 0,
+      "cost_source": "no_rate",
+      "cost_usd": null,
+      "ended_at": "2026-01-01T00:00:02Z",
+      "input_kind": "unknown",
+      "input_tokens": 10,
+      "ordinal": 1,
+      "output_tokens": 2,
+      "preview": "hello",
+      "preview_state": "ok",
+      "request_no": 1,
+      "started_at": "2026-01-01T00:00:00Z",
+      "status": "ended",
+      "status_reason": "",
+      "subagents": 0,
+      "tool_calls": 0,
+      "turn_key": "u1"
+    }
+  ]
+}

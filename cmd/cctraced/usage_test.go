@@ -36,6 +36,24 @@ func TestUsageTextCoversEveryEnvKeyTheDaemonReads(t *testing.T) {
 	}
 }
 
+// The help text was written from the key names, not the code behind them, and it
+// described two keys the opposite way round: EMAIL_ALIASES is a comma-separated
+// alias=canonical list (emailalias.Parse), not a file path, and an empty
+// ACCESS_LOG_FILE falls back to /data/logs/access.log (accessLogger), it does not
+// mean stdout. The public docs now send operators here for the full key list.
+func TestUsageTextDescribesAliasAndAccessLogKeysAsTheCodeReadsThem(t *testing.T) {
+	desc := map[string]string{}
+	for _, e := range envDocs {
+		desc[e.key] = e.desc
+	}
+	if got := desc["EMAIL_ALIASES"]; !strings.Contains(got, "alias=canonical") {
+		t.Errorf("EMAIL_ALIASES is parsed as alias=canonical pairs; help says %q", got)
+	}
+	if got := desc["ACCESS_LOG_FILE"]; !strings.Contains(got, "/data/logs/access.log") {
+		t.Errorf("an empty ACCESS_LOG_FILE falls back to /data/logs/access.log; help says %q", got)
+	}
+}
+
 func TestVersionTextNamesTheBinaryAndBuild(t *testing.T) {
 	got := versionText()
 	if !strings.Contains(got, "cctraced") {

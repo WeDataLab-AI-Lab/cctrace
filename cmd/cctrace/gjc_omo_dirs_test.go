@@ -116,7 +116,7 @@ func TestPrintGjcDryRunListsHomesAndFileCounts(t *testing.T) {
 	p.Options.GjcDirs = []string{extra}
 
 	var buf bytes.Buffer
-	printGjcDryRun(&buf, p)
+	printGjcDryRun(&buf, p, nil)
 	out := buf.String()
 	if !strings.Contains(out, filepath.Join(home, ".gjc")+" (0 session files)") {
 		t.Fatalf("dry-run output = %q, want default home with 0 files", out)
@@ -134,7 +134,7 @@ func TestPrintGjcDryRunReportsDisabledGjcSync(t *testing.T) {
 	p.Options.GjcDirs = []string{t.TempDir()}
 
 	var buf bytes.Buffer
-	printGjcDryRun(&buf, p)
+	printGjcDryRun(&buf, p, nil)
 	if !strings.Contains(buf.String(), "Gjc sync is disabled") {
 		t.Fatalf("dry-run output = %q, want disabled notice", buf.String())
 	}
@@ -150,7 +150,7 @@ func TestPrintOmoDryRunListsFileCount(t *testing.T) {
 	p.Options.OmoSyncEnabled = true
 
 	var buf bytes.Buffer
-	printOmoDryRun(&buf, p)
+	printOmoDryRun(&buf, p, nil)
 	out := buf.String()
 	if !strings.Contains(out, "(1 session files)") {
 		t.Fatalf("dry-run output = %q, want 1 session file", out)
@@ -164,7 +164,7 @@ func TestPrintOmoDryRunSkipsWhenDisabled(t *testing.T) {
 	p.Options.OmoSyncEnabled = false
 
 	var buf bytes.Buffer
-	printOmoDryRun(&buf, p)
+	printOmoDryRun(&buf, p, nil)
 	if buf.Len() != 0 {
 		t.Fatalf("dry-run output = %q, want no output when disabled", buf.String())
 	}

@@ -4,6 +4,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { AuthProvider } from './auth-context';
 import { AccountProvider } from './account-context';
 import { AgentProvider } from './agent-context';
@@ -18,6 +19,8 @@ import {
 } from '@/lib/weekly-query';
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
+  const localOnly = pathname?.replace(/\/+$/, '') === '/local-sessions';
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -51,15 +54,19 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
         },
       }}
     >
-      <AuthProvider>
-        <AccountProvider>
-          <AgentProvider>
-            <AppearanceProvider>
-              <PendingActionProvider>{children}</PendingActionProvider>
-            </AppearanceProvider>
-          </AgentProvider>
-        </AccountProvider>
-      </AuthProvider>
+      {localOnly ? (
+        <AppearanceProvider>{children}</AppearanceProvider>
+      ) : (
+        <AuthProvider>
+          <AccountProvider>
+            <AgentProvider>
+              <AppearanceProvider>
+                <PendingActionProvider>{children}</PendingActionProvider>
+              </AppearanceProvider>
+            </AgentProvider>
+          </AccountProvider>
+        </AuthProvider>
+      )}
     </PersistQueryClientProvider>
   );
 };

@@ -52,14 +52,20 @@ func (s *PgStore) InsertEventsTx(ctx context.Context, tx pgx.Tx, events []*OtelE
 			"cache_read_tokens", "cache_create_tokens", "duration_ms",
 			"tool_name", "tool_decision", "tool_success",
 			"speed", "service_version", "attrs",
-			"agent", "billing_provider",
+			"agent", "billing_provider", "source_envelope",
 		},
 		&eventCopySource{events: events},
 	)
 	if err != nil {
 		return err
 	}
-	return refreshSessionOverviewRollups(ctx, tx, eventSessionIDs(events))
+	sessionIDs := eventSessionIDs(events)
+	if err := refreshSessionOverviewRollups(ctx, tx, sessionIDs); err != nil {
+		return err
+	}
+	// Every event's session, not only api_request's: a session with any OTEL row
+	// is costed from OTEL (p1b-design §4.1).
+	return markSessionFactsDirty(ctx, tx, sessionIDs, nil, dirtyOtel)
 }
 
 func eventSessionIDs(events []*OtelEvent) []string {
@@ -155,11 +161,18 @@ func (cs *eventCopySource) Values() ([]interface{}, error) {
 		e.CacheReadTokens, e.CacheCreateTokens, e.DurationMs,
 		e.ToolName, e.ToolDecision, e.ToolSuccess,
 		e.Speed, e.ServiceVersion, attrs,
-		agent, bp,
+		agent, bp, nullableEnvelope(e.Envelope),
 	}, nil
 }
 
 func (cs *eventCopySource) Err() error { return nil }
+
+func nullableEnvelope(raw json.RawMessage) any {
+	if len(raw) == 0 {
+		return nil
+	}
+	return []byte(raw)
+}
 
 type metricCopySource struct {
 	metrics []*OtelMetric

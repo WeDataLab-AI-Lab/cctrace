@@ -289,6 +289,7 @@ func TestScanFile_TokenUsageRecordForkGateSkipsInheritedHistory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	records = transcriptAndUsage(records)
 	if len(records) != 1 {
 		t.Fatalf("records = %d, want child usage only", len(records))
 	}

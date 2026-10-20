@@ -77,29 +77,58 @@ func TestSyncCmdRoutesFinalizeAction(t *testing.T) {
 }
 
 func TestSyncCmdRoutesReenrichAction(t *testing.T) {
-	resetSyncControlHooks(t)
-	called := false
-	runSyncReenrichFn = func(claudeDir string, profileName string, profileEmail string, endpointOverride string, local bool) error {
-		called = true
-		if claudeDir != "/tmp/claude" || profileName != "work" || profileEmail != "user@example.com" || endpointOverride != "http://sync.example.com" || !local {
-			t.Fatalf("reenrich context mismatch: dir=%q profile=%q email=%q endpoint=%q local=%v", claudeDir, profileName, profileEmail, endpointOverride, local)
+	for _, includeContent := range []bool{false, true} {
+		resetSyncControlHooks(t)
+		called := false
+		runSyncReenrichFn = func(claudeDir string, profileName string, profileEmail string, endpointOverride string, local bool, content bool) error {
+			called = true
+			if claudeDir != "/tmp/claude" || profileName != "work" || profileEmail != "user@example.com" || endpointOverride != "http://sync.example.com" || !local || content != includeContent {
+				t.Fatalf("reenrich context mismatch: dir=%q profile=%q email=%q endpoint=%q local=%v includeContent=%v", claudeDir, profileName, profileEmail, endpointOverride, local, content)
+			}
+			return nil
 		}
+
+		args := []string{
+			"reenrich",
+			"--claude-dir", "/tmp/claude",
+			"--profile", "work",
+			"--profile-email", "user@example.com",
+			"--endpoint", "http://sync.example.com",
+			"--local",
+		}
+		if includeContent {
+			args = append(args, "--include-content")
+		}
+		if err := executeSyncCmdForTest(t, args...); err != nil {
+			t.Fatalf("sync reenrich command (includeContent=%v): %v", includeContent, err)
+		}
+		if !called {
+			t.Fatalf("sync reenrich (includeContent=%v) did not call runSyncReenrich", includeContent)
+		}
+	}
+}
+
+// --include-content means something only to reenrich. Anywhere else it would be
+// a flag that silently does nothing, which a person reaching for it would read
+// as content not being sent -- or as being sent.
+func TestSyncCmdRefusesIncludeContentOutsideReenrich(t *testing.T) {
+	resetSyncControlHooks(t)
+	runSyncFn = func(bool, string, bool, bool, bool, bool, time.Duration, string, string, string, bool, string, bool) error {
+		t.Fatal("sync ran with --include-content")
 		return nil
 	}
-
-	err := executeSyncCmdForTest(t,
-		"reenrich",
-		"--claude-dir", "/tmp/claude",
-		"--profile", "work",
-		"--profile-email", "user@example.com",
-		"--endpoint", "http://sync.example.com",
-		"--local",
-	)
-	if err != nil {
-		t.Fatalf("sync reenrich command: %v", err)
+	runSyncStartFn = func(string, time.Duration, string, string, string, bool) error {
+		t.Fatal("sync start ran with --include-content")
+		return nil
 	}
-	if !called {
-		t.Fatal("sync reenrich did not call runSyncReenrich")
+	for _, args := range [][]string{
+		{"--include-content", "--profile", "work"},
+		{"start", "--include-content"},
+	} {
+		err := executeSyncCmdForTest(t, args...)
+		if err == nil || !strings.Contains(err.Error(), "--include-content") {
+			t.Errorf("sync %v: err = %v, want a refusal naming --include-content", args, err)
+		}
 	}
 }
 
@@ -261,8 +290,11 @@ func TestSyncCmdRoutesExplicitProfileToSingleRun(t *testing.T) {
 }
 
 func TestSyncCmdRejectsUnknownAction(t *testing.T) {
-	err := executeSyncCmdForTest(t, "restart")
-	if err == nil || !strings.Contains(err.Error(), `unknown sync action "restart"`) {
+	useTempSyncHome(t)
+	resetSyncControlHooks(t)
+	spawnSyncProcessFn = func([]string, string) (int, error) { t.Fatal("rejected action launched a sync process"); return 0, nil }
+	err := executeSyncCmdForTest(t, "rewind")
+	if err == nil || !strings.Contains(err.Error(), `unknown sync action "rewind"`) {
 		t.Fatalf("error = %v, want unknown action", err)
 	}
 }

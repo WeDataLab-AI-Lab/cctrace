@@ -46,7 +46,10 @@ func (s *PgStore) TaskSegmentsByType(ctx context.Context, since, until time.Time
 		f.project_hash, COALESCE(NULLIF(MAX(p.project_name), ''), ''),
 		f.tool_call_count, f.tool_fail_count, f.command_count, f.input_tokens, f.output_tokens,
 		`+segmentToolEvidenceColumns+`,
-		EXISTS (SELECT 1 FROM collapsed c WHERE c.session_id = f.session_id) AS timeline_collapsed
+		EXISTS (SELECT 1 FROM collapsed c WHERE c.session_id = f.session_id) AS timeline_collapsed,
+		-- Read in the statement that reads the tokens: step 8 commits its last batch
+		-- with the marker, so the two agree.
+		EXISTS (SELECT 1 FROM schema_backfills WHERE name = $7) AS tokens_ready
 	FROM task_segment_facts f
 	LEFT JOIN projects p ON p.agent = f.agent AND p.project_hash = f.project_hash
 	WHERE f.start_ts >= $1 AND f.start_ts < $2
@@ -60,7 +63,7 @@ func (s *PgStore) TaskSegmentsByType(ctx context.Context, since, until time.Time
 	GROUP BY f.boundary_record_id, f.session_id, f.start_ts, f.end_ts, f.project_hash,
 		f.tool_call_count, f.tool_fail_count, f.command_count, f.input_tokens, f.output_tokens
 	ORDER BY f.start_ts DESC
-	LIMIT $6`, since, until, userID, profileEmail, taskType, taskSegmentsLimit)
+	LIMIT $6`, since, until, userID, profileEmail, taskType, taskSegmentsLimit, taskSegmentTokensRecount)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +73,7 @@ func (s *PgStore) TaskSegmentsByType(ctx context.Context, since, until time.Time
 		v := &TaskSegment{}
 		if err := rows.Scan(&v.SessionID, &v.StartTs, &v.EndTs, &v.ProjectHash, &v.ProjectName,
 			&v.ToolCallCount, &v.ToolFailCount, &v.CommandCount, &v.InputTokens, &v.OutputTokens,
-			&v.ToolEvidence, &v.ToolOutcomeEvidence, &v.TimelineCollapsed); err != nil {
+			&v.ToolEvidence, &v.ToolOutcomeEvidence, &v.TimelineCollapsed, &v.TokensReady); err != nil {
 			return nil, err
 		}
 		page.Segments = append(page.Segments, v)

@@ -34,6 +34,8 @@ import (
 	"cctrace/internal/openairuntime"
 	"cctrace/internal/otelrecv"
 	"cctrace/internal/queue"
+	"cctrace/internal/serverpolicy"
+	"cctrace/internal/sessionrecord"
 	"cctrace/internal/store"
 	"cctrace/internal/web"
 	"cctrace/internal/worker"
@@ -240,6 +242,13 @@ func removeStalePIDFile() {
 }
 
 func main() {
+	if handled, err := handleSessionFactsResetCommand(context.Background(), os.Args[1:], os.Getenv, os.Stdout, runSessionFactsReset); handled {
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "  [X] %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
 	if handled, err := handleProjectIdentityRepairCommand(
 		context.Background(),
 		os.Args[1:],
@@ -610,6 +619,10 @@ func main() {
 	// request, where it took ~100s on production data. It gets its own goroutine so
 	// a long rebuild delays neither the tail refresh above nor the maintenance pass.
 	go runUsageRollupRebuildWorker(ctx, time.After, pg.RunPendingUsageRollupRebuild, log.Printf)
+	if sessionAnalysisEnabled() {
+		go runSessionFactWorker(ctx, pg)
+		go runSessionTraceWorker(ctx, pg)
+	}
 
 	// The blocklist refreshes on its own short tick, separate from the 30-minute
 	// maintenance pass below. A delete made on one cctraced instance has to reach the
@@ -693,6 +706,9 @@ func main() {
 				log.Printf("[codex-attribution] attributed login_email on %d session_records rows", n)
 			}
 		}
+		// Skipped until step 3 of the P1t transition; see claudeImputedRefresher.
+		// One for both call sites below, so a skip is logged once, not per tick.
+		refreshClaudeImputed := claudeImputedRefresher(pg.ClaudeImputedRequestsReady, pg.RefreshClaudeImputedCost, log.Printf)
 		refresh := func() {
 			// One bound for all four passes: separate time.Now() calls would give the
 			// later passes a window the earlier ones did not see.
@@ -707,9 +723,7 @@ func main() {
 			if err := pg.RefreshModelRateBuckets(ctx); err != nil {
 				log.Printf("[model-rates] bucket refresh: %v", err)
 			}
-			if err := pg.RefreshClaudeImputedCost(ctx); err != nil {
-				log.Printf("[imputed-cost] refresh: %v", err)
-			}
+			refreshClaudeImputed(ctx)
 			// Full codex rebuild. The 10s incremental below only sees rows newer
 			// than the table, so it misses rows rewritten in place (sync --reenrich)
 			// and repricing caused by a new codex_model_rates entry. This corrects both.
@@ -789,9 +803,7 @@ func main() {
 		if err := pg.RefreshModelRateBuckets(ctx); err != nil {
 			log.Printf("[model-rates] bucket refresh: %v", err)
 		}
-		if err := pg.RefreshClaudeImputedCost(ctx); err != nil {
-			log.Printf("[imputed-cost] refresh: %v", err)
-		}
+		refreshClaudeImputed(ctx)
 		// Once at boot too (#715): links for addresses excluded before this
 		// version existed are otherwise first drawn by the tick 30 minutes in,
 		// and until then the dashboard shows those accounts' rows again.
@@ -874,6 +886,21 @@ func main() {
 					log.Printf("[task-segments] late-OTEL reconciliation: %v", err)
 				} else if n > 0 {
 					log.Printf("[task-segments] recomputed %d session(s) whose tool events arrived late", n)
+				}
+				// The observation tables are plain tables with no Timescale policy
+				// to do this, so their retention is this delete: the history by the
+				// shorter of its own window and the session_records retention, and
+				// snapshots and live states by the session_records retention while
+				// one is set. Every tick, not every 30 minutes: each run then
+				// removes only the minute that just crossed the cutoff, and a
+				// history run with nothing to do is one index probe.
+				if n, err := pg.PruneSessionObservations(ctx, time.Now().Add(-store.SessionObservationEventRetention)); err != nil {
+					log.Printf("[session-observations] prune: %v", err)
+				} else if n > 0 {
+					log.Printf("[session-observations] pruned %d row(s) past retention", n)
+				}
+				if _, err := pg.PrunePersonalState(ctx); err != nil {
+					log.Printf("[personal-state] prune: %v", err)
 				}
 			}
 		}
@@ -1033,7 +1060,7 @@ func main() {
 	}()
 
 	// HTTP server — REST API (reads from store)
-	apiSrv := api.NewServer(pg, jwtMgr, authn.HTTPMiddleware).WithSetupToken(setupToken).WithAllowedOrigins(allowedOrigins).WithCookieSecure(cookieSecure).WithIngestBlocklist(blocklist).WithIngestBlocklistLoader(loadBlocklist).WithSyncBodyLimit(envSyncBodyLimit()).WithAliases(aliasLoader).WithVersion(version).WithDataPath(envOr("STORAGE_VOLUME_PATH", walDir)).WithHealthExtra(func(ctx context.Context) (map[string]interface{}, error) {
+	apiSrv := newAPIServer(pg, jwtMgr, authn).WithSetupToken(setupToken).WithAllowedOrigins(allowedOrigins).WithCookieSecure(cookieSecure).WithIngestBlocklist(blocklist).WithIngestBlocklistLoader(loadBlocklist).WithSyncBodyLimit(envSyncBodyLimit()).WithAliases(aliasLoader).WithVersion(version).WithSessionAnalysisEnabled(sessionAnalysisEnabled()).WithSessionRecordsEnabled(sessionRecordsFeatureEnabled()).WithDataPath(envOr("STORAGE_VOLUME_PATH", walDir)).WithHealthExtra(func(ctx context.Context) (map[string]interface{}, error) {
 		logDepth, err := q.Depth(ctx, queue.QueueOtelLogs)
 		if err != nil {
 			return nil, fmt.Errorf("log queue depth: %w", err)
@@ -1060,14 +1087,33 @@ func main() {
 		}, nil
 	})
 
+	// Weekly AI reports and session records share API runtimes and the keyring.
+	// The transport gate is inert for ordinary report runs and is attached to a
+	// session-record context only immediately before an external request.
+	aiConfig := aiEnvFromEnv(envOr("STORAGE_VOLUME_PATH", walDir))
+	recordGate := &sessionrecord.TransmissionGate{}
+	aiHTTPClient := &http.Client{Transport: sessionrecord.GatedRoundTripper{Base: http.DefaultTransport}}
 	// Weekly AI reports. Runs a previous process left running are failed before
 	// the routes can report them as still in progress.
-	aiSvc := newAIReportService(pg, aiEnvFromEnv(envOr("STORAGE_VOLUME_PATH", walDir)))
+	aiSvc := newAIReportService(pg, aiConfig, aiHTTPClient)
 	if aiSvc != nil {
 		if err := aiSvc.RecoverOnBoot(ctx); err != nil {
 			log.Printf("[cctraced] AI report boot recovery: %v", err)
 		}
+		// Before the routes and the ticker exist, so no run starts under the
+		// server's default while an admin's saved limit is still unread.
+		if err := aiSvc.LoadRunLimit(ctx); err != nil {
+			log.Printf("[cctraced] AI report run limit: %v; using the server default", err)
+		}
 		apiSrv.WithAIReports(aiSvc)
+		recordWorker := sessionrecord.NewWorker(pg, sessionRecordRuntimeResolver{ai: aiSvc, store: pg}, sessionRecordsFeatureEnabled(), recordGate).
+			WithUserIDAccessControl(os.Getenv("CCTRACE_USERID_ACCESS_CONTROL") != "false").WithDefaultTimezone(aiConfig.DefaultTZ)
+		apiSrv.WithSessionRecordWorker(recordWorker).WithSessionRecordGate(recordGate)
+		go func() {
+			if err := recordWorker.Run(ctx); err != nil && ctx.Err() == nil {
+				log.Printf("[session-records] worker stopped: %v", err)
+			}
+		}()
 
 		// Weekly reports that run by themselves. A firing is a weekday and a
 		// wall-clock minute in each user's own zone, so the tick is a minute:
@@ -1096,6 +1142,7 @@ func main() {
 	// Combined mux: /api/* → REST API, /downloads/* → client binaries, everything else → embedded SPA
 	rootMux := http.NewServeMux()
 	rootMux.Handle("/api/", apiSrv.Handler())
+	registerServerPolicyRoute(rootMux, os.Getenv("CCTRACE_SERVER_POLICY_FILE"))
 	rootMux.Handle("/downloads/", downloadHandler("/downloads"))
 	rootMux.Handle("/", web.Handler())
 
@@ -1195,6 +1242,12 @@ func main() {
 				log.Printf("[cctraced] login_email_source backfill: %v", err)
 			}
 		},
+		func(ctx context.Context) {
+			// The P1t transition (p1t-design §4). Last: its first step archives the
+			// usage rollups the backfill above builds, and a failing step is retried
+			// here until it succeeds, which must hold up no other repair.
+			runRequestSetMigration(ctx, pg.RequestSetMigrationSteps(), time.Now, time.After, log.Printf)
+		},
 	)
 
 	// Graceful shutdown
@@ -1274,11 +1327,26 @@ func validateAuthConfiguration(jwtSecret, secretsKey string) error {
 	return errors.Join(errs...)
 }
 
+// newAPIServer is the REST API server behind its ingest authentication. The
+// session observation route binds rows to a per-user token's account, and it
+// learns which token that is from the middleware: authn leaves a per-user token
+// it accepted in the request context and nothing for the global API key, which
+// names no account. The route never sees the key, so a global-key request keeps
+// the payload's identity instead of being looked up, found to belong to no one,
+// and refused with a 503.
+func newAPIServer(st store.Store, jwtMgr *auth.JWTManager, authn *auth.Authenticator) *api.Server {
+	return api.NewServer(st, jwtMgr, authn.HTTPMiddleware)
+}
+
 func authenticatedOTLPHandler(next http.Handler, authenticator *auth.Authenticator) http.Handler {
 	if !authenticator.Enabled() {
 		return next
 	}
 	return authenticator.HTTPMiddleware(next)
+}
+
+func registerServerPolicyRoute(mux *http.ServeMux, path string) {
+	mux.Handle("/api/client-config-policy", serverpolicy.Handler(path))
 }
 
 func newHTTPServer(addr string, handler http.Handler) *http.Server {
@@ -1469,9 +1537,13 @@ func aiEnvFromEnv(storageDir string) aiEnv {
 		env.Enabled = &on
 	}
 	if n := envIntOpt("CCTRACE_AI_MAX_CONCURRENT"); n != nil {
-		if *n > 0 {
+		switch {
+		case *n > aireport.MaxConcurrentLimit:
+			env.MaxConcurrent = aireport.MaxConcurrentLimit
+			log.Printf("[cctraced] CCTRACE_AI_MAX_CONCURRENT=%d is above %d; using %d", *n, aireport.MaxConcurrentLimit, env.MaxConcurrent)
+		case *n > 0:
 			env.MaxConcurrent = *n
-		} else {
+		default:
 			log.Printf("[cctraced] CCTRACE_AI_MAX_CONCURRENT=%d is not positive; using %d", *n, env.MaxConcurrent)
 		}
 	}
@@ -1544,9 +1616,13 @@ func savedBaseURL(st aireport.Store, runtime, envURL string) func(context.Contex
 	}
 }
 
-func aiRuntimesFromEnv(env aiEnv, kr *aireport.Keyring, st aireport.Store) ([]airuntime.Runtime, map[string]string) {
+func aiRuntimesFromEnv(env aiEnv, kr *aireport.Keyring, st aireport.Store, clients ...*http.Client) ([]airuntime.Runtime, map[string]string) {
 	var rts []airuntime.Runtime
 	missing := map[string]string{}
+	var httpClient *http.Client
+	if len(clients) > 0 {
+		httpClient = clients[0]
+	}
 	switch newCodexRuntime {
 	case nil:
 		missing[aireport.DefaultRuntimeKey] = "이 빌드에는 Codex 드라이버가 없습니다"
@@ -1560,8 +1636,8 @@ func aiRuntimesFromEnv(env aiEnv, kr *aireport.Keyring, st aireport.Store) ([]ai
 		}
 	}
 	rts = append(rts,
-		openairuntime.New(openairuntime.Config{APIKey: kr.APIKey(aireport.ProviderOpenAI)}),
-		clauderuntime.New(clauderuntime.Config{APIKey: kr.APIKey(aireport.ProviderAnthropic)}),
+		openairuntime.New(openairuntime.Config{APIKey: kr.APIKey(aireport.ProviderOpenAI), HTTPClient: httpClient}),
+		clauderuntime.New(clauderuntime.Config{APIKey: kr.APIKey(aireport.ProviderAnthropic), HTTPClient: httpClient}),
 		// One implementation serves both: they differ only by base URL and key,
 		// so RuntimeKey is what makes each answer to its own name.
 		//
@@ -1576,6 +1652,7 @@ func aiRuntimesFromEnv(env aiEnv, kr *aireport.Keyring, st aireport.Store) ([]ai
 			RuntimeKey:   aireport.RuntimeNVIDIA,
 			BaseURL:      func(context.Context) (string, error) { return nvidiaBaseURL, nil },
 			ProviderName: aireport.ProviderNVIDIA,
+			HTTPClient:   httpClient,
 		}),
 	)
 	// LiteLLM is self-hosted and its address is the one setting an admin types
@@ -1587,13 +1664,14 @@ func aiRuntimesFromEnv(env aiEnv, kr *aireport.Keyring, st aireport.Store) ([]ai
 		RuntimeKey:   aireport.RuntimeLiteLLM,
 		BaseURL:      savedBaseURL(st, aireport.RuntimeLiteLLM, env.LiteLLMBaseURL),
 		ProviderName: aireport.ProviderLiteLLM,
+		HTTPClient:   httpClient,
 	}))
 	return rts, missing
 }
 
 // newAIReportService returns nil when st lacks the AI report tables' methods,
 // in which case every AI report route answers runtime_unconfigured.
-func newAIReportService(st any, env aiEnv) *aireport.Service {
+func newAIReportService(st any, env aiEnv, clients ...*http.Client) *aireport.Service {
 	aiStore, ok := st.(aireport.Store)
 	if !ok {
 		log.Printf("[cctraced] store has no AI report storage; AI report routes answer runtime_unconfigured")
@@ -1615,7 +1693,7 @@ func newAIReportService(st any, env aiEnv) *aireport.Service {
 	if reason := kr.SecretsReason(); reason != "" {
 		log.Printf("[cctraced] WARNING: API keys cannot be registered in Admin > AI: CCTRACE_SECRETS_KEY (or JWT_SECRET when unset) must be at least %d bytes", aireport.MinSecretBytes)
 	}
-	rts, missing := aiRuntimesFromEnv(env, kr, aiStore)
+	rts, missing := aiRuntimesFromEnv(env, kr, aiStore, clients...)
 	for key, reason := range missing {
 		log.Printf("[cctraced] AI runtime %s not built: %s", key, reason)
 	}

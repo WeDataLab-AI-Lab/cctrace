@@ -286,6 +286,98 @@ func (s *PgStore) ReconcileSessionOverviewRollupsForRetention(ctx context.Contex
 	if err := refreshSessionOverviewRollups(ctx, tx, ids); err != nil {
 		return 0, err
 	}
+	// Session analysis facts follow the run that dropped their rows (p1b-design
+	// §6.3), committed with the state rows below so the worker's publish, which
+	// compares those rows with what its computation read, cannot slip between.
+	//
+	// A session_records run removes the facts that read a row older than its own
+	// cutoff -- not the latest cutoff of all runs above, which on an OTEL run alone
+	// would take facts whose records are all still there. first_record_at, unlike
+	// min(ts), skips the 1970 metadata rows. Their source rows already gone, the
+	// neighbours come from the markers that remain; markers left pointing at a
+	// dropped row are deleted after, as the imputed-cost orphans are above, and
+	// only then: no other run drops a record.
+	//
+	// An otel_events run takes no fact. It queues the OTEL-costed sessions whose
+	// activity began before the oldest OTEL row left: their cost lost rows.
+	var removed, otelCosted []string
+	recordsRun := false
+	for _, run := range completed {
+		if run.table != "session_records" {
+			continue
+		}
+		recordsRun = true
+		if removed, err = querySessionIDs(ctx, tx,
+			`SELECT session_id FROM session_analysis_facts WHERE first_record_at < $1`, run.cutoff); err != nil {
+			return 0, err
+		}
+		// Facts can be rebuilt from the surviving tail between the database's
+		// chunk drop and this reconciliation. Their first_record_at then moves
+		// forward, so retain the source boundary on each derived record as a
+		// second deletion key.
+		aiRecordIDs, queryErr := querySessionIDs(ctx, tx,
+			`SELECT session_id FROM session_ai_records WHERE source_first_at < $1`, run.cutoff)
+		if queryErr != nil {
+			return 0, queryErr
+		}
+		removed = append(removed, aiRecordIDs...)
+	}
+	neighbours, err := takeCopyMarkers(ctx, tx, removed)
+	if err != nil {
+		return 0, err
+	}
+	var orphanCopySessions []string
+	if recordsRun {
+		orphanCopySessions, err = querySessionIDs(ctx, tx, `SELECT c.session_id FROM session_record_copies c WHERE NOT EXISTS (
+			SELECT 1 FROM session_records sr WHERE sr.id=c.srec_id)`)
+		if err != nil {
+			return 0, err
+		}
+		if _, err := tx.Exec(ctx, `DELETE FROM session_record_copies c WHERE NOT EXISTS (
+			SELECT 1 FROM session_records sr WHERE sr.id = c.srec_id)`); err != nil {
+			return 0, err
+		}
+	}
+	neighbours = append(neighbours, orphanCopySessions...)
+	if err := deleteSessionFacts(ctx, tx, removed); err != nil {
+		return 0, err
+	}
+	for _, run := range completed {
+		if run.table != "otel_events" {
+			continue
+		}
+		// An emptied table has no oldest row, and then every OTEL-costed session
+		// lost its cost rows.
+		if otelCosted, err = querySessionIDs(ctx, tx, `SELECT session_id FROM session_analysis_facts
+			WHERE cost_source IN ('otel', 'otel_partial') AND first_activity_at < COALESCE($1::timestamptz, 'infinity')`,
+			run.oldest); err != nil {
+			return 0, err
+		}
+	}
+	// Any completed run also restarts the clock of the queue rows older than the
+	// latest cutoff above, the shortest retention it enforces. With the worker off
+	// a queue row stays until someone empties the table, its first_dirty_at is a
+	// time its owner was at work in the session, and a retention run must not
+	// leave in the queue a time older than the retention it enforces -- for an
+	// OTEL-only session that time lives nowhere else but in otel_events. They are
+	// bumped under the clock restart (dirtyClockRestart): past the reason bit and
+	// new generation of any bump, first_dirty_at and not_before become now, a
+	// retry_at already past goes, and nothing more. The row keeps its priority,
+	// no removal is recorded, and their facts and markers stay, as their source
+	// rows may all still be there. Read here and written through the ordered
+	// queue write, never by an UPDATE of its own, so their rows are locked in the
+	// one order every queue write keeps (F3).
+	stale, err := querySessionIDs(ctx, tx, `SELECT session_id FROM session_fact_dirty WHERE first_dirty_at < $1`, cutoff)
+	if err != nil {
+		return 0, err
+	}
+	if err := markSessionFactsDirtyInOrder(ctx, tx,
+		dirtyGroup{ids: removed, reason: dirtyRetention},
+		dirtyGroup{ids: neighbours, reason: dirtyDeletionPeer},
+		dirtyGroup{ids: otelCosted, reason: dirtyOtel},
+		dirtyGroup{ids: stale, reason: dirtyClockRestart}); err != nil {
+		return 0, err
+	}
 	for _, run := range completed {
 		if _, err := tx.Exec(ctx, `INSERT INTO session_overview_retention_state
 			(table_name, last_run_finished, oldest_source_ts) VALUES ($1, $2, $3)

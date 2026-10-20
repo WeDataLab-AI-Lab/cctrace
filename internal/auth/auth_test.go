@@ -377,6 +377,46 @@ func TestGRPCInterceptorCarriesNothingForTheGlobalAPIKey(t *testing.T) {
 	}
 }
 
+// The HTTP middleware carries an accepted per-user token forward as the gRPC
+// interceptor does, so an ingest route binds rows to the token this check
+// accepted instead of parsing the header again (#535). The global key names no
+// user, and the health endpoint and disabled authentication authenticate
+// nothing, so none of them leaves a token, whatever the header says.
+func TestHTTPMiddlewareCarriesOnlyAVerifiedPerUserTokenForward(t *testing.T) {
+	validator := WithTokenValidator(func(_ context.Context, token string) (bool, error) {
+		return token == "good-token", nil
+	})
+	for _, tc := range []struct {
+		name  string
+		authn *Authenticator
+		path  string
+		token string
+		want  string
+	}{
+		{"per-user token", New("shared-key", validator), "/api/session-observations", "good-token", "good-token"},
+		{"global key", New("shared-key", validator), "/api/session-observations", "shared-key", ""},
+		{"health endpoint", New("shared-key", validator), "/api/health", "good-token", ""},
+		{"authentication disabled", New(""), "/api/session-observations", "good-token", ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			reached, seen := false, ""
+			h := tc.authn.HTTPMiddleware(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+				reached = true
+				seen = IngestTokenFromContext(r.Context())
+			}))
+			req := httptest.NewRequest(http.MethodPost, tc.path, nil)
+			req.Header.Set("Authorization", "Bearer "+tc.token)
+			h.ServeHTTP(httptest.NewRecorder(), req)
+			if !reached {
+				t.Fatal("middleware refused the request")
+			}
+			if seen != tc.want {
+				t.Errorf("handler saw token %q, want %q", seen, tc.want)
+			}
+		})
+	}
+}
+
 // A handler that must refuse the CLI token has to know which credential signed
 // the request in: both paths put the same user in the context.
 func TestDashboardMiddleware_RecordsTokenAuth(t *testing.T) {

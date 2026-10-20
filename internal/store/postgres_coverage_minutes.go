@@ -29,13 +29,17 @@ const CoverageMinutesFreshWindow = 2 * time.Hour
 const coverageMinutesDeleteAllSQL = `DELETE FROM coverage_measured_minutes`
 const coverageMinutesDeleteSQL = `DELETE FROM coverage_measured_minutes WHERE minute >= $1`
 
-// Built from visible_events, so the session-level exclusions it applies are
-// baked in at refresh time. The two ACCOUNT-level exclusions are deliberately
-// not baked in: the reader applies them at read time, so an account excluded
-// today leaves the measured side at once rather than at the next refresh -- and
-// it has to, because the readings side excludes it at once too, and an estimate
-// whose numerator and denominator disagree about who counts is worse than a
-// slow one.
+// Built from visible_events, so the three account-key exclusions it applies
+// (excludedAccountPredicateSQL) are baked in at refresh time, into the minutes
+// the refresh rewrites. The reader filters excluded_accounts once more, so an
+// address excluded today leaves the measured side at once rather than at the next
+// refresh -- and it has to, because the readings side excludes it at once too,
+// and an estimate whose numerator and denominator disagree about who counts is
+// worse than a slow one. Minutes stored before an exclusion stay, hidden at read
+// time, until a full recount drops them (step 6 of the P1t transition); minutes a
+// refresh dropped come back after the exclusion is lifted only as far back as the
+// next refresh reaches, the older ones at the next full recount if their source
+// is still there (p1t-design §6.5).
 const coverageMinutesInsertSQL = `
 INSERT INTO coverage_measured_minutes (login_email, minute, tokens, chart_tokens, cost_usd)
 SELECT lower(login_email), date_trunc('minute', ts),
@@ -69,6 +73,14 @@ func (s *PgStore) RefreshCoverageMeasuredMinutes(ctx context.Context, from *time
 }
 
 func refreshCoverageMeasuredMinutes(ctx context.Context, tx pgx.Tx, from *time.Time) error {
+	// Writers take turns, first thing, as the hourly rollup's do. Each deletes a
+	// range and reinserts it, and two overlapping collide on the primary key: the
+	// second DELETE cannot see rows the first inserted after its snapshot, so its
+	// INSERT fails 23505. The 60s tail, the 72h window, the boot backfill and step 6
+	// of the P1t transition all write here.
+	if err := lockCoverageMeasuredMinutesWriters(ctx, tx); err != nil {
+		return err
+	}
 	if from == nil {
 		if _, err := tx.Exec(ctx, coverageMinutesDeleteAllSQL); err != nil {
 			return fmt.Errorf("delete coverage measured minutes: %w", err)
@@ -84,6 +96,20 @@ func refreshCoverageMeasuredMinutes(ctx context.Context, tx pgx.Tx, from *time.T
 	}
 	if _, err := tx.Exec(ctx, fmt.Sprintf(coverageMinutesInsertSQL, "AND ts >= $1"), start); err != nil {
 		return fmt.Errorf("insert coverage measured minutes: %w", err)
+	}
+	return nil
+}
+
+// lockCoverageMeasuredMinutesWriters takes the lock the writers of
+// coverage_measured_minutes take turns on (refreshCoverageMeasuredMinutes says
+// why). A key of its own, not usage_hourly_rollups_writers: sharing one would only
+// share a database lock for no need (p1t-design §6.5). The periodic ticks call
+// coverage right after hourly, so a coverage refresh still starts late whenever
+// the hourly one before it waits. It is a transaction-level advisory lock, so a
+// transaction that already holds it is granted it again at once.
+func lockCoverageMeasuredMinutesWriters(ctx context.Context, tx pgx.Tx) error {
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext('coverage_measured_minutes_writers'))`); err != nil {
+		return fmt.Errorf("lock coverage measured minutes: %w", err)
 	}
 	return nil
 }

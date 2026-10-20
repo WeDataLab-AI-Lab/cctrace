@@ -19,7 +19,9 @@ import (
 
 // codexImputedSelect is the imputation itself, shared by both refresh paths so they
 // cannot compute different numbers. $1, when not null, restricts the rebuild to one
-// set of sessions; the full path passes null.
+// set of sessions; the full path passes null. $2, when not null, is the id ceiling.
+// The rows it prices are codexUsageRowsSQL's, which carries the mirror and
+// repeated-snapshot defences (request_set_sql.go).
 //
 // Two things this deliberately keeps from the old view:
 //
@@ -37,7 +39,7 @@ import (
 //
 // What it drops is the day-model fallback for rows with an empty model. Those 26
 // legacy rows now carry a real model, frozen in by migration -- see migrations.go.
-const codexImputedSelect = `
+var codexImputedSelect = `
 SELECT sr.id, sr.session_id, sr.ts, COALESCE(sr.user_id,''), sr.profile_email, COALESCE(sr.login_email,''),
 	COALESCE(sr.model,''),
 	(GREATEST(COALESCE(sr.input_tokens,0) - COALESCE(sr.cache_read_tokens,0), 0) * COALESCE(rate.input_rate, 0)
@@ -50,34 +52,7 @@ SELECT sr.id, sr.session_id, sr.ts, COALESCE(sr.user_id,''), sr.profile_email, C
 	-- Carried through so unified_events can attribute a codex row without
 	-- re-joining session_records, which would double-count this arm.
 	COALESCE(sr.account_id,'')
-FROM (
-	SELECT
-		sr.*,
-		sr.raw #>> '{payload,info,total_token_usage,input_tokens}' AS total_usage_input_tokens,
-		sr.raw #>> '{payload,info,total_token_usage,cached_input_tokens}' AS total_usage_cached_input_tokens,
-		sr.raw #>> '{payload,info,total_token_usage,output_tokens}' AS total_usage_output_tokens,
-		LAG(sr.raw #>> '{payload,info,total_token_usage,input_tokens}') OVER (
-			PARTITION BY sr.session_id, sr.profile_email ORDER BY sr.ts, sr.id
-		) AS prev_total_usage_input_tokens,
-		LAG(sr.raw #>> '{payload,info,total_token_usage,cached_input_tokens}') OVER (
-			PARTITION BY sr.session_id, sr.profile_email ORDER BY sr.ts, sr.id
-		) AS prev_total_usage_cached_input_tokens,
-		LAG(sr.raw #>> '{payload,info,total_token_usage,output_tokens}') OVER (
-			PARTITION BY sr.session_id, sr.profile_email ORDER BY sr.ts, sr.id
-		) AS prev_total_usage_output_tokens,
-		-- When did this session first write a token_usage_record? Same partition as
-		-- the LAG above, and exact on both paths: the full rebuild passes no session
-		-- filter, and the incremental path recomputes whole sessions rather than
-		-- individual rows, so the window always sees the session's entire history.
-		MIN(sr.ts) FILTER (WHERE sr.raw->>'type' = 'token_usage_record') OVER (
-			PARTITION BY sr.session_id, sr.profile_email
-		) AS first_token_usage_record_ts
-	FROM session_records sr
-	WHERE sr.agent = 'codex' AND sr.record_type = 'usage'
-		AND NOT EXISTS (SELECT 1 FROM deleted_sessions d WHERE d.session_id = sr.session_id)
-		AND ($1::text[] IS NULL OR sr.session_id = ANY($1::text[]))
-		AND ($2::bigint IS NULL OR sr.id <= $2::bigint)
-) sr
+FROM (` + codexUsageRowsSQL("$1::text[]", "$2::bigint") + `) sr
 LEFT JOIN LATERAL (
 	SELECT input_rate, output_rate, cache_read_rate
 	FROM codex_model_rates cmr
@@ -85,42 +60,7 @@ LEFT JOIN LATERAL (
 		AND cmr.effective_from <= sr.ts::date
 	ORDER BY LENGTH(cmr.model_prefix) DESC, cmr.effective_from DESC
 	LIMIT 1
-) rate ON TRUE
--- A token_count event that follows a token_usage_record is that record's mirror.
--- Counting both doubles the session, and on a resumed session it does far worse:
--- thread_token_usage restarts at the resume while total_token_usage keeps counting
--- the whole file, so the gap is emitted as usage. One production session turned
--- eleven minutes into 1.49 billion input tokens and $24,572 (#685).
---
--- The client stopped emitting these in v0.7.51, and this guard exists anyway. The
--- fleet is never uniform: one account was observed writing from v0.7.41 and v0.7.50
--- at the same time for thirty hours, because a binary replaced on disk left a
--- resident process running (#623). A server that trusts every client to be current
--- is trusting something no deploy can make true.
---
--- Events *before* the first record still count. The client's own guard turns on when
--- it reads that line, so a file that opened with token_count events and only later
--- started writing records had those early events counted legitimately.
--- COALESCE, not a bare comparison: a token_usage_record line carries no
--- payload.type, so the operand is NULL, comparing NULL to a string yields NULL, and
--- NOT(NULL) is NULL -- which excludes the row. The first version of this guard
--- dropped the very records it was written to protect.
-WHERE NOT (
-	COALESCE(sr.raw #>> '{payload,type}', '') = 'token_count'
-	AND sr.first_token_usage_record_ts IS NOT NULL
-	AND sr.ts >= sr.first_token_usage_record_ts
-)
-AND NOT (
-	sr.total_usage_input_tokens IS NOT NULL
-	AND sr.total_usage_cached_input_tokens IS NOT NULL
-	AND sr.total_usage_output_tokens IS NOT NULL
-	AND sr.prev_total_usage_input_tokens IS NOT NULL
-	AND sr.prev_total_usage_cached_input_tokens IS NOT NULL
-	AND sr.prev_total_usage_output_tokens IS NOT NULL
-	AND sr.total_usage_input_tokens = sr.prev_total_usage_input_tokens
-	AND sr.total_usage_cached_input_tokens = sr.prev_total_usage_cached_input_tokens
-	AND sr.total_usage_output_tokens = sr.prev_total_usage_output_tokens
-)`
+) rate ON TRUE`
 
 const codexImputedColumns = `(srec_id, session_id, ts, user_id, profile_email, login_email, model, cost_usd,
 	 input_tokens, output_tokens, cache_read_tokens, cache_create_tokens, agent, billing_provider, account_id)`
@@ -147,6 +87,9 @@ func (s *PgStore) RefreshCodexImputedCost(ctx context.Context) error {
 	if err := refreshSessionOverviewRollups(ctx, tx, affected); err != nil {
 		return err
 	}
+	if err := markSessionFactsDirty(ctx, tx, affected, nil, dirtyImputed); err != nil {
+		return err
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return err
 	}
@@ -155,8 +98,8 @@ func (s *PgStore) RefreshCodexImputedCost(ctx context.Context) error {
 }
 
 // refreshCodexImputedCostTx is the rebuild itself, inside a transaction the caller
-// owns, returning the sessions whose imputed rows it may have moved so the caller
-// can refresh their derived rows.
+// owns, returning sessions whose per-request rows changed so the caller can refresh
+// their rollups and queue session analysis.
 //
 // Taking the shared source-mutation lock is left to the caller. RefreshCodexImputedCost
 // takes it immediately above; the #524 repair's completion batch is already holding
@@ -185,19 +128,34 @@ func refreshCodexImputedCostTx(ctx context.Context, tx pgx.Tx) ([]string, error)
 		WHERE agent = 'codex' AND record_type = 'usage'`).Scan(&ceiling); err != nil {
 		return nil, err
 	}
+	if _, err := tx.Exec(ctx, `CREATE TEMP TABLE codex_imputed_refresh ON COMMIT DROP AS
+		SELECT * FROM codex_imputed_cost WITH NO DATA`); err != nil {
+		return nil, err
+	}
+	if _, err := tx.Exec(ctx, `INSERT INTO codex_imputed_refresh `+codexImputedColumns+codexImputedSelect, nil, ceiling); err != nil {
+		return nil, err
+	}
+	if _, err := tx.Exec(ctx, `CREATE TEMP TABLE codex_imputed_changed ON COMMIT DROP AS
+		SELECT COALESCE(old.srec_id, new.srec_id) AS srec_id
+		FROM codex_imputed_cost old FULL JOIN codex_imputed_refresh new USING (srec_id)
+		WHERE old.srec_id IS NULL OR new.srec_id IS NULL OR to_jsonb(old) IS DISTINCT FROM to_jsonb(new)`); err != nil {
+		return nil, err
+	}
 	affected, err := querySessionIDs(ctx, tx, `
-		SELECT session_id FROM codex_imputed_cost WHERE session_id <> ''
-		UNION
-		SELECT session_id FROM session_records
-		WHERE agent = 'codex' AND record_type = 'usage' AND session_id <> ''`)
+		SELECT DISTINCT affected.session_id
+		FROM codex_imputed_changed changed
+		LEFT JOIN codex_imputed_cost old USING (srec_id)
+		LEFT JOIN codex_imputed_refresh new USING (srec_id)
+		CROSS JOIN LATERAL unnest(ARRAY[old.session_id,new.session_id]) affected(session_id)
+		WHERE affected.session_id <> ''`)
 	if err != nil {
 		return nil, err
 	}
-
-	if _, err := tx.Exec(ctx, `DELETE FROM codex_imputed_cost`); err != nil {
+	if _, err := tx.Exec(ctx, `DELETE FROM codex_imputed_cost old USING codex_imputed_changed changed WHERE old.srec_id=changed.srec_id`); err != nil {
 		return nil, err
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO codex_imputed_cost `+codexImputedColumns+codexImputedSelect, nil, ceiling); err != nil {
+	if _, err := tx.Exec(ctx, `INSERT INTO codex_imputed_cost SELECT new.* FROM codex_imputed_refresh new
+		JOIN codex_imputed_changed changed USING (srec_id)`); err != nil {
 		return nil, err
 	}
 	var next int64
@@ -317,6 +275,9 @@ func (s *PgStore) RefreshCodexImputedCostIncremental(ctx context.Context) (int, 
 		return 0, err
 	}
 	if err := refreshSessionOverviewRollups(ctx, tx, sessions); err != nil {
+		return 0, err
+	}
+	if err := markSessionFactsDirty(ctx, tx, sessions, nil, dirtyImputed); err != nil {
 		return 0, err
 	}
 	if err := tx.Commit(ctx); err != nil {

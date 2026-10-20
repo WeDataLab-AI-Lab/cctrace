@@ -58,3 +58,15 @@ describe('Sidebar while the password is temporary', () => {
     expect(markup).toContain('href="/settings"');
   });
 });
+
+it('retains accessible icon navigation and tooltips in the collapsed rail', () => {
+  authMock.mustChangePassword = false;
+  const markup = renderToStaticMarkup(createElement(Sidebar, { collapsed: true }));
+  expect(markup).toContain('data-collapsed="true"');
+  expect(markup).toContain('min-w-16');
+  expect(markup).not.toContain('min-w-[248px]');
+  expect(markup).toContain('href="/sessions"');
+  expect(markup).toContain('aria-label="Sessions"');
+  expect(markup).toContain('title="Sessions"');
+  expect(markup).toContain('sr-only');
+});

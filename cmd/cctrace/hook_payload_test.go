@@ -9,12 +9,12 @@ import (
 	"cctrace/internal/syncer"
 )
 
-// Claude Code hands a SessionStart hook a small JSON object on stdin, and its
-// transcript_path is the session that is running right now. That is the one file
-// the first-run skip must not swallow: the skip exists to avoid backfilling
-// history from before the install, and the session the user is sitting in is not
-// history. Everything else on disk still gets skipped.
-func TestParseHookTranscriptPath(t *testing.T) {
+// Claude Code hands a hook a small JSON object on stdin. A SessionStart's
+// transcript_path is the session that is running right now -- the one file the
+// first-run skip must not swallow, since the skip exists to avoid backfilling
+// history from before the install. A SessionEnd's session_id and reason are what
+// the pending session end records.
+func TestParseHookPayload(t *testing.T) {
 	// Built from t.TempDir so the "absolute" case is absolute on the platform the
 	// test runs on. A hardcoded POSIX path is not absolute on Windows, and the
 	// daemon reads paths produced by the same OS it runs on — pinning one syntax
@@ -31,7 +31,7 @@ func TestParseHookTranscriptPath(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
-		want  string
+		want  hookPayload
 	}{
 		{
 			name: "SessionStart payload",
@@ -39,40 +39,61 @@ func TestParseHookTranscriptPath(t *testing.T) {
 				"session_id": "abc", "transcript_path": abs,
 				"cwd": "/work", "hook_event_name": "SessionStart", "source": "startup",
 			}),
-			want: abs,
+			want: hookPayload{TranscriptPath: abs, SessionID: "abc", HookEventName: "SessionStart", CWD: "/work"},
 		},
-		// Everything below must yield "" rather than an error. This runs on the
-		// hook path where nothing may fail loudly: a daemon that refuses to start
-		// because stdin looked odd is a worse outcome than one that starts without
-		// the exemption.
-		{name: "empty stdin", input: "", want: ""},
-		{name: "not json", input: "hello\n", want: ""},
-		{name: "json without the field", input: `{"session_id":"abc"}`, want: ""},
-		{name: "field is not a string", input: `{"transcript_path":42}`, want: ""},
-		{name: "field is empty", input: `{"transcript_path":""}`, want: ""},
 		{
-			name:  "relative path is refused",
-			input: payload(map[string]any{"transcript_path": filepath.Join("projects", "a.jsonl")}),
-			want:  "",
+			name: "SessionEnd payload",
+			input: payload(map[string]any{
+				"session_id": "abc", "transcript_path": abs, "cwd": "/work",
+				"hook_event_name": "SessionEnd", "reason": "prompt_input_exit", "permission_mode": "default",
+			}),
+			want: hookPayload{TranscriptPath: abs, SessionID: "abc", HookEventName: "SessionEnd", Reason: "prompt_input_exit", CWD: "/work"},
+		},
+		// Everything below must yield the zero payload, or drop the bad part,
+		// rather than an error. This runs on the hook path where nothing may fail
+		// loudly: a daemon that refuses to start because stdin looked odd is a
+		// worse outcome than one that starts without what the payload says.
+		{name: "empty stdin", input: "", want: hookPayload{}},
+		{name: "not json", input: "hello\n", want: hookPayload{}},
+		{name: "json of another shape", input: `["SessionEnd","abc"]`, want: hookPayload{}},
+		{name: "json without the fields", input: `{"tool_name":"Bash"}`, want: hookPayload{}},
+		// A field of another type is missing alone; the rest is still read.
+		{name: "field is not a string", input: `{"transcript_path":42,"session_id":"abc"}`, want: hookPayload{SessionID: "abc"}},
+		{
+			name: "reason and cwd of another type keep the transcript path",
+			input: payload(map[string]any{
+				"session_id": "abc", "transcript_path": abs, "hook_event_name": "SessionEnd",
+				"reason": map[string]any{"code": 1}, "cwd": []string{"/work"},
+			}),
+			want: hookPayload{TranscriptPath: abs, SessionID: "abc", HookEventName: "SessionEnd"},
+		},
+		{name: "field is empty", input: `{"transcript_path":""}`, want: hookPayload{}},
+		{
+			name: "relative path is refused, the rest kept",
+			input: payload(map[string]any{
+				"transcript_path": filepath.Join("projects", "a.jsonl"),
+				"session_id":      "abc", "hook_event_name": "SessionEnd", "reason": "clear",
+			}),
+			want: hookPayload{SessionID: "abc", HookEventName: "SessionEnd", Reason: "clear"},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := parseHookTranscriptPath(strings.NewReader(tc.input)); got != tc.want {
-				t.Errorf("parseHookTranscriptPath() = %q, want %q", got, tc.want)
+			if got := parseHookPayload(strings.NewReader(tc.input)); got != tc.want {
+				t.Errorf("parseHookPayload() = %+v, want %+v", got, tc.want)
 			}
 		})
 	}
 }
 
-// TestParseHookTranscriptPathIgnoresOversizedInput: stdin on the hook path is
-// whatever the caller attached. Reading it unbounded would let a stray pipe hang
-// or balloon the process that is supposed to be starting a daemon.
-func TestParseHookTranscriptPathIgnoresOversizedInput(t *testing.T) {
-	huge := `{"transcript_path":"/a/` + strings.Repeat("x", 1<<20) + `.jsonl"}`
-	if got := parseHookTranscriptPath(strings.NewReader(huge)); got != "" {
-		t.Errorf("oversized payload produced %q, want empty", got)
+// TestParseHookPayloadIgnoresOversizedInput: stdin on the hook path is whatever
+// the caller attached. Reading it unbounded would let a stray pipe hang or
+// balloon the process that is supposed to be starting a daemon.
+func TestParseHookPayloadIgnoresOversizedInput(t *testing.T) {
+	huge := `{"hook_event_name":"SessionEnd","session_id":"abc","transcript_path":"/a/` + strings.Repeat("x", 1<<20) + `.jsonl"}`
+	if got := parseHookPayload(strings.NewReader(huge)); got != (hookPayload{}) {
+		t.Errorf("oversized payload produced %+v, want the zero payload", got)
 	}
 }
 

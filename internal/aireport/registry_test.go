@@ -171,6 +171,7 @@ func TestStartUsesActiveRuntimeAndItsSettings(t *testing.T) {
 func TestConsentFollowsActiveRuntime(t *testing.T) {
 	ctx := context.Background()
 	f := newFixture(t, nil)
+	f.st.RunPolicy = &store.AIRunPolicy{ConsentRequired: boolPtr(true)}
 	svc := newRegistryService(t, f.st, Config{EnvRuntime: DefaultRuntimeKey}, readyRuntime(nil, goodOutput), apiRuntime(RuntimeOpenAI))
 	if cs, _ := svc.Consent(ctx, f.sc); !cs.Granted || cs.RuntimeKey != testRuntimeKey {
 		t.Fatalf("codex consent = %+v", cs)

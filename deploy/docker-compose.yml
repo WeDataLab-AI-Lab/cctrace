@@ -90,7 +90,9 @@ services:
       # execution inside the container (#26).
       DATABASE_URL: postgres://${DB_APP_CREDENTIALS:-cctrace:${DB_PASSWORD:-cctrace}}@timescaledb:5432/cctrace?sslmode=disable
       CCTRACE_SETUP_TOKEN: ${CCTRACE_SETUP_TOKEN:-}
+      CCTRACE_SERVER_POLICY_FILE: ${CCTRACE_SERVER_POLICY_FILE:-}
       CCTRACE_MAX_SYNC_BODY_BYTES: ${CCTRACE_MAX_SYNC_BODY_BYTES:-}
+      CCTRACE_SESSION_ANALYSIS: ${CCTRACE_SESSION_ANALYSIS:-off}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       COOKIE_SECURE: ${COOKIE_SECURE:-0}
       API_KEY: ${API_KEY:-}

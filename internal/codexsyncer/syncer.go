@@ -84,11 +84,12 @@ type gitMetaEntry struct {
 // CodexSyncer scans Codex JSONL session files and sends records to the cctrace server.
 type CodexSyncer struct {
 	// codexDirs lists every Codex home directory to scan for session JSONL files.
-	codexDirs    []string
-	profileEmail string
-	userID       string
-	state        *syncer.State
-	client       *syncer.Client
+	codexDirs     []string
+	redactedHomes []string
+	profileEmail  string
+	userID        string
+	state         *syncer.State
+	client        *syncer.Client
 	// collectPrefixes, when non-empty, restricts syncing to repositories whose
 	// normalized id starts with one of these prefixes. Empty collects all.
 	collectPrefixes []string
@@ -99,6 +100,8 @@ type CodexSyncer struct {
 	// quotaUnsupported latches once an older server has answered 404 for the
 	// quota history route, so it is asked once rather than every pass.
 	quotaUnsupported bool
+	// quotaOwnerUnsupported independently latches a missing private usage route.
+	quotaOwnerUnsupported bool
 
 	// lastScanSummary holds the previous per-home file-count summary so watch
 	// mode logs it only when it changes, instead of every poll interval.
@@ -124,6 +127,8 @@ type CodexSyncer struct {
 	gitMeta map[string]gitMetaEntry
 	// accounts drops the records of excluded accounts before they are sent.
 	accounts *syncer.AccountFilter
+	// backfilled counts the session snapshots the last ReenrichOnce changed.
+	backfilled int
 }
 
 // New creates a new CodexSyncer. codexDirs lists the Codex home directories to
@@ -142,6 +147,42 @@ func New(codexDirs []string, profileEmail, userID string, state *syncer.State, c
 		gitMeta:         make(map[string]gitMetaEntry),
 		accounts:        syncer.NewAccountFilter(client, state),
 	}
+}
+
+// SetRedactedHomes suppresses explicit execution-home paths from diagnostics.
+// Session scanning still uses those paths locally; they are not needed in logs.
+func (s *CodexSyncer) SetRedactedHomes(homes ...string) {
+	s.redactedHomes = nil
+	for _, home := range homes {
+		if home == "" {
+			continue
+		}
+		abs, err := filepath.Abs(filepath.Clean(home))
+		if err != nil {
+			continue
+		}
+		if resolved, resolveErr := filepath.EvalSymlinks(abs); resolveErr == nil {
+			abs = resolved
+		}
+		s.redactedHomes = append(s.redactedHomes, abs)
+	}
+}
+
+func (s *CodexSyncer) displayPath(value string) string {
+	abs, err := filepath.Abs(filepath.Clean(value))
+	if err != nil {
+		return value
+	}
+	if resolved, resolveErr := filepath.EvalSymlinks(abs); resolveErr == nil {
+		abs = resolved
+	}
+	for _, home := range s.redactedHomes {
+		rel, err := filepath.Rel(home, abs)
+		if err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			return "[explicit Codex home]"
+		}
+	}
+	return value
 }
 
 // cachedGitMeta returns cwd's git metadata, resolving it at most once per
@@ -170,9 +211,14 @@ func (s *CodexSyncer) findAllFiles() ([]string, error) {
 	parts := make([]string, 0, len(s.codexDirs))
 	for _, dir := range s.codexDirs {
 		files, err := codexlog.FindJSONLFiles(dir)
+		shownDir := s.displayPath(dir)
 		if err != nil {
-			log.Printf("[codex-syncer] scan %s: %v", dir, err)
-			parts = append(parts, fmt.Sprintf("%s=error", dir))
+			if shownDir != dir {
+				log.Printf("[codex-syncer] explicit Codex home scan failed")
+			} else {
+				log.Printf("[codex-syncer] scan %s: %v", shownDir, err)
+			}
+			parts = append(parts, fmt.Sprintf("%s=error", shownDir))
 			continue
 		}
 		added := 0
@@ -184,7 +230,7 @@ func (s *CodexSyncer) findAllFiles() ([]string, error) {
 			all = append(all, f)
 			added++
 		}
-		parts = append(parts, fmt.Sprintf("%s=%d", dir, added))
+		parts = append(parts, fmt.Sprintf("%s=%d", shownDir, added))
 	}
 
 	// Log which homes were scanned and how many files each contributed. Without
@@ -237,14 +283,18 @@ func (s *CodexSyncer) SyncOnce(ctx context.Context) (int, error) {
 		n, err := s.syncFile(ctx, file, firstRun)
 		if err != nil {
 			if ctxErr := ctx.Err(); ctxErr != nil {
-				log.Printf("[codex-syncer] pass stopped at file %d/%d (%s): %v", i+1, len(files), file, ctxErr)
+				log.Printf("[codex-syncer] pass stopped at file %d/%d (%s): %v", i+1, len(files), s.displayPath(file), ctxErr)
 				return total, ctxErr
 			}
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-				log.Printf("[codex-syncer] pass stopped at file %d/%d (%s): %v", i+1, len(files), file, err)
+				log.Printf("[codex-syncer] pass stopped at file %d/%d (%s): %v", i+1, len(files), s.displayPath(file), err)
 				return total, err
 			}
-			log.Printf("[codex-syncer] %s: %v", file, err)
+			if s.displayPath(file) != file {
+				log.Printf("[codex-syncer] explicit Codex home session sync failed")
+			} else {
+				log.Printf("[codex-syncer] %s: %v", file, err)
+			}
 			continue
 		}
 		total += n
@@ -279,7 +329,11 @@ func (s *CodexSyncer) observeAccount() {
 	for _, dir := range s.codexDirs {
 		accountID, err := codexauth.ReadAccountID(dir)
 		if err != nil {
-			log.Printf("[codex-syncer] read account id from %s: %v", dir, err)
+			if s.displayPath(dir) != dir {
+				log.Printf("[codex-syncer] explicit Codex home account metadata could not be read")
+			} else {
+				log.Printf("[codex-syncer] read local account metadata from %s: %v", dir, err)
+			}
 			continue
 		}
 		if s.state.ObserveCodexAccount(time.Now(), normalizeHome(dir), accountID) {
@@ -350,9 +404,13 @@ func (s *CodexSyncer) resetIfShrunk(filePath string, offset int64) int64 {
 	}
 	if !s.shrunkFiles[filePath] {
 		s.shrunkFiles[filePath] = true
-		log.Printf("[codex-syncer] %s: shrunk, offset reset %d -> %d (%d bytes no longer on disk)", filePath, offset, fi.Size(), offset-fi.Size())
+		log.Printf("[codex-syncer] %s: shrunk, offset reset %d -> %d (%d bytes no longer on disk)", s.displayPath(filePath), offset, fi.Size(), offset-fi.Size())
 	}
 	s.state.SetOffset(filePath, fi.Size())
+	// What is built from collected lines -- the session snapshot's rebuild and
+	// its backfill -- starts past the remnant, as it does for a Claude
+	// transcript.
+	s.state.Files[filePath].CollectedFrom = fi.Size()
 	// The originator, and the note that the head was read for it, describe the
 	// file that was there. One cut down and written again can open with another
 	// session_meta, so both go and the next pass with records reads the head
@@ -406,8 +464,32 @@ func (s *CodexSyncer) noteScanProgress(filePath string, offset, newOffset int64,
 	s.passLagging++
 	if s.passLagSample == "" {
 		s.passLagSample = fmt.Sprintf("no progress: %s offset=%d size=%d lag=%d records=%d",
-			filePath, offset, fi.Size(), fi.Size()-offset, records)
+			s.displayPath(filePath), offset, fi.Size(), fi.Size()-offset, records)
 	}
+}
+
+// skipExisting records a file the state has never seen at size, its end when it
+// was looked at, so that what was on disk then is not collected: the skip of a
+// first run. The skipped bytes are noted in the state, where `cctrace status` can
+// still read them after the log has rotated. The caller saves the state.
+func (s *CodexSyncer) skipExisting(ctx context.Context, filePath string, size int64) error {
+	meta, err := codexlog.ScanMetadataContext(ctx, filePath, size)
+	if err != nil {
+		if s.displayPath(filePath) != filePath {
+			return fmt.Errorf("explicit Codex home metadata scan failed")
+		}
+		return err
+	}
+	setStateFileMetadata(s.state, filePath, size, meta)
+	if size > 0 {
+		// See the Claude-side note: the log copy of this fact rotates away,
+		// the state copy is what `cctrace status` can still read later.
+		s.state.Files[filePath].SkippedAtFirstSync = size
+	}
+	if size > 0 {
+		log.Printf("[codex-syncer] %s: skipped (pre-existing at first sync — earlier content is not collected) bytes=%d", s.displayPath(filePath), size)
+	}
+	return nil
 }
 
 func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bool) (int, error) {
@@ -421,22 +503,13 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 	// the silence is the same defect.
 	if !s.state.HasFile(filePath) && firstRun {
 		fi, err := os.Stat(filePath)
-		if err == nil {
-			meta, err := codexlog.ScanMetadataContext(ctx, filePath, fi.Size())
-			if err != nil {
-				return 0, err
-			}
-			setStateFileMetadata(s.state, filePath, fi.Size(), meta)
-			if fi.Size() > 0 {
-				// See the Claude-side note: the log copy of this fact rotates away,
-				// the state copy is what `cctrace status` can still read later.
-				s.state.Files[filePath].SkippedAtFirstSync = fi.Size()
-			}
-			_ = s.state.Save()
-			if fi.Size() > 0 {
-				log.Printf("[codex-syncer] %s: skipped (pre-existing at first sync — earlier content is not collected) bytes=%d", filePath, fi.Size())
-			}
+		if err != nil {
+			return 0, nil
 		}
+		if err := s.skipExisting(ctx, filePath, fi.Size()); err != nil {
+			return 0, err
+		}
+		_ = s.state.Save()
 		return 0, nil
 	}
 
@@ -452,14 +525,14 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 	metadataUpdated := false
 	// Existing sync-state files predate fork metadata. Rescan their consumed
 	// prefix once so a growing fork does not resume mid-history without its gate.
-	if offset > 0 && (meta.CWD == "" || meta.Model == "" || !meta.TokenUsageScanned || !meta.ForkMetadataScanned) {
+	if offset > 0 && (meta.CWD == "" || meta.Model == "" || !meta.TokenUsageScanned || !meta.ForkMetadataScanned || !meta.TurnMetadataScanned) {
 		if scanned, err := codexlog.ScanMetadataContext(ctx, filePath, offset); err == nil {
 			old := meta
 			meta = mergeMetadata(meta, scanned)
 			metadataUpdated = metadataChanged(old, meta)
 		}
 	}
-	records, rateLimits, newOffset, scanMeta, err := codexlog.ScanFileWithSamplesContext(ctx, filePath, offset, sessionID, meta)
+	records, rateLimits, turns, newOffset, scanMeta, err := codexlog.ScanFileWithTurnsContext(ctx, filePath, offset, sessionID, meta)
 	if err != nil {
 		return 0, err
 	}
@@ -540,6 +613,11 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 		if newOffset != offset || metadataUpdated {
 			s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
 			setStateFileMetadata(s.state, filePath, newOffset, persist)
+			// A pass of turn lines alone -- a turn starting, or ending -- has no
+			// records, and its turns still go into the snapshot. The lookup
+			// above may be gitMetaTTL old, so it is not what an allowlist judges
+			// them by: collectTurns asks git afresh.
+			s.collectTurns(ctx, filePath, offset, newOffset, cwd, nil, turns)
 			_ = s.state.Save()
 		}
 		return 0, nil
@@ -567,7 +645,9 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 			// written before its home's account was first observed stays empty
 			// rather than inheriting today's account or another home's.
 			sr.AccountID = s.state.CodexAccountAt(home, sr.Ts)
-			nudger.Apply(sr)
+			if r.RecordType != "context" && !r.SupplementalUsage {
+				nudger.Apply(sr)
+			}
 			storeRecords = append(storeRecords, sr)
 		}
 	}
@@ -575,6 +655,7 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 	if len(storeRecords) == 0 {
 		s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
 		setStateFileMetadata(s.state, filePath, newOffset, persist)
+		s.collectTurns(ctx, filePath, offset, newOffset, cwd, nil, turns)
 		_ = s.state.Save()
 		return 0, nil
 	}
@@ -596,6 +677,7 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 		// to be nudged past, exactly as a from-zero rescan would count them.
 		s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
 		setStateFileMetadata(s.state, filePath, newOffset, persist)
+		s.collectTurns(ctx, filePath, offset, newOffset, cwd, &gitMeta, turns)
 		_ = s.state.Save()
 		return 0, nil
 	}
@@ -610,6 +692,9 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 	if len(storeRecords) == 0 {
 		s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
 		setStateFileMetadata(s.state, filePath, newOffset, persist)
+		// Consumed, so the snapshot takes the turns too. Whether an excluded
+		// account's snapshot goes is decided when it would be sent.
+		s.collectTurns(ctx, filePath, offset, newOffset, cwd, &gitMeta, turns)
 		_ = s.state.Save()
 		return 0, nil
 	}
@@ -633,10 +718,45 @@ func (s *CodexSyncer) syncFile(ctx context.Context, filePath string, firstRun bo
 
 	s.state.AdvanceConflictTail(filePath, offset, newOffset, ledgerTrusted, nudger)
 	setStateFileMetadata(s.state, filePath, newOffset, persist)
+	s.collectTurns(ctx, filePath, offset, newOffset, cwd, &gitMeta, turns)
 	if err := s.state.Save(); err != nil {
 		log.Printf("[codex-syncer] save state: %v", err)
 	}
 	return len(storeRecords), nil
+}
+
+// collectTurns folds a pass's turn lines into the rollout's session snapshot
+// (syncer.AdvanceCodexSnapshot) where syncFile commits the pass's offset, with
+// the project hash the rollout's records carry. A repository the allowlist
+// leaves out gets no snapshot: its lines are consumed without being collected,
+// so collection restarts past them (FileState.CollectedFrom), and nothing built
+// from collected lines reads them should the repository be allowed later. That
+// holds while a tail is judged whole, as it is here; the Claude syncer judges
+// records one by one and marks such a file instead (FileState.ExcludedSeen).
+// gitMeta is the repository of cwd when the caller has resolved it afresh for
+// this tail, nil otherwise.
+func (s *CodexSyncer) collectTurns(ctx context.Context, filePath string, offset, newOffset int64, cwd string, gitMeta *gitctx.Context, turns []codexlog.TurnEvent) {
+	fs := s.state.Files[filePath]
+	if fs == nil {
+		return
+	}
+	if len(s.collectPrefixes) > 0 {
+		if gitMeta == nil {
+			resolved := s.freshGitMeta(cwd)
+			gitMeta = &resolved
+		}
+		if !gitctx.AllowsRepository(gitMeta.RepositoryID, s.collectPrefixes) {
+			if newOffset != offset {
+				fs.CollectedFrom = newOffset
+			}
+			return
+		}
+	}
+	projectHash := projecthash.FromPath(cwd)
+	if projectHash == "" {
+		projectHash = projectHashFromPath(filePath)
+	}
+	syncer.AdvanceCodexSnapshot(ctx, fs, filePath, offset, newOffset, projectHash, turns)
 }
 
 // sendProjectRules scans and sends the rules of gitMeta's repository. cachedCWD
@@ -775,6 +895,9 @@ func (s *CodexSyncer) fileMetadata(filePath string) codexlog.Metadata {
 			ForkBoundaryReached:    fs.CodexForkBoundaryReached,
 			ForkHasTriggerTurn:     fs.CodexForkHasTriggerTurn,
 			HasTokenUsageRecord:    fs.CodexHasTokenUsageRecord,
+			TurnMetadataScanned:    fs.CodexTurnMetadataScanned,
+			ActiveTurnID:           fs.CodexActiveTurnID,
+			ActiveRootTurnID:       fs.CodexActiveRootTurnID,
 		}
 	}
 	return codexlog.Metadata{}
@@ -796,6 +919,9 @@ func setStateFileMetadata(state *syncer.State, filePath string, offset int64, me
 		fs.CodexForkBoundaryReached = meta.ForkBoundaryReached
 		fs.CodexForkHasTriggerTurn = meta.ForkHasTriggerTurn
 		fs.CodexHasTokenUsageRecord = meta.HasTokenUsageRecord
+		fs.CodexTurnMetadataScanned = meta.TurnMetadataScanned
+		fs.CodexActiveTurnID = meta.ActiveTurnID
+		fs.CodexActiveRootTurnID = meta.ActiveRootTurnID
 	}
 }
 
@@ -836,6 +962,11 @@ func mergeMetadata(base, next codexlog.Metadata) codexlog.Metadata {
 	if next.HasTokenUsageRecord {
 		base.HasTokenUsageRecord = true
 	}
+	if next.TurnMetadataScanned {
+		base.TurnMetadataScanned = true
+		base.ActiveTurnID = next.ActiveTurnID
+		base.ActiveRootTurnID = next.ActiveRootTurnID
+	}
 	return base
 }
 
@@ -853,7 +984,10 @@ func metadataChanged(a, b codexlog.Metadata) bool {
 		a.ForkHistoryCopied != b.ForkHistoryCopied ||
 		a.ForkBoundaryReached != b.ForkBoundaryReached ||
 		a.ForkHasTriggerTurn != b.ForkHasTriggerTurn ||
-		a.HasTokenUsageRecord != b.HasTokenUsageRecord
+		a.HasTokenUsageRecord != b.HasTokenUsageRecord ||
+		a.TurnMetadataScanned != b.TurnMetadataScanned ||
+		a.ActiveTurnID != b.ActiveTurnID ||
+		a.ActiveRootTurnID != b.ActiveRootTurnID
 }
 
 // toStoreRecord takes sourceFile as a parameter rather than letting callers fill
@@ -863,31 +997,10 @@ func metadataChanged(a, b codexlog.Metadata) bool {
 // UUID/ParentUUID/IsSidechain/AgentID stay empty on purpose — codexlog.Record has
 // no such fields. Codex JSONL is a rollout event stream with no message lineage,
 // so populating them would require a new lineage model, not a mapping change.
-// entrypointFromOriginator maps Codex's originator onto the entrypoint vocabulary the
-// session classifier reads. Only the human TUI becomes "cli"; every other launcher —
-// codex exec, the TS SDK, or a delegating harness such as Claude Code — keeps its own
-// name, so an unrecognised originator is never mistaken for a human turn. An empty
-// originator (pre-originator rollouts) stays empty and falls to the legacy path.
-//
-// subagentFork overrides all of it. A rollout the model forked off a session inherits
-// that session's originator verbatim — measured on a real run, three subagent rollouts
-// all carried {"originator":"codex-tui","thread_source":"subagent"} — so originator
-// cannot distinguish "a person typed this" from "the model spawned this". Without the
-// override every subagent thread lands on "cli" and joins the sessions a human had,
-// which is the opposite of what the classifier exists to do. The override also beats
-// the empty case: a rollout we know an agent spawned must not inherit the benefit of
-// the doubt reserved for files predating the originator field.
+// entrypointFromOriginator is codexlog.EntrypointFromOriginator; the local
+// analysis reads the same mapping so both classify a session's turns alike.
 func entrypointFromOriginator(originator string, subagentFork bool) string {
-	if subagentFork {
-		return "codex-subagent"
-	}
-	if originator == "" {
-		return ""
-	}
-	if originator == "codex-tui" {
-		return "cli"
-	}
-	return strings.ReplaceAll(strings.ToLower(originator), " ", "-")
+	return codexlog.EntrypointFromOriginator(originator, subagentFork)
 }
 
 func toStoreRecord(r *codexlog.Record, profileEmail, userID, sessionID, sourceFile, entrypoint string) *store.SessionRecord {
@@ -898,25 +1011,37 @@ func toStoreRecord(r *codexlog.Record, profileEmail, userID, sessionID, sourceFi
 	if r.RecordType == "tool_call" || r.RecordType == "tool_output" {
 		toolName, toolCallID = r.ToolName, r.CallID
 	}
-	return &store.SessionRecord{
-		Ts:              r.Timestamp,
-		SourceFile:      sourceFile,
-		Entrypoint:      entrypoint,
-		SessionID:       sessionID,
-		RecordType:      r.RecordType,
-		ProfileEmail:    profileEmail,
-		UserID:          userID,
-		Model:           r.Model,
-		Agent:           "codex",
-		BillingProvider: "openai",
-		InputTokens:     r.InputTokens,
-		OutputTokens:    r.OutputTokens,
-		CacheReadTokens: r.CacheReadTokens,
-		Raw:             r.Raw,
-		CommandName:     parseSkillName(r),
-		ToolName:        toolName,
-		ToolCallID:      toolCallID,
+	sr := &store.SessionRecord{
+		Ts:                     r.Timestamp,
+		SourceFile:             sourceFile,
+		Entrypoint:             entrypoint,
+		SessionID:              sessionID,
+		RecordType:             r.RecordType,
+		ProfileEmail:           profileEmail,
+		UserID:                 userID,
+		Model:                  r.Model,
+		Agent:                  "codex",
+		BillingProvider:        "openai",
+		InputTokens:            r.InputTokens,
+		OutputTokens:           r.OutputTokens,
+		CacheReadTokens:        r.CacheReadTokens,
+		Raw:                    r.Raw,
+		CommandName:            parseSkillName(r),
+		ToolName:               toolName,
+		ToolCallID:             toolCallID,
+		CodexTurnID:            r.TurnID,
+		CodexRootTurnID:        r.RootTurnID,
+		CodexTurnMetadataKnown: r.TurnMetadataKnown,
 	}
+	if r.RecordType == "context" {
+		// New context rows need stable identity across tailing and recovery.
+		// They never share the timestamp nudges of existing message rows.
+		digest := sha256.Sum256(contextIdentityRaw(r.Raw))
+		sr.UUID = fmt.Sprintf("context-%x", digest[:16])
+	} else if r.SupplementalUsage {
+		sr.UUID = supplementalUsageUUID(r.Raw)
+	}
+	return sr
 }
 
 func parseSkillName(r *codexlog.Record) string {

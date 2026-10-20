@@ -1,17 +1,21 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { fetchAccounts } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { WEEKLY_USAGE_HINT } from '@/lib/weekly-usage';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollFadeRow } from '@/components/common/scroll-fade-row';
+import { QuotaHeaderMeters } from '@/components/common/quota-header-meters';
+import { SessionSearchBox } from '@/components/sessions/frame/session-search';
+import type { SessionRecordSearchMatch, SessionRecordSearchResult } from '@/lib/session-analysis-types';
 import { useAccount } from './account-context';
 import { useAgent, type AgentScope } from './agent-context';
 import { useAuth } from './auth-context';
+import { useSessionLayout } from './session-layout-context';
 
 const pageTitles: Record<string, string> = {
   '/': 'Overview',
@@ -73,6 +77,7 @@ const pillClass = (active: boolean) =>
 
 const Header = () => {
   const rawPathname = usePathname();
+  const router = useRouter();
   const pathname = rawPathname.replace(/\/+$/, '') || '/';
   const title = pageTitles[pathname] || 'Overview';
   // Account/Agent scope filters are analytics-only; hide them on admin/infra views.
@@ -80,6 +85,7 @@ const Header = () => {
   const { selectedAccount, setSelectedAccount } = useAccount();
   const { selectedAgent, setSelectedAgent } = useAgent();
   const { user, logout } = useAuth();
+  const { menuCollapsed, toggleMenu } = useSessionLayout();
   // The server pins a role=user session list to the caller's own scope (#811), so chips there do nothing.
   const pinnedToOwnAccount = user?.role === 'user' && pathname === '/sessions';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -97,6 +103,14 @@ const Header = () => {
     await logout();
     window.location.href = '/login';
   };
+  const handleSessionSearchSelect = (result: SessionRecordSearchResult, match: SessionRecordSearchMatch) => {
+    const params = new URLSearchParams({ session_id: result.session_id, session_search: '1' });
+    if (match.turn_key) params.set('turn_key', match.turn_key);
+    router.push(`/sessions?${params.toString()}`);
+  };
+  const sessionSearchScope = user
+    ? [user.id, user.role, user.cctrace_user_id ?? '', user.email, selectedAccount].join('|')
+    : '';
 
   /** 프로필 메뉴 바깥을 클릭하면 메뉴를 닫는다. */
   useEffect(() => {
@@ -114,8 +128,15 @@ const Header = () => {
     // takes flex-1 it starts immediately beside the title, so the two run together
     // on a single line -- the wider gap is only needed where that happens.
     <header className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3 md:gap-6 md:px-6 md:py-0">
-      <h1 className="shrink-0 text-[16px] font-semibold text-ink">{title}</h1>
+      <div className="flex shrink-0 items-center gap-2">
+        <button type="button" aria-label={menuCollapsed ? '앱 메뉴 펼치기' : '앱 메뉴 접기'} aria-expanded={!menuCollapsed} aria-controls="app-menu" onClick={toggleMenu} className="hidden rounded p-1.5 text-ink-3 hover:bg-surface-sunk hover:text-ink md:inline-flex">
+          {menuCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
+        </button>
+        <h1 className="shrink-0 text-[16px] font-semibold text-ink">{title}</h1>
+      </div>
       <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-2 md:justify-end md:gap-4">
+        <QuotaHeaderMeters enabled={!!user} />
+        {user && <SessionSearchBox key={sessionSearchScope} scopeKey={sessionSearchScope} onSelect={handleSessionSearchSelect} />}
         {showScopeFilters && (
         <>
         {accounts && accounts.length > 1 && pinnedToOwnAccount && (

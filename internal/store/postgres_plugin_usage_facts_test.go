@@ -490,7 +490,7 @@ func TestPluginUsage_FactPathMatchesRawPathOnBuiltins(t *testing.T) {
 // record writes stall on a fresh deploy.
 func TestPluginInvocationFactsBackfillMaterializesCommands(t *testing.T) {
 	s := acquireTestStore(t)
-	rows, err := s.pool.Query(context.Background(), "EXPLAIN "+pluginInvocationFactsInsertSQL, nil)
+	rows, err := s.pool.Query(context.Background(), "EXPLAIN "+pluginInvocationFactsRebuildSQL)
 	if err != nil {
 		t.Fatalf("explain backfill: %v", err)
 	}

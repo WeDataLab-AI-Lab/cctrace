@@ -19,7 +19,7 @@ $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml exec cctrac
 $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
 ```
 
-`CCTRACE_AI_*` 변수와 `CCTRACE_SECRETS_KEY`는 변경이 진행 중이라 이 문서에서 다루지 않음.
+`CCTRACE_AI_*` 변수, `CODEX_API_KEY`, `CCTRACE_SECRETS_KEY`는 변경이 진행 중이라 이 문서에서 다루지 않음.
 
 ## 필수 {#required}
 
@@ -125,4 +125,4 @@ TLS 오버레이를 포함한 전체 표는 [포트](../reference/ports.md) 참�
 
 보존 기간은 이 변수 없이 대시보드의 **Admin > Storage**에서 지정할 수 있다. [운영](operations.md#data-retention) 참조.
 
-모든 키를 한 표로 보려면 [서버 환경변수](../reference/server-env.md) 참조.
+이 가이드가 다루는 키의 표는 [서버 환경변수](../reference/server-env.md) 참조. 서버가 읽는 변수 전체 목록은 `cctraced --help`가 출력하며, 명령은 이 문서 앞부분에 있음.

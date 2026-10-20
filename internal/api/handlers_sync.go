@@ -65,7 +65,7 @@ func defaultBillingProviderFor(agent string) string {
 }
 
 func (s *Server) handleSyncCapabilities(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]bool{"reenrich": true})
+	writeJSON(w, http.StatusOK, map[string]bool{"reenrich": true, "session_observations": true})
 }
 
 // maxExclusionQueryAccounts caps one exclusion query. A client asks about the
@@ -283,6 +283,27 @@ func (s *Server) handleSync(w http.ResponseWriter, r *http.Request) {
 	if err := s.store.InsertSessionRecords(r.Context(), req.Records); err != nil {
 		writeErr(w, err)
 		return
+	}
+	// Only now, after the insert committed, so that collector_heartbeats.last_stored_at
+	// means stored. client_versions.last_seen_at cannot mean that: UpsertClientVersion
+	// above runs before the insert, so a sync that then fails still moves it.
+	// Non-fatal like that one: the records are in, and a 500 here would make the
+	// client send them again. And behind the same email guard: the row is keyed by
+	// identity, and anonymous clients would otherwise write into rows they share.
+	//
+	// Keyed by the identity session observations use, not the records': a
+	// per-user token's account, else the payload's (resolveIngestIdentity). That
+	// puts last_stored_at on the row the collector's heartbeat_at is on, and keeps
+	// a token from moving another user's mark. A token that cannot be resolved
+	// skips the mark rather than falling back to the payload.
+	profileEmail, userID, err := s.resolveIngestIdentity(r, req.ProfileEmail, req.UserID)
+	switch {
+	case err != nil:
+		log.Printf("[api] touch collector stored: skipped: %v", err)
+	case profileEmail != "":
+		if err := s.store.TouchCollectorStored(r.Context(), userID, profileEmail, time.Now()); err != nil {
+			log.Printf("[api] touch collector stored: %v", err)
+		}
 	}
 	writeJSON(w, http.StatusOK, map[string]int{"inserted": len(req.Records), "skipped": skipped})
 }

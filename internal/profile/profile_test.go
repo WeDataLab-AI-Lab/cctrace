@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -30,6 +32,22 @@ func TestNewDefault(t *testing.T) {
 	}
 	if p.UpdatedAt.IsZero() {
 		t.Error("UpdatedAt should not be zero")
+	}
+}
+
+func TestCodexHomeRoundTripsAsAnExplicitProfileField(t *testing.T) {
+	p := NewDefault()
+	p.CodexHome = filepath.Join(t.TempDir(), "codex-home")
+	path := filepath.Join(t.TempDir(), "profile.json")
+	if err := SaveTo(p, path); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := LoadFrom(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.CodexHome != p.CodexHome {
+		t.Fatalf("CodexHome = %q, want %q", loaded.CodexHome, p.CodexHome)
 	}
 }
 
@@ -669,5 +687,40 @@ func TestListNamed_NoDirReturnsNil(t *testing.T) {
 	}
 	if names != nil {
 		t.Errorf("ListNamed = %v, want nil when profiles dir absent", names)
+	}
+}
+
+// A name with no profile.json behind it is a profile that does not exist, whether
+// its directory is missing or empty. Callers that scan the named profiles tell
+// that from one that cannot be read, so the error must say it with errors.Is. A
+// file that is not a profile is a different failure.
+func TestLoadNamedMissingProfileIsNotExist(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("HOME override not reliable on Windows")
+	}
+	t.Setenv("HOME", t.TempDir())
+	if err := EnsureNamedDir("stray"); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"ghost", "stray"} {
+		_, err := LoadNamed(name)
+		want := "profile \"" + name + "\" not found; run 'cctrace init --profile " + name + "' first"
+		if err == nil || err.Error() != want || !errors.Is(err, fs.ErrNotExist) {
+			t.Errorf("LoadNamed(%q) = %v (not-exist %v), want %q matching fs.ErrNotExist", name, err, errors.Is(err, fs.ErrNotExist), want)
+		}
+	}
+
+	path, err := NamedPath("broken")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := EnsureNamedDir("broken"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("{"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := LoadNamed("broken"); err == nil || errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("LoadNamed of a file that is not a profile = %v, want a failure that is not fs.ErrNotExist", err)
 	}
 }

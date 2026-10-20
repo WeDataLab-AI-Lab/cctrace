@@ -119,7 +119,34 @@ func (s *PgStore) repairTable(ctx context.Context, table string) (int64, error) 
 // exist -- that is the merge this change is for. Updating into it would violate the
 // primary key, so the update is guarded and whatever it could not move is dropped:
 // the surviving row describes the same directory.
+//
+// session_records is an input of session analysis, whose facts carry the
+// project_hash, so the sessions it moves are queued for a recompute. The queue
+// write relies on the shared source lock, so that statement gets a transaction
+// of its own with the lock taken first (p1b-design §5.2).
 func (s *PgStore) moveHash(ctx context.Context, table, old, repaired string) (int64, error) {
+	if table == "session_records" {
+		tx, err := s.pool.Begin(ctx)
+		if err != nil {
+			return 0, err
+		}
+		defer tx.Rollback(ctx) //nolint:errcheck // no-op after commit
+		if err := lockSessionOverviewSourceMutation(ctx, tx, false); err != nil {
+			return 0, err
+		}
+		var moved int64
+		var sessionIDs []string
+		if err := tx.QueryRow(ctx, `WITH moved AS (
+				UPDATE session_records SET project_hash = $1 WHERE project_hash = $2 RETURNING session_id)
+			SELECT count(*), COALESCE(array_agg(DISTINCT session_id), '{}') FROM moved`,
+			repaired, old).Scan(&moved, &sessionIDs); err != nil {
+			return 0, err
+		}
+		if err := markSessionFactsDirty(ctx, tx, sessionIDs, nil, dirtyProjectHash); err != nil {
+			return 0, err
+		}
+		return moved, tx.Commit(ctx)
+	}
 	if table != "projects" {
 		tag, err := s.pool.Exec(ctx,
 			fmt.Sprintf(`UPDATE %s SET project_hash = $1 WHERE project_hash = $2`, table), repaired, old)

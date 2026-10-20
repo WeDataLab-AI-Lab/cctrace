@@ -19,6 +19,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var statusUsageFetch = usage.Fetch
+
 func statusCmd() *cobra.Command {
 	var profileName string
 
@@ -150,11 +152,17 @@ func runStatus(profileName string) error {
 		// the running daemon, not the file on disk. A binary replaced on disk
 		// does not replace the resident watch child, so the server, the disk and
 		// the process disagree with nothing saying so (#458).
-		if notice := daemonRestartNotice(profileName, p.Options.SyncEnabled); notice != "" {
+		if notice := daemonRestartNotice(profileName, p.CollectionEnabled("claude")); notice != "" {
 			fmt.Println(notice)
 		}
 	} else {
 		fmt.Println("    Sync:          (not configured)")
+	}
+
+	// Outside the sync-endpoint block: the daemon's destination falls back to
+	// Server.Endpoint, so a profile with only that can be blocked too.
+	if notice := routesNoticeFor(profileName); notice != "" {
+		fmt.Printf("    수집 경로:     %s\n", notice)
 	}
 
 	// Outside the sync-endpoint block on purpose. Self-update resolves its
@@ -212,20 +220,24 @@ func runStatus(profileName string) error {
 		}
 	}
 
-	// Claude config dir
-	claudeDir := p.ClaudeConfigDir
-	if claudeDir == "" {
-		home, _ := os.UserHomeDir()
-		claudeDir = filepath.Join(home, ".claude")
-	}
-	fmt.Printf("    Claude home:   %s\n", claudeDir)
-
-	// Settings.json
-	settingsPath, _ := envgen.ClaudeSettingsPath(p)
-	if _, err := os.Stat(settingsPath); err == nil {
-		fmt.Printf("    Settings:      %s (applied)\n", settingsPath)
+	if p.HomesVersion == 1 {
+		printStatusHomes(p, "    ")
 	} else {
-		fmt.Printf("    Settings:      %s (missing)\n", settingsPath)
+		// Claude config dir
+		claudeDir := p.ClaudeConfigDir
+		if claudeDir == "" {
+			home, _ := os.UserHomeDir()
+			claudeDir = filepath.Join(home, ".claude")
+		}
+		fmt.Printf("    Claude home:   %s\n", claudeDir)
+
+		// Settings.json
+		settingsPath, _ := envgen.ClaudeSettingsPath(p)
+		if _, err := os.Stat(settingsPath); err == nil {
+			fmt.Printf("    Settings:      %s (applied)\n", settingsPath)
+		} else {
+			fmt.Printf("    Settings:      %s (missing)\n", settingsPath)
+		}
 	}
 
 	// Profile dir
@@ -234,7 +246,7 @@ func runStatus(profileName string) error {
 	// --- Options ---
 	fmt.Println()
 	fmt.Println("  OPTIONS")
-	fmt.Printf("    Sync enabled:  %s\n", boolStatus(p.Options.SyncEnabled))
+	fmt.Printf("    Sync enabled:  %s\n", boolStatus(p.CollectionEnabled("claude")))
 	// Shown only when on. A privacy setting has to be visible where a person checks
 	// their configuration -- the flag this replaces was visible in `cctrace config`
 	// and connected to nothing, so "the operator saw it" was never evidence that it
@@ -260,7 +272,7 @@ func runStatus(profileName string) error {
 					continue
 				}
 				dir := np.ClaudeConfigDir
-				if dir == "" {
+				if np.HomesVersion != 1 && dir == "" {
 					home, _ := os.UserHomeDir()
 					dir = filepath.Join(home, ".claude")
 				}
@@ -279,7 +291,11 @@ func runStatus(profileName string) error {
 				fmt.Printf("    [%s]\n", name)
 				fmt.Printf("      User:        %s <%s> (ID: %s)\n", np.User.Name, np.User.Email, valueOrDash(np.User.ID))
 				fmt.Printf("      Team:        %s\n", valueOrDash(np.User.Team))
-				fmt.Printf("      Claude home: %s\n", dir)
+				if np.HomesVersion == 1 {
+					printStatusHomes(np, "      ")
+				} else {
+					fmt.Printf("      Claude home: %s\n", dir)
+				}
 				fmt.Printf("      Sync:        %s\n", syncStatus)
 				fmt.Printf("      Auth token:  %s\n", tokenStatus)
 			}
@@ -289,26 +305,36 @@ func runStatus(profileName string) error {
 	// --- Quota ---
 	fmt.Println()
 	fmt.Println("  QUOTA")
-	u, err := usage.Fetch(p.ClaudeConfigDir)
-	if err != nil {
-		fmt.Printf("    (unavailable: %v)\n", err)
+	if p.HomesVersion == 1 {
+		// Enrollment consent seeds account opt-in once; the supported account
+		// ledger owns later changes. Status neither reads private ledger JSON
+		// nor implicitly reconciles accounts or fetches provider credentials.
+		fmt.Println("    Current per-account monitoring preferences and connected homes: cctrace profile accounts")
+		fmt.Println("    Per-account usage: Desktop Usage, respecting current account opt-ins.")
+		fmt.Println("    Home quota enrollment consent is not the current account opt-in.")
+		fmt.Println("    No provider usage requested by status.")
 	} else {
-		printWindow := func(label string, w *usage.UsageWindow) {
-			if w == nil {
-				return
+		u, err := statusUsageFetch(p.ClaudeConfigDir)
+		if err != nil {
+			fmt.Printf("    (unavailable: %v)\n", err)
+		} else {
+			printWindow := func(label string, w *usage.UsageWindow) {
+				if w == nil {
+					return
+				}
+				reset := w.ResetTime()
+				resetStr := ""
+				if !reset.IsZero() {
+					resetStr = fmt.Sprintf("  resets %s", reset.Local().Format("Jan 2 15:04"))
+				}
+				fmt.Printf("    %-14s %s%s\n", label, usage.FormatBar(w.Utilization, 20), resetStr)
 			}
-			reset := w.ResetTime()
-			resetStr := ""
-			if !reset.IsZero() {
-				resetStr = fmt.Sprintf("  resets %s", reset.Local().Format("Jan 2 15:04"))
+			printWindow("5h:", u.FiveHour)
+			printWindow("7d:", u.SevenDay)
+			printWindow("7d (sonnet):", u.SevenDaySonnet)
+			if u.SevenDayOpus != nil {
+				printWindow("7d (opus):", u.SevenDayOpus)
 			}
-			fmt.Printf("    %-14s %s%s\n", label, usage.FormatBar(w.Utilization, 20), resetStr)
-		}
-		printWindow("5h:", u.FiveHour)
-		printWindow("7d:", u.SevenDay)
-		printWindow("7d (sonnet):", u.SevenDaySonnet)
-		if u.SevenDayOpus != nil {
-			printWindow("7d (opus):", u.SevenDayOpus)
 		}
 	}
 
@@ -320,6 +346,19 @@ func runStatus(profileName string) error {
 	}
 
 	return nil
+}
+
+// Explicit membership never implies a default provider directory. Collection is
+// the profile's effective option, independent of transmission and usage consent.
+func printStatusHomes(p *profile.Profile, indent string) {
+	if len(p.Homes) == 0 {
+		fmt.Printf("%sRegistered homes: (none; no implicit defaults)\n", indent)
+		return
+	}
+	for _, h := range p.Homes {
+		fmt.Printf("%s%s home: %s (transmission=%s, collection=%s, quota enrollment=%s)\n",
+			indent, h.Provider, h.Home, h.Transmission, boolStatus(p.CollectionEnabled(h.Provider)), boolStatus(h.QuotaEnabled))
+	}
 }
 
 func checkEndpoint(endpoint string) string {

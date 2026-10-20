@@ -186,7 +186,8 @@ func TestUsageRebuildSkipsWhileAnotherWriterHoldsTheLock(t *testing.T) {
 		t.Fatalf("Begin: %v", err)
 	}
 	defer holder.Rollback(ctx) //nolint:errcheck // released below
-	if _, err := holder.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext('usage_hourly_rollups_writers'))`); err != nil {
+	// The lock as every writer takes it, refreshUsageHourlyRollups included.
+	if err := lockUsageHourlyRollupWriters(ctx, holder); err != nil {
 		t.Fatalf("take writers lock: %v", err)
 	}
 

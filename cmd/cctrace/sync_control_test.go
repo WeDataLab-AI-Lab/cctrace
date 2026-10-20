@@ -24,6 +24,7 @@ func useTempSyncHome(t *testing.T) string {
 	// into their real config.toml. Point both inside the temp home.
 	t.Setenv("CODEX_CONFIG_DIR", filepath.Join(home, ".codex"))
 	t.Setenv("CODEX_HOME", "")
+	requireLineLocksReleased(t)
 	return home
 }
 

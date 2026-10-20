@@ -29,6 +29,7 @@
 | `COOKIE_SECURE` | env 파일 | `0` | `1`이면 Secure 인증 쿠키 강제 |
 | `CCTRACE_ALLOWED_ORIGINS` | env 파일 | 비어 있음(CORS 비활성) | 쉼표로 구분한 정확한 브라우저 origin 목록 |
 | `API_KEY` | env 파일 | 비어 있음 | 선택형 공유 API 토큰 |
+| `CCTRACE_SERVER_POLICY_FILE` | env 파일 | 비어 있음(정책 배포 안 함) | 서명된 서버 정책 파일의 경로, `cctraced` 컨테이너에서 보이는 경로. 요청마다 읽음. [운영](../server/operations.md#server-policy) 참조 |
 | `CCTRACE_MAX_SYNC_BODY_BYTES` | env 파일 | `8388608` | `POST /api/sync` 본문 최대 바이트, 최대 `268435456` |
 | `CADDY_SITE_ADDRESS` | env 파일, TLS | 없음(오버레이 필수) | 클라이언트가 쓰는 호스트 이름 또는 IP 주소 |
 | `CADDY_TLS_MODE` | env 파일, TLS | `internal` | `internal`(Caddy 자체 CA) 또는 `acme` |
@@ -44,6 +45,9 @@
 | `OTEL_RETENTION_DAYS` | 전달 안 됨 | 미설정 | OpenTelemetry 이벤트·메트릭 보존 일수 |
 | `SESSION_RETENTION_DAYS` | 전달 안 됨 | 미설정 | 세션 레코드 보존 일수, `0`은 영구 보존 |
 | `CCTRACE_USERID_ACCESS_CONTROL` | 전달 안 됨 | `true` | 사용자별 데이터 격리, `false`일 때만 해제 |
+| `STORAGE_VOLUME_PATH` | 전달 안 됨 | `WAL_DIR` 값 | Admin > Storage 탭이 전체·사용·여유 용량을 보여 주는 볼륨 위의 경로 |
+| `ACCESS_LOG_FILE` | 전달 안 됨 | `/data/logs/access.log` | HTTP 접근 로그를 표준 출력과 함께 추가 기록하는 파일, 열 수 없으면 표준 출력만 사용 |
+| `EMAIL_ALIASES` | 전달 안 됨 | 비어 있음 | 쉼표로 구분한 `<alias>=<canonical>` 이메일 쌍, 수신 텔레메트리와 sync 업로드의 프로필 이메일을 대표 주소로 치환 |
 | `CCTRACE_ALLOW_EMPTY_DASHBOARD` | 전달 안 됨 | 비어 있음 | `1`이면 내장 대시보드 없이 시작 |
 
-`CCTRACE_AI_*` 변수와 `CCTRACE_SECRETS_KEY`는 변경이 진행 중이라 이 문서에서 다루지 않음.
+`CCTRACE_AI_*` 변수, `CODEX_API_KEY`, `CCTRACE_SECRETS_KEY`는 변경이 진행 중이라 이 문서에서 다루지 않음.

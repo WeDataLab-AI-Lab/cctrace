@@ -12,6 +12,7 @@ import (
 	"cctrace/internal/auth"
 	"cctrace/internal/emailalias"
 	"cctrace/internal/ingestblock"
+	"cctrace/internal/sessionrecord"
 	"cctrace/internal/store"
 )
 
@@ -29,6 +30,8 @@ type Server struct {
 	jwtMgr                 *auth.JWTManager
 	dashboardMW            AuthMiddleware
 	useUserIDAccessControl bool
+	sessionAnalysisEnabled bool
+	sessionRecordsEnabled  bool
 	cookieSecure           bool
 	version                string
 	dataPath               string
@@ -46,7 +49,11 @@ type Server struct {
 	syncBodyLimit int64
 	// aiReports runs weekly AI reports. Nil answers every AI report route with
 	// 503 runtime_unconfigured.
-	aiReports *aireport.Service
+	aiReports            *aireport.Service
+	sessionRecordsWorker *sessionrecord.Worker
+	// sessionRecordWorkerStatus overrides the production worker only in isolated API tests.
+	sessionRecordWorkerStatus func() sessionrecord.WorkerStatus
+	sessionRecordGate         *sessionrecord.TransmissionGate
 }
 
 // WithSyncBodyLimit raises the /api/sync request body ceiling for one deployment,
@@ -211,6 +218,27 @@ func newServer(s store.Store, jwtMgr *auth.JWTManager, dashboardMW AuthMiddlewar
 	}
 	srv.routes()
 	return srv
+}
+
+// WithSessionAnalysisEnabled reports the opt-in worker and API gate in maintenance status.
+func (s *Server) WithSessionAnalysisEnabled(enabled bool) *Server {
+	s.sessionAnalysisEnabled = enabled
+	return s
+}
+
+func (s *Server) WithSessionRecordWorker(worker *sessionrecord.Worker) *Server {
+	s.sessionRecordsWorker = worker
+	return s
+}
+
+func (s *Server) WithSessionRecordGate(gate *sessionrecord.TransmissionGate) *Server {
+	s.sessionRecordGate = gate
+	return s
+}
+
+func (s *Server) WithSessionRecordsEnabled(enabled bool) *Server {
+	s.sessionRecordsEnabled = enabled
+	return s
 }
 
 // WithCookieSecure forces Secure authentication cookies behind HTTPS proxies.

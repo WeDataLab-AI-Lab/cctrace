@@ -20,11 +20,16 @@ ARG VERSION=dev
 # must be supplied as a standard-base64 file through the BuildKit secret
 # `update_signing_key`; it is never copied into a layer:
 #   docker build --build-arg UPDATE_PUBLIC_KEY="$UPDATE_PUBLIC_KEY" \
+#     --build-arg POLICY_PUBLIC_KEY="$POLICY_PUBLIC_KEY" \
 #     --secret id=update_signing_key,src=/secure/cctrace-update-private-key \
 #     -f deploy/Dockerfile .
 ARG UPDATE_PUBLIC_KEY
-# `required` (default) keeps the internal build fail-closed: a public key and a
-# signing secret are both mandatory. `optional` lets a mirror build without our
+# POLICY_PUBLIC_KEY is the same encoding of the key that signs server policies.
+# Clients trust it, together with the update key, for policies only. Nothing in
+# this build signs with it, so there is no matching secret.
+ARG POLICY_PUBLIC_KEY
+# `required` (default) keeps the internal build fail-closed: both public keys and
+# the signing secret are mandatory. `optional` lets a mirror build without our
 # signing key, which nobody outside this repository should hold. A client built
 # with an empty public key refuses automatic updates outright (fail-closed in
 # update.go), so an unsigned mirror build degrades safely rather than silently.
@@ -57,8 +62,15 @@ RUN case "${UPDATE_SIGNING}" in \
       required|optional) ;; \
       *) echo "UPDATE_SIGNING must be 'required' or 'optional', got: '${UPDATE_SIGNING}'" >&2; exit 1 ;; \
     esac; \
-    [ "${UPDATE_SIGNING}" = optional ] || test -n "${UPDATE_PUBLIC_KEY}"
-ENV CLIENT_LDFLAGS="-X main.updatePublicKeyBase64=${UPDATE_PUBLIC_KEY} -X main.defaultSyncEndpoint=${DEFAULT_SYNC_ENDPOINT} -X main.defaultOTELEndpoint=${DEFAULT_OTEL_ENDPOINT}"
+    missing=""; \
+    [ -n "${UPDATE_PUBLIC_KEY}" ] || missing="${missing} UPDATE_PUBLIC_KEY"; \
+    [ -n "$(echo "${POLICY_PUBLIC_KEY}" | tr -d ', ')" ] || missing="${missing} POLICY_PUBLIC_KEY"; \
+    [ "${UPDATE_SIGNING}" = optional ] || [ -z "${missing}" ] || { echo "UPDATE_SIGNING=required needs build args:${missing}" >&2; exit 1; }; \
+    for key in $(echo "${POLICY_PUBLIC_KEY}" | tr ',' ' '); do \
+      echo "${key}" | grep -Eq '^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=$' || { echo "POLICY_PUBLIC_KEY has an entry that is not a base64-encoded 32-byte Ed25519 public key" >&2; exit 1; }; \
+      case ",$(echo "${UPDATE_PUBLIC_KEY}" | tr -d ' '),," in *",${key},"*) echo "POLICY_PUBLIC_KEY repeats an UPDATE_PUBLIC_KEY entry" >&2; exit 1 ;; esac; \
+    done
+ENV CLIENT_LDFLAGS="-X main.updatePublicKeyBase64=${UPDATE_PUBLIC_KEY} -X main.policyPublicKeyBase64=${POLICY_PUBLIC_KEY} -X main.defaultSyncEndpoint=${DEFAULT_SYNC_ENDPOINT} -X main.defaultOTELEndpoint=${DEFAULT_OTEL_ENDPOINT}"
 RUN CGO_ENABLED=0 GOOS=darwin  GOARCH=amd64 go build -ldflags "-X main.version=${VERSION} ${CLIENT_LDFLAGS}" -o /downloads/cctrace-darwin-amd64  ./cmd/cctrace
 RUN CGO_ENABLED=0 GOOS=darwin  GOARCH=arm64 go build -ldflags "-X main.version=${VERSION} ${CLIENT_LDFLAGS}" -o /downloads/cctrace-darwin-arm64  ./cmd/cctrace
 RUN CGO_ENABLED=0 GOOS=linux   GOARCH=amd64 go build -ldflags "-X main.version=${VERSION} ${CLIENT_LDFLAGS}" -o /downloads/cctrace-linux-amd64   ./cmd/cctrace

@@ -116,12 +116,25 @@ FROM visible_session_records WHERE ts >= $1 AND ts < $2 `+scope+` GROUP BY 1 ORD
 	if err := hours.Err(); err != nil {
 		return nil, err
 	}
+	// The tokens count requests: attributedRowsSQL gives a request's tokens to its
+	// head line, and a Codex usage row those of its codex_imputed_cost row. The
+	// period, the scope and the project filter are its lineWhere, so the requests
+	// are folded from the lines they keep, and only those lines are sorted to fold
+	// them. Every row still comes out of it, so sessions and member hashes count
+	// as they did.
+	//
+	// Planned for each call (plannedPerCall). Every user sends this one text, so
+	// after five of them a connection may run its generic plan, and under that
+	// plan the three arms of attributedRowsSQL run slower than the two they
+	// replaced: in the P1t-8 re-measure two users' statements went from 440 ms
+	// to 650 and from 113 ms to 250, while planned for the user's own week they
+	// took 365 ms and 10 ms with either shape.
 	projects, err := s.pool.Query(ctx, `
 WITH scoped_projects AS (
 	SELECT sr.project_hash,
 		sr.session_id,
-		sr.input_tokens,
-		sr.output_tokens,
+		sr.req_input_tokens AS input_tokens,
+		sr.req_output_tokens AS output_tokens,
 		CASE WHEN BTRIM(COALESCE(p.repository_id, '')) <> ''
 				AND LOWER(BTRIM(p.repository_id)) NOT LIKE 'local:%'
 			THEN BTRIM(p.repository_id) ELSE '' END AS identity_repository_id,
@@ -138,11 +151,11 @@ WITH scoped_projects AS (
 				AND LOWER(BTRIM(p.repository_id)) NOT LIKE 'local:%'
 			THEN '' ELSE sr.project_hash END AS identity_group,
 		COALESCE(NULLIF(p.repository_name, ''), NULLIF(p.project_name, ''), '') AS project_name
-	FROM visible_session_records sr
+	FROM (`+attributedRowsSQL("visible_session_records", `sr.ts >= $1 AND sr.ts < $2 `+scope+` AND sr.project_hash <> ''`,
+		[]string{"project_hash", "session_id", "agent"})+`) sr
 	LEFT JOIN projects p
 		ON p.agent = COALESCE(NULLIF(sr.agent, ''), 'claude')
 		AND p.project_hash = sr.project_hash
-	WHERE sr.ts >= $1 AND sr.ts < $2 `+scope+` AND sr.project_hash <> ''
 )
 SELECT MIN(project_hash), ARRAY_AGG(DISTINCT project_hash ORDER BY project_hash),
 	identity_repository_id,
@@ -150,7 +163,7 @@ SELECT MIN(project_hash), ARRAY_AGG(DISTINCT project_hash ORDER BY project_hash)
 	COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0)
 FROM scoped_projects
 GROUP BY identity_repository_id, identity_group
-ORDER BY 6 DESC, 1`, since, until, userID, profileEmail)
+ORDER BY 6 DESC, 1`, plannedPerCall, since, until, userID, profileEmail)
 	if err != nil {
 		return nil, err
 	}

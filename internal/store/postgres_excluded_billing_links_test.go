@@ -509,21 +509,19 @@ func TestRecomputeDoesNotBlockDashboardReads(t *testing.T) {
 		t.Fatalf("recomputeExcludedSessionsTx: %v", err)
 	}
 
-	conn, err := s.pool.Acquire(ctx)
+	// The reader's lock timeout lives in its own transaction, rolled back before
+	// its connection goes back to the pool, so no later test inherits it.
+	reader, err := s.pool.Begin(ctx)
 	if err != nil {
-		t.Fatalf("acquire: %v", err)
+		t.Fatalf("begin reader: %v", err)
 	}
-	defer conn.Release()
-	// The connection goes back to the shared pool: a session-level SET left on it
-	// would reach whichever test draws it next (TestMigrateLeavesNoLockTimeoutOnPooledConnections
-	// failed under -shuffle=66 that way). Deferred after Release's defer, so it runs first.
-	defer func() { _, _ = conn.Exec(context.Background(), `RESET lock_timeout`) }()
-	if _, err := conn.Exec(ctx, `SET lock_timeout = '1s'`); err != nil {
+	defer reader.Rollback(ctx)
+	if _, err := reader.Exec(ctx, `SET LOCAL lock_timeout = '1s'`); err != nil {
 		t.Fatalf("set lock_timeout: %v", err)
 	}
 	for _, view := range []string{"visible_session_records", "visible_events"} {
 		var n int
-		if err := conn.QueryRow(ctx, "SELECT count(*) FROM "+view).Scan(&n); err != nil {
+		if err := reader.QueryRow(ctx, "SELECT count(*) FROM "+view).Scan(&n); err != nil {
 			t.Errorf("reading %s while a recompute is open: %v", view, err)
 		}
 	}

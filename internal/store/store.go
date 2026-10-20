@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 )
 
@@ -40,8 +41,11 @@ type OtelEvent struct {
 	Speed             string                 `json:"speed,omitempty"`
 	ServiceVersion    string                 `json:"service_version,omitempty"`
 	Attrs             map[string]interface{} `json:"attrs,omitempty"`
-	Agent             string                 `json:"agent,omitempty"`            // "claude" | "codex" | "gjc" | "omo"
-	BillingProvider   string                 `json:"billing_provider,omitempty"` // "anthropic" | "openai"
+	// Envelope travels through the private ingest queue. General event readers
+	// deliberately do not select it; only owner-authorized trace audit may.
+	Envelope        json.RawMessage `json:"source_envelope,omitempty"`
+	Agent           string          `json:"agent,omitempty"`            // "claude" | "codex" | "gjc" | "omo"
+	BillingProvider string          `json:"billing_provider,omitempty"` // "anthropic" | "openai"
 }
 
 // OtelMetric represents a parsed OTEL metric data point.
@@ -117,13 +121,17 @@ type SessionRecord struct {
 	// carries (Codex tool_call/tool_output, gjc tool_call, omo tool_result). Empty for
 	// Claude, whose one record can hold several tool_use blocks; arguments and output
 	// stay in Raw so client-side redaction still covers them.
-	ToolName         string `json:"tool_name,omitempty"`
-	ToolCallID       string `json:"tool_call_id,omitempty"`
-	IsCompactSummary bool   `json:"is_compact_summary,omitempty"` // first record of a /compact continuation session
-	IsMeta           bool   `json:"is_meta,omitempty"`            // local-command scaffolding (caveat etc.)
-	PromptSource     string `json:"prompt_source,omitempty"`      // typed/paste/queued/sdk/system — genuine turns carry this
-	Entrypoint       string `json:"entrypoint,omitempty"`         // cli | sdk-cli (headless) | claude-desktop
-	CctraceVersion   string `json:"cctrace_version,omitempty"`    // cctrace collector version that produced this record
+	ToolName               string `json:"tool_name,omitempty"`
+	ToolCallID             string `json:"tool_call_id,omitempty"`
+	MessageID              string `json:"message_id,omitempty"`
+	IsCompactSummary       bool   `json:"is_compact_summary,omitempty"` // first record of a /compact continuation session
+	IsMeta                 bool   `json:"is_meta,omitempty"`            // local-command scaffolding (caveat etc.)
+	PromptSource           string `json:"prompt_source,omitempty"`      // typed/paste/queued/sdk/system — genuine turns carry this
+	Entrypoint             string `json:"entrypoint,omitempty"`         // cli | sdk-cli (headless) | claude-desktop
+	CodexTurnID            string `json:"codex_turn_id,omitempty"`
+	CodexRootTurnID        string `json:"codex_root_turn_id,omitempty"`
+	CodexTurnMetadataKnown bool   `json:"codex_turn_metadata_known,omitempty"`
+	CctraceVersion         string `json:"cctrace_version,omitempty"` // cctrace collector version that produced this record
 	// AccountID is the provider billing account this record is attributed to
 	// (Codex: chatgpt_account_id, read locally from auth.json). Empty means the
 	// account in use at that time was never observed — not "the current one".
@@ -219,27 +227,86 @@ type MetricFilter struct {
 
 // SessionRecordFilter is used to query session records.
 type SessionRecordFilter struct {
-	ProfileEmail string
-	UserID       string
-	SessionID    string
-	Limit        int
-	Offset       int
-	Order        string // "asc" for oldest-first (session detail lazy-load); default newest-first
+	LoginEmail    string
+	ProfileEmail  string
+	UserID        string
+	SessionID     string
+	Limit         int
+	Offset        int
+	Order         string     // "asc" for oldest-first (session detail lazy-load); default newest-first
+	Conversation  bool       // exclude only universally hidden record types before pagination
+	Anchor        string     // exact public view anchor; independent of loaded pages
+	ExactAnchor   bool       // return the exact source row, rather than a surrounding window
+	AnchorTime    *time.Time // explicit recorded input timestamp, never a nearest-time guess
+	TurnKey       string     // canonical turn fact's exact opener, without full analysis lookup
+	Direction     string     // previous-request or next-request relative to an exact anchor
+	OriginFound   *bool      // optional navigation output: distinguish missing origin from a boundary
+	SourceFile    string     // disambiguate source copies when opening an anchor
+	Start         string     // latest-request starts at the most recent main-thread request
+	StartOffset   *int       // optional output: resolved chronological offset; -1 for missing anchor
+	ContextOnly   bool       // instructions and hook records, without analysis dependencies
+	RelatedToolID string     // exact call id only; never infer causality from timestamps
+}
+
+var conversationClaudeBookkeepingTypes = []string{
+	"last-prompt", "history-suppression", "cost-state", "permission-mode", "atis-latch", "agent-name",
+	"ai-title", "custom-title", "pr-link", "continued-in", "mode",
+}
+
+var conversationKnownAgents = []string{"", "claude", "codex", "omo", "gjc"}
+
+// AlwaysHiddenConversationRecord is the canonical raw-independent projection
+// whitelist shared by sessionview and the SQL page filter.
+func AlwaysHiddenConversationRecord(agent, recordType string) bool {
+	if recordType == "system" {
+		for _, known := range conversationKnownAgents {
+			if agent == known {
+				return true
+			}
+		}
+	}
+	if agent != "" && agent != "claude" {
+		return false
+	}
+	for _, known := range conversationClaudeBookkeepingTypes {
+		if recordType == known {
+			return true
+		}
+	}
+	return false
+}
+
+// ConversationProjectionPredicate returns a SQL keep predicate generated from
+// the same whitelist. Explicit NULL guards retain nullable and unrecognized data.
+func ConversationProjectionPredicate() string {
+	quote := func(values []string) string {
+		quoted := make([]string, len(values))
+		for i, value := range values {
+			quoted[i] = "'" + strings.ReplaceAll(value, "'", "''") + "'"
+		}
+		return strings.Join(quoted, ",")
+	}
+	return "NOT (agent IS NOT NULL AND record_type IS NOT NULL AND ((agent IN (" + quote(conversationKnownAgents) +
+		") AND record_type = 'system') OR (agent IN ('', 'claude') AND record_type IN (" + quote(conversationClaudeBookkeepingTypes) + "))))"
 }
 
 // SessionOverviewFilter scopes the paged session overview and matching total count.
 type SessionOverviewFilter struct {
-	ProfileEmail  string
-	LoginEmail    string
-	UserID        string
-	Since         *time.Time
-	Until         *time.Time
-	Limit         int
-	FoldLineage   bool
-	Source        string
-	Offset        int
-	ProjectHashes []string
-	Agent         string
+	ProfileEmail    string
+	LoginEmail      string
+	UserID          string
+	Since           *time.Time
+	Until           *time.Time
+	Limit           int
+	FoldLineage     bool
+	Source          string
+	Offset          int
+	ProjectHashes   []string
+	Agent           string
+	Classification  string
+	DashboardUserID int64
+	PersonalEmail   string
+	PersonalUserID  string
 	// OnlyUnattributed counts the sessions a login_email filter necessarily
 	// drops: those carrying no account identity anywhere, in OTEL or in synced
 	// records. Reporting that number is what keeps the filter honest -- these
@@ -250,7 +317,18 @@ type SessionOverviewFilter struct {
 	// A session the inference pass attributed (#346) drops out of this count. That
 	// narrows the population an operator sees, deliberately: see the has_account
 	// expression in postgres_session_overview_rollup.go for the argument.
-	OnlyUnattributed bool
+	OnlyUnattributed      bool
+	IncludeAnalysis       bool
+	AnalysisOwner         bool
+	AnalysisCategory      string
+	AnalysisPlan          string
+	AnalysisQuery         string
+	AnalysisSort          string
+	IncludeSessionRecords bool
+	AnalysisBucket        string
+	AnalysisKind          string
+	AnalysisComponent     string
+	AnalysisScreen        string
 }
 
 // CostSummary holds aggregated cost data.
@@ -395,6 +473,12 @@ type TaskSegment struct {
 	CommandCount  int64      `json:"command_count"`
 	InputTokens   int64      `json:"input_tokens"`
 	OutputTokens  int64      `json:"output_tokens"`
+	// TokensReady says whether InputTokens and OutputTokens count requests. It is
+	// false until step 8 of the P1t transition (task_segment_tokens_v2) has
+	// recounted the stored segments, which until then may count a response once
+	// per JSONL line; the screen says the tokens are being recalculated instead of
+	// showing them.
+	TokensReady bool `json:"tokens_ready"`
 	// ToolEvidence says whether ToolCallCount was measured. A Claude segment's calls
 	// come from OTEL and its tokens from the JSONL sync, so a session collected on a
 	// machine with no exporter reports real tokens and zero calls -- which reads as
@@ -873,7 +957,10 @@ type SessionOverview struct {
 	// empty for legacy sessions collected before CctraceVersionSince.
 	CctraceVersion string `json:"cctrace_version,omitempty"`
 	// ClaudeVersion is the Claude Code client version, aggregated from otel_events.service_version.
-	ClaudeVersion string `json:"claude_version,omitempty"`
+	ClaudeVersion  string                 `json:"claude_version,omitempty"`
+	Classification *string                `json:"classification,omitempty"`
+	FirstLine      *string                `json:"first_line,omitempty"`
+	Analysis       map[string]interface{} `json:"analysis,omitempty"`
 }
 
 // QuotaSnapshot holds the latest Anthropic rate-limit utilization for a profile.
@@ -1070,6 +1157,18 @@ type RetentionPreview struct {
 
 // Store defines the persistence interface for OTEL data.
 type Store interface {
+	// Private dashboard state
+	GetPersonalSession(ctx context.Context, dashboardUserID int64, sessionID, email, userID string) (*PersonalSessionState, error)
+	GetPersonalSessionOverview(ctx context.Context, dashboardUserID int64, sessionID, email, userID string) (*SessionOverview, error)
+	PersonalSessionOverviewValues(ctx context.Context, dashboardUserID int64, email, userID string, sessionIDs []string) (map[string]PersonalOverviewValues, error)
+	PutPersonalSession(ctx context.Context, dashboardUserID int64, sessionID, email, userID string, class, note *string, expected int64) (*PersonalSessionState, error)
+	DeletePersonalSession(ctx context.Context, dashboardUserID int64, sessionID, email, userID string, expected int64) (*PersonalSessionState, error)
+	GetPersonalGlobalNote(ctx context.Context, userID int64) (*PersonalGlobalNote, error)
+	PutPersonalGlobalNote(ctx context.Context, userID int64, text string, expected int64, deleteNote bool) (*PersonalGlobalNote, error)
+	PersonalSessionNotes(ctx context.Context, userID int64, email, sourceUserID string, limit int, cursor string) (*PersonalNotePage, error)
+	PersonalSessionCounts(ctx context.Context, userID int64, email, sourceUserID string, filter PersonalCountFilter) (*PersonalClassificationCounts, error)
+	PrunePersonalState(ctx context.Context) (int64, error)
+
 	// Lifecycle
 	Migrate(ctx context.Context) error
 	Close() error
@@ -1097,6 +1196,13 @@ type Store interface {
 	ListSessionOverviews(ctx context.Context, f SessionOverviewFilter) ([]*SessionOverview, error)
 	SessionAccountSegments(ctx context.Context, sessionID string) ([]*SessionAccountSegment, error)
 	CountSessionOverviews(ctx context.Context, f SessionOverviewFilter) (int, error)
+	SessionOverviewAnalysisCountWithClassification(ctx context.Context, f SessionOverviewFilter, includeUnattributed bool) (int, map[string]int, int, error)
+	SessionOverviewJudgementBucketCounts(ctx context.Context, f SessionOverviewFilter) (map[string]int, error)
+	SessionOverviewCategoryCounts(ctx context.Context, f SessionOverviewFilter) (map[string]int, error)
+	SessionOverviewClassificationCounts(ctx context.Context, f SessionOverviewFilter) (map[string]int, error)
+	GetSessionGroups(ctx context.Context, f SessionOverviewFilter) (*SessionGroups, error)
+	GetSessionGroupMembers(ctx context.Context, f SessionOverviewFilter, key, cursor string, limit int) (*SessionGroupMemberPage, error)
+	UpdateSessionGroupDismissals(ctx context.Context, f SessionOverviewFilter, items []SessionGroupDismissal, dismiss bool, groupKeys ...string) error
 	UsageAggregates(ctx context.Context, f SessionOverviewFilter) (*UsageAggregate, error)
 
 	// Read - Aggregations
@@ -1185,10 +1291,29 @@ type Store interface {
 	// Quota history
 	InsertQuotaSamples(ctx context.Context, samples []*QuotaSample) (int, error)
 	ListQuotaSamples(ctx context.Context, f QuotaSampleFilter) ([]*QuotaSample, error)
+	ApplyQuotaAccountBinding(ctx context.Context, dashboardUserID int64, billingProvider, accountID string) (*QuotaAccountBinding, error)
+	ListQuotaAccountBindings(ctx context.Context, dashboardUserID int64) ([]*QuotaAccountBinding, error)
+	ListAdminQuotaAccountBindings(ctx context.Context, status string) ([]*QuotaAccountBinding, error)
+	ApproveQuotaAccountBinding(ctx context.Context, bindingID, adminUserID int64, method, reference string) (*QuotaAccountBinding, error)
+	RevokeQuotaAccountBinding(ctx context.Context, bindingID, adminUserID int64) (*QuotaAccountBinding, error)
+	InsertQuotaOwnerSamples(ctx context.Context, dashboardUserID int64, samples []*QuotaOwnerSample) (int, error)
+	ListQuotaUsage(ctx context.Context, dashboardUserID int64, from, to, now time.Time) ([]*QuotaUsageAccount, error)
+	CompareQuotaUsageWindows(ctx context.Context, dashboardUserID int64, billingProvider, accountID string, windowMinutes, limitWindows int, now time.Time) (*QuotaWindowComparison, error)
 
 	// Client versions
 	UpsertClientVersion(ctx context.Context, update ClientVersionUpdate) error
 	ListClientVersions(ctx context.Context) ([]*ClientVersionRecord, error)
+	UpsertClientPolicyReport(ctx context.Context, report ClientPolicyReport) error
+
+	// Session observations: what the collector reports outside session_records --
+	// snapshots, live states, observation events and its own heartbeat.
+	// IngestSessionObservations writes one request's batch in one transaction;
+	// TouchCollectorStored marks a committed sync; PruneSessionObservations drops
+	// observation events older than the cutoff, and rows of all three session
+	// tables older than the session retention when one is set.
+	IngestSessionObservations(ctx context.Context, batch SessionObservationBatch) (SessionObservationResult, error)
+	TouchCollectorStored(ctx context.Context, userID, profileEmail string, at time.Time) error
+	PruneSessionObservations(ctx context.Context, eventsOlderThan time.Time) (int64, error)
 
 	// Retention (opt-in): reconcile drop-chunk policies to match RetentionConfig.
 	ReconcileRetention(ctx context.Context, cfg RetentionConfig) error
@@ -1212,6 +1337,13 @@ type Store interface {
 	// UsageRollupRebuildPending is whether an exclusion change is still waiting for
 	// the usage rebuild it queued; the exclusion lists report it.
 	UsageRollupRebuildPending(ctx context.Context) (bool, error)
+
+	// RequestSetMigrationStatus is where the P1t transition stands; the dashboard
+	// shows a note on every page while its token rule is pending.
+	RequestSetMigrationStatus(ctx context.Context) (RequestSetMigrationStatus, error)
+	SessionFactStatus(ctx context.Context) (SessionFactStatus, error)
+	ReadSessionAnalysis(ctx context.Context, sessionID string, access SessionAnalysisAccess) (map[string]interface{}, error)
+	ReadSessionCalendar(ctx context.Context, filter SessionCalendarFilter) (SessionCalendar, error)
 
 	// Admin - Excluded accounts (hidden from the dashboard, rows kept)
 	ListExcludedAccounts(ctx context.Context) ([]ExcludedAccount, error)

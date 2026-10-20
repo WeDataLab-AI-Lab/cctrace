@@ -59,7 +59,7 @@ than silently shipping a server that serves an empty page. Build it first:
 # requires: web-dist — refuses a placeholder; both binaries into dist/
 make build
 make test-unit           # unit tests
-# requires: golangci-lint
+# requires: golangci-lint — built with go1.27, the release LINT_GO names in the Makefile
 make lint
 # requires: docker — the full suite, including the container integration tests
 make test

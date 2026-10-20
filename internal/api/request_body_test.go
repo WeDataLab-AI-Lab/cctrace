@@ -39,6 +39,10 @@ func (m *bodyLimitStore) IngestProjectRules(context.Context, *store.ProjectRuleI
 	m.calls++
 	return &store.ProjectRuleIngestResponse{}, nil
 }
+func (m *bodyLimitStore) IngestSessionObservations(context.Context, store.SessionObservationBatch) (store.SessionObservationResult, error) {
+	m.calls++
+	return store.SessionObservationResult{}, nil
+}
 
 func TestRequestBodyLimit(t *testing.T) {
 	for _, route := range []struct {
@@ -49,6 +53,7 @@ func TestRequestBodyLimit(t *testing.T) {
 		{"/api/quota", `{"profile_email":"synthetic@example.invalid"}`, maxQuotaRequestBodyBytes},
 		{"/api/quota-samples", `{"samples":[]}`, maxQuotaSamplesRequestBodyBytes},
 		{"/api/project-rules", `{}`, maxProjectRulesRequestBodyBytes},
+		{"/api/session-observations", `{"heartbeat_at":"2026-10-05T09:00:00Z"}`, maxSessionObservationsRequestBodyBytes},
 	} {
 		for _, framing := range []string{"known", "unknown", "chunked"} {
 			for _, extra := range []int{0, 1} {
@@ -171,7 +176,7 @@ func TestRequestBodyLimitAfterAuthentication(t *testing.T) {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusUnauthorized) })
 	}
 	srv := newServer(&mockStore{}, nil, deny, deny)
-	for _, path := range []string{"/api/sync", "/api/quota", "/api/quota-samples", "/api/project-rules", "/api/admin/users"} {
+	for _, path := range []string{"/api/sync", "/api/quota", "/api/quota-samples", "/api/project-rules", "/api/client-policy-report", "/api/session-observations", "/api/admin/users"} {
 		t.Run(path, func(t *testing.T) {
 			probe := &bodyReadProbe{}
 			req := httptest.NewRequest(http.MethodPost, path, probe)

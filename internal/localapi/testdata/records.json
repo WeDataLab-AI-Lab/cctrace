@@ -1,0 +1,75 @@
+{
+  "next_cursor": null,
+  "records": [
+    {
+      "agent": "claude",
+      "model": "",
+      "profile_email": "",
+      "project_hash": "-sample",
+      "raw": {
+        "message": {
+          "content": "hello",
+          "role": "user"
+        },
+        "sessionId": "native-id",
+        "timestamp": "2026-01-01T00:00:00Z",
+        "type": "user",
+        "uuid": "u1"
+      },
+      "record_type": "user",
+      "session_id": "native-id",
+      "source_file": "session.jsonl",
+      "ts": "2026-01-01T00:00:00Z",
+      "uuid": "u1",
+      "view": {
+        "anchor_id": "u1",
+        "dedupe_key": "d:b54bfc86c2711fed",
+        "kind": "message",
+        "role": "user",
+        "text": "hello"
+      }
+    },
+    {
+      "agent": "claude",
+      "model": "test-model",
+      "parent_uuid": "u1",
+      "profile_email": "",
+      "project_hash": "-sample",
+      "raw": {
+        "message": {
+          "content": [
+            {
+              "text": "hi",
+              "type": "text"
+            }
+          ],
+          "id": "m1",
+          "model": "test-model",
+          "role": "assistant",
+          "usage": {
+            "input_tokens": 10,
+            "output_tokens": 2
+          }
+        },
+        "parentUuid": "u1",
+        "sessionId": "native-id",
+        "timestamp": "2026-01-01T00:00:02Z",
+        "type": "assistant",
+        "uuid": "a1"
+      },
+      "record_type": "assistant",
+      "session_id": "native-id",
+      "source_file": "session.jsonl",
+      "ts": "2026-01-01T00:00:02Z",
+      "uuid": "a1",
+      "view": {
+        "anchor_id": "a1",
+        "dedupe_key": "d:c524413b3207640b",
+        "kind": "message",
+        "role": "assistant",
+        "text": "hi"
+      }
+    }
+  ],
+  "revision": "44444444444444444444444444444444"
+}

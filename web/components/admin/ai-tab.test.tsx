@@ -43,6 +43,7 @@ queryMock.ai = {
   settings: null,
   // The built-in default, off: these tests are about runtime choice, not schedules.
   schedule: { enabled: false, enabled_source: 'default', weekday: 1, hour: 6, minute: 0, when_source: 'default', tz: '' },
+  run_policy: { consent_required: false, consent_required_source: 'default', max_concurrent: 2, max_concurrent_source: 'default', max_concurrent_default: 2, max_concurrent_max: 10 },
   usage_this_week: { runs: 1, failed: 0, input_tokens: 1000, output_tokens: 200 },
 } satisfies AdminAIResponse;
 

@@ -27,11 +27,27 @@ func lockPluginInvocationFacts(ctx context.Context, tx pgx.Tx, exclusive bool) e
 	return nil
 }
 
+// factRefreshSessions is the sessions a fact refresh recomputes: ids without the
+// empty one. A line without a session belongs to none, and named, the empty id
+// would have the refresh read every such line of the table as one session. It is
+// dropped here rather than by each caller, since the retention passes take their
+// ids from the fact tables themselves.
+func factRefreshSessions(ids []string) []string {
+	out := make([]string, 0, len(ids))
+	for _, id := range ids {
+		if id != "" {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
 // refreshPluginInvocationFacts replaces all command facts for touched sessions.
 // Recomputing the session, rather than appending the new records, is required because
 // sync may deliver an earlier response or the next user boundary after a fact exists.
 // Empty input, including nil, is a no-op. Full rebuilds use a separate entry point.
 func refreshPluginInvocationFacts(ctx context.Context, tx pgx.Tx, sessionIDs []string) error {
+	sessionIDs = factRefreshSessions(sessionIDs)
 	if len(sessionIDs) == 0 {
 		return nil
 	}
@@ -46,7 +62,8 @@ func refreshPluginInvocationFacts(ctx context.Context, tx pgx.Tx, sessionIDs []s
 		WHERE session_id = ANY($1::text[])`, sessionIDs); err != nil {
 		return fmt.Errorf("delete plugin invocation facts: %w", err)
 	}
-	if _, err := tx.Exec(ctx, pluginInvocationFactsInsertSQL, sessionIDs); err != nil {
+	// Unprepared, so each list is planned for itself (pluginInvocationFactsRefreshSQL).
+	if _, err := tx.Exec(ctx, pluginInvocationFactsRefreshSQL, pgx.QueryExecModeExec, sessionIDs); err != nil {
 		return fmt.Errorf("insert plugin invocation facts: %w", err)
 	}
 	return nil
@@ -61,7 +78,7 @@ func rebuildAllPluginInvocationFacts(ctx context.Context, tx pgx.Tx) error {
 	if _, err := tx.Exec(ctx, `DELETE FROM plugin_invocation_facts`); err != nil {
 		return fmt.Errorf("delete plugin invocation facts: %w", err)
 	}
-	if _, err := tx.Exec(ctx, pluginInvocationFactsInsertSQL, nil); err != nil {
+	if _, err := tx.Exec(ctx, pluginInvocationFactsRebuildSQL); err != nil {
 		return fmt.Errorf("insert plugin invocation facts: %w", err)
 	}
 	return nil
@@ -171,9 +188,25 @@ func (s *PgStore) ReconcilePluginInvocationFactsForRetention(ctx context.Context
 // 12+ minutes and still running inlined, 2.9 seconds materialized. It matters because
 // the backfill holds the exclusive advisory lock the ingest path waits on as a shared
 // lock, so however long this takes is how long session record writes stall.
-const pluginInvocationFactsInsertSQL = `
+//
+// The tokens count requests (p1t-design §6.3): syncAttributedRowsSQL gives a
+// request's tokens to its head line and 0 to its other lines, a Codex usage row
+// its defended, normalised tokens and any other Codex row 0. The window is what
+// it was -- [command, next human turn), the command's own instant included for an
+// assistant command -- plus, for a command on a line of a Claude request, that
+// request's other lines: an implicit command on a response's second line gets the
+// response whose head is before it, and no other. pluginUsageRawQuery reads the
+// same rows by the same window.
+//
+// sessions names the sessions to rebuild: $1::text[], or NULL::text[] for all --
+// a value the planner sees, as syncAttributedRowsSQL requires. Their rows are read
+// whole -- on a sync more sessions than have commands, which changes no value,
+// since each session is computed on its own.
+func pluginInvocationFactsInsertSQL(sessions string) string {
+	return `
 WITH commands AS MATERIALIZED (
 	SELECT sr.id, sr.session_id, sr.ts, sr.record_type, sr.command_name,
+		CASE WHEN ` + claudeRequestLineSQL("sr") + ` THEN ` + claudeRequestKeySQL("sr") + ` END AS req_key,
 		COALESCE(sr.command_source, '') AS command_source,
 		sr.profile_email, COALESCE(sr.login_email, '') AS login_email,
 		COALESCE(sr.user_id, '') AS user_id,
@@ -206,7 +239,7 @@ WITH commands AS MATERIALIZED (
 	WHERE sr.command_name <> ''
 	  AND NOT EXISTS (SELECT 1 FROM deleted_sessions d WHERE d.session_id = sr.session_id)
 	  AND (sr.command_source = '' OR sr.command_source = 'plugin')
-	  AND ($1::text[] IS NULL OR sr.session_id = ANY($1))
+	  AND (` + sessions + ` IS NULL OR sr.session_id = ANY(` + sessions + `))
 )
 INSERT INTO plugin_invocation_facts (
 	source_record_id, session_id, command_ts, command_name, command_source,
@@ -216,20 +249,36 @@ INSERT INTO plugin_invocation_facts (
 SELECT c.id, c.session_id, c.ts, c.command_name, c.command_source, c.profile_email,
 	c.login_email, c.user_id, c.agent, c.project_hash, c.repository_id,
 	c.repository_name, c.repo_subpath, c.commit_sha, c.branch,
-	COALESCE(SUM(CASE WHEN c.agent = 'codex'
-		THEN GREATEST(COALESCE(r.input_tokens, 0) - COALESCE(r.cache_read_tokens, 0), 0)
-		ELSE COALESCE(r.input_tokens, 0) END), 0),
-	COALESCE(SUM(COALESCE(r.output_tokens, 0)), 0),
+	COALESCE(SUM(COALESCE(r.req_input_tokens, 0)), 0),
+	COALESCE(SUM(COALESCE(r.req_output_tokens, 0)), 0),
 	c.billing_provider, c.account_id
 FROM commands c
-LEFT JOIN session_records r ON r.session_id = c.session_id
-	AND COALESCE(NULLIF(r.agent, ''), 'claude') = c.agent
-	AND ((c.agent = 'codex' AND r.record_type = 'usage')
-	  OR (c.agent <> 'codex' AND r.record_type = 'assistant'))
-	AND ((c.record_type = 'assistant' AND r.ts >= c.ts)
-	  OR (c.record_type <> 'assistant' AND r.ts > c.ts))
-	AND (c.next_user_ts IS NULL OR r.ts < c.next_user_ts)
+LEFT JOIN (` + syncAttributedRowsSQL(sessions, []string{"session_id", "ts"}) + `) r ON r.session_id = c.session_id
+	-- No agent or record-type condition, as there used to be: which rows carry
+	-- tokens is the rule's to say. In production only assistant rows of Claude, gjc
+	-- and omo and Codex usage rows carry any, and no session mixes agents, so this
+	-- changed no value and keeps task segments and plugin facts on one rule.
+	AND ((((c.record_type = 'assistant' AND r.ts >= c.ts)
+	    OR (c.record_type <> 'assistant' AND r.ts > c.ts))
+	  AND (c.next_user_ts IS NULL OR r.ts < c.next_user_ts))
+	  OR r.req_key = c.req_key)
 GROUP BY c.id, c.session_id, c.ts, c.command_name, c.command_source, c.profile_email,
 	c.login_email, c.user_id, c.agent, c.project_hash, c.repository_id,
 	c.repository_name, c.repo_subpath, c.commit_sha, c.branch,
 	c.billing_provider, c.account_id`
+}
+
+// The per-session refresh runs unprepared, with pgx.QueryExecModeExec, so
+// PostgreSQL plans each execution for the list it is given and reads one session
+// through an index on session_id. Prepared, as pgx's statement cache would have
+// it, the statement can be tipped into a generic plan for good once a whole-table
+// execution is among a connection's first five -- a NULL, or a list as long as
+// MergeUsers, DeleteUserData, a first bulk upload or a retention pass hands in --
+// and a generic plan cannot fold $1 IS NULL: every later refresh of that
+// connection would scan all of session_records, until the connection is
+// recycled. The full rebuild has a text of its own with its NULL as a constant,
+// which the planner folds however pgx runs it.
+var (
+	pluginInvocationFactsRefreshSQL = pluginInvocationFactsInsertSQL("$1::text[]")
+	pluginInvocationFactsRebuildSQL = pluginInvocationFactsInsertSQL("NULL::text[]")
+)

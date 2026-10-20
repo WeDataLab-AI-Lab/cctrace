@@ -33,7 +33,7 @@ const reportPanelState = (data: AIReportsResponse): ReportPanelView => {
   // stop button through a cached runtime blip or a disclosure change mid-run.
   if (data.run?.status === 'running') return none('running');
   if (!data.runtime.available) return none('unavailable');
-  if (!data.consent.granted) return none('consent_required');
+  if (data.consent.required && !data.consent.granted) return none('consent_required');
   if (data.segment_count === 0) return none('no_records');
   if (data.run?.status === 'failed') return { state: 'failed', report: data.report };
   if (data.report === null) return none('not_generated');

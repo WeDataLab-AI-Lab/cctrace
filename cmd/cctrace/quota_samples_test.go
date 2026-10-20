@@ -2,12 +2,16 @@ package main
 
 import (
 	"context"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"cctrace/internal/syncer"
 	"cctrace/internal/usage"
 )
 
@@ -134,5 +138,45 @@ func TestSendQuotaSamplesStaysSilentWhenNothingSwitched(t *testing.T) {
 		if out := stdout + stderr; out != "" {
 			t.Fatalf("tick %d reported %q on an unchanged account", i, out)
 		}
+	}
+}
+
+func TestSendQuotaSamplesUploadsPrivateRowsEvenWhenSharedHistoryIsUnsupported(t *testing.T) {
+	useProgressTTY(t, false)
+	setupTestHome(t)
+	quotaSamplesUnsupported.Store(true)
+	quotaOwnerSamplesUnsupported.Store(false)
+	t.Cleanup(func() {
+		quotaSamplesUnsupported.Store(false)
+		quotaOwnerSamplesUnsupported.Store(false)
+	})
+	ownerCalls, sharedCalls := 0, 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/me/quota-usage/samples":
+			ownerCalls++
+			body, _ := io.ReadAll(r.Body)
+			for _, forbidden := range []string{"someone@example.test", "login_email", "profile_email", "source_session_id"} {
+				if strings.Contains(string(body), forbidden) {
+					t.Errorf("private sample payload contains %q: %s", forbidden, body)
+				}
+			}
+		case "/api/quota-samples":
+			sharedCalls++
+		default:
+			t.Errorf("unexpected route %s", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+	claudeDir := t.TempDir()
+	writeAccountConfig(t, claudeDir, "acct-owner")
+	u := &usage.Response{
+		FetchedAt: time.Date(2026, 10, 9, 0, 0, 0, 0, time.UTC), TokenFingerprint: "token-fingerprint",
+		Limits: []usage.Limit{{Kind: usage.KindSession, Percent: 42, ResetsAt: "2026-10-09T05:00:00Z"}},
+	}
+	sendQuotaSamples(context.Background(), syncer.NewClient(srv.URL, "cct-user-token", ""), claudeDir, "someone@example.test", u)
+	if ownerCalls != 1 || sharedCalls != 0 {
+		t.Fatalf("owner calls=%d shared calls=%d; personal upload must not depend on legacy history", ownerCalls, sharedCalls)
 	}
 }

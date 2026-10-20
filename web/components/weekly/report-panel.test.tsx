@@ -36,7 +36,7 @@ const response = (over: Partial<AIReportsResponse> = {}): AIReportsResponse => (
   until: '2026-09-13T15:00:00Z',
   in_progress: false,
   runtime: { enabled: true, key: 'codex-app-server', configured: true, available: true, reason: null },
-  consent: { granted: true, runtime_key: 'codex-app-server:chatgpt', disclosure_version: '2026-09-14' },
+  consent: { required: true, granted: true, runtime_key: 'codex-app-server:chatgpt', disclosure_version: '2026-09-14' },
   segment_count: 58,
   // The built-in default, off: the state tests are about runs, not schedules.
   schedule: { enabled: false, enabled_source: 'default', weekday: 1, hour: 6, minute: 0, when_source: 'default', tz: 'Asia/Seoul', next_run: null },
@@ -104,7 +104,7 @@ describe('ReportPanelBody', () => {
   });
 
   it('offers analysis before consent, which opens the consent dialog', () => {
-    const html = render({ data: response({ consent: { granted: false, runtime_key: 'k', disclosure_version: 'v' } }) });
+    const html = render({ data: response({ consent: { required: true, granted: false, runtime_key: 'k', disclosure_version: 'v' } }) });
 
     expect(html).toContain('data-state="consent_required"');
     expect(html).toContain('분석 시작');

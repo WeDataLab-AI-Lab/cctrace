@@ -36,6 +36,7 @@ const ClearDataDialog = ({ user, onClose, onSuccess }: ClearDataDialogProps) => 
         <DialogTitle className="text-[15px] font-semibold text-ink">Clear Collected Data</DialogTitle>
         <p className="text-xs text-ink-3">{user.email} ({user.cctrace_user_id})</p>
         <p className="text-sm text-ink-2">This will permanently delete all OTEL events, metrics, and session records for this user. This action cannot be undone.</p>
+        <p className="text-sm text-ink-2">The user&apos;s privacy settings are deleted too, so sessions collected later are no longer hidden from AI session records.</p>
         {mutation.isError && <p className="text-xs text-danger">Failed to clear data. Please try again.</p>}
         <div className="flex gap-2 pt-1">
           <Button

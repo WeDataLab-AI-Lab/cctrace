@@ -325,6 +325,9 @@ func runGitResult(cwd string, args ...string) gitRun {
 	// at carry safe.directory. LC_ALL=C keeps stderr untranslated, so a failure
 	// can be told apart by its text.
 	cmd.Env = append(os.Environ(), "LC_ALL=C")
+	// As gitOutput: a child that keeps a pipe open must not hold the call past
+	// its timeout.
+	cmd.WaitDelay = commandWaitDelay
 	out, err := cmd.Output()
 	if err == nil {
 		return gitRun{out: strings.TrimSpace(string(out)), ok: true}
@@ -336,4 +339,114 @@ func runGitResult(cwd string, args ...string) gitRun {
 		r.stderr = strings.TrimSpace(string(ee.Stderr))
 	}
 	return r
+}
+
+// commandWaitDelay bounds how long a git call waits, once its deadline has
+// passed, for git and the pipes it holds before it returns anyway: a child that
+// keeps a pipe open would otherwise hold the call past its timeout.
+const commandWaitDelay = time.Second
+
+// gitOutput runs git in cwd under commandTimeout, or less when ctx ends first,
+// and returns its standard output as written.
+func gitOutput(ctx context.Context, cwd string, args ...string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, commandTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "git", append([]string{"-C", cwd}, args...)...)
+	cmd.WaitDelay = commandWaitDelay
+	return cmd.Output()
+}
+
+// NoAnswer reports whether err says git gave no answer at all -- it could not
+// be started, ran out of time, or was killed -- rather than answering with a
+// failure of its own, which it does by exiting with a status.
+func NoAnswer(err error) bool {
+	if err == nil {
+		return false
+	}
+	var exit *exec.ExitError
+	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) || !errors.As(err, &exit) {
+		return true
+	}
+	return exit.ExitCode() < 0
+}
+
+// WorkTreeRoot returns the top level of the git work tree dir lies in, as
+// `git rev-parse --show-toplevel` gives it: with symlinks resolved. When git
+// answers with a failure it returns "" and no error. That is exit 128 for a
+// directory outside any work tree, inside a .git directory, in a repository
+// whose owner git refuses (safe.directory, "dubious ownership"), or in a linked
+// worktree whose gitdir is gone. It returns an error only when git gave no
+// answer (NoAnswer). dir must exist: git answers a missing one as it answers
+// one outside any work tree.
+func WorkTreeRoot(ctx context.Context, dir string) (string, error) {
+	out, err := gitOutput(ctx, dir, "rev-parse", "--show-toplevel")
+	switch {
+	case err == nil:
+		return strings.TrimSuffix(string(out), "\n"), nil
+	case NoAnswer(err):
+		return "", err
+	}
+	return "", nil
+}
+
+// RepositoryID returns the repository id Resolve gives the work tree at root:
+// its origin's, or the local fallback when it has no origin. Unlike Resolve it
+// returns an error when git gave no answer about the origin (NoAnswer), rather
+// than taking that for a work tree without one.
+func RepositoryID(ctx context.Context, root string) (string, error) {
+	out, err := gitOutput(ctx, root, "remote", "get-url", "origin")
+	if NoAnswer(err) {
+		return "", err
+	}
+	if id := NormalizeRemoteURL(string(out)); err == nil && id != "" {
+		return id, nil
+	}
+	return LocalFallbackID(filepath.Base(root), root), nil
+}
+
+// pathspecChunkBytes bounds the pathspecs one status call carries, well under
+// the 32 KiB command line Windows allows; more are asked in further calls.
+const pathspecChunkBytes = 16 << 10
+
+// UncommittedPaths returns which of rels -- paths relative to the work tree at
+// root, slash-separated -- `git status --porcelain -z --untracked-files=all`
+// reports: changed and not yet committed, staged or not, deleted, or untracked.
+// A rename or copy is reported by its destination. Ignored files and
+// submodules are not reported. Only rels are asked about, each as a literal
+// pathspec, so a glob character or a leading colon in a name means itself, and
+// a work tree's other untracked files cost nothing. It takes no optional lock,
+// so a count running in the background never makes a git command the person
+// runs meanwhile fail on a held index lock. An error is git's: NoAnswer tells a
+// failure git answered with from no answer.
+func UncommittedPaths(ctx context.Context, root string, rels []string) (map[string]bool, error) {
+	paths := map[string]bool{}
+	args := []string{"--no-optional-locks", "status", "--porcelain", "-z", "--untracked-files=all", "--ignore-submodules=all", "--"}
+	for len(rels) > 0 {
+		chunk := append([]string(nil), args...)
+		size := 0
+		for len(rels) > 0 && (size == 0 || size+len(":(literal)")+len(rels[0]) <= pathspecChunkBytes) {
+			spec := ":(literal)" + rels[0]
+			chunk = append(chunk, spec)
+			size += len(spec)
+			rels = rels[1:]
+		}
+		out, err := gitOutput(ctx, root, chunk...)
+		if err != nil {
+			return nil, err
+		}
+		entries := strings.Split(string(out), "\x00")
+		for i := 0; i < len(entries); i++ {
+			// "XY path", the path written verbatim under -z.
+			entry := entries[i]
+			if len(entry) < 4 {
+				continue
+			}
+			paths[entry[3:]] = true
+			// A rename or a copy is followed by the path it came from.
+			if strings.ContainsAny(entry[:2], "RC") {
+				i++
+			}
+		}
+	}
+	return paths, nil
 }

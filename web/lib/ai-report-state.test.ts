@@ -33,7 +33,7 @@ const response = (over: Partial<AIReportsResponse> = {}): AIReportsResponse => (
   until: '2026-09-13T15:00:00Z',
   in_progress: false,
   runtime: { enabled: true, key: 'codex-app-server', configured: true, available: true, reason: null },
-  consent: { granted: true, runtime_key: 'codex-app-server:chatgpt', disclosure_version: '2026-09-14' },
+  consent: { required: true, granted: true, runtime_key: 'codex-app-server:chatgpt', disclosure_version: '2026-09-14' },
   segment_count: 58,
   // The built-in default, off: these tests are about which state wins, not
   // about schedules.
@@ -48,7 +48,7 @@ describe('reportPanelState', () => {
   it('is disabled while AI reports are switched off, above everything else', () => {
     const data = response({
       runtime: { enabled: false, key: '', configured: false, available: false, reason: null },
-      consent: { granted: false, runtime_key: '', disclosure_version: '' },
+      consent: { required: true, granted: false, runtime_key: '', disclosure_version: '' },
       report: report(),
     });
 
@@ -64,7 +64,7 @@ describe('reportPanelState', () => {
   it('is unconfigured when no runtime is set, above everything else', () => {
     const data = response({
       runtime: { enabled: true, key: '', configured: false, available: false, reason: null },
-      consent: { granted: false, runtime_key: '', disclosure_version: '' },
+      consent: { required: true, granted: false, runtime_key: '', disclosure_version: '' },
       segment_count: 0,
       report: report(),
     });
@@ -75,16 +75,24 @@ describe('reportPanelState', () => {
   it('is unavailable when the runtime is set but cannot be reached', () => {
     const data = response({
       runtime: { enabled: true, key: 'codex-app-server', configured: true, available: false, reason: '인증 만료' },
-      consent: { granted: false, runtime_key: 'k', disclosure_version: 'v' },
+      consent: { required: true, granted: false, runtime_key: 'k', disclosure_version: 'v' },
     });
 
     expect(reportPanelState(data).state).toBe('unavailable');
   });
 
   it('asks for consent before checking the week', () => {
-    const data = response({ consent: { granted: false, runtime_key: 'k', disclosure_version: 'v' }, segment_count: 0 });
+    const data = response({ consent: { required: true, granted: false, runtime_key: 'k', disclosure_version: 'v' }, segment_count: 0 });
 
     expect(reportPanelState(data).state).toBe('consent_required');
+  });
+
+  // Consent is asked only when an admin requires it; otherwise a user who never
+  // consented reads the week like anyone else.
+  it('skips consent when an admin does not require it', () => {
+    const data = response({ consent: { required: false, granted: false, runtime_key: 'k', disclosure_version: 'v' } });
+
+    expect(reportPanelState(data)).toEqual({ state: 'not_generated', report: null });
   });
 
   it('has nothing to read in a week without segments', () => {
@@ -107,7 +115,7 @@ describe('reportPanelState', () => {
     const running = run({ status: 'running', finished_at: null });
 
     expect(reportPanelState(response({ run: running, runtime: { enabled: true, key: 'k', configured: true, available: false, reason: null } })).state).toBe('running');
-    expect(reportPanelState(response({ run: running, consent: { granted: false, runtime_key: 'k', disclosure_version: 'v2' } })).state).toBe('running');
+    expect(reportPanelState(response({ run: running, consent: { required: true, granted: false, runtime_key: 'k', disclosure_version: 'v2' } })).state).toBe('running');
   });
 
   it('is running while the latest run runs, even over an earlier report', () => {

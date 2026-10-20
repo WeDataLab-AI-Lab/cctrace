@@ -12,6 +12,7 @@ import (
 
 	"cctrace/internal/gitctx"
 	"cctrace/internal/jsonlscan"
+	"cctrace/internal/sessionlog"
 )
 
 // Helpers for the tests that drive a session file's tail through SyncOnce with
@@ -261,20 +262,50 @@ func restartSyncer(t *testing.T, s *Syncer) *Syncer {
 }
 
 // reenrich runs one re-enrichment and returns the text of every record it
-// posted.
+// posted. A re-enriched record carries its collected fields and not its
+// message, so the text is read back from the session files, by the key the
+// record was posted under.
 func (fs *freshMetaServer) reenrich(t *testing.T, s *Syncer) []string {
 	t.Helper()
 	before := len(fs.sentSyncs())
-	if _, err := s.ReenrichOnce(context.Background()); err != nil {
+	if _, err := s.ReenrichOnce(context.Background(), false); err != nil {
 		t.Fatalf("ReenrichOnce: %v", err)
 	}
+	onDisk := sessionTextsByKey(t, s)
 	var texts []string
 	for _, p := range fs.sentSyncs()[before:] {
 		if !p.Reenrich {
 			t.Fatalf("re-enrichment sent a live sync request: %+v", p)
 		}
 		for _, r := range p.Records {
-			texts = append(texts, recordText(t, r.Raw))
+			text, ok := onDisk[r.UUID]
+			if !ok {
+				t.Fatalf("re-enrichment posted a record no session file holds: %+v", r)
+			}
+			texts = append(texts, text)
+		}
+	}
+	return texts
+}
+
+// sessionTextsByKey maps the uuid each record of s's session files is posted
+// under to the message text sessionLine wrote into it.
+func sessionTextsByKey(t *testing.T, s *Syncer) map[string]string {
+	t.Helper()
+	files, err := sessionlog.FindJSONLFiles(s.claudeDir)
+	if err != nil {
+		t.Fatalf("list session files: %v", err)
+	}
+	texts := map[string]string{}
+	for _, f := range files {
+		records, _, err := sessionlog.ScanFileContext(context.Background(), f, 0)
+		if err != nil {
+			t.Fatalf("scan %s: %v", f, err)
+		}
+		for _, r := range records {
+			if sr := toStoreRecord(r, s.profileEmail, s.userID, sessionlog.ProjectHash(s.claudeDir, f)); sr != nil {
+				texts[sr.UUID] = recordText(t, r.RawLine)
+			}
 		}
 	}
 	return texts

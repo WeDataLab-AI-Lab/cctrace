@@ -1,0 +1,18 @@
+{
+  "claude": {
+    "state": "stale",
+    "last_success_at": "2026-10-04T12:20:00Z",
+    "windows": [
+      {"name": "five_hour", "utilization": 50, "resets_at": "2026-10-04T15:00:00Z"}
+    ],
+    "error": {"code": "rate_limited", "message": "provider quota request was rate limited"}
+  },
+  "codex": {
+    "state": "stale",
+    "last_success_at": "2026-10-04T12:20:00Z",
+    "windows": [
+      {"name": "seven_day", "utilization": 49, "resets_at": "2026-10-10T12:00:00Z"}
+    ],
+    "error": {"code": "rate_limited", "message": "provider quota request was rate limited"}
+  }
+}

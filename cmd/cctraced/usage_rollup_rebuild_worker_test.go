@@ -68,6 +68,7 @@ func TestUsageRollupRebuildWorkerBacksOffOnFailure(t *testing.T) {
 			waits = append(waits, d)
 			if len(waits) == len(results) {
 				cancel()
+				return nil // Once canceled, do not race an always-ready fake timer.
 			}
 			ch := make(chan time.Time, 1)
 			ch <- time.Time{}
@@ -85,8 +86,11 @@ func TestUsageRollupRebuildWorkerBacksOffOnFailure(t *testing.T) {
 		5 * time.Minute, 5 * time.Minute, 5 * time.Minute, 5 * time.Minute, 5 * time.Minute, 5 * time.Minute, 5 * time.Minute,
 		5 * time.Second,
 	}
-	if len(waits) < len(want) {
-		t.Fatalf("waits = %v, want at least %d", waits, len(want))
+	if len(waits) != len(want) {
+		t.Fatalf("waits = %v, want exactly %d", waits, len(want))
+	}
+	if calls != len(results) {
+		t.Fatalf("runs = %d, want exactly %d", calls, len(results))
 	}
 	for i, w := range want {
 		if waits[i] != w {

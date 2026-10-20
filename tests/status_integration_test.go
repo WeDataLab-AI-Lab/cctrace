@@ -7,7 +7,7 @@ import (
 )
 
 func TestStatusDisplaysCorrectly(t *testing.T) {
-	home, bin := setupHome(t)
+	home, bin := setupInitHome(t)
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatalf("start OTEL listener: %v", err)
@@ -24,11 +24,13 @@ func TestStatusDisplaysCorrectly(t *testing.T) {
 	}()
 
 	ts := startAuthServer(t, "Alice Doe", "alice@example.com", "platform")
-	input := ts.URL + "\nhttp://" + ln.Addr().String() + "\nalice\ntestpass\nn\nn\n"
+	input := initAnswers(ts.URL, "http://"+ln.Addr().String(), "alice", "testpass", "n", "n")
 	_, err = runCctrace(t, bin, home, input, "init")
 	if err != nil {
 		t.Fatal("init failed:", err)
 	}
+
+	assertInitConsent(t, home, false)
 
 	out, err := runCctrace(t, bin, home, "", "status")
 	if err != nil {

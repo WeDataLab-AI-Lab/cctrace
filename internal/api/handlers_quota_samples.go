@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"cctrace/internal/auth"
 	"cctrace/internal/store"
 )
 
@@ -61,6 +62,11 @@ func (s *Server) handleQuotaSamplesWrite(w http.ResponseWriter, r *http.Request)
 
 // handleQuotaSamplesRead serves the chart's history query.
 func (s *Server) handleQuotaSamplesRead(w http.ResponseWriter, r *http.Request) {
+	user, ok := auth.UserFromContext(r.Context())
+	if !ok || user == nil {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
 	q := r.URL.Query()
 	f := store.QuotaSampleFilter{
 		BillingProvider: q.Get("billing_provider"),

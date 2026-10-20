@@ -33,6 +33,7 @@ func configCmd() *cobra.Command {
 	cmd.AddCommand(configGetCmd(&profileName))
 	cmd.AddCommand(configSetCmd(&profileName))
 	cmd.AddCommand(configListCmd(&profileName))
+	cmd.AddCommand(serverPolicyCmd(&profileName))
 
 	return cmd
 }
@@ -134,6 +135,9 @@ func runConfigSet(profileName string, key, value string) error {
 		// What was stored, not what was typed: "~" expanded and made absolute.
 		value = p.Server.CACertFile
 	}
+	if key == "codex_home" {
+		value = codexHomeDisplay(p.CodexHome)
+	}
 	fmt.Printf("  %s = %s\n", key, value)
 	if key == "server.ca_cert_file" || key == "server.protocol" || key == "server.endpoint" {
 		noteClaudeProtocolOverride(os.Stdout, p)
@@ -176,10 +180,11 @@ func flattenProfile(p *profile.Profile) []setting {
 		{"server.auth_token", mask(p.Server.AuthToken)},
 		{"server.read_token", mask(p.Server.ReadToken)},
 		{"server.ca_cert_file", strOr(p.Server.CACertFile, "(system roots)")},
-		{"options.sync_enabled", strconv.FormatBool(p.Options.SyncEnabled)},
+		{"options.sync_enabled", strconv.FormatBool(p.CollectionEnabled("claude"))},
+		{"options.local_analysis_enabled", strconv.FormatBool(p.Options.LocalAnalysisEnabled)},
 		{"options.redact_user_prompts", strconv.FormatBool(p.Options.RedactUserPrompts)},
 		{"options.redact_tool_details", strconv.FormatBool(p.Options.RedactToolDetails)},
-		{"options.codex_sync_enabled", strconv.FormatBool(p.Options.CodexSyncEnabled)},
+		{"options.codex_sync_enabled", strconv.FormatBool(p.CollectionEnabled("codex"))},
 		{"options.gjc_sync_enabled", strconv.FormatBool(p.Options.GjcSyncEnabled)},
 		{"options.omo_sync_enabled", strconv.FormatBool(p.Options.OmoSyncEnabled)},
 		{"options.metrics_export_interval", strconv.Itoa(p.Options.MetricsExportInterval)},
@@ -187,6 +192,7 @@ func flattenProfile(p *profile.Profile) []setting {
 		{"options.collect_repository_prefixes", strOr(strings.Join(p.Options.CollectRepositoryPrefixes, ","), "(all)")},
 		{"options.exclude_accounts", strOr(strings.Join(p.Options.ExcludeAccounts, ","), "(none)")},
 		{"options.codex_dirs", strOr(strings.Join(p.Options.CodexDirs, ","), "(default only)")},
+		{"codex_home", codexHomeDisplay(p.CodexHome)},
 		{"options.gjc_dirs", strOr(strings.Join(p.Options.GjcDirs, ","), "(default only)")},
 		{"options.omo_dirs", strOr(strings.Join(p.Options.OmoDirs, ","), "(default only)")},
 	}
@@ -199,7 +205,18 @@ func strOr(s, fallback string) string {
 	return s
 }
 
+func codexHomeDisplay(path string) string {
+	if path == "" {
+		return "(not configured)"
+	}
+	return "(configured)"
+}
+
 func setProfileField(p *profile.Profile, key, value string) error {
+	if p.HomesVersion != 0 && (key == "claude_config_dir" || key == "codex_home" || key == "options.codex_dirs") {
+		return fmt.Errorf("explicit home memberships require the home onboarding/editor")
+	}
+
 	switch key {
 	case "user.id":
 		p.User.ID = value
@@ -225,12 +242,24 @@ func setProfileField(p *profile.Profile, key, value string) error {
 			return err
 		}
 		p.Server.CACertFile = path
+	case "codex_home":
+		path, err := profile.NormalizeCodexHome(value)
+		if err != nil {
+			return err
+		}
+		p.CodexHome = path
+	case "options.local_analysis_enabled":
+		b, err := strconv.ParseBool(value)
+		if err != nil {
+			return fmt.Errorf("invalid bool value: %s (use true/false)", value)
+		}
+		p.Options.LocalAnalysisEnabled = b
 	case "options.sync_enabled":
 		b, err := strconv.ParseBool(value)
 		if err != nil {
 			return fmt.Errorf("invalid bool value: %s (use true/false)", value)
 		}
-		p.Options.SyncEnabled = b
+		p.SetCollectionEnabled("claude", b)
 	case "options.redact_user_prompts":
 		b, err := strconv.ParseBool(value)
 		if err != nil {
@@ -320,7 +349,7 @@ func setProfileField(p *profile.Profile, key, value string) error {
 		}
 		p.Options.OmoDirs = dirs
 	default:
-		return fmt.Errorf("unknown key: %s\nAvailable keys: user.id, user.name, user.email, user.team, server.endpoint, server.sync_endpoint, server.protocol, server.auth_token, server.read_token, server.ca_cert_file, options.sync_enabled, options.redact_user_prompts, options.redact_tool_details, options.codex_sync_enabled, options.gjc_sync_enabled, options.omo_sync_enabled, options.metrics_export_interval, options.logs_export_interval, options.collect_repository_prefixes, options.exclude_accounts, options.codex_dirs, options.gjc_dirs, options.omo_dirs", key)
+		return fmt.Errorf("unknown key: %s\nAvailable keys: user.id, user.name, user.email, user.team, server.endpoint, server.sync_endpoint, server.protocol, server.auth_token, server.read_token, server.ca_cert_file, codex_home, options.sync_enabled, options.local_analysis_enabled, options.redact_user_prompts, options.redact_tool_details, options.codex_sync_enabled, options.gjc_sync_enabled, options.omo_sync_enabled, options.metrics_export_interval, options.logs_export_interval, options.collect_repository_prefixes, options.exclude_accounts, options.codex_dirs, options.gjc_dirs, options.omo_dirs", key)
 	}
 	return nil
 }

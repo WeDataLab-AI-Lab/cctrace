@@ -36,11 +36,11 @@ func scanEndUserTurn(ts string) string {
 	return `{"type":"response_item","timestamp":"` + ts + `","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"hello"}]}}`
 }
 
-// scanEndHead is a session opened in /work/a on gpt-5.
+// scanEndHead is a session opened in /work/a on fixture-model-5.
 func scanEndHead() []string {
 	return []string{
 		`{"type":"session_meta","timestamp":"2026-08-24T09:00:00.000Z","payload":{"cwd":"/work/a","model_provider":"openai","originator":"codex-tui"}}`,
-		scanEndTurnContext("2026-08-24T09:00:01.000Z", "/work/a", "gpt-5"),
+		scanEndTurnContext("2026-08-24T09:00:01.000Z", "/work/a", "fixture-model-5"),
 	}
 }
 
@@ -125,7 +125,7 @@ func TestSyncFile_recordAfterTrailingTurnContextIsSentUnderItsCWD(t *testing.T) 
 	srv, captured := newTestServer(t)
 	cs, state, path := newScanEndSyncer(t, srv.URL, nil, append(scanEndHead(),
 		scanEndUserTurn("2026-08-24T09:00:02.000Z"),
-		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "gpt-5"),
+		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "fixture-model-5"),
 	))
 
 	scanEndPass(t, cs, 1)
@@ -133,7 +133,7 @@ func TestSyncFile_recordAfterTrailingTurnContextIsSentUnderItsCWD(t *testing.T) 
 		t.Fatalf("sync requests after the first pass = %d, want 1", len(*captured))
 	}
 	// The record of this pass was written in /work/a and still goes out as such.
-	assertScanEndEnvelope(t, (*captured)[0], "-work-a", scanEndRepoA, "user", "gpt-5")
+	assertScanEndEnvelope(t, (*captured)[0], "-work-a", scanEndRepoA, "user", "fixture-model-5")
 	if got := state.Files[path].CWD; got != "/work/b" {
 		t.Errorf("cwd saved with the offset = %q, want /work/b, where the scan ended", got)
 	}
@@ -143,23 +143,23 @@ func TestSyncFile_recordAfterTrailingTurnContextIsSentUnderItsCWD(t *testing.T) 
 	if len(*captured) != 2 {
 		t.Fatalf("sync requests after the second pass = %d, want 2", len(*captured))
 	}
-	assertScanEndEnvelope(t, (*captured)[1], "-work-b", scanEndRepoB, "user", "gpt-5")
+	assertScanEndEnvelope(t, (*captured)[1], "-work-b", scanEndRepoB, "user", "fixture-model-5")
 }
 
 func TestSyncFile_recordAfterTrailingTurnContextCarriesItsModel(t *testing.T) {
 	srv, captured := newTestServer(t)
 	cs, state, path := newScanEndSyncer(t, srv.URL, nil, append(scanEndHead(),
 		scanEndUserTurn("2026-08-24T09:00:02.000Z"),
-		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/a", "gpt-5.5"),
+		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/a", "fixture-model-5.5"),
 	))
 
 	scanEndPass(t, cs, 1)
 	if len(*captured) != 1 {
 		t.Fatalf("sync requests after the first pass = %d, want 1", len(*captured))
 	}
-	assertScanEndEnvelope(t, (*captured)[0], "-work-a", scanEndRepoA, "user", "gpt-5")
-	if got := state.Files[path].Model; got != "gpt-5.5" {
-		t.Errorf("model saved with the offset = %q, want gpt-5.5, where the scan ended", got)
+	assertScanEndEnvelope(t, (*captured)[0], "-work-a", scanEndRepoA, "user", "fixture-model-5")
+	if got := state.Files[path].Model; got != "fixture-model-5.5" {
+		t.Errorf("model saved with the offset = %q, want fixture-model-5.5, where the scan ended", got)
 	}
 
 	appendScanEndLines(t, path, scanEndUserTurn("2026-08-24T09:00:04.000Z"))
@@ -167,7 +167,7 @@ func TestSyncFile_recordAfterTrailingTurnContextCarriesItsModel(t *testing.T) {
 	if len(*captured) != 2 {
 		t.Fatalf("sync requests after the second pass = %d, want 2", len(*captured))
 	}
-	assertScanEndEnvelope(t, (*captured)[1], "-work-a", scanEndRepoA, "user", "gpt-5.5")
+	assertScanEndEnvelope(t, (*captured)[1], "-work-a", scanEndRepoA, "user", "fixture-model-5.5")
 }
 
 // The session moved from an allowed repository to one outside the allowlist.
@@ -177,14 +177,14 @@ func TestSyncFile_recordAfterMoveToExcludedRepositoryIsNotSent(t *testing.T) {
 	srv, captured := newTestServer(t)
 	cs, state, path := newScanEndSyncer(t, srv.URL, []string{scanEndRepoA}, append(scanEndHead(),
 		scanEndUserTurn("2026-08-24T09:00:02.000Z"),
-		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "gpt-5"),
+		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "fixture-model-5"),
 	))
 
 	scanEndPass(t, cs, 1)
 	if len(*captured) != 1 {
 		t.Fatalf("sync requests after the first pass = %d, want 1", len(*captured))
 	}
-	assertScanEndEnvelope(t, (*captured)[0], "-work-a", scanEndRepoA, "user", "gpt-5")
+	assertScanEndEnvelope(t, (*captured)[0], "-work-a", scanEndRepoA, "user", "fixture-model-5")
 
 	appendScanEndLines(t, path, scanEndUserTurn("2026-08-24T09:00:04.000Z"))
 	scanEndPass(t, cs, 0)
@@ -202,7 +202,7 @@ func TestSyncFile_recordAfterMoveToAllowedRepositoryIsSent(t *testing.T) {
 	srv, captured := newTestServer(t)
 	cs, state, path := newScanEndSyncer(t, srv.URL, []string{scanEndRepoB}, append(scanEndHead(),
 		scanEndUserTurn("2026-08-24T09:00:02.000Z"),
-		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "gpt-5"),
+		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "fixture-model-5"),
 	))
 
 	scanEndPass(t, cs, 0)
@@ -219,7 +219,7 @@ func TestSyncFile_recordAfterMoveToAllowedRepositoryIsSent(t *testing.T) {
 	if len(*captured) != 1 {
 		t.Fatalf("sync requests after the second pass = %d, want 1", len(*captured))
 	}
-	assertScanEndEnvelope(t, (*captured)[0], "-work-b", scanEndRepoB, "user", "gpt-5")
+	assertScanEndEnvelope(t, (*captured)[0], "-work-b", scanEndRepoB, "user", "fixture-model-5")
 }
 
 // The excluded-account drop saves the offset at its own site.
@@ -227,7 +227,7 @@ func TestSyncFile_excludedAccountDropSavesScanEndCWDAndModel(t *testing.T) {
 	srv, captured := exclusionServer(t, nil)
 	cs, state, path := newScanEndSyncer(t, srv.URL, nil, append(scanEndHead(),
 		scanEndUserTurn("2026-08-24T09:00:02.000Z"),
-		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "gpt-5.5"),
+		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "fixture-model-5.5"),
 	))
 	cs.client.SetExcludedAccounts([]string{"openai:acct-personal"})
 	// Logged in as that account too, so the observation the pass itself makes
@@ -240,8 +240,8 @@ func TestSyncFile_excludedAccountDropSavesScanEndCWDAndModel(t *testing.T) {
 		t.Fatalf("sync requests = %d, want 0: the account is excluded", len(*captured))
 	}
 	assertConsumed(t, state, path)
-	if fs := state.Files[path]; fs.CWD != "/work/b" || fs.Model != "gpt-5.5" {
-		t.Errorf("saved with the offset: cwd=%q model=%q, want /work/b and gpt-5.5, where the scan ended", fs.CWD, fs.Model)
+	if fs := state.Files[path]; fs.CWD != "/work/b" || fs.Model != "fixture-model-5.5" {
+		t.Errorf("saved with the offset: cwd=%q model=%q, want /work/b and fixture-model-5.5, where the scan ended", fs.CWD, fs.Model)
 	}
 }
 
@@ -328,20 +328,20 @@ func TestSyncFile_heldOffsetKeepsTheCWDAndModelItWasReachedWith(t *testing.T) {
 
 	appendScanEndLines(t, path,
 		scanEndUserTurn("2026-08-24T09:00:03.000Z"),
-		scanEndTurnContext("2026-08-24T09:00:04.000Z", "/work/b", "gpt-5.5"),
+		scanEndTurnContext("2026-08-24T09:00:04.000Z", "/work/b", "fixture-model-5.5"),
 		scanEndRateLimit("2026-08-24T09:00:05.000Z", "null"),
 	)
 	// Twice: the pass that holds the offset, then the pass that reads the same
 	// bytes again from it.
 	for range 2 {
 		scanEndPass(t, cs, 1)
-		assertScanEndSaved(t, state, path, settled, "/work/a", "gpt-5")
+		assertScanEndSaved(t, state, path, settled, "/work/a", "fixture-model-5")
 	}
 	if len(*captured) != 3 {
 		t.Fatalf("sync requests = %d, want 3", len(*captured))
 	}
 	for _, body := range *captured {
-		assertScanEndEnvelope(t, body, "-work-a", scanEndRepoA, "user", "gpt-5")
+		assertScanEndEnvelope(t, body, "-work-a", scanEndRepoA, "user", "fixture-model-5")
 	}
 }
 
@@ -357,23 +357,23 @@ func TestSyncFile_heldOffsetRetryRereadsItsOwnTurnContext(t *testing.T) {
 	settled := state.GetOffset(path)
 
 	appendScanEndLines(t, path,
-		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "gpt-5.5"),
+		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "fixture-model-5.5"),
 		scanEndUserTurn("2026-08-24T09:00:04.000Z"),
 		scanEndRateLimit("2026-08-24T09:00:05.000Z", "null"),
 	)
 	for range 2 {
 		scanEndPass(t, cs, 1)
-		assertScanEndSaved(t, state, path, settled, "/work/a", "gpt-5")
+		assertScanEndSaved(t, state, path, settled, "/work/a", "fixture-model-5")
 	}
 	quotaUp.Store(true)
 	scanEndPass(t, cs, 1)
-	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/b", "gpt-5.5")
+	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/b", "fixture-model-5.5")
 
 	if len(*captured) != 4 {
 		t.Fatalf("sync requests = %d, want 4", len(*captured))
 	}
 	for _, body := range (*captured)[1:] {
-		assertScanEndEnvelope(t, body, "-work-b", scanEndRepoB, "user", "gpt-5.5")
+		assertScanEndEnvelope(t, body, "-work-b", scanEndRepoB, "user", "fixture-model-5.5")
 	}
 }
 
@@ -390,12 +390,12 @@ func TestSyncFile_heldOffsetAfterAllowlistDropDoesNotSendOnRetry(t *testing.T) {
 
 	appendScanEndLines(t, path,
 		scanEndUserTurn("2026-08-24T09:00:03.000Z"),
-		scanEndTurnContext("2026-08-24T09:00:04.000Z", "/work/b", "gpt-5.5"),
+		scanEndTurnContext("2026-08-24T09:00:04.000Z", "/work/b", "fixture-model-5.5"),
 		scanEndRateLimit("2026-08-24T09:00:05.000Z", "null"),
 	)
 	for range 2 {
 		scanEndPass(t, cs, 0)
-		assertScanEndSaved(t, state, path, settled, "/work/a", "gpt-5")
+		assertScanEndSaved(t, state, path, settled, "/work/a", "fixture-model-5")
 	}
 	if len(*captured) != 0 {
 		t.Fatalf("sync requests = %d, want 0: every record was written in %s, sent as %v",
@@ -409,7 +409,7 @@ func TestSyncFile_heldOffsetAfterExcludedAccountDropSavesNothingAhead(t *testing
 	srv, captured, _ := scanEndQuotaServer(t)
 	cs, state, path := newScanEndQuotaSyncer(t, srv.URL, nil, append(scanEndHead(),
 		scanEndUserTurn("2026-08-24T09:00:02.000Z"),
-		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "gpt-5.5"),
+		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "fixture-model-5.5"),
 		scanEndRateLimit("2026-08-24T09:00:04.000Z", "null"),
 	))
 	cs.client.SetExcludedAccounts([]string{"openai:acct-quota"})
@@ -436,7 +436,7 @@ func TestSyncFile_heldOffsetDoesNotSaveAForkBoundaryItHasNotPassed(t *testing.T)
 	cs, state, path := newScanEndQuotaSyncer(t, srv.URL, nil, []string{
 		`{"type":"session_meta","timestamp":"2026-08-24T09:00:00.000Z","payload":{"id":"child-session","forked_from_id":"parent-session","thread_source":"subagent","cwd":"/work/a","model_provider":"openai","originator":"codex-tui"}}`,
 		`{"type":"session_meta","timestamp":"2026-08-24T09:00:00.000Z","payload":{"id":"parent-session","thread_source":"user","cwd":"/work/a","model_provider":"openai","originator":"codex-tui"}}`,
-		scanEndTurnContext("2026-08-24T09:00:01.000Z", "/work/a", "gpt-5"),
+		scanEndTurnContext("2026-08-24T09:00:01.000Z", "/work/a", "fixture-model-5"),
 		// The parent's turn, copied in.
 		scanEndUserTurn("2026-08-24T09:00:02.000Z"),
 		`{"type":"inter_agent_communication_metadata","timestamp":"2026-08-24T09:00:03.000Z","payload":{"trigger_turn":true}}`,
@@ -450,15 +450,15 @@ func TestSyncFile_heldOffsetDoesNotSaveAForkBoundaryItHasNotPassed(t *testing.T)
 	}
 
 	for range 2 {
-		scanEndPass(t, cs, 1)
+		scanEndPass(t, cs, 2)
 		assertScanEndSaved(t, state, path, 0, "", "")
 		if got := forkFlags(); got != [4]bool{} {
 			t.Errorf("fork flags saved at offset 0 = %v, want none: nothing of the file is consumed", got)
 		}
 	}
 	quotaUp.Store(true)
-	scanEndPass(t, cs, 1)
-	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/a", "gpt-5")
+	scanEndPass(t, cs, 2)
+	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/a", "fixture-model-5")
 	if got := forkFlags(); got != [4]bool{true, true, true, true} {
 		t.Errorf("fork flags saved at the end of the file = %v, want all set", got)
 	}
@@ -467,8 +467,8 @@ func TestSyncFile_heldOffsetDoesNotSaveAForkBoundaryItHasNotPassed(t *testing.T)
 		t.Fatalf("sync requests = %d, want 3", len(*captured))
 	}
 	for i, body := range *captured {
-		assertScanEndEnvelope(t, body, "-work-a", scanEndRepoA, "user", "gpt-5")
-		rec, _ := body["records"].([]interface{})[0].(map[string]interface{})
+		assertScanEndEnvelope(t, body, "-work-a", scanEndRepoA, "context", "fixture-model-5", "user", "fixture-model-5")
+		rec, _ := body["records"].([]interface{})[1].(map[string]interface{})
 		if ts, _ := rec["ts"].(string); !strings.HasPrefix(ts, "2026-08-24T09:00:05") {
 			t.Errorf("request %d sent the record of %v, want the child's own turn at 09:00:05", i, rec["ts"])
 		}
@@ -515,14 +515,14 @@ func TestSyncFile_heldOffsetRetryDerivesTheSameUsage(t *testing.T) {
 	)
 	for range 2 {
 		scanEndPass(t, cs, 2)
-		assertScanEndSaved(t, state, path, settled, "/work/a", "gpt-5")
+		assertScanEndSaved(t, state, path, settled, "/work/a", "fixture-model-5")
 		if got := savedTotals(); got != [3]int{100, 40, 20} {
 			t.Errorf("totals saved with the held offset = %v, want 100/40/20, the total at that offset", got)
 		}
 	}
 	quotaUp.Store(true)
 	scanEndPass(t, cs, 2)
-	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/a", "gpt-5")
+	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/a", "fixture-model-5")
 	if got := savedTotals(); got != [3]int{250, 100, 30} {
 		t.Errorf("totals saved at the end of the file = %v, want 250/100/30", got)
 	}
@@ -567,7 +567,7 @@ func TestSyncFile_heldOffsetSavesNoUsageBaselineItHasNotPassed(t *testing.T) {
 	}
 	quotaUp.Store(true)
 	scanEndPass(t, cs, 2)
-	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/a", "gpt-5")
+	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/a", "fixture-model-5")
 	if got := baseline(); got != [2]bool{true, true} {
 		t.Errorf("saved at the end of the file: has total=%v, has usage record=%v, want both", got[0], got[1])
 	}
@@ -617,7 +617,7 @@ func TestSyncFile_unchangedOffsetSavesTheRebuiltPrefixMetadata(t *testing.T) {
 	settled := state.GetOffset(path)
 
 	scanEndPass(t, cs, 0)
-	assertScanEndSaved(t, state, path, settled, "/work/a", "gpt-5")
+	assertScanEndSaved(t, state, path, settled, "/work/a", "fixture-model-5")
 	assertScanEndRebuilt(t, state, path)
 }
 
@@ -630,16 +630,16 @@ func TestSyncFile_heldRecordlessTailSavesTheRebuiltPrefixMetadata(t *testing.T) 
 	settled := state.GetOffset(path)
 
 	appendScanEndLines(t, path,
-		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "gpt-5.5"),
+		scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "fixture-model-5.5"),
 		scanEndRateLimit("2026-08-24T09:00:04.000Z", "null"),
 	)
 	scanEndPass(t, cs, 0)
-	assertScanEndSaved(t, state, path, settled, "/work/a", "gpt-5")
+	assertScanEndSaved(t, state, path, settled, "/work/a", "fixture-model-5")
 	assertScanEndRebuilt(t, state, path)
 
 	quotaUp.Store(true)
 	scanEndPass(t, cs, 0)
-	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/b", "gpt-5.5")
+	assertScanEndSaved(t, state, path, scanEndFileSize(t, path), "/work/b", "fixture-model-5.5")
 	if len(*captured) != 0 {
 		t.Fatalf("sync requests = %d, want 0: the tail has no record", len(*captured))
 	}
@@ -655,11 +655,11 @@ func TestSyncFile_recordlessTailSavesItsTurnContext(t *testing.T) {
 	))
 	scanEndPass(t, cs, 1)
 
-	appendScanEndLines(t, path, scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "gpt-5.5"))
+	appendScanEndLines(t, path, scanEndTurnContext("2026-08-24T09:00:03.000Z", "/work/b", "fixture-model-5.5"))
 	scanEndPass(t, cs, 0)
 	assertConsumed(t, state, path)
-	if fs := state.Files[path]; fs.CWD != "/work/b" || fs.Model != "gpt-5.5" {
-		t.Errorf("saved with the offset: cwd=%q model=%q, want /work/b and gpt-5.5", fs.CWD, fs.Model)
+	if fs := state.Files[path]; fs.CWD != "/work/b" || fs.Model != "fixture-model-5.5" {
+		t.Errorf("saved with the offset: cwd=%q model=%q, want /work/b and fixture-model-5.5", fs.CWD, fs.Model)
 	}
 
 	appendScanEndLines(t, path, scanEndUserTurn("2026-08-24T09:00:04.000Z"))
@@ -667,7 +667,7 @@ func TestSyncFile_recordlessTailSavesItsTurnContext(t *testing.T) {
 	if len(*captured) != 2 {
 		t.Fatalf("sync requests = %d, want 2", len(*captured))
 	}
-	assertScanEndEnvelope(t, (*captured)[1], "-work-b", scanEndRepoB, "user", "gpt-5.5")
+	assertScanEndEnvelope(t, (*captured)[1], "-work-b", scanEndRepoB, "user", "fixture-model-5.5")
 }
 
 // A session that never leaves its cwd or model is unaffected: the last
@@ -683,10 +683,10 @@ func TestSyncFile_singleCWDSessionSendsAndSavesAsBefore(t *testing.T) {
 	if len(*captured) != 1 {
 		t.Fatalf("sync requests after the first pass = %d, want 1", len(*captured))
 	}
-	assertScanEndEnvelope(t, (*captured)[0], "-work-a", scanEndRepoA, "user", "gpt-5", "assistant", "gpt-5")
+	assertScanEndEnvelope(t, (*captured)[0], "-work-a", scanEndRepoA, "user", "fixture-model-5", "assistant", "fixture-model-5")
 	assertConsumed(t, state, path)
-	if fs := state.Files[path]; fs.CWD != "/work/a" || fs.Model != "gpt-5" {
-		t.Errorf("saved with the offset: cwd=%q model=%q, want /work/a and gpt-5", fs.CWD, fs.Model)
+	if fs := state.Files[path]; fs.CWD != "/work/a" || fs.Model != "fixture-model-5" {
+		t.Errorf("saved with the offset: cwd=%q model=%q, want /work/a and fixture-model-5", fs.CWD, fs.Model)
 	}
 
 	appendScanEndLines(t, path, scanEndUserTurn("2026-08-24T09:00:04.000Z"))
@@ -694,9 +694,9 @@ func TestSyncFile_singleCWDSessionSendsAndSavesAsBefore(t *testing.T) {
 	if len(*captured) != 2 {
 		t.Fatalf("sync requests after the second pass = %d, want 2", len(*captured))
 	}
-	assertScanEndEnvelope(t, (*captured)[1], "-work-a", scanEndRepoA, "user", "gpt-5")
+	assertScanEndEnvelope(t, (*captured)[1], "-work-a", scanEndRepoA, "user", "fixture-model-5")
 	assertConsumed(t, state, path)
-	if fs := state.Files[path]; fs.CWD != "/work/a" || fs.Model != "gpt-5" {
-		t.Errorf("saved with the offset after the second pass: cwd=%q model=%q, want /work/a and gpt-5", fs.CWD, fs.Model)
+	if fs := state.Files[path]; fs.CWD != "/work/a" || fs.Model != "fixture-model-5" {
+		t.Errorf("saved with the offset after the second pass: cwd=%q model=%q, want /work/a and fixture-model-5", fs.CWD, fs.Model)
 	}
 }

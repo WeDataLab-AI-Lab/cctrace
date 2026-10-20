@@ -18,7 +18,18 @@ import (
 // unreadable, or not a directory) are reported to w so collection never stops
 // silently — the exact failure mode this wiring exists to prevent.
 func resolveCodexScanDirs(w io.Writer, p *profile.Profile) []string {
-	dirs := codexlog.ResolveScanDirs(p.Options.CodexDirs)
+	if p.HomesVersion != 0 || p.Homes != nil {
+		return p.TransmissionHomes("codex")
+	}
+	configured := append([]string(nil), p.Options.CodexDirs...)
+	if p.CodexHome != "" {
+		if err := profile.CheckCodexHome(p.CodexHome); err != nil {
+			fmt.Fprintln(w, "  [codex-sync] explicit codex_home is unavailable; it was not scanned")
+		} else {
+			configured = append(configured, p.CodexHome)
+		}
+	}
+	dirs := codexlog.ResolveScanDirs(configured)
 	scanned := make(map[string]struct{}, len(dirs))
 	for _, d := range dirs {
 		scanned[d] = struct{}{}

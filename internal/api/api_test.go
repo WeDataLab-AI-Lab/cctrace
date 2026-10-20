@@ -16,78 +16,166 @@ import (
 
 // --- MockStore ---
 
+func (m *mockStore) GetPersonalSession(_ context.Context, id int64, sid, email, uid string) (*store.PersonalSessionState, error) {
+	if m.personalSessionGetFn != nil {
+		return m.personalSessionGetFn(id, sid, email, uid)
+	}
+	return nil, store.ErrPersonalNotFound
+}
+func (m *mockStore) GetPersonalSessionOverview(_ context.Context, id int64, sid, email, uid string) (*store.SessionOverview, error) {
+	if m.personalOverviewGetFn != nil {
+		return m.personalOverviewGetFn(id, sid, email, uid)
+	}
+	return nil, store.ErrPersonalNotFound
+}
+func (m *mockStore) PersonalSessionOverviewValues(_ context.Context, id int64, email, uid string, sessionIDs []string) (map[string]store.PersonalOverviewValues, error) {
+	if m.personalOverviewValuesFn != nil {
+		return m.personalOverviewValuesFn(id, email, uid, sessionIDs)
+	}
+	return nil, nil
+}
+func (m *mockStore) PutPersonalSession(_ context.Context, id int64, sid, email, uid string, class, note *string, revision int64) (*store.PersonalSessionState, error) {
+	if m.personalSessionPutFn != nil {
+		return m.personalSessionPutFn(id, sid, email, uid, class, note, revision)
+	}
+	return nil, store.ErrPersonalNotFound
+}
+func (m *mockStore) DeletePersonalSession(_ context.Context, id int64, sid, email, uid string, revision int64) (*store.PersonalSessionState, error) {
+	if m.personalSessionDeleteFn != nil {
+		return m.personalSessionDeleteFn(id, sid, email, uid, revision)
+	}
+	return nil, store.ErrPersonalNotFound
+}
+func (m *mockStore) GetPersonalGlobalNote(_ context.Context, id int64) (*store.PersonalGlobalNote, error) {
+	if m.personalGlobalGetFn != nil {
+		return m.personalGlobalGetFn(id)
+	}
+	return &store.PersonalGlobalNote{}, nil
+}
+func (m *mockStore) PutPersonalGlobalNote(_ context.Context, id int64, text string, revision int64, del bool) (*store.PersonalGlobalNote, error) {
+	if m.personalGlobalPutFn != nil {
+		return m.personalGlobalPutFn(id, text, revision, del)
+	}
+	return &store.PersonalGlobalNote{}, nil
+}
+func (m *mockStore) PersonalSessionNotes(_ context.Context, id int64, email, uid string, limit int, cursor string) (*store.PersonalNotePage, error) {
+	if m.personalNotesFn != nil {
+		return m.personalNotesFn(id, email, uid, limit, cursor)
+	}
+	return &store.PersonalNotePage{Items: []store.PersonalSessionNoteSummary{}}, nil
+}
+func (m *mockStore) PersonalSessionCounts(_ context.Context, id int64, email, uid string, filter store.PersonalCountFilter) (*store.PersonalClassificationCounts, error) {
+	if m.personalCountsFn != nil {
+		return m.personalCountsFn(id, email, uid, filter)
+	}
+	return &store.PersonalClassificationCounts{}, nil
+}
+func (m *mockStore) PrunePersonalState(context.Context) (int64, error) { return 0, nil }
+
 type mockStore struct {
-	countDashboardUsersFn            func(context.Context) (int, error)
-	createInitialDashboardUserFn     func(context.Context, *store.DashboardUser) error
-	quotaSamples                     []*store.QuotaSample
-	excludedBilling                  []store.ExcludedBillingAccount
-	removedBilling                   []string
-	unpricedModels                   []store.UnpricedModel
-	flatRateModels                   []store.FlatRateModel
-	unmarkedFlatRate                 []string
-	exclusionChangeErr               error
-	usageRebuildPending              bool
-	usageRebuildPendingErr           error
-	quotaSampleFilter                store.QuotaSampleFilter
-	sessionOwnerFn                   func(sessionID string) (string, string, error)
-	deleteSessionFn                  func(sessionID, actor, reason string, blockProject, purgeProject bool) (*store.DeleteSessionResult, error)
-	deleteProjectFn                  func(projectHashes []string, actor, reason string, blockProject bool) (*store.DeleteSessionResult, error)
-	projectSessionCountFn            func(projectHash, excludeSessionID string) (int, error)
-	deletionPolicyFn                 func() (*store.DeletionPolicy, error)
-	setDeletionPolicyFn              func(allowOwnerDelete bool, actor string) error
-	sweepDeletedFn                   func(limit int) (int64, error)
-	pingFn                           func(ctx context.Context) error
-	listEventsFn                     func(ctx context.Context, f store.EventFilter) ([]*store.OtelEvent, error)
-	countEventsFn                    func(ctx context.Context, f store.EventFilter) (int64, error)
-	listMetricsFn                    func(ctx context.Context, f store.MetricFilter) ([]*store.OtelMetric, error)
-	costByUserFn                     func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID string) ([]*store.CostSummary, error)
-	costByTeamFn                     func(ctx context.Context, since, until time.Time, profileEmail, userID string) ([]*store.CostSummary, error)
-	costByModelFn                    func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID string) ([]*store.ModelStat, error)
-	toolUsageFn                      func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID string) ([]*store.ToolUsageSummary, error)
-	toolTimeSeriesFn                 func(ctx context.Context, toolName string, since, until time.Time, profileEmail, loginEmail, userID, granularity string) ([]*store.ToolTimeBucket, error)
-	toolFailuresFn                   func(ctx context.Context, toolName string, since, until time.Time, profileEmail, loginEmail, userID string, limit int) ([]*store.ToolFailure, error)
-	pluginUsageFn                    func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID, agent string) ([]*store.PluginUsageSummary, error)
-	skillUsageFn                     func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID string, agent string) ([]*store.SkillUsageSummary, error)
-	organizationInsightsFn           func(ctx context.Context, since, until time.Time, minUsers int64) (*store.OrganizationInsights, error)
-	backfillTaskTypesFn              func(ctx context.Context, limit int) (int, error)
-	sessionListFn                    func(ctx context.Context, userEmail string, limit, offset int) ([]string, error)
-	latestEventTimeFn                func(ctx context.Context) (*time.Time, error)
-	insertSessionRecordsFn           func(ctx context.Context, records []*store.SessionRecord) error
-	reenrichSessionRecordsFn         func(ctx context.Context, records []*store.SessionRecord) (int, error)
-	listSessionRecordsFn             func(ctx context.Context, filter store.SessionRecordFilter) ([]*store.SessionRecord, error)
-	latestActivityTsFn               func(ctx context.Context, f store.EventFilter) (time.Time, bool, error)
-	listSessionOverviewsFn           func(ctx context.Context, f store.SessionOverviewFilter) ([]*store.SessionOverview, error)
-	countSessionOverviewsFn          func(ctx context.Context, f store.SessionOverviewFilter) (int, error)
-	usageAggregatesFn                func(ctx context.Context, f store.SessionOverviewFilter) (*store.UsageAggregate, error)
-	dailyStatsFn                     func(ctx context.Context, f store.EventFilter) ([]*store.DailyStat, error)
-	ingestProjectRulesFn             func(ctx context.Context, req *store.ProjectRuleIngestRequest) (*store.ProjectRuleIngestResponse, error)
-	listProjectRulesFn               func(ctx context.Context, f store.ProjectRuleFilter) (*store.ProjectRuleListResponse, error)
-	getProjectRuleDetailFn           func(ctx context.Context, id, contentVersionID int64) (*store.ProjectRuleDetail, error)
-	projectRuleVisibleToFn           func(ctx context.Context, ruleID int64, userID, profileEmail string) (bool, error)
-	createProjectRuleCommentFn       func(ctx context.Context, ruleID int64, req *store.CreateProjectRuleCommentRequest, authorProfileEmail, authorUserID string) (*store.ProjectRuleComment, error)
-	updateProjectRuleChangeReasonFn  func(ctx context.Context, ruleID, versionID int64, changeReason, authorProfileEmail, authorUserID string) (*store.ProjectRuleVersion, error)
-	getDashboardUserByAPITokenFn     func(ctx context.Context, token string) (*store.DashboardUser, error)
-	getDashboardUserByOpenAPITokenFn func(ctx context.Context, token string) (*store.DashboardUser, error)
-	listProjectsFn                   func(ctx context.Context, f store.ProjectFilter) ([]*store.Project, error)
-	upsertProjectFn                  func(ctx context.Context, agent, projectHash, projectName, gitRemoteURL, repositoryID, repositoryName string) error
-	upsertProjectWithMetadataFn      func(ctx context.Context, agent, projectHash, projectName string, metadata store.ProjectIdentityMetadata, lastSessionAt time.Time) error
-	getDashboardUserByIDFn           func(ctx context.Context, id int64) (*store.DashboardUser, error)
-	setDashboardUserAPITokenFn       func(ctx context.Context, id int64, token string) error
-	listDashboardUserAPITokensFn     func(ctx context.Context, userID int64) ([]*store.DashboardAPIToken, error)
-	createDashboardUserAPITokenFn    func(ctx context.Context, userID int64, name, token, createdVia string, expiresAt *time.Time) (*store.DashboardAPIToken, error)
-	rotateDashboardUserAPITokenFn    func(ctx context.Context, userID, tokenID int64, token string) (*store.DashboardAPIToken, error)
-	setDashboardUserTokenActiveFn    func(ctx context.Context, userID, tokenID int64, active bool) (*store.DashboardAPIToken, error)
-	setDashboardUserExpirationFn     func(ctx context.Context, userID, tokenID int64, expiresAt *time.Time) (*store.DashboardAPIToken, error)
-	deleteDashboardUserAPITokenFn    func(ctx context.Context, userID, tokenID int64) (bool, error)
-	deleteCLIReadTokenFn             func(ctx context.Context, userID int64, secret string) (bool, error)
-	deleteAllDashboardUserTokensFn   func(ctx context.Context, userID int64) error
-	retentionPreviewAxisFn           func(ctx context.Context, axis string, days int) ([]*store.RetentionPreview, error)
-	reconcileRetentionFn             func(ctx context.Context, cfg store.RetentionConfig) error
-	upsertRetentionSettingFn         func(ctx context.Context, axis string, days int, updatedBy string) error
-	previewInferLoginEmailFn         func(ctx context.Context, since time.Time) (*store.LoginEmailInferencePreview, error)
-	previewCodexInferredRevertFn     func(ctx context.Context) (*store.CodexInferredRevertPreview, error)
-	previewCodexAccountFillFn        func(ctx context.Context, since time.Time) (*store.CodexAccountFillPreview, error)
-	previewCodexQuotaAttributionFn   func(ctx context.Context, since time.Time) (*store.CodexQuotaAttributionPreview, error)
+	sessionAnalysisReadFn                 func(string, store.SessionAnalysisAccess) (map[string]interface{}, error)
+	sessionCalendarReadFn                 func(store.SessionCalendarFilter) (store.SessionCalendar, error)
+	personalSessionGetFn                  func(int64, string, string, string) (*store.PersonalSessionState, error)
+	personalOverviewGetFn                 func(int64, string, string, string) (*store.SessionOverview, error)
+	personalOverviewValuesFn              func(int64, string, string, []string) (map[string]store.PersonalOverviewValues, error)
+	personalSessionPutFn                  func(int64, string, string, string, *string, *string, int64) (*store.PersonalSessionState, error)
+	personalSessionDeleteFn               func(int64, string, string, string, int64) (*store.PersonalSessionState, error)
+	personalGlobalGetFn                   func(int64) (*store.PersonalGlobalNote, error)
+	personalGlobalPutFn                   func(int64, string, int64, bool) (*store.PersonalGlobalNote, error)
+	personalNotesFn                       func(int64, string, string, int, string) (*store.PersonalNotePage, error)
+	personalCountsFn                      func(int64, string, string, store.PersonalCountFilter) (*store.PersonalClassificationCounts, error)
+	countDashboardUsersFn                 func(context.Context) (int, error)
+	createInitialDashboardUserFn          func(context.Context, *store.DashboardUser) error
+	quotaSamples                          []*store.QuotaSample
+	quotaSnapshots                        []*store.QuotaSnapshot
+	quotaBindingApplyFn                   func(context.Context, int64, string, string) (*store.QuotaAccountBinding, error)
+	quotaBindingsFn                       func(context.Context, int64) ([]*store.QuotaAccountBinding, error)
+	adminQuotaBindingsFn                  func(context.Context, string) ([]*store.QuotaAccountBinding, error)
+	quotaBindingApproveFn                 func(context.Context, int64, int64, string, string) (*store.QuotaAccountBinding, error)
+	quotaBindingRevokeFn                  func(context.Context, int64, int64) (*store.QuotaAccountBinding, error)
+	quotaOwnerSamplesFn                   func(context.Context, int64, []*store.QuotaOwnerSample) (int, error)
+	quotaUsageFn                          func(context.Context, int64, time.Time, time.Time, time.Time) ([]*store.QuotaUsageAccount, error)
+	quotaComparisonFn                     func(context.Context, int64, string, string, int, int, time.Time) (*store.QuotaWindowComparison, error)
+	excludedBilling                       []store.ExcludedBillingAccount
+	removedBilling                        []string
+	unpricedModels                        []store.UnpricedModel
+	flatRateModels                        []store.FlatRateModel
+	unmarkedFlatRate                      []string
+	exclusionChangeErr                    error
+	usageRebuildPending                   bool
+	usageRebuildPendingErr                error
+	requestSetStatus                      store.RequestSetMigrationStatus
+	requestSetStatusErr                   error
+	sessionFactStatus                     store.SessionFactStatus
+	sessionFactStatusErr                  error
+	quotaSampleFilter                     store.QuotaSampleFilter
+	sessionOwnerFn                        func(sessionID string) (string, string, error)
+	deleteSessionFn                       func(sessionID, actor, reason string, blockProject, purgeProject bool) (*store.DeleteSessionResult, error)
+	deleteProjectFn                       func(projectHashes []string, actor, reason string, blockProject bool) (*store.DeleteSessionResult, error)
+	projectSessionCountFn                 func(projectHash, excludeSessionID string) (int, error)
+	deletionPolicyFn                      func() (*store.DeletionPolicy, error)
+	setDeletionPolicyFn                   func(allowOwnerDelete bool, actor string) error
+	sweepDeletedFn                        func(limit int) (int64, error)
+	pingFn                                func(ctx context.Context) error
+	listEventsFn                          func(ctx context.Context, f store.EventFilter) ([]*store.OtelEvent, error)
+	countEventsFn                         func(ctx context.Context, f store.EventFilter) (int64, error)
+	listMetricsFn                         func(ctx context.Context, f store.MetricFilter) ([]*store.OtelMetric, error)
+	costByUserFn                          func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID string) ([]*store.CostSummary, error)
+	costByTeamFn                          func(ctx context.Context, since, until time.Time, profileEmail, userID string) ([]*store.CostSummary, error)
+	costByModelFn                         func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID string) ([]*store.ModelStat, error)
+	toolUsageFn                           func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID string) ([]*store.ToolUsageSummary, error)
+	toolTimeSeriesFn                      func(ctx context.Context, toolName string, since, until time.Time, profileEmail, loginEmail, userID, granularity string) ([]*store.ToolTimeBucket, error)
+	toolFailuresFn                        func(ctx context.Context, toolName string, since, until time.Time, profileEmail, loginEmail, userID string, limit int) ([]*store.ToolFailure, error)
+	pluginUsageFn                         func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID, agent string) ([]*store.PluginUsageSummary, error)
+	skillUsageFn                          func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID string, agent string) ([]*store.SkillUsageSummary, error)
+	organizationInsightsFn                func(ctx context.Context, since, until time.Time, minUsers int64) (*store.OrganizationInsights, error)
+	backfillTaskTypesFn                   func(ctx context.Context, limit int) (int, error)
+	sessionListFn                         func(ctx context.Context, userEmail string, limit, offset int) ([]string, error)
+	latestEventTimeFn                     func(ctx context.Context) (*time.Time, error)
+	insertSessionRecordsFn                func(ctx context.Context, records []*store.SessionRecord) error
+	reenrichSessionRecordsFn              func(ctx context.Context, records []*store.SessionRecord) (int, error)
+	listSessionRecordsFn                  func(ctx context.Context, filter store.SessionRecordFilter) ([]*store.SessionRecord, error)
+	latestActivityTsFn                    func(ctx context.Context, f store.EventFilter) (time.Time, bool, error)
+	listSessionOverviewsFn                func(ctx context.Context, f store.SessionOverviewFilter) ([]*store.SessionOverview, error)
+	countSessionOverviewsFn               func(ctx context.Context, f store.SessionOverviewFilter) (int, error)
+	sessionOverviewCategoryCountsFn       func(ctx context.Context, f store.SessionOverviewFilter) (map[string]int, error)
+	sessionOverviewClassificationCountsFn func(ctx context.Context, f store.SessionOverviewFilter) (map[string]int, error)
+	sessionOverviewAnalysisCountFn        func(ctx context.Context, f store.SessionOverviewFilter, includeUnattributed bool) (int, map[string]int, int, error)
+	getSessionGroupMembersFn              func(ctx context.Context, f store.SessionOverviewFilter, key, cursor string, limit int) (*store.SessionGroupMemberPage, error)
+	getSessionGroupsFn                    func(ctx context.Context, f store.SessionOverviewFilter) (*store.SessionGroups, error)
+	updateSessionGroupDismissalsFn        func(ctx context.Context, f store.SessionOverviewFilter, items []store.SessionGroupDismissal, dismiss bool) error
+	usageAggregatesFn                     func(ctx context.Context, f store.SessionOverviewFilter) (*store.UsageAggregate, error)
+	dailyStatsFn                          func(ctx context.Context, f store.EventFilter) ([]*store.DailyStat, error)
+	ingestProjectRulesFn                  func(ctx context.Context, req *store.ProjectRuleIngestRequest) (*store.ProjectRuleIngestResponse, error)
+	listProjectRulesFn                    func(ctx context.Context, f store.ProjectRuleFilter) (*store.ProjectRuleListResponse, error)
+	getProjectRuleDetailFn                func(ctx context.Context, id, contentVersionID int64) (*store.ProjectRuleDetail, error)
+	projectRuleVisibleToFn                func(ctx context.Context, ruleID int64, userID, profileEmail string) (bool, error)
+	createProjectRuleCommentFn            func(ctx context.Context, ruleID int64, req *store.CreateProjectRuleCommentRequest, authorProfileEmail, authorUserID string) (*store.ProjectRuleComment, error)
+	updateProjectRuleChangeReasonFn       func(ctx context.Context, ruleID, versionID int64, changeReason, authorProfileEmail, authorUserID string) (*store.ProjectRuleVersion, error)
+	getDashboardUserByAPITokenFn          func(ctx context.Context, token string) (*store.DashboardUser, error)
+	getDashboardUserByOpenAPITokenFn      func(ctx context.Context, token string) (*store.DashboardUser, error)
+	listProjectsFn                        func(ctx context.Context, f store.ProjectFilter) ([]*store.Project, error)
+	upsertProjectFn                       func(ctx context.Context, agent, projectHash, projectName, gitRemoteURL, repositoryID, repositoryName string) error
+	upsertProjectWithMetadataFn           func(ctx context.Context, agent, projectHash, projectName string, metadata store.ProjectIdentityMetadata, lastSessionAt time.Time) error
+	getDashboardUserByIDFn                func(ctx context.Context, id int64) (*store.DashboardUser, error)
+	setDashboardUserAPITokenFn            func(ctx context.Context, id int64, token string) error
+	listDashboardUserAPITokensFn          func(ctx context.Context, userID int64) ([]*store.DashboardAPIToken, error)
+	createDashboardUserAPITokenFn         func(ctx context.Context, userID int64, name, token, createdVia string, expiresAt *time.Time) (*store.DashboardAPIToken, error)
+	rotateDashboardUserAPITokenFn         func(ctx context.Context, userID, tokenID int64, token string) (*store.DashboardAPIToken, error)
+	setDashboardUserTokenActiveFn         func(ctx context.Context, userID, tokenID int64, active bool) (*store.DashboardAPIToken, error)
+	setDashboardUserExpirationFn          func(ctx context.Context, userID, tokenID int64, expiresAt *time.Time) (*store.DashboardAPIToken, error)
+	deleteDashboardUserAPITokenFn         func(ctx context.Context, userID, tokenID int64) (bool, error)
+	deleteCLIReadTokenFn                  func(ctx context.Context, userID int64, secret string) (bool, error)
+	deleteAllDashboardUserTokensFn        func(ctx context.Context, userID int64) error
+	retentionPreviewAxisFn                func(ctx context.Context, axis string, days int) ([]*store.RetentionPreview, error)
+	reconcileRetentionFn                  func(ctx context.Context, cfg store.RetentionConfig) error
+	upsertRetentionSettingFn              func(ctx context.Context, axis string, days int, updatedBy string) error
+	previewInferLoginEmailFn              func(ctx context.Context, since time.Time) (*store.LoginEmailInferencePreview, error)
+	previewCodexInferredRevertFn          func(ctx context.Context) (*store.CodexInferredRevertPreview, error)
+	previewCodexAccountFillFn             func(ctx context.Context, since time.Time) (*store.CodexAccountFillPreview, error)
+	previewCodexQuotaAttributionFn        func(ctx context.Context, since time.Time) (*store.CodexQuotaAttributionPreview, error)
+	ingestSessionObservationsFn           func(ctx context.Context, batch store.SessionObservationBatch) (store.SessionObservationResult, error)
+	touchCollectorStoredFn                func(ctx context.Context, userID, profileEmail string, at time.Time) error
 }
 
 func (m *mockStore) Migrate(ctx context.Context) error                         { return nil }
@@ -298,6 +386,58 @@ func (m *mockStore) CountSessionOverviews(ctx context.Context, f store.SessionOv
 	return 0, nil
 }
 
+func (m *mockStore) GetSessionGroups(ctx context.Context, f store.SessionOverviewFilter) (*store.SessionGroups, error) {
+	if m.getSessionGroupsFn != nil {
+		return m.getSessionGroupsFn(ctx, f)
+	}
+	return &store.SessionGroups{}, nil
+}
+func (m *mockStore) GetSessionGroupMembers(ctx context.Context, f store.SessionOverviewFilter, key, cursor string, limit int) (*store.SessionGroupMemberPage, error) {
+	if m.getSessionGroupMembersFn != nil {
+		return m.getSessionGroupMembersFn(ctx, f, key, cursor, limit)
+	}
+	return &store.SessionGroupMemberPage{}, nil
+}
+func (m *mockStore) UpdateSessionGroupDismissals(ctx context.Context, f store.SessionOverviewFilter, items []store.SessionGroupDismissal, dismiss bool, groupKeys ...string) error {
+	if m.updateSessionGroupDismissalsFn != nil {
+		return m.updateSessionGroupDismissalsFn(ctx, f, items, dismiss)
+	}
+	return nil
+}
+func (m *mockStore) SessionOverviewAnalysisCountWithClassification(ctx context.Context, f store.SessionOverviewFilter, includeUnattributed bool) (int, map[string]int, int, error) {
+	if m.sessionOverviewAnalysisCountFn != nil {
+		return m.sessionOverviewAnalysisCountFn(ctx, f, includeUnattributed)
+	}
+	count, err := m.CountSessionOverviews(ctx, f)
+	if err != nil {
+		return 0, nil, 0, err
+	}
+	if f.DashboardUserID == 0 || f.PersonalUserID == "" && f.PersonalEmail == "" {
+		return count, nil, 0, nil
+	}
+	f.Classification = ""
+	buckets, err := m.SessionOverviewClassificationCounts(ctx, f)
+	return count, buckets, 0, err
+}
+
+func (m *mockStore) SessionOverviewCategoryCounts(ctx context.Context, f store.SessionOverviewFilter) (map[string]int, error) {
+	if m.sessionOverviewCategoryCountsFn != nil {
+		return m.sessionOverviewCategoryCountsFn(ctx, f)
+	}
+	return map[string]int{}, nil
+}
+
+func (m *mockStore) SessionOverviewJudgementBucketCounts(context.Context, store.SessionOverviewFilter) (map[string]int, error) {
+	return map[string]int{"done": 0, "leftover": 0, "ended_midway": 0, "unknown": 0}, nil
+}
+
+func (m *mockStore) SessionOverviewClassificationCounts(ctx context.Context, f store.SessionOverviewFilter) (map[string]int, error) {
+	if m.sessionOverviewClassificationCountsFn != nil {
+		return m.sessionOverviewClassificationCountsFn(ctx, f)
+	}
+	return map[string]int{"unsorted": 0, "consulting": 0, "working": 0, "later": 0, "done": 0}, nil
+}
+
 func (m *mockStore) UsageAggregates(ctx context.Context, f store.SessionOverviewFilter) (*store.UsageAggregate, error) {
 	if m.usageAggregatesFn != nil {
 		return m.usageAggregatesFn(ctx, f)
@@ -315,6 +455,14 @@ func (m *mockStore) ListExcludedAccounts(ctx context.Context) ([]store.ExcludedA
 
 func (m *mockStore) UsageRollupRebuildPending(ctx context.Context) (bool, error) {
 	return m.usageRebuildPending, m.usageRebuildPendingErr
+}
+
+func (m *mockStore) RequestSetMigrationStatus(ctx context.Context) (store.RequestSetMigrationStatus, error) {
+	return m.requestSetStatus, m.requestSetStatusErr
+}
+
+func (m *mockStore) SessionFactStatus(ctx context.Context) (store.SessionFactStatus, error) {
+	return m.sessionFactStatus, m.sessionFactStatusErr
 }
 
 func (m *mockStore) ExcludeAccount(ctx context.Context, loginEmail, reason, actor string) (int64, error) {
@@ -684,6 +832,7 @@ func (m *mockStore) DeleteAllDashboardUserAPITokens(ctx context.Context, userID 
 	return nil
 }
 func (m *mockStore) UpsertQuotaSnapshot(ctx context.Context, s *store.QuotaSnapshot) error {
+	m.quotaSnapshots = append(m.quotaSnapshots, s)
 	return nil
 }
 func (m *mockStore) GetQuotaSnapshot(ctx context.Context, profileEmail string) (*store.QuotaSnapshot, error) {
@@ -700,11 +849,77 @@ func (m *mockStore) ListQuotaSamples(ctx context.Context, f store.QuotaSampleFil
 	m.quotaSampleFilter = f
 	return m.quotaSamples, nil
 }
+func (m *mockStore) ApplyQuotaAccountBinding(ctx context.Context, userID int64, provider, accountID string) (*store.QuotaAccountBinding, error) {
+	if m.quotaBindingApplyFn != nil {
+		return m.quotaBindingApplyFn(ctx, userID, provider, accountID)
+	}
+	return &store.QuotaAccountBinding{DashboardUserID: userID, BillingProvider: provider, AccountID: accountID, Status: "pending"}, nil
+}
+func (m *mockStore) ListQuotaAccountBindings(ctx context.Context, userID int64) ([]*store.QuotaAccountBinding, error) {
+	if m.quotaBindingsFn != nil {
+		return m.quotaBindingsFn(ctx, userID)
+	}
+	return []*store.QuotaAccountBinding{}, nil
+}
+func (m *mockStore) ListAdminQuotaAccountBindings(ctx context.Context, status string) ([]*store.QuotaAccountBinding, error) {
+	if m.adminQuotaBindingsFn != nil {
+		return m.adminQuotaBindingsFn(ctx, status)
+	}
+	return []*store.QuotaAccountBinding{}, nil
+}
+func (m *mockStore) ApproveQuotaAccountBinding(ctx context.Context, bindingID, adminID int64, method, reference string) (*store.QuotaAccountBinding, error) {
+	if m.quotaBindingApproveFn != nil {
+		return m.quotaBindingApproveFn(ctx, bindingID, adminID, method, reference)
+	}
+	return nil, store.ErrQuotaBindingNotFound
+}
+func (m *mockStore) RevokeQuotaAccountBinding(ctx context.Context, bindingID, adminID int64) (*store.QuotaAccountBinding, error) {
+	if m.quotaBindingRevokeFn != nil {
+		return m.quotaBindingRevokeFn(ctx, bindingID, adminID)
+	}
+	return nil, store.ErrQuotaBindingNotFound
+}
+func (m *mockStore) InsertQuotaOwnerSamples(ctx context.Context, userID int64, samples []*store.QuotaOwnerSample) (int, error) {
+	if m.quotaOwnerSamplesFn != nil {
+		return m.quotaOwnerSamplesFn(ctx, userID, samples)
+	}
+	return 0, nil
+}
+func (m *mockStore) ListQuotaUsage(ctx context.Context, userID int64, from, to, now time.Time) ([]*store.QuotaUsageAccount, error) {
+	if m.quotaUsageFn != nil {
+		return m.quotaUsageFn(ctx, userID, from, to, now)
+	}
+	return []*store.QuotaUsageAccount{}, nil
+}
+func (m *mockStore) CompareQuotaUsageWindows(ctx context.Context, userID int64, provider, accountID string, windowMinutes, limit int, now time.Time) (*store.QuotaWindowComparison, error) {
+	if m.quotaComparisonFn != nil {
+		return m.quotaComparisonFn(ctx, userID, provider, accountID, windowMinutes, limit, now)
+	}
+	return nil, store.ErrQuotaBindingNotFound
+}
 func (m *mockStore) UpsertClientVersion(ctx context.Context, update store.ClientVersionUpdate) error {
 	return nil
 }
 func (m *mockStore) ListClientVersions(ctx context.Context) ([]*store.ClientVersionRecord, error) {
 	return nil, nil
+}
+func (m *mockStore) UpsertClientPolicyReport(ctx context.Context, report store.ClientPolicyReport) error {
+	return nil
+}
+func (m *mockStore) IngestSessionObservations(ctx context.Context, batch store.SessionObservationBatch) (store.SessionObservationResult, error) {
+	if m.ingestSessionObservationsFn != nil {
+		return m.ingestSessionObservationsFn(ctx, batch)
+	}
+	return store.SessionObservationResult{}, nil
+}
+func (m *mockStore) TouchCollectorStored(ctx context.Context, userID, profileEmail string, at time.Time) error {
+	if m.touchCollectorStoredFn != nil {
+		return m.touchCollectorStoredFn(ctx, userID, profileEmail, at)
+	}
+	return nil
+}
+func (m *mockStore) PruneSessionObservations(ctx context.Context, eventsOlderThan time.Time) (int64, error) {
+	return 0, nil
 }
 func (m *mockStore) ReconcileRetention(ctx context.Context, cfg store.RetentionConfig) error {
 	if m.reconcileRetentionFn != nil {
@@ -2083,5 +2298,22 @@ func TestCORS_ExplicitOrigins(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func TestCORSSetupPreflightAllowsSetupTokenHeader(t *testing.T) {
+	srv := newTestServer(&mockStore{}, nil).WithAllowedOrigins([]string{"http://localhost:3000"})
+	req := httptest.NewRequest(http.MethodOptions, "http://localhost:8080/api/auth/setup", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
+	req.Header.Set("Access-Control-Request-Method", http.MethodPost)
+	req.Header.Set("Access-Control-Request-Headers", "content-type, x-requested-with, x-setup-token")
+	rec := httptest.NewRecorder()
+	srv.Handler().ServeHTTP(rec, req)
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("preflight status=%d, want 204", rec.Code)
+	}
+	allowed := strings.ToLower(rec.Header().Get("Access-Control-Allow-Headers"))
+	if !strings.Contains(allowed, "x-setup-token") {
+		t.Fatalf("setup token is not allowed by CORS: %q", rec.Header().Get("Access-Control-Allow-Headers"))
 	}
 }

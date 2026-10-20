@@ -634,7 +634,7 @@ func TestToStoreRecord_ZeroTimestampIsStableNotNow(t *testing.T) {
 	}
 }
 
-func TestSyncer_ReenrichOnce_scansWholeFileWithoutAdvancingState(t *testing.T) {
+func TestSyncer_ReenrichOnce_scansCollectedPrefixWithoutAdvancingState(t *testing.T) {
 	var got SyncPayload
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet && r.URL.Path == "/api/sync/capabilities" {
@@ -661,18 +661,19 @@ func TestSyncer_ReenrichOnce_scansWholeFileWithoutAdvancingState(t *testing.T) {
 	}
 	first := `{"type":"user","timestamp":"2026-07-06T10:00:00Z","sessionId":"legacy-s1","uuid":"turn-1","cwd":` + strconvQuote(cwd) + `,"message":{"role":"user","content":"hi"}}` + "\n"
 	second := `{"type":"assistant","timestamp":"2026-07-06T10:00:01Z","sessionId":"legacy-s1","uuid":"turn-2","parentUuid":"turn-1","cwd":` + strconvQuote(cwd) + `,"message":{"id":"msg_1","type":"message","role":"assistant","model":"claude-sonnet-4-20250514","usage":{"input_tokens":7,"output_tokens":3},"content":[{"type":"text","text":"hello"}]}}` + "\n"
+	third := `{"type":"user","timestamp":"2026-07-06T10:00:02Z","sessionId":"legacy-s1","uuid":"unsent-tail","message":{"role":"user","content":"not collected yet"}}` + "\n"
 	sessionPath := filepath.Join(sessionDir, "session.jsonl")
-	if err := os.WriteFile(sessionPath, []byte(first+second), 0o644); err != nil {
+	if err := os.WriteFile(sessionPath, []byte(first+second+third), 0o644); err != nil {
 		t.Fatalf("write session: %v", err)
 	}
 	state, err := LoadState(filepath.Join(t.TempDir(), "state.json"))
 	if err != nil {
 		t.Fatalf("LoadState: %v", err)
 	}
-	state.SetOffset(sessionPath, int64(len(first)))
+	state.SetOffset(sessionPath, int64(len(first+second)))
 
 	s := New(claudeDir, "user@example.com", "u1", state, NewClient(srv.URL, "", ""), nil)
-	n, err := s.ReenrichOnce(context.Background())
+	n, err := s.ReenrichOnce(context.Background(), false)
 	if err != nil {
 		t.Fatalf("ReenrichOnce: %v", err)
 	}
@@ -691,8 +692,8 @@ func TestSyncer_ReenrichOnce_scansWholeFileWithoutAdvancingState(t *testing.T) {
 	if got.Records[1].Model != "claude-sonnet-4-20250514" {
 		t.Fatalf("model = %q, want claude-sonnet-4-20250514", got.Records[1].Model)
 	}
-	if state.GetOffset(sessionPath) != int64(len(first)) {
-		t.Fatalf("state offset changed to %d, want %d", state.GetOffset(sessionPath), len(first))
+	if state.GetOffset(sessionPath) != int64(len(first+second)) {
+		t.Fatalf("state offset changed to %d, want %d", state.GetOffset(sessionPath), len(first+second))
 	}
 }
 
@@ -724,8 +725,10 @@ func TestSyncer_ReenrichOnce_returnsUnsupportedServerError(t *testing.T) {
 		t.Fatalf("LoadState: %v", err)
 	}
 
+	state.SetOffset(sessionPath, int64(len(line)))
+
 	s := New(claudeDir, "user@example.com", "u1", state, NewClient(srv.URL, "", ""), nil)
-	_, err = s.ReenrichOnce(context.Background())
+	_, err = s.ReenrichOnce(context.Background(), false)
 	if !errors.Is(err, ErrReenrichUnsupported) {
 		t.Fatalf("ReenrichOnce error = %v, want ErrReenrichUnsupported", err)
 	}

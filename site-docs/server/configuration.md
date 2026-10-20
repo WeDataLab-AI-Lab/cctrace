@@ -19,7 +19,7 @@ After changing a value, recreate the container so it takes effect:
 $ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
 ```
 
-`CCTRACE_AI_*` variables and `CCTRACE_SECRETS_KEY` belong to an area that is under active development and are not documented here.
+`CCTRACE_AI_*` variables, `CODEX_API_KEY` and `CCTRACE_SECRETS_KEY` belong to an area that is under active development and are not documented here.
 
 ## Required
 
@@ -125,4 +125,4 @@ The client sends session records in batches and does not split a batch by size. 
 
 Retention can be set without these variables in the dashboard: **Admin > Storage**. See [Operations](operations.md#data-retention).
 
-For a single table of every key, see [Server environment](../reference/server-env.md).
+The keys this guide covers are tabulated in [Server environment](../reference/server-env.md). The full list of variables the server reads is what `cctraced --help` prints; the command is at the top of this page.

@@ -40,8 +40,10 @@ func TestSyncer_ReenrichOnce_returnsCapabilityRateLimitError(t *testing.T) {
 		t.Fatalf("LoadState: %v", err)
 	}
 
+	state.SetOffset(sessionPath, int64(len(line)))
+
 	s := New(claudeDir, "user@example.com", "u1", state, NewClient(srv.URL, "", ""), nil)
-	_, err = s.ReenrichOnce(context.Background())
+	_, err = s.ReenrichOnce(context.Background(), false)
 	var retryErr *RetryableError
 	if !errors.As(err, &retryErr) {
 		t.Fatalf("ReenrichOnce error = %v, want RetryableError", err)

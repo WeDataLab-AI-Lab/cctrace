@@ -36,6 +36,9 @@ func ClaudeSettingsPath(p *profile.Profile) (string, error) {
 // for the given profile, preserving all existing non-OTEL keys.
 // A runtime guard verifies no unrelated keys were modified before writing.
 func ApplyToClaudeSettings(p *profile.Profile) error {
+	if p.HomesVersion != 0 || p.Homes != nil {
+		return applyExplicitClaudeSettings(p)
+	}
 	settingsPath, err := ClaudeSettingsPath(p)
 	if err != nil {
 		return err
@@ -176,6 +179,9 @@ func applyToClaudeSettingsLocked(settingsPath string, p *profile.Profile) error 
 // generated hooks/env. A settings-scoped flock serializes concurrent writers
 // (multiple Claude Code windows).
 func EnsureClaudeSettingsCurrent(p *profile.Profile) (bool, error) {
+	if p.HomesVersion != 0 || p.Homes != nil {
+		return false, applyExplicitClaudeSettings(p)
+	}
 	settingsPath, err := ClaudeSettingsPath(p)
 	if err != nil {
 		return false, err

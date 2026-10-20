@@ -1,8 +1,11 @@
 package api
 
 import (
+	"bytes"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 )
@@ -52,5 +55,35 @@ func TestBodyNearLimitStillSucceeds(t *testing.T) {
 
 	if !reached || rr.Code != http.StatusOK {
 		t.Fatalf("reached = %v status = %d, want the handler to run normally", reached, rr.Code)
+	}
+}
+
+// The warning names CCTRACE_MAX_SYNC_BODY_BYTES only on the route it raises.
+// Session observations share sync's 8 MiB but not its setting: their limit is
+// compiled in, and the variable would change nothing there.
+func TestBodyNearLimitNamesTheSettingOnlyForSync(t *testing.T) {
+	srv := newTestServer(&mockStore{}, nil)
+	for _, tc := range []struct {
+		path  string
+		limit int
+		names bool
+	}{
+		{"/api/sync", maxSyncRequestBodyBytes, true},
+		{"/api/session-observations", maxSessionObservationsRequestBodyBytes, false},
+	} {
+		t.Run(tc.path, func(t *testing.T) {
+			var logs bytes.Buffer
+			log.SetOutput(&logs)
+			defer log.SetOutput(os.Stderr)
+			body := strings.Repeat("a", tc.limit-16)
+			srv.Handler().ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, tc.path, strings.NewReader(body)))
+
+			if !strings.Contains(logs.String(), tc.path+" body") {
+				t.Fatalf("no headroom warning for %s: %q", tc.path, logs.String())
+			}
+			if got := strings.Contains(logs.String(), "CCTRACE_MAX_SYNC_BODY_BYTES"); got != tc.names {
+				t.Errorf("warning names CCTRACE_MAX_SYNC_BODY_BYTES = %v, want %v: %q", got, tc.names, logs.String())
+			}
+		})
 	}
 }

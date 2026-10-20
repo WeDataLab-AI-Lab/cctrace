@@ -1,6 +1,8 @@
 package codexsyncer
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -10,6 +12,29 @@ import (
 
 func snapshot(at time.Time, readings ...codexappserver.Reading) *codexappserver.Snapshot {
 	return &codexappserver.Snapshot{FetchedAt: at, Readings: readings}
+}
+
+func TestBuildAppServerQuotaOwnerSamplesOmitSharedIdentity(t *testing.T) {
+	at := time.Date(2026, 8, 24, 9, 0, 0, 0, time.UTC)
+	snap := snapshot(at, window("codex", "", 300, 31))
+	snap.LoginEmail = "private-login@example.test"
+	rows := BuildAppServerQuotaOwnerSamples("acct-local", snap)
+	if len(rows) != 1 {
+		t.Fatalf("rows=%d, want 1", len(rows))
+	}
+	row := rows[0]
+	if row.BillingProvider != "openai" || row.AccountID != "acct-local" || row.WindowKey != "300" || row.WindowMinutes == nil || *row.WindowMinutes != 300 || row.Attribution != store.AttributionObserved || row.UsedPct != 31 {
+		t.Fatalf("owner row = %+v", row)
+	}
+	data, err := json.Marshal(row)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, forbidden := range []string{"private-login@example.test", "login_email", "profile_email", "source_session_id"} {
+		if strings.Contains(string(data), forbidden) {
+			t.Fatalf("owner row contains %q: %s", forbidden, data)
+		}
+	}
 }
 
 func window(limitID, limitName string, minutes int, pct float64) codexappserver.Reading {

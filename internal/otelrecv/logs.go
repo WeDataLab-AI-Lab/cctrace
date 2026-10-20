@@ -1,7 +1,9 @@
 package otelrecv
 
 import (
+	"bytes"
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -17,7 +19,16 @@ import (
 
 	collogspb "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	commonpb "go.opentelemetry.io/proto/otlp/common/v1"
+	logspb "go.opentelemetry.io/proto/otlp/logs/v1"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
+
+const sourceEnvelopeRequestBytes = 32 << 20
+
+// A 16 MiB protobuf source can expand in JSON (notably bytes/base64).
+// Keep the field ceiling at the request envelope budget to avoid needless loss.
+const sourceEnvelopeFieldBytes = sourceEnvelopeRequestBytes
 
 // LogsReceiver implements the OTLP LogsService and enqueues to PGMQ.
 type LogsReceiver struct {
@@ -25,6 +36,8 @@ type LogsReceiver struct {
 	queue   *queue.Queue
 	buffer  *buffer.Ring
 	aliases emailalias.Resolver
+	// Zero selects the production budget; tests use small request fixtures.
+	envelopeBudgetBytes int
 
 	// identityResolver turns a verified ingest token into the account it belongs
 	// to, for the gRPC path. The HTTP receiver holds its own; this one is used
@@ -118,11 +131,23 @@ func (r *LogsReceiver) noteLoginEmail(userID, loginEmail string) (prev string, s
 // assert something the server never verified.
 func (r *LogsReceiver) buildEventsWithIdentity(req *collogspb.ExportLogsServiceRequest, identity *ClientIdentity) []*store.OtelEvent {
 	var events []*store.OtelEvent
+	budget := newSourceEnvelopeBudget(req, r.envelopeBudgetBytes)
 
 	for _, rl := range req.ResourceLogs {
 		res := extractResource(rl.Resource)
+		var resourceFields []sourceEnvelopeField
+		if rl.Resource != nil {
+			resourceFields = append(resourceFields, sourceProtoField("resource", rl.Resource))
+		}
+		resourceFields = append(resourceFields, sourceStringField("resource_schema_url", rl.SchemaUrl))
 		for _, sl := range rl.ScopeLogs {
+			shared := append([]sourceEnvelopeField(nil), resourceFields...)
+			if sl.Scope != nil {
+				shared = append(shared, sourceProtoField("scope", sl.Scope))
+			}
+			shared = append(shared, sourceStringField("scope_schema_url", sl.SchemaUrl))
 			for _, lr := range sl.LogRecords {
+				budget.recordsLeft--
 				e := &store.OtelEvent{
 					Ts:             toTime(lr.TimeUnixNano, lr.ObservedTimeUnixNano),
 					UserID:         res.userID,
@@ -230,11 +255,15 @@ func (r *LogsReceiver) buildEventsWithIdentity(req *collogspb.ExportLogsServiceR
 				if r.dropAccount != nil && r.dropAccount(e.LoginEmail) {
 					continue
 				}
+				e.Envelope = budget.build(lr, shared)
 				events = append(events, e)
 			}
 		}
 	}
 
+	if budget.partial > 0 || budget.omitted > 0 {
+		log.Printf("[otelrecv] source envelope byte budget: partial=%d not_collected=%d; core log records retained", budget.partial, budget.omitted)
+	}
 	if identity != nil {
 		for _, e := range events {
 			if identity.ProfileEmail != "" {
@@ -249,6 +278,145 @@ func (r *LogsReceiver) buildEventsWithIdentity(req *collogspb.ExportLogsServiceR
 	}
 
 	return events
+}
+
+// The budget covers serialized envelopes, including their loss markers. A
+// compact shared marker is reserved for each remaining log before large common
+// payloads are copied. Pathological record counts may exhaust marker space too;
+// those envelopes stay absent (not collected) and the request logs their count.
+var sourceEnvelopeOmitted = json.RawMessage(`{"partial":true,"dropped_fields":["source_envelope"],"reason":"aggregate_byte_limit"}`)
+
+type sourceEnvelopeBudget struct {
+	remaining, recordsLeft int
+	partial, omitted       int
+}
+
+type sourceEnvelopeField struct {
+	name   string
+	value  json.RawMessage
+	reason string
+}
+
+func newSourceEnvelopeBudget(req *collogspb.ExportLogsServiceRequest, limit int) *sourceEnvelopeBudget {
+	if limit <= 0 {
+		limit = sourceEnvelopeRequestBytes
+	}
+	budget := &sourceEnvelopeBudget{remaining: limit}
+	for _, resource := range req.ResourceLogs {
+		for _, scope := range resource.ScopeLogs {
+			budget.recordsLeft += len(scope.LogRecords)
+		}
+	}
+	return budget
+}
+
+func sourceProtoField(name string, message proto.Message) sourceEnvelopeField {
+	raw, err := protojson.Marshal(message)
+	return sourceField(name, raw, err)
+}
+
+func sourceStringField(name, value string) sourceEnvelopeField {
+	raw, err := sourceEnvelopeJSON(value)
+	return sourceField(name, raw, err)
+}
+
+func sourceField(name string, raw []byte, err error) sourceEnvelopeField {
+	field := sourceEnvelopeField{name: name}
+	switch {
+	case err != nil:
+		field.reason = "encoding_error"
+	case len(raw) > sourceEnvelopeFieldBytes:
+		field.reason = "field_byte_limit"
+	default:
+		field.value = raw
+	}
+	return field
+}
+
+func sourceEnvelopeJSON(value any) ([]byte, error) {
+	var buffer bytes.Buffer
+	encoder := json.NewEncoder(&buffer)
+	// Raw proto JSON must not expand again when embedded (e.g. '<' -> '\u003c').
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(value); err != nil {
+		return nil, err
+	}
+	return bytes.TrimSuffix(buffer.Bytes(), []byte("\n")), nil
+}
+
+func (b *sourceEnvelopeBudget) build(record *logspb.LogRecord, shared []sourceEnvelopeField) json.RawMessage {
+	reserve := min(b.recordsLeft, b.remaining/len(sourceEnvelopeOmitted)) * len(sourceEnvelopeOmitted)
+	allowance := b.remaining - reserve
+	if allowance < len(sourceEnvelopeOmitted) {
+		b.omitted++
+		return nil
+	}
+	metadata := map[string]any{
+		"time_unix_nano":          strconv.FormatUint(record.TimeUnixNano, 10),
+		"observed_time_unix_nano": strconv.FormatUint(record.ObservedTimeUnixNano, 10),
+		"trace_id":                hex.EncodeToString(record.TraceId), "span_id": hex.EncodeToString(record.SpanId),
+		"severity_number": int32(record.SeverityNumber), "severity_text": record.SeverityText, "flags": record.Flags,
+	}
+	base, _ := sourceEnvelopeJSON(metadata)
+	// Avoid serializing a large record at all when only a loss marker fits.
+	if len(base)+len(sourceEnvelopeOmitted) > allowance {
+		b.remaining -= len(sourceEnvelopeOmitted)
+		b.partial++
+		return sourceEnvelopeOmitted
+	}
+	fields := append([]sourceEnvelopeField{sourceProtoField("log_record", record)}, shared...)
+	size, failed := len(base), false
+	for _, field := range fields {
+		size += len(field.name) + 4 + len(field.value)
+		failed = failed || field.reason != ""
+	}
+	if !failed && size <= allowance {
+		for _, field := range fields {
+			metadata[field.name] = field.value
+		}
+		encoded, _ := sourceEnvelopeJSON(metadata)
+		b.remaining -= len(encoded)
+		return encoded
+	}
+	// Reserve the worst-case omission metadata before selecting source fields.
+	// Removing entries below only shrinks the actual serialized envelope.
+	dropped := make([]string, 0, len(fields))
+	reasons := make(map[string]string, len(fields))
+	for _, field := range fields {
+		dropped = append(dropped, field.name)
+		reason := field.reason
+		if reason == "" {
+			reason = "aggregate_byte_limit"
+		}
+		reasons[field.name] = reason
+	}
+	metadata["partial"], metadata["dropped_fields"], metadata["drop_reasons"] = true, dropped, reasons
+	control, _ := sourceEnvelopeJSON(metadata)
+	if len(control) > allowance {
+		b.remaining -= len(sourceEnvelopeOmitted)
+		b.partial++
+		return sourceEnvelopeOmitted
+	}
+	size = len(control)
+	for _, field := range fields {
+		cost := len(field.name) + 4 + len(field.value)
+		if field.reason == "" && size+cost <= allowance {
+			metadata[field.name] = field.value
+			size += cost
+			delete(reasons, field.name)
+		}
+	}
+	dropped = dropped[:0]
+	for _, field := range fields {
+		if _, ok := reasons[field.name]; ok {
+			dropped = append(dropped, field.name)
+		}
+	}
+	metadata["dropped_fields"] = dropped
+	encoded, _ := sourceEnvelopeJSON(metadata)
+	b.remaining -= len(encoded)
+	b.partial++
+	return encoded
 }
 
 func (r *LogsReceiver) Export(ctx context.Context, req *collogspb.ExportLogsServiceRequest) (*collogspb.ExportLogsServiceResponse, error) {

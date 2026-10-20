@@ -1,5 +1,7 @@
 # Installation and Usage Guide
 
+> 다중 홈 프로필·필수 전송 선택 온보딩 개편: [공통 가이드](guide-profile-groups.md). 구현·검증 상태를 해당 문서에서 확인; 기존 릴리즈와의 구분.
+
 Covers Claude Code Trace from installation through the full administrator and end-user flows.
 
 ---
@@ -334,6 +336,7 @@ Set in the `.env` file:
 | `OTEL_HTTP_BIND` | 0.0.0.0 | Compose host publish address for remote OTLP/HTTP ingest |
 | `CCTRACE_ALLOWED_ORIGINS` | (empty) | Comma-separated exact browser origins on other hosts or ports; empty disables CORS, no wildcard |
 | `CCTRACE_MAX_SYNC_BODY_BYTES` | `8388608` | Ceiling in bytes for one `POST /api/sync` body, at most `268435456`. Raise it when the deployment's own batches exceed 8 MiB; unusable or larger values keep the default. Budget about five times the ceiling in memory per in-flight oversized request |
+| `CCTRACE_SERVER_POLICY_FILE` | (empty) | Path, as the cctraced process sees it, of a signed server policy file that clients fetch from `/api/client-config-policy`. Empty disables distribution. The file is read on every request, so replacing it needs no restart; a file that cannot be read or decoded answers 503. The server does not verify the signature, clients do, and only a client built with an update public key applies a policy; a build without one, such as one made with an empty `UPDATE_PUBLIC_KEY`, does not. The compose file passes the variable through but mounts no file |
 | `DB_PASSWORD` | `cctrace` | Database password. Do not leave it at the default |
 | `DATABASE_URL` | `postgres://cctrace:cctrace@localhost:5432/cctrace` | Database connection string |
 | `CCTRACE_USERID_ACCESS_CONTROL` | `true` | Filters session ownership by user_id; aggregates stay shared |
@@ -1067,18 +1070,20 @@ The skill never reads transcripts, never lists session IDs in its report, and ne
 
 ### 3-10. The other commands
 
-Besides `init`, `status`, `sync`, and `reset` there are nineteen more. `cctrace --help` lists them too.
+Besides `init`, `status`, `sync`, and `reset`, there are 21 more. `cctrace --help` lists them too.
 
 | Command | Purpose |
 |---------|---------|
-| `cctrace config` | View or modify profile settings — `get <key>` / `set <key> <value>` / `list` |
+| `cctrace config` | View or modify profile settings — `get <key>` / `set <key> <value>` / `list`. `policy status` / `policy check` / `policy apply` read, check, or apply a signed server configuration policy; `check` applies nothing, and `check` and `apply` need a client built with an update public key |
 | `cctrace env apply` | Re-register Claude Code hooks and the OTEL environment for the current binary path. Settings are kept |
-| `cctrace profile` | Manage named profiles — `add <name>` / `list` / `remove <name>` (§4) |
+| `cctrace profile` | Manage named profiles — `add <name>` / `list` / `remove <name>` / `claim <name>` / `select <name\|default>` / `selected` (§4) |
+| `cctrace launch` | Launch Claude Code or Codex with the explicitly selected local profile (§4) |
 | `cctrace kill` | Force-terminate the running sync daemon. Prefer `sync --stop`, which shuts it down cleanly |
 | `cctrace uninstall` | Remove all cctrace configuration and the binary itself |
 | `cctrace backfill-quota` | Reconstruct Codex rate-limit history from session logs already on this machine |
 | `cctrace report` | Query the server for a cost and tool-usage report |
 | `cctrace sessions` | Query the server for a list of session records |
+| `cctrace local` | Read local Claude and Codex sessions through a token-protected loopback API, without uploading them — `serve` runs it in the foreground; `enable` / `status` / `disable` run it inside the profile's sync daemon |
 | `cctrace auth read` | Create a read token for the commands below (re-enter your password); stored as `server.read_token`. Not available to administrators |
 | `cctrace ls` | List recent sessions with cost |
 | `cctrace events` | Show the events of one session |
@@ -1099,8 +1104,9 @@ back to `CCTRACE_PROFILE` when the flag is left off) to read a named profile's
 token, so `cctrace auth read --profile work` and, say, `cctrace ls --profile work`
 read the same profile. `report` and `sessions` read the dashboard's internal
 endpoints with the same `server.read_token`; those endpoints refuse the upload
-token too. `config`, `env`, `profile`, `kill`, `uninstall`, and
-`backfill-quota` are local and work offline.
+token too. `config`, `env`, `profile`, `kill`, `uninstall`, `backfill-quota`,
+and `local` are local and work offline, except `config policy check` and
+`config policy apply`, which fetch the signed policy from the server.
 
 **`cctrace env apply`** is the cure for hooks pointing at an old path after the
 binary was moved or replaced. Unlike re-running `init`, it does not ask for the
@@ -1130,6 +1136,48 @@ cctrace sessions --json
 
 Both query the server, so a profile and a read token (`server.read_token`, from
 `cctrace auth read`) must already be configured.
+
+#### Local sessions without synchronization
+
+`cctrace local serve` exposes local Claude and Codex transcripts through a
+read-only loopback API. It needs no server login or database, changes no sync
+offset, and uploads nothing. The web page stays at its own address; only its
+requests go to the local API.
+
+```bash
+cctrace local serve --origin http://127.0.0.1:3000
+```
+
+Use the exact origin of the web page, including its port. The first console line
+contains the selected `endpoint`, a fresh `token`, and the local source's
+`profile_fingerprint`. Enter the endpoint and token in the web page's local
+connection form. Keep the token private: do not redirect this output to a file,
+put it in a URL, or paste it into a report. The web connection keeps it in
+memory, or in the tab's sessionStorage if you choose to remember the
+connection; restarting the command issues a different token. Stop the API
+with Ctrl-C.
+
+- Default bind: `127.0.0.1:0`, with an unused port selected by the operating system
+- Read roots: `CLAUDE_CONFIG_DIR` or `~/.claude`; `CODEX_CONFIG_DIR` or
+  `~/.codex`, plus `CODEX_HOME` when it is set; and the Claude home and Codex
+  home that a profile sets explicitly. A profile's `options.codex_dirs` is not
+  read
+- Additional or isolated roots: repeat `--claude-dir` and `--codex-dir`. Supplying
+  either flag reads only the explicitly named roots, without adding either
+  agent's default home or any profile's home
+- Access: Bearer token plus the explicitly permitted origin; unexpected Host
+  headers, including DNS-rebinding hosts, are refused. Server cookies are not
+  sent to loopback, and non-loopback bind addresses are refused
+- Scope: local transcript reads only, without server ownership verification.
+  `server_match` remains null; equal native session IDs are not automatic proof
+  that local and server rows belong to the same person
+- List statistics: fields not read by the lightweight index remain null, not
+  zero. Selecting a session reads its records and computes the available local
+  facts. Missing telemetry remains unknown rather than a measured cost
+
+An HTTPS web page may need the browser's local-network permission before it can
+reach the loopback API. Allowing an origin in the CLI does not grant that browser
+permission or prove that every browser supports the connection.
 
 ---
 
@@ -1195,6 +1243,50 @@ cctrace init --profile personal
 ```
 
 From then on, you choose which `~/.claude` directory to use when starting Claude Code.
+
+### Selecting a Codex home for launch
+
+`CodexHome` is the profile's explicit Codex execution home. `options.codex_dirs`
+and the process `CODEX_HOME` remain session-scan roots; neither is promoted to
+the selected launch home.
+
+```bash
+# Add a profile with an explicit Codex home
+cctrace profile add work --home ~/.claude-work --codex-home ~/.codex-work
+
+# Set or clear a home on an existing profile
+cctrace config set codex_home ~/.codex-work
+cctrace config --profile work set codex_home ~/.codex-work
+cctrace config --profile work set codex_home ""
+cctrace config get codex_home                 # reports configured/not configured; never prints the path
+
+# Choose the profile for the next launch, or inspect its readiness
+cctrace profile select work --agent codex
+cctrace profile selected --agent codex
+
+# Start an agent with that profile's actual home
+cctrace launch --agent codex
+cctrace launch --agent claude --profile personal -- --resume
+```
+
+The selection file stores profile names and a revision under
+`~/.cctrace/next-profile.json` with mode `0600`. It contains no home paths or
+credentials. `launch` sets `CODEX_HOME` or `CLAUDE_CONFIG_DIR` in the child
+environment. A removed profile or unavailable home fails closed without falling
+back to an environment variable, `options.codex_dirs`, or another profile.
+
+`CodexHome` must resolve locally to a directory owned by the current user and
+not writable by other users. cctrace reads only the provider account ID from
+that home's local authentication metadata for account matching; it never sends
+the path or authentication contents to cctraced.
+
+### Source folders two profiles share
+
+Profiles that upload to the same destination and read the same folder, such as
+the default Codex home, collect it once: one profile holds the source and the
+others are held back from that source only. `cctrace status` lists what is held
+back, and `cctrace profile claim <name> --source <id>` (or `--all`, `--force`)
+moves a source to another profile.
 
 ---
 
@@ -1363,6 +1455,28 @@ yourself — no administrator needed. Excluding asks for confirmation first.
 This works on the server. Claude Code and Codex send OTEL telemetry to the
 server directly, not through `cctrace`; it is hidden from the dashboard like the
 rest of the account's data.
+
+### Personal quota readings (Settings)
+
+Settings → **Personal Usage Accounts** accepts a provider and account ID. An
+administrator must independently match that ID in the provider console before
+approving it. Approval records a non-secret internal reference; passwords,
+access tokens, screenshots, and account emails are not accepted as proof.
+
+After approval, `cctrace sync` uploads live quota readings through the signed-in
+dashboard user's own upload token. The private reading rows contain no login or
+profile email, session ID, local path, or token. Older shared `quota_samples`
+rows are never promoted into a personal history, and the old shared read route is
+not available to dashboard users. Personal values are labelled as client
+reported, not provider-authenticated.
+
+The dashboard shows the 5-hour and 7-day windows, recentness, reset state, and
+historical window overlays. Missing readings remain unmeasured rather than zero;
+historical bands appear only when at least four distinct past windows support
+them, with the sample count shown in the chart readout. A local profile radio is
+available only when the loopback bridge's locally read provider account ID
+exactly matches an approved dashboard binding. Without that bridge, the remote
+dashboard cannot read or change local profile settings.
 
 ### When cctrace_user_id is unset
 

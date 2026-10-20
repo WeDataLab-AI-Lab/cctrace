@@ -4,10 +4,12 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 /**
- * Refreshes every query once when a queued usage rebuild finishes. The usage and
- * cost charts read the aggregate that rebuild rewrites, and nothing else tells
- * them it changed, so without this they keep the pre-exclusion numbers until a
- * reload. `pending` is the list response's usage_rebuild_pending.
+ * Refreshes every query once when a background rewrite of stored numbers
+ * finishes: the usage rebuild an exclusion change queues (usage_rebuild_pending
+ * on the exclusion lists) or the server's token recount (token_rule_pending on
+ * /api/maintenance/status). The charts read what those rewrite, and nothing else
+ * tells them it changed, so without this they keep the old numbers until a
+ * reload. `pending` is that flag.
  */
 const useRefreshWhenRebuilt = (pending: boolean | null | undefined) => {
   const queryClient = useQueryClient();

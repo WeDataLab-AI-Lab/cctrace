@@ -54,12 +54,14 @@ describe('ProjectBanner project identity', () => {
     const scope = projectBannerRangeQuery({
       selectedProject: projectIdentityKey(projects[0]!),
       selectedAccount: 'account@example.test',
+      userId: 7,
       projectHashes: ['h-main', 'h-worktree'],
       since: '2026-08-27T00:00:00Z',
       until: '2026-08-28T00:00:00Z',
       assembled: true,
       source: 'interactive',
       agent: 'claude',
+      classification: 'working',
     });
 
     expect(scope.request).toEqual({
@@ -71,7 +73,21 @@ describe('ProjectBanner project identity', () => {
       assembled: true,
       source: 'interactive',
       agent: 'claude',
+      classification: 'working',
     });
+    expect(scope.queryKey).not.toEqual(projectBannerRangeQuery({
+      ...scope.request,
+      userId: 8,
+      selectedProject: projectIdentityKey(projects[0]!),
+      selectedAccount: 'account@example.test',
+    }).queryKey);
+    expect(scope.queryKey).not.toEqual(projectBannerRangeQuery({
+      ...scope.request,
+      userId: 7,
+      classification: 'done',
+      selectedProject: projectIdentityKey(projects[0]!),
+      selectedAccount: 'account@example.test',
+    }).queryKey);
     expect(scope.queryKey).not.toEqual(projectBannerRangeQuery({
       ...scope.request,
       selectedProject: projectIdentityKey(projects[0]!),

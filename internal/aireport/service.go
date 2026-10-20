@@ -124,6 +124,8 @@ type Store interface {
 	SetAIRuntimeChoice(ctx context.Context, runtime, actor string) error
 	GetAIEnabledChoice(ctx context.Context) (*store.AIEnabledChoice, error)
 	SetAIEnabledChoice(ctx context.Context, enabled *bool, actor string) error
+	GetAIRunPolicy(ctx context.Context) (*store.AIRunPolicy, error)
+	SetAIRunPolicy(ctx context.Context, consentRequired *bool, maxConcurrent *int, actor string) error
 	CredentialStore
 }
 
@@ -163,7 +165,7 @@ type Service struct {
 	byKey    map[string]airuntime.Runtime
 	keyring  *Keyring
 	cfg      Config
-	sem      chan struct{}
+	queue    *runQueue
 	broker   *broker
 
 	rootCtx     context.Context
@@ -205,7 +207,7 @@ type activeRun struct {
 // ever an explicit choice; see Selection.
 func NewService(st Store, runtimes []airuntime.Runtime, cfg Config) *Service {
 	if cfg.MaxConcurrent <= 0 {
-		cfg.MaxConcurrent = 2
+		cfg.MaxConcurrent = DefaultMaxConcurrent
 	}
 	if cfg.ToolTimeout <= 0 {
 		cfg.ToolTimeout = 15 * time.Second
@@ -238,7 +240,7 @@ func NewService(st Store, runtimes []airuntime.Runtime, cfg Config) *Service {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &Service{
 		st: st, runtimes: built, byKey: byKey, keyring: cfg.Keyring, cfg: cfg,
-		sem:         make(chan struct{}, cfg.MaxConcurrent),
+		queue:       newRunQueue(cfg.MaxConcurrent),
 		broker:      newBroker(),
 		rootCtx:     ctx,
 		rootCancel:  cancel,
@@ -267,6 +269,39 @@ func (s *Service) RuntimeStatus(ctx context.Context) (airuntime.Info, airuntime.
 	return rt.Info(), s.status(ctx, rt)
 }
 
+// RuntimeForSessionRecords returns the explicitly selected API runtime for the
+// automatic session-record worker. The weekly report may use the Codex login
+// runtime, but session records only accept API-backed runtimes with their own
+// current credential and disclosure consent.
+func (s *Service) RuntimeForSessionRecords(ctx context.Context, key string) (airuntime.Runtime, Settings, airuntime.Status, error) {
+	if key == "" {
+		selection, err := s.Selection(ctx)
+		if err != nil {
+			return nil, Settings{}, airuntime.Status{}, err
+		}
+		key = selection.Key
+	}
+	if key == DefaultRuntimeKey {
+		return nil, Settings{}, airuntime.Status{}, airuntime.ErrNotConfigured
+	}
+	if key != RuntimeOpenAI && key != RuntimeClaude && key != RuntimeLiteLLM {
+		return nil, Settings{}, airuntime.Status{}, fmt.Errorf("%w: session records require an API runtime", ErrRuntimeUnimplemented)
+	}
+	rt := s.byKey[key]
+	if rt == nil {
+		return nil, Settings{}, airuntime.Status{}, airuntime.ErrNotConfigured
+	}
+	settings, err := s.SettingsFor(ctx, key)
+	if err != nil {
+		return nil, Settings{}, airuntime.Status{}, err
+	}
+	status := s.status(ctx, rt)
+	if !status.Configured || !status.Available {
+		return nil, settings, status, airuntime.ErrNotConfigured
+	}
+	return rt, settings, status, nil
+}
+
 // Start validates preconditions, records a running run on the runtime active
 // now and starts it in the background. Errors: ErrRuntimeDisabled, airuntime.ErrNotConfigured,
 // airuntime.ErrUnavailable, ErrConsentRequired, ErrNoRecords,
@@ -279,7 +314,8 @@ func (s *Service) Start(ctx context.Context, sc Scope, wk Week) (*store.AIReport
 // start begins a run and records who set it going. The scheduler passes
 // AIRunStartedBySchedule so a later tick can tell its own run from one the user
 // started by hand; every refusal below happens before the row is created, so a
-// user who has not consented leaves no failed run behind each week.
+// user refused for consent, where an admin requires it, leaves no failed run
+// behind each week.
 func (s *Service) start(ctx context.Context, sc Scope, wk Week, startedBy string) (*store.AIReportRun, error) {
 	// Taken before the runtime is read, and compared where the run becomes
 	// active, so a switch in between fails this run instead of letting it run
@@ -321,12 +357,18 @@ func (s *Service) start(ctx context.Context, sc Scope, wk Week, startedBy string
 	} else if !status.Available {
 		return nil, fmt.Errorf("%w: %s", airuntime.ErrUnavailable, status.Reason)
 	}
-	consent, err := s.st.GetAIConsent(ctx, sc.DashboardUserID, runtimeKey(info))
+	policy, err := s.RunPolicy(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if consent == nil || consent.DisclosureVersion != s.cfg.DisclosureVersion {
-		return nil, ErrConsentRequired
+	if policy.ConsentRequired {
+		consent, err := s.st.GetAIConsent(ctx, sc.DashboardUserID, runtimeKey(info))
+		if err != nil {
+			return nil, err
+		}
+		if consent == nil || consent.DisclosureVersion != s.cfg.DisclosureVersion {
+			return nil, ErrConsentRequired
+		}
 	}
 	agg, err := s.st.AIWeekAggregate(ctx, segmentScope(sc, wk))
 	if err != nil {
@@ -385,7 +427,9 @@ func (s *Service) start(ctx context.Context, sc Scope, wk Week, startedBy string
 	s.broker.open(id)
 	req := s.request(sc, wk, agg)
 	req.Model, req.ReasoningEffort = settings.Model, settings.ReasoningEffort
-	go s.execute(runCtx, rt, *run, req, sc, wk)
+	// The place in line is taken here, not in the goroutine, so runs go in the
+	// order they were started.
+	go s.execute(runCtx, s.queue.join(), rt, *run, req, sc, wk)
 	return run, nil
 }
 
@@ -415,17 +459,16 @@ func (s *Service) alreadyRunning(ctx context.Context, sc Scope, wk Week) error {
 	return &AlreadyRunningError{RunID: id}
 }
 
-func (s *Service) execute(ctx context.Context, rt airuntime.Runtime, run store.AIReportRun, req airuntime.RunRequest, sc Scope, wk Week) {
+func (s *Service) execute(ctx context.Context, turn *runTurn, rt airuntime.Runtime, run store.AIReportRun, req airuntime.RunRequest, sc Scope, wk Week) {
 	defer s.wg.Done()
 
 	var res *airuntime.Result
 	var err error
 	var lastUsage atomic.Pointer[airuntime.Usage]
-	select {
-	case s.sem <- struct{}{}:
+	if turn.wait(ctx) == nil {
 		res, err = runRecovered(ctx, rt, req, s.sink(run.ID, &lastUsage))
-		<-s.sem
-	case <-ctx.Done():
+		turn.release()
+	} else {
 		err = airuntime.ErrCanceled
 	}
 
@@ -782,8 +825,10 @@ type ConsentState struct {
 	Runtime           string
 	RuntimeKey        string
 	DisclosureVersion string
-	Granted           bool
-	GrantedAt         *time.Time
+	// Required is whether a run waits for Granted; see RunPolicy.
+	Required  bool
+	Granted   bool
+	GrantedAt *time.Time
 }
 
 // currentRuntimeKey is the consent key of the active runtime; rt is nil when
@@ -808,6 +853,11 @@ func (s *Service) Consent(ctx context.Context, sc Scope) (ConsentState, error) {
 	if rt != nil {
 		cs.Runtime = rt.Info().Key
 	}
+	policy, err := s.RunPolicy(ctx)
+	if err != nil {
+		return cs, err
+	}
+	cs.Required = policy.ConsentRequired
 	c, err := s.st.GetAIConsent(ctx, sc.DashboardUserID, cs.RuntimeKey)
 	if err != nil {
 		return cs, err

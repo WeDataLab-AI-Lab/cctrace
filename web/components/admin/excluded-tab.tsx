@@ -5,11 +5,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { listExcludedAccounts, listExcludedBillingAccounts } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { linkedBillingAccountsLabel } from '@/lib/excluded-account';
-import { keepKnownRebuildPending, usageRebuildPollInterval } from '@/lib/usage-rebuild';
+import { keepKnownRebuildPending, USAGE_REBUILD_NOTE, usageRebuildPollInterval } from '@/lib/usage-rebuild';
 import { useRefreshWhenRebuilt } from '@/lib/use-refresh-when-rebuilt';
 import { fmtCost } from '@/components/sessions/session-utils';
 import { CollectingLoader } from '@/components/common/collecting-loader';
-import { UsageRebuildNote } from '@/components/common/usage-rebuild-note';
+import { CatchingUpNote } from '@/components/common/catching-up-note';
 import { useAuth } from '@/components/common/auth-context';
 import { ExcludeAccountDialog } from './exclude-account-dialog';
 import { ExcludeBillingAccountDialog } from './exclude-billing-account-dialog';
@@ -100,7 +100,7 @@ const ExcludedTab = () => {
         </button>
       </header>
 
-      <UsageRebuildNote pending={excluded?.usage_rebuild_pending} />
+      <CatchingUpNote pending={excluded?.usage_rebuild_pending} message={USAGE_REBUILD_NOTE} />
 
       <div className="bg-surface border border-border rounded-lg overflow-x-auto">
         <div className="min-w-[820px]">

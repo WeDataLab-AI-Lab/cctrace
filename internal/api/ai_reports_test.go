@@ -120,7 +120,7 @@ func TestGetAIReportsUsesCallerScopeAndFillsMeta(t *testing.T) {
 		t.Fatalf("runtime = %v", rt)
 	}
 	consent := body["consent"].(map[string]any)
-	if consent["granted"] != false || consent["runtime_key"] != "codex-app-server:chatgpt" {
+	if consent["granted"] != false || consent["required"] != false || consent["runtime_key"] != "codex-app-server:chatgpt" {
 		t.Fatalf("consent = %v", consent)
 	}
 	run := body["run"].(map[string]any)
@@ -233,7 +233,9 @@ func TestPostAIReportsErrorCodes(t *testing.T) {
 		{"future week", aiRuntime(), nil, `{"week":"` + futureWeek + `"}`, 400, "future_week"},
 		{"unconfigured", nil, nil, `{"week":"2026-W37"}`, 503, "runtime_unconfigured"},
 		{"unavailable", unavailable, nil, `{"week":"2026-W37"}`, 503, "runtime_unavailable"},
-		{"consent", aiRuntime(), nil, `{"week":"2026-W37"}`, 403, "consent_required"},
+		{"consent", aiRuntime(), func(t *testing.T, a *aiTest) {
+			a.st.RunPolicy = &store.AIRunPolicy{ConsentRequired: &[]bool{true}[0]}
+		}, `{"week":"2026-W37"}`, 403, "consent_required"},
 		{"no records", aiRuntime(), func(t *testing.T, a *aiTest) { a.consent(t, 1) }, `{"week":"2026-W37"}`, 422, "no_records"},
 		{"already running", hold, func(t *testing.T, a *aiTest) {
 			a.consent(t, 1)

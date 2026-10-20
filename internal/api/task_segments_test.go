@@ -82,3 +82,26 @@ func TestTaskSegmentsRequiresAuth(t *testing.T) {
 		t.Fatalf("status = %d, want 401", rec.Code)
 	}
 }
+
+// tokens_ready rides on each segment under the name the task segment modal reads:
+// false while the server recounts the stored segments' tokens by request.
+func TestTaskSegmentsCarryTokensReady(t *testing.T) {
+	for _, ready := range []bool{false, true} {
+		srv := newTestServer(&taskSegmentsMockStore{mockStore: &mockStore{}, fn: func(_ context.Context, since, _ time.Time, _, _, _ string) (*store.TaskSegmentPage, error) {
+			return &store.TaskSegmentPage{Segments: []*store.TaskSegment{{SessionID: "s1", StartTs: since, TokensReady: ready}}, Total: 1}, nil
+		}}, nil)
+		req := httptest.NewRequest(http.MethodGet, "/api/task-segments?since=2026-08-01T00:00:00Z&until=2026-08-08T00:00:00Z&task_type=testing", nil)
+		req = req.WithContext(auth.WithUser(req.Context(), &auth.DashboardUser{Email: "user@example.com", CctraceUserID: "signed-in-user", Role: "user"}))
+		rec := httptest.NewRecorder()
+		srv.handleTaskSegments(rec, req)
+		var response struct {
+			Segments []map[string]any `json:"segments"`
+		}
+		if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil || len(response.Segments) != 1 {
+			t.Fatalf("response = %s (%v)", rec.Body.String(), err)
+		}
+		if got, ok := response.Segments[0]["tokens_ready"].(bool); !ok || got != ready {
+			t.Errorf("tokens_ready = %v (present %v), want %v: %s", response.Segments[0]["tokens_ready"], ok, ready, rec.Body.String())
+		}
+	}
+}

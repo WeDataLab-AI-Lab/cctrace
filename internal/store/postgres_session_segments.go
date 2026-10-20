@@ -52,7 +52,11 @@ func (s *PgStore) SessionAccountSegments(ctx context.Context, sessionID string) 
 	// segment count as the duplicate copies alternate account identity. Falling
 	// back to session_records only when the session has no unified_events row is
 	// what keeps offline, JSONL-only Claude sessions visible here at all.
-	const q = `
+	//
+	// That fallback counts requests: attributedRowsSQL gives a request's tokens
+	// to its head line, and a Codex usage row those of its codex_imputed_cost row.
+	// Its WHERE is the fragment's lineWhere.
+	q := `
 	WITH ev AS (
 		SELECT ts, COALESCE(agent,'claude') AS agent,
 			NULLIF(CASE WHEN COALESCE(agent,'claude') = 'codex'
@@ -65,11 +69,10 @@ func (s *PgStore) SessionAccountSegments(ctx context.Context, sessionID string) 
 		SELECT ts, COALESCE(agent,'claude') AS agent,
 			NULLIF(CASE WHEN COALESCE(agent,'claude') = 'codex'
 			            THEN COALESCE(account_id,'') ELSE COALESCE(login_email,'') END, '') AS account,
-			COALESCE(input_tokens,0) AS input_tokens,
-			COALESCE(output_tokens,0) AS output_tokens,
+			COALESCE(req_input_tokens,0) AS input_tokens,
+			COALESCE(req_output_tokens,0) AS output_tokens,
 			0::double precision AS cost_usd
-		FROM visible_session_records
-		WHERE session_id = $1
+		FROM (` + attributedRowsSQL("visible_session_records", `sr.session_id = $1
 			-- A timestamp-less state record has no place on a timeline: ordered at the
 			-- zero instant it opened a leading 1970 segment with no account, and the
 			-- session list would then disagree with its own drill-down (see
@@ -80,9 +83,10 @@ func (s *PgStore) SessionAccountSegments(ctx context.Context, sessionID string) 
 			-- The NOT EXISTS is the same fallback sessionStartExpr makes -- a session
 			-- whose rows are all state records keeps them, because an empty drill-down
 			-- would say the session has no records at all.
-			AND (ts > 'epoch' OR NOT EXISTS (
+			AND (sr.ts > 'epoch' OR NOT EXISTS (
 				SELECT 1 FROM visible_session_records real_ts
-				WHERE real_ts.session_id = $1 AND real_ts.ts > 'epoch'))
+				WHERE real_ts.session_id = $1 AND real_ts.ts > 'epoch'))`,
+		[]string{"ts", "agent", "account_id", "login_email"}) + `) a
 	), src AS (
 		SELECT * FROM ev
 		UNION ALL
