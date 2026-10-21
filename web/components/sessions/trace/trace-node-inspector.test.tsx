@@ -361,7 +361,7 @@ it('renders only source-linked agent parent and inherited-history metadata', () 
   expect(panel.textContent).toContain('exact_dispatch_tool');
   expect(panel.textContent).toContain('fork_context');
   expect(panel.textContent).toContain('실제 복사 범위 아님');
-  expect(panel.textContent).toContain('child_context_not_linked');
+  expect(panel.textContent).toContain('하위 에이전트가 이어받은 대화 범위를 이 기록과 연결하지 못했습니다.');
   expect(panel.textContent).toContain('미수집');
   expect(panel.textContent).toContain('Inspect the changed files');
 });
@@ -612,4 +612,77 @@ it('exposes record actions beside the exact selected source record for conversat
   fireEvent.click(screen.getByText(/^연결된 원자료 [0-9]+건$/));
   fireEvent.click(screen.getByText(/tool_call · /));
   expect(screen.getByRole('button', { name: '대화에서 보기 · tool_call' })).toBeTruthy();
+});
+
+it('interprets a Claude slash command input while keeping the recorded tags as its source', () => {
+  const command: TraceNodeDetail = {
+    ...detail,
+    node: { ...node, node_id: 'turn-clear', kind: 'turn', title: '입력 구간 · /clear 명령', grouping_basis: 'source_sequence' },
+    input: { state: 'observed', value: '<command-name>/clear</command-name>\n<command-message>clear</command-message>\n<command-args></command-args>' },
+    output: { state: 'not_applicable' }, context: { state: 'not_applicable' }, usage: null,
+    interpretation: { kind: 'slash_command', facts: { command: '/clear', args: '' } },
+  };
+  render(createElement(TraceNodeInspector, { selectedNodeId: 'turn-clear', detail: command, loading: false, error: false, onRetry: vi.fn() }));
+  const reading = screen.getByRole('region', { name: '기록 해석' });
+  expect(reading.textContent).toContain('사용자가 실행한 슬래시 명령');
+  expect(within(reading).getByText('명령').nextElementSibling?.textContent).toBe('/clear');
+  expect(within(reading).getByText('인자').nextElementSibling?.textContent).toBe('없음');
+  expect(screen.getByRole('tabpanel', { name: '입력' }).textContent).toContain('<command-name>/clear</command-name>');
+});
+
+it('explains a system record collected without its kind and names the line it followed instead of an empty body', () => {
+  const legacy: TraceNodeDetail = {
+    ...detail,
+    node: { ...node, node_id: 'legacy-system', kind: 'event', title: '시스템 기록 · 종류 미수집', role: 'system', semantic: 'event', source_kind: 'system' },
+    input: { state: 'not_collected' }, output: { state: 'not_applicable' }, context: { state: 'not_applicable' }, usage: null,
+    interpretation: { kind: 'system_kind_not_collected', facts: { parent: '/clear 명령', parent_uuid: 'bf5cec21' } },
+  };
+  render(createElement(TraceNodeInspector, { selectedNodeId: 'legacy-system', detail: legacy, loading: false, error: false, onRetry: vi.fn() }));
+  const panel = screen.getByRole('tabpanel', { name: '기록 내용' });
+  expect(panel.textContent).toContain('v0.7.66보다 오래된 cctrace 클라이언트');
+  expect(within(panel).getByText('앞선 기록').nextElementSibling?.textContent).toBe('/clear 명령');
+  expect(panel.textContent).not.toContain('이 기록에 표시할 본문이 없습니다');
+  expect(panel.textContent).not.toContain('bf5cec21');
+});
+
+it('shows the parent id when the line a legacy system record followed is not in this session', () => {
+  const orphan: TraceNodeDetail = {
+    ...detail,
+    node: { ...node, node_id: 'orphan-system', kind: 'event', title: '시스템 기록 · 종류 미수집' },
+    input: { state: 'not_collected' }, output: { state: 'not_applicable' }, context: { state: 'not_applicable' }, usage: null,
+    interpretation: { kind: 'system_kind_not_collected', facts: { parent_uuid: 'bf5cec21' } },
+  };
+  render(createElement(TraceNodeInspector, { selectedNodeId: 'orphan-system', detail: orphan, loading: false, error: false, onRetry: vi.fn() }));
+  const reading = screen.getByRole('region', { name: '기록 해석' });
+  expect(within(reading).getByText('앞선 기록 ID').nextElementSibling?.textContent).toBe('bf5cec21 (이 세션에서 찾지 못함)');
+});
+
+it('formats turn duration and compaction facts from their recorded units', () => {
+  const compact: TraceNodeDetail = {
+    ...detail,
+    node: { ...node, node_id: 'compact', kind: 'event', title: '대화 압축 · 자동 · 96.8만→1.5만 토큰' },
+    input: { state: 'observed', value: 'Conversation compacted' }, output: { state: 'not_applicable' }, context: { state: 'not_applicable' }, usage: null,
+    interpretation: { kind: 'system_compact_boundary', facts: { trigger: 'auto', pre_tokens: 968251, post_tokens: 14662 } },
+  };
+  render(createElement(TraceNodeInspector, { selectedNodeId: 'compact', detail: compact, loading: false, error: false, onRetry: vi.fn() }));
+  const reading = screen.getByRole('region', { name: '기록 해석' });
+  expect(within(reading).getByText('압축 방식').nextElementSibling?.textContent).toBe('자동');
+  expect(within(reading).getByText('압축 전 토큰').nextElementSibling?.textContent).toBe('968,251');
+  expect(within(reading).getByText('압축 후 토큰').nextElementSibling?.textContent).toBe('14,662');
+});
+
+it('shows a Codex developer message as its recorded items instead of an empty instruction panel', () => {
+  const codex: TraceNodeDetail = {
+    ...detail,
+    node: { ...node, node_id: 'codex-dev', kind: 'instructions', title: '메모리 안내 · 권한·샌드박스 지시', role: 'developer', semantic: 'message', source_kind: 'developer' },
+    input: { state: 'observed', value: [{ type: 'input_text', text: '## Memory\nfolder guidance' }, { type: 'input_text', text: '<permissions instructions>\nsandbox rules' }] },
+    output: { state: 'not_applicable' }, context: { state: 'not_applicable' }, usage: null,
+    interpretation: { kind: 'codex_message_items', facts: { items: [{ kind: 'memories.instructions', label: '메모리 안내' }, { kind: 'permissions.instructions', label: '권한·샌드박스 지시' }] } },
+  };
+  render(createElement(TraceNodeInspector, { selectedNodeId: 'codex-dev', detail: codex, loading: false, error: false, onRetry: vi.fn() }));
+  const panel = screen.getByRole('tabpanel', { name: '기록 내용' });
+  const items = within(within(panel).getByRole('region', { name: 'Codex가 덧붙인 항목' })).getAllByRole('group');
+  expect(items.map(item => item.querySelector('summary')?.textContent)).toEqual(['메모리 안내', '권한·샌드박스 지시']);
+  expect(items[0].textContent).toContain('folder guidance');
+  expect(items[1].textContent).toContain('sandbox rules');
 });

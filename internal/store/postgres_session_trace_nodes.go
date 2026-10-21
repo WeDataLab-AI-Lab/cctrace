@@ -308,22 +308,25 @@ func nodeBlocks(row traceNodeRow) []any {
 	return b
 }
 func nodeString(m map[string]any, key string) string { s, _ := m[key].(string); return s }
-func nodePreview(value any) string {
-	var text string
+
+// nodeText is a content value's text: the string itself, or the first text block.
+func nodeText(value any) string {
 	switch v := value.(type) {
 	case string:
-		text = v
+		return v
 	case []any:
 		for _, item := range v {
 			if m, ok := item.(map[string]any); ok {
 				if t := nodeString(m, "text"); t != "" {
-					text = t
-					break
+					return t
 				}
 			}
 		}
 	}
-	text = strings.Join(strings.Fields(text), " ")
+	return ""
+}
+func nodePreview(value any) string {
+	text := strings.Join(strings.Fields(nodeText(value)), " ")
 	runes := []rune(text)
 	if len(runes) > 96 {
 		text = string(runes[:96]) + "…"
@@ -469,10 +472,13 @@ func (r traceNodeReader) nodes(row traceNodeRow) ([]sessiontrace.Node, error) {
 			kind, title = "instructions", "AGENTS.md 지시문"
 		}
 	}
-	if typeName == "system" && kind == "event" {
-		if subtype := nodeString(row.raw, "subtype"); subtype != "" {
-			title = "시스템 · " + subtype
+	if typeName == "user" && kind == "event" && traceClaudeRow(row) {
+		if harness, _ := traceHarnessText(nodeText(m["content"]), row.record.CommandName); harness != "" {
+			title = harness
 		}
+	}
+	if typeName == "system" && kind == "event" && traceClaudeRow(row) {
+		title, _ = traceSystemText(row.raw, nodeText(m["content"]))
 	}
 	if kind == "tool" {
 		if preview := nodeToolPreview(row); preview != "" {
@@ -648,6 +654,9 @@ func (r traceNodeReader) nodes(row traceNodeRow) ([]sessiontrace.Node, error) {
 		tools = append(tools, agent)
 	}
 	node := r.makeNode(row, key, parent, title, hasChildren)
+	if codex, _ := traceCodexItems(row); codex != "" && key.Index < 0 && (node.Role == "developer" || node.Kind == "event") {
+		node.Title = codex
+	}
 	if kind == "tool" {
 		observation, e := r.toolObservation(row, toolCall(row, key))
 		if e != nil {
@@ -678,7 +687,11 @@ func (r traceNodeReader) nodes(row traceNodeRow) ([]sessiontrace.Node, error) {
 			if basis == "exact_turn_id" {
 				w.Title = "턴"
 			}
-			if preview := nodePreview(m["content"]); preview != "" {
+			preview := nodePreview(m["content"])
+			if harness, _ := traceHarnessText(nodeText(m["content"]), row.record.CommandName); harness != "" && traceClaudeRow(row) {
+				preview = harness
+			}
+			if preview != "" {
 				w.Title += " · " + preview
 			}
 			wrapper = &w

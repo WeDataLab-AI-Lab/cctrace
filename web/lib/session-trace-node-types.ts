@@ -29,6 +29,8 @@ interface TraceNode {
   availability: string;
 }
 interface AuditValue { state: string; value?: unknown; reason?: string }
+/** What a harness-written record is, as codes: `kind` and the fact keys are worded by the inspector. */
+interface TraceInterpretation { kind: string; facts?: Record<string, unknown> }
 interface TraceInstructionEntry { kind: string; source_path: string; path?: string; body: AuditValue }
 interface TraceInstructionContext { instructions?: TraceInstructionEntry[]; settings?: AuditValue; provenance?: AuditValue }
 interface TraceInputItem {
@@ -78,6 +80,7 @@ interface TraceNodeDetail {
   raw_records: SessionRecord[];
   request?: NativeRequest;
   notices: string[];
+  interpretation?: TraceInterpretation;
 }
 interface TraceNodesRequest {
   view?: TraceNodesView; parentId?: string; cursor?: string; limit?: number;
@@ -86,4 +89,4 @@ interface TraceNodesRequest {
 interface TraceNodeDetailRequest { requestParts?: 'page'; inputCursor?: string; inputLimit?: number; compareTo?: string; sourceRef?: string }
 interface TraceNodeQueryIdentity { userId: number; access: 'admin' | 'owner'; sessionId: string; scope?: TraceScope }
 
-export type { TraceNodesView, TraceNodeKind, TraceNode, AuditValue, TraceInstructionEntry, TraceInstructionContext, NativeRequest, TraceNodesResponse, TraceNodeDetail, TraceNodesRequest, TraceNodeQueryIdentity, TraceNodeDetailRequest, TraceInputItem, TraceInputPage, TraceProvenance, TraceSourceLocation, TraceComparison, TraceNavigation };
+export type { TraceNodesView, TraceNodeKind, TraceNode, AuditValue, TraceInterpretation, TraceInstructionEntry, TraceInstructionContext, NativeRequest, TraceNodesResponse, TraceNodeDetail, TraceNodesRequest, TraceNodeQueryIdentity, TraceNodeDetailRequest, TraceInputItem, TraceInputPage, TraceProvenance, TraceSourceLocation, TraceComparison, TraceNavigation };

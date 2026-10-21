@@ -40,7 +40,7 @@ Two ingestion paths feed one store, because neither is sufficient alone.
 
 ## Requirements
 
-- Go 1.25+
+- Go 1.26+
 - Node.js 20.9+ (dashboard build — `web/package.json` engines)
 - Docker (server + TimescaleDB)
 

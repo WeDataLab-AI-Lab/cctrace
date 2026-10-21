@@ -10,7 +10,7 @@ Each step is the short path. The linked pages carry the full options and the rea
 
 ## 1. Check the requirements
 
-- Go 1.25 or later, to build the client.
+- Go 1.26 or later, to build the client.
 - Docker with Compose, to build and run the server and the database.
 - A clone of this repository. Run every command below from its root.
 

@@ -42,6 +42,15 @@ type TraceNodeDetail struct {
 	RawRecords      []*SessionRecord              `json:"raw_records"`
 	Request         *sessiontrace.NativeRequest   `json:"request,omitempty"`
 	Notices         []string                      `json:"notices"`
+	Interpretation  *TraceInterpretation          `json:"interpretation,omitempty"`
+}
+
+// TraceInterpretation names what a harness-written line is -- a slash command,
+// its local output, a system line's kind -- with the facts read from it. Kind
+// and fact keys are codes; the dashboard words them.
+type TraceInterpretation struct {
+	Kind  string         `json:"kind"`
+	Facts map[string]any `json:"facts,omitempty"`
 }
 
 // TraceNodeDetailOptions opts into bounded native input reading. Legacy callers

@@ -4,7 +4,7 @@
 
 ## 준비물
 
-- Go 1.25 이상 (`go.mod`)
+- Go 1.26 이상 (`go.mod`)
 - `make`
 - 실행 중인 서버. [서버 설치](../server/install.md) 참고
 

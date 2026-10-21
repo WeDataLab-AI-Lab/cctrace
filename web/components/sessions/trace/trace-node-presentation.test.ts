@@ -23,6 +23,11 @@ describe('trace node presentation contract', () => {
     expect(traceNodePresentation(detail({ node: { ...detail({}).node, kind: 'instructions', semantic: 'runtime_notice' } })).content).toBe('event');
   });
 
+  it('shows a developer message body as recorded content rather than an empty instruction panel', () => {
+    expect(traceNodePresentation(detail({ node: { ...detail({}).node, kind: 'instructions', semantic: 'message' } })).content).toBe('event');
+    expect(traceNodePresentation(detail({ node: { ...detail({}).node, kind: 'instructions', semantic: 'instructions' } })).content).toBe('instructions');
+  });
+
   it('shows request and usage only as material attached to their selected response or tool', () => {
     const response = detail({ node: { ...detail({}).node, kind: 'response' } });
     expect(traceNodePresentation(response)).toMatchObject({ showRequest: false, showUsage: false });

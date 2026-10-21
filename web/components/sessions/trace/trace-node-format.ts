@@ -18,6 +18,13 @@ const traceNodeAvailabilityLabel = (availability: string): string => ({
   truncated: '잘림', not_queried: '미조회', unqueried: '미조회', error: '오류', unavailable: '확인 불가', pending: '준비 중',
 }[availability] ?? availability);
 
+const traceReasonText = (reason: string): string => ({
+  child_context_not_linked: '하위 에이전트가 이어받은 대화 범위를 이 기록과 연결하지 못했습니다.',
+  harness_recorded_api_request: '하네스가 실제 요청으로 기록한 API 요청 본문입니다.',
+  harness_recorded_api_request_page: '하네스가 기록한 API 요청 본문입니다. 크기가 커서 나눠 읽습니다.',
+  multiple_exact_tool_results: '같은 도구 호출에 결과 기록이 여러 개라 하나로 정하지 못했습니다.',
+}[reason] ?? reason);
+
 const traceNodeTimeLabel = (value?: string | null): string => {
   if (!value || !Number.isFinite(Date.parse(value))) return '시각 확인 불가';
   return new Intl.DateTimeFormat('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(value));
@@ -31,4 +38,4 @@ const formatObservedDuration = (node: TraceNode): string | undefined => {
   return `${seconds}초 관측`;
 };
 
-export { traceNodeKindLabel, traceNodeStatusLabel, traceNodeStatusTone, traceNodeAvailabilityLabel, traceNodeTimeLabel, formatObservedDuration };
+export { traceNodeKindLabel, traceNodeStatusLabel, traceNodeStatusTone, traceNodeAvailabilityLabel, traceReasonText, traceNodeTimeLabel, formatObservedDuration };

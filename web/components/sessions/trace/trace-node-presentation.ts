@@ -24,7 +24,8 @@ const hasRequestMaterial = (detail: TraceNodeDetail): boolean => {
 
 const traceNodePresentation = (detail: TraceNodeDetail): TraceNodePresentation => {
   let content: TraceNodeContentKind;
-  if (detail.node.semantic === 'runtime_notice') content = 'event';
+  // A developer message's body is its input; the instruction panel reads only typed instruction context.
+  if (detail.node.semantic === 'runtime_notice' || detail.node.semantic === 'message') content = 'event';
   else switch (detail.node.kind) {
     case 'turn': content = 'turn'; break;
     case 'response': content = 'response'; break;

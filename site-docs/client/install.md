@@ -4,7 +4,7 @@ Build the `cctrace` client from source and put it on your `PATH`. Every develope
 
 ## Requirements
 
-- Go 1.25 or later (`go.mod`)
+- Go 1.26 or later (`go.mod`)
 - `make`
 - A running server. See [Server install](../server/install.md).
 

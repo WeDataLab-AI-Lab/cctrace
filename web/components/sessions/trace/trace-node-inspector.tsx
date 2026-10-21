@@ -2,13 +2,14 @@
 
 import { useId, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import type { AuditValue, NativeRequest, TraceNodeDetail, TraceSourceLocation } from '@/lib/session-trace-node-types';
+import type { AuditValue, NativeRequest, TraceInterpretation, TraceNodeDetail, TraceSourceLocation } from '@/lib/session-trace-node-types';
 import type { SessionRecord } from '@/lib/types';
 import { formatObservedDuration } from './trace-node-format';
-import { traceNodeAvailabilityLabel, traceNodeKindLabel, traceNodeStatusLabel, traceNodeStatusTone, traceNodeTimeLabel } from './trace-node-format';
+import { traceNodeAvailabilityLabel, traceNodeKindLabel, traceNodeStatusLabel, traceNodeStatusTone, traceNodeTimeLabel, traceReasonText } from './trace-node-format';
 import { extractTraceInstructions, readableContentValue } from './trace-node-instructions';
 import { RequestInputView } from './request-input-view';
 import { traceNodePresentation, type TraceNodeContentKind } from './trace-node-presentation';
+import { CodexItemsSection, codexMessageItems, TraceInterpretationSection } from './trace-node-interpretation';
 
 const contentLabels: Record<TraceNodeContentKind, string> = {
   turn: '입력', response: '응답', tool: '입력·결과', request: 'API 요청', instructions: '지시문', context: '실행 설정',
@@ -43,7 +44,7 @@ const AuditSection = ({ label, audit }: AuditSectionProps) => {
       <h3 className="text-xs font-medium text-ink">{label}</h3>
       {exceptional && <span className={cn('rounded border border-border px-1.5 py-0.5 text-[10px]', audit.state === 'error' ? 'text-danger-strong' : 'text-ink-3')}>{stateLabel(audit.state)}</span>}
     </div>
-    {audit.reason && <p className="mb-2 break-words text-[11px] text-ink-3">{audit.reason}</p>}
+    {audit.reason && <p className="mb-2 break-words text-[11px] text-ink-3">{traceReasonText(audit.reason)}</p>}
     {audit.value !== undefined ? <pre className="max-h-[32rem] min-w-0 overflow-auto whitespace-pre-wrap break-words rounded bg-surface-sunk p-2 font-mono text-[11px] text-ink-2">{jsonText(audit.value)}</pre>
       : <p className="text-[11px] text-ink-3">{exceptional ? stateLabel(audit.state) : '이 기록에 값이 없습니다.'}</p>}
   </section>;
@@ -186,7 +187,7 @@ const HookContextSection = ({ audit }: StructuredContextProps) => {
       <h3 className="text-xs font-medium text-ink">훅 실행</h3>
       <span className="rounded border border-border px-1.5 py-0.5 text-[10px] text-ink-3">{stateLabel(audit.state)}</span>
     </div>
-    {audit.reason && <p className="mb-2 break-words text-[10px] text-ink-3">{audit.reason}</p>}
+    {audit.reason && <p className="mb-2 break-words text-[10px] text-ink-3">{traceReasonText(audit.reason)}</p>}
     {getField('command', 'command') !== undefined && <StructuredField label="실행 명령" value={getField('command', 'command')} missingLabel={missingLabel} />}
     {getField('hookName') !== undefined && <StructuredField label="훅 이름" value={getField('hookName')} missingLabel={missingLabel} />}
     {getField('hookEvent') !== undefined && <StructuredField label="훅 이벤트" value={getField('hookEvent')} missingLabel={missingLabel} />}
@@ -218,7 +219,7 @@ const InstructionBody = ({ title, path, body, expanded = false }: InstructionBod
   const exceptional = !['observed', 'collected', 'available'].includes(body.state);
   return <details open={expanded} className="rounded border border-border bg-surface">
     <summary className="cursor-pointer break-all px-3 py-2 text-[11px] text-ink-2 focus-visible:ring-1 focus-visible:ring-accent">{label}{exceptional && <span className="ml-2 text-ink-3">{stateLabel(body.state)}</span>}</summary>
-    {body.reason && <p className="border-t border-border-subtle px-3 py-2 text-[11px] text-ink-3">{body.reason}</p>}
+    {body.reason && <p className="border-t border-border-subtle px-3 py-2 text-[11px] text-ink-3">{traceReasonText(body.reason)}</p>}
     {body.value !== undefined ? <pre className="max-h-[min(60vh,48rem)] overflow-auto whitespace-pre-wrap break-words border-t border-border-subtle bg-surface-sunk p-3 font-mono text-[11px] text-ink-2">{jsonText(body.value)}</pre>
       : <p className="border-t border-border-subtle px-3 py-2 text-[11px] text-ink-3">{exceptional ? stateLabel(body.state) : '본문은 이 기록에 없습니다.'}</p>}
   </details>;
@@ -259,22 +260,24 @@ const ExecutionSettingsSection = ({ audit }: StructuredContextProps) => {
 
 const MetadataSection = ({ audit }: StructuredContextProps) => <AuditSection label="기록 내용" audit={audit} />;
 
-interface EventContentProps { input: AuditValue; output: AuditValue; context: AuditValue }
+interface EventContentProps { input: AuditValue; output: AuditValue; context: AuditValue; interpretation?: TraceInterpretation }
 const showEventAudit = (audit: AuditValue, includeMissing: boolean): boolean => {
   if (audit.state === 'not_applicable') return false;
   if (audit.value !== undefined) return true;
   if (['redacted', 'withheld', 'truncated', 'error'].includes(audit.state)) return true;
   return includeMissing && ['not_collected', 'missing', 'not_queried', 'unqueried'].includes(audit.state) && !!audit.reason;
 };
-const EventContentSection = ({ input, output, context }: EventContentProps) => {
+const EventContentSection = ({ input, output, context, interpretation }: EventContentProps) => {
   const hasInput = showEventAudit(input, true);
   const hasOutput = showEventAudit(output, true);
   const hasContext = showEventAudit(context, false);
+  const items = codexMessageItems(interpretation, input.value);
   return <div>
-    {hasInput && <MessageAuditSection label="입력" audit={input} />}
+    {items && Array.isArray(input.value) ? <CodexItemsSection items={items} blocks={input.value} />
+      : hasInput && <MessageAuditSection label="입력" audit={input} />}
     {hasOutput && <MessageAuditSection label="결과" audit={output} />}
     {hasContext && <AuditSection label="추가 기록" audit={context} />}
-    {!hasInput && !hasOutput && !hasContext && <p role="status" className="py-4 text-xs text-ink-3">이 기록에 표시할 본문이 없습니다. 원자료에서 확인할 수 있습니다.</p>}
+    {!hasInput && !hasOutput && !hasContext && !interpretation && <p role="status" className="py-4 text-xs text-ink-3">이 기록에 표시할 본문이 없습니다. 원자료에서 확인할 수 있습니다.</p>}
   </div>;
 };
 
@@ -316,14 +319,14 @@ const AgentContextSection = ({ node, input, output, audit }: AgentContextSection
     {historyFields.map(key => <StructuredField key={key} label={`상속 이력 범위 · ${key}`} value={historyValue?.[key]} missingLabel={historyMissing} />)}
     {directHistory.filter(key => !historyFields.includes(key)).map(key => <StructuredField key={key} label={`상속 이력 범위 · ${key}`} value={root?.[key]} missingLabel={historyMissing} />)}
     {historyFields.length === 0 && directHistory.length === 0 && <StructuredField label="상속 이력 범위" value={undefined} missingLabel={historyMissing} />}
-    {typeof parent?.reason === 'string' && <p className="break-words text-[10px] text-ink-3">상위 문맥 상태: {parent.reason}</p>}
-    {typeof history?.reason === 'string' && <p className="break-words text-[10px] text-ink-3">상속 범위 상태: {history.reason}</p>}
+    {typeof parent?.reason === 'string' && <p className="break-words text-[10px] text-ink-3">상위 문맥 상태: {traceReasonText(parent.reason)}</p>}
+    {typeof history?.reason === 'string' && <p className="break-words text-[10px] text-ink-3">상속 범위 상태: {traceReasonText(history.reason)}</p>}
     {input.value !== undefined && <details className="rounded border border-border">
       <summary className="cursor-pointer px-3 py-2 text-[11px] text-ink-2">원래 도구 인수 보기</summary>
       <div className="border-t border-border-subtle px-3"><AuditSection label="호출 인수" audit={input} /></div>
     </details>}
     {output.value !== undefined && <AuditSection label="호출 반환 결과" audit={output} />}
-    {audit.reason && !parent?.reason && !history?.reason && <p className="break-words text-[10px] text-ink-3">{audit.reason}</p>}
+    {audit.reason && !parent?.reason && !history?.reason && <p className="break-words text-[10px] text-ink-3">{traceReasonText(audit.reason)}</p>}
   </section>;
 };
 
@@ -443,6 +446,7 @@ const TraceNodeInspector = ({ selectedNodeId, detail, loading, error, onRetry, t
       {matched.notices.map(notice => <li key={notice}>{noticeLabels[notice] ?? notice}</li>)}
     </ul>}
     <div role="tabpanel" id="trace-node-panel-content" aria-label={contentLabel} className="min-h-0 flex-1 overflow-y-auto px-4 py-2">
+      {matched.interpretation && <TraceInterpretationSection interpretation={matched.interpretation} />}
       {presentation.content === 'turn' && <MessageAuditSection label="입력" audit={matched.input} />}
       {presentation.content === 'response' && <MessageAuditSection label="응답" audit={matched.output} />}
       {presentation.content === 'response' && presentation.showRequest && <RequestSection nodeId={matched.node.node_id} request={matched.request}
@@ -465,7 +469,7 @@ const TraceNodeInspector = ({ selectedNodeId, detail, loading, error, onRetry, t
         ? <AgentContextSection node={matched.node} input={matched.input} output={matched.output} audit={matched.context} />
         : <ExecutionSettingsSection audit={matched.context} />)}
       {presentation.content === 'metadata' && <MetadataSection audit={matched.context} />}
-      {presentation.content === 'event' && <EventContentSection input={matched.input} output={matched.output} context={matched.context} />}
+      {presentation.content === 'event' && <EventContentSection input={matched.input} output={matched.output} context={matched.context} interpretation={matched.interpretation} />}
       {presentation.content === 'hook' && <HookContextSection audit={matched.context} />}
       {presentation.content === 'agent' && <AgentContextSection node={matched.node} input={matched.input} output={matched.output} audit={matched.context} />}
       {presentation.content === 'usage' && <p role="status" className="py-3 text-xs text-ink-3">사용량은 해당 모델 응답의 속성으로 표시됩니다.</p>}

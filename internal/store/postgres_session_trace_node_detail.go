@@ -130,6 +130,11 @@ func (s *PgStore) TraceNodeDetailWithOptions(parent context.Context, id string, 
 		return out, ErrSessionAnalysisNotFound
 	}
 	out.RawRecords = append(out.RawRecords, row.record)
+	if (key.Kind == "turn" || key.Kind == "event" || key.Kind == "instructions") && key.Index < 0 {
+		if out.Interpretation, err = r.interpretation(row); err != nil {
+			return out, err
+		}
+	}
 	m := nodeMessage(row)
 	if key.Kind == "instructions" || key.Kind == "context" || key.Kind == "metadata" || key.Kind == "usage" || key.Kind == "turn" {
 		out.Input = sessiontrace.AuditValue{State: "not_applicable"}

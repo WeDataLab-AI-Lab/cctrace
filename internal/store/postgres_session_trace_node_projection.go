@@ -6,11 +6,14 @@ const traceNodeMetadataJSON = `jsonb_build_object(
  'ts',r.ts,'session_id',r.session_id,'uuid',r.uuid,'record_type',r.record_type,
  'profile_email',r.profile_email,'user_id',r.user_id,'login_email',r.login_email,'account_id',r.account_id,
  'agent',COALESCE(r.agent,'claude'),'source_file',r.source_file,'agent_id',r.agent_id,'is_sidechain',r.is_sidechain,
- 'is_meta',r.is_meta,'prompt_source',r.prompt_source,
+ 'is_meta',r.is_meta,'prompt_source',r.prompt_source,'command_name',r.command_name,
  'tool_use_id',r.tool_use_id,'tool_name',r.tool_name,'tool_call_id',r.tool_call_id,'message_id',r.message_id,
  'codex_turn_id',r.codex_turn_id,'codex_root_turn_id',r.codex_root_turn_id,'codex_turn_metadata_known',r.codex_turn_metadata_known,
  'raw',jsonb_strip_nulls(jsonb_build_object(
   'type',r.raw->'type','id',r.raw->'id','requestRef',r.raw->'requestRef','subtype',r.raw->'subtype','toolUseID',r.raw->'toolUseID',
+  'cctraceCollect',r.raw->'cctraceCollect','durationMs',r.raw->'durationMs','messageCount',r.raw->'messageCount',
+  'compactMetadata',CASE WHEN jsonb_typeof(r.raw->'compactMetadata')='object' THEN jsonb_build_object(
+    'trigger',r.raw->'compactMetadata'->'trigger','preTokens',r.raw->'compactMetadata'->'preTokens','postTokens',r.raw->'compactMetadata'->'postTokens') END,
   'role',r.raw->'role','name',r.raw->'name',
   'arguments',CASE WHEN jsonb_typeof(r.raw->'arguments')='object' THEN jsonb_build_object(
     'cmd',left(r.raw->'arguments'->>'cmd',96),'command',left(r.raw->'arguments'->>'command',96),'file_path',left(r.raw->'arguments'->>'file_path',96),
@@ -38,7 +41,8 @@ const traceNodeMetadataJSON = `jsonb_build_object(
     'model',left(r.raw->'payload'->>'model',96),'effort',left(r.raw->'payload'->>'effort',96),
     'turn_id',CASE WHEN jsonb_typeof(r.raw->'payload'->'turn_id')='string' THEN r.raw->'payload'->'turn_id' END,
     'root_turn_id',CASE WHEN jsonb_typeof(r.raw->'payload'->'root_turn_id')='string' THEN r.raw->'payload'->'root_turn_id' END,
-    'internal_chat_message_metadata_passthrough',jsonb_build_object('turn_id',CASE WHEN jsonb_typeof(r.raw->'payload'->'internal_chat_message_metadata_passthrough'->'turn_id')='string' THEN r.raw->'payload'->'internal_chat_message_metadata_passthrough'->'turn_id' END),
+    'internal_chat_message_metadata_passthrough',jsonb_build_object('turn_id',CASE WHEN jsonb_typeof(r.raw->'payload'->'internal_chat_message_metadata_passthrough'->'turn_id')='string' THEN r.raw->'payload'->'internal_chat_message_metadata_passthrough'->'turn_id' END,
+      'content_item_kinds',CASE WHEN jsonb_typeof(r.raw->'payload'->'internal_chat_message_metadata_passthrough'->'content_item_kinds')='array' THEN r.raw->'payload'->'internal_chat_message_metadata_passthrough'->'content_item_kinds' END),
     'arguments',CASE WHEN jsonb_typeof(r.raw->'payload'->'arguments')='object' THEN jsonb_build_object(
       'cmd',left(r.raw->'payload'->'arguments'->>'cmd',96),'command',left(r.raw->'payload'->'arguments'->>'command',96),
       'file_path',left(r.raw->'payload'->'arguments'->>'file_path',96),'path',left(r.raw->'payload'->'arguments'->>'path',96),
