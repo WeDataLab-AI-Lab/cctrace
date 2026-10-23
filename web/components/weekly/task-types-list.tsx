@@ -90,7 +90,9 @@ const EmptyLine = ({ children }: { readonly children: React.ReactNode }) => (
 );
 
 const TaskTypesBody = ({ tasks, typedTurnCount, readState, onOpenTaskType }: TaskTypesListProps) => {
-  if (readState === 'loading') return <ChartSkeleton variant="bar" className="h-[200px]" />;
+  // The bar skeleton needs ~270px (six rows and a legend). At 200px it centred that
+  // content in a shorter box and spilled above and below the card while loading.
+  if (readState === 'loading') return <ChartSkeleton variant="bar" className="h-[280px]" />;
   if (readState === 'failed') return <EmptyLine>요청 분류를 불러오지 못했습니다.</EmptyLine>;
   if (typedTurnCount === 0) return <EmptyLine>이 기간에 기록된 요청이 없습니다.</EmptyLine>;
 
