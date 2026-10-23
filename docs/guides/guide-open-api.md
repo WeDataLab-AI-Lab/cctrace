@@ -165,10 +165,11 @@ cctrace insights context --since 7d [--project HASH] [--limit N] [--profile NAME
 | `GET` | `/api/open/v1/skills` | Skill outcome totals | 스킬 실행 결과 합계 |
 | `GET` | `/api/open/v1/rules` | Paginated sanitized rule metadata | 페이지 기반 정제 규칙 메타데이터 |
 | `GET` | `/api/open/v1/rules/{rule_id}` | Sanitized rule version metadata | 정제 규칙 버전 메타데이터 |
-| `GET` | `/api/open/v1/events` | Time-ranged telemetry events | 시간 범위 텔레메트리 이벤트 |
+| `GET` | `/api/open/v1/events` | Time-ranged telemetry events; `event_name` and `decision_source` filters | 시간 범위 텔레메트리 이벤트, `event_name`·`decision_source` 필터 |
 | `GET` | `/api/open/v1/metrics` | Time-ranged telemetry metrics | 시간 범위 텔레메트리 메트릭 |
 | `GET` | `/api/open/v1/usage` | Session, cost, token, work-time, and model totals; grouped with `group_by` | 세션·비용·토큰·작업 시간·모델 합계, `group_by` 로 그룹별 |
 | `GET` | `/api/open/v1/organization-insights` | Admin-only privacy-preserving instance aggregate | 관리자 전용 개인정보 보호 인스턴스 집계 |
+| `GET` | `/api/open/v1/practices` | Shared comparison of manual approvals and human rejections between users and non-users of each Claude plugin, skill, and hook; fixed last 30 days, practice names without people, plus the caller's own rates | Claude 플러그인·스킬·훅별 사용자·비사용자의 수동 승인·사람 거절 비교 공유 집계, 최근 30일 고정, 실천 이름만 표시·사람 미표시, 호출자 본인 비율 포함 |
 
 Full parameter, response-field, and example reference in `/open-api` and [`docs/api/openapi.yaml`](../api/openapi.yaml).
 
@@ -210,7 +211,7 @@ Session record kinds / 세션 레코드 종류:
 - Count tool calls across agents by summing `tool_call_count`; hidden duplicates carry 0 / 에이전트 공통 도구 호출 수는 `tool_call_count` 합계, 숨김 중복 행은 0
 - Repository paths and source files excluded / 저장소 경로·소스 파일 제외
 - Emails and teams excluded, except as the grouping key of `usage?group_by=user|team` / 이메일·팀 제외 (`usage?group_by=user|team`의 그룹 키는 예외)
-- Internal attributes excluded / 내부 속성 제외
+- Internal attributes excluded, except `decision_source` and `tool_use_id` on `tool_decision` events / 내부 속성 제외 (`tool_decision` 이벤트의 `decision_source`·`tool_use_id` 예외)
 - Rule bodies, comments, repository identifiers, commits, branches, and author identity excluded / 규칙 본문·댓글·저장소 식별자·커밋·브랜치·작성자 정보 제외
 
 ## Usage semantics / 사용량 계산

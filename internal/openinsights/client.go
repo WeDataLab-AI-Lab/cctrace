@@ -73,12 +73,12 @@ type Project struct {
 
 // Sessions lists every session with activity in w, optionally in one project.
 func (c *Client) Sessions(ctx context.Context, w Window, projectHash string) ([]Session, bool, error) {
-	return fetchAll(ctx, c, "/api/open/v1/sessions", w, projectHash, func(s Session) string { return s.SessionID })
+	return fetchAll(ctx, c, "/api/open/v1/sessions", w, projectFilter(projectHash), func(s Session) string { return s.SessionID })
 }
 
 // Events lists every event in w, optionally in one project.
 func (c *Client) Events(ctx context.Context, w Window, projectHash string) ([]Event, bool, error) {
-	return fetchAll(ctx, c, "/api/open/v1/events", w, projectHash, eventKey)
+	return fetchAll(ctx, c, "/api/open/v1/events", w, projectFilter(projectHash), eventKey)
 }
 
 // ModelCosts returns per-model cost over w, aggregated per request.
@@ -134,20 +134,20 @@ func (c *Client) Projects(ctx context.Context) ([]Project, error) {
 // shifts later pages, repeating a row across the page boundary; keyOf drops
 // those repeats. The offset advances by rows received, not rows kept, so a
 // repeat cannot stall the loop. It reports truncated when more than maxRows
-// distinct rows exist.
-func fetchAll[T any](ctx context.Context, c *Client, path string, w Window, projectHash string, keyOf func(T) string) ([]T, bool, error) {
+// distinct rows exist. filter adds query parameters to every page.
+func fetchAll[T any](ctx context.Context, c *Client, path string, w Window, filter url.Values, keyOf func(T) string) ([]T, bool, error) {
 	var all []T
 	seen := map[string]bool{}
 	offset := 0
 	for {
 		q := url.Values{}
+		for k, v := range filter {
+			q[k] = v
+		}
 		q.Set("since", w.Since.UTC().Format(time.RFC3339))
 		q.Set("until", w.Until.UTC().Format(time.RFC3339))
 		q.Set("limit", strconv.Itoa(c.pageSize))
 		q.Set("offset", strconv.Itoa(offset))
-		if projectHash != "" {
-			q.Set("project_hash", projectHash)
-		}
 		var page []T
 		if err := c.get(ctx, path, q, &page); err != nil {
 			return nil, false, err
@@ -172,6 +172,13 @@ func fetchAll[T any](ctx context.Context, c *Client, path string, w Window, proj
 			return nil, false, fmt.Errorf("GET %s: a full page repeated earlier rows; retry the command", path)
 		}
 	}
+}
+
+func projectFilter(projectHash string) url.Values {
+	if projectHash == "" {
+		return nil
+	}
+	return url.Values{"project_hash": {projectHash}}
 }
 
 // eventKey identifies an event by its whole value: events carry no ID, and a

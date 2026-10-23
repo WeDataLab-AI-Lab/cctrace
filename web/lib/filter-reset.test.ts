@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isFilterKey } from './filter-reset';
+import { OWN_ACCOUNTS_KEY, isFilterKey } from './filter-reset';
 
 describe('isFilterKey', () => {
   it('claims every filter:* key', () => {
@@ -20,6 +20,12 @@ describe('isFilterKey', () => {
   it('does not claim appearance or auth state', () => {
     expect(isFilterKey('cctrace.appearance')).toBe(false);
     expect(isFilterKey('cctrace.token')).toBe(false);
+  });
+
+  // "Mine" trims which chips are offered; it is how the viewer wants the header to
+  // look, not a question asked of the data, so a reset keeps it.
+  it('does not claim the own-accounts chip setting', () => {
+    expect(isFilterKey(OWN_ACCOUNTS_KEY)).toBe(false);
   });
 
   // A remembered tab is where the user is, not what they are filtering by.

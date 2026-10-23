@@ -22,7 +22,7 @@ import { shortModel } from '@/lib/model-label';
 import { FilterBar } from '@/components/common/filter-bar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { WEEKLY_USAGE_HINT, WEEKLY_USAGE_KEY, isWeeklyUsageKey } from '@/lib/weekly-usage';
-import { CollectingLoader } from '@/components/common/collecting-loader';
+import { TableLoadingRows, rowIn } from '@/components/common/loading-rows';
 import {
   Table,
   TableBody,
@@ -215,11 +215,7 @@ export default function CostPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="px-4 py-8 text-center text-ink-3">
-                  <CollectingLoader />
-                </TableCell>
-              </TableRow>
+              <TableLoadingRows columns={6} />
             ) : filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="px-4 py-8 text-center text-ink-3">
@@ -227,10 +223,10 @@ export default function CostPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((c) => (
+              filtered.map((c, i) => (
                 <TableRow
                   key={`${c.profile_email}-${c.model}`}
-                  className="hover:bg-canvas border-b border-border/50"
+                  className={`hover:bg-canvas border-b border-border/50 ${rowIn(i)}`}
                 >
                   <TableCell className="px-4 py-3">
                     {isWeeklyUsageKey(c.user_id) ? <WeeklyUserLabel /> : (

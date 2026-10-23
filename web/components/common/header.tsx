@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { LogOut, User, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { LogOut, User, PanelLeftClose, PanelLeftOpen, Square, SquareCheck } from 'lucide-react';
 import { fetchAccounts } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { WEEKLY_USAGE_HINT } from '@/lib/weekly-usage';
@@ -82,7 +82,7 @@ const Header = () => {
   const title = pageTitles[pathname] || 'Overview';
   // Account/Agent scope filters are analytics-only; hide them on admin/infra views.
   const showScopeFilters = !nonAnalyticsPaths.has(pathname);
-  const { selectedAccount, setSelectedAccount } = useAccount();
+  const { selectedAccount, setSelectedAccount, ownAccountsOnly, setOwnAccountsOnly } = useAccount();
   const { selectedAgent, setSelectedAgent } = useAgent();
   const { user, logout } = useAuth();
   const { menuCollapsed, toggleMenu } = useSessionLayout();
@@ -90,14 +90,30 @@ const Header = () => {
   const pinnedToOwnAccount = user?.role === 'user' && pathname === '/sessions';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  // The chips list every member's accounts because the screens below are shared. A role=user
+  // viewer may trim them to their own; the server ignores that request for an admin.
+  const canTrimToOwn = user?.role === 'user';
+  const accountScope = canTrimToOwn && ownAccountsOnly ? 'mine' : 'all';
   const { data: accounts = [] } = useQuery<string[]>({
-    queryKey: ['accounts'],
-    queryFn: fetchAccounts,
+    // The user id keeps one viewer's 'mine' list from being served to the next one to sign in.
+    queryKey: ['accounts', user?.id ?? null, accountScope],
+    queryFn: () => fetchAccounts(accountScope),
     staleTime: 5 * 60 * 1000,
     enabled: !!user,
+    // Flipping the toggle keeps the old chips until the other list arrives, so the row (and
+    // the toggle in it) does not blink out in between.
+    placeholderData: keepPreviousData,
   });
+  // Trimmed to one account the row must stay, or the toggle that trimmed it would vanish too.
+  const showAccountChips = !pinnedToOwnAccount && (accounts.length > 1 || accountScope === 'mine');
 
   const handleSelectAllAccounts = () => setSelectedAccount('');
+  /** "Mine"을 켜면 선택된 계정 칩이 사라질 수 있으므로 선택을 All로 되돌린다. */
+  const handleToggleOwnAccounts = () => {
+    const next = !ownAccountsOnly;
+    setOwnAccountsOnly(next);
+    if (next) setSelectedAccount('');
+  };
   const handleProfileToggle = () => setShowProfileMenu((v) => !v);
   const handleLogout = async () => {
     await logout();
@@ -149,12 +165,15 @@ const Header = () => {
             <span className="text-[11px] text-ink-3">세션 목록은 본인 계정 전체 기준입니다</span>
           </div>
         )}
-        {accounts && accounts.length > 1 && !pinnedToOwnAccount && (
+        {showAccountChips && (
           // flex-1 so the group claims the width of the line it wrapped onto, and
           // min-w-0 so it is allowed to be narrower than its pills. Without both the
           // row sizes itself to its contents and runs off the edge instead of
-          // scrolling -- twelve accounts was enough to show that.
-          <div className="flex min-w-0 flex-1 items-center gap-2">
+          // scrolling -- twelve accounts was enough to show that. With the own-accounts
+          // toggle (shrink-0) beside the pills, min-w-0 let the pills shrink to nothing
+          // and the toggle spill over the Agent label on a one-line header, so that row
+          // keeps enough width to wrap onto its own line instead.
+          <div className={cn('flex min-w-0 flex-1 items-center gap-2', canTrimToOwn && 'min-w-56')}>
             <span className="shrink-0 text-[11px] font-medium text-ink-3">Account</span>
             <ScrollFadeRow>
               <button onClick={handleSelectAllAccounts} className={pillClass(selectedAccount === '')}>
@@ -170,6 +189,13 @@ const Header = () => {
                 </button>
               ))}
             </ScrollFadeRow>
+            {canTrimToOwn && (
+              // The check box sets it apart from the account pills beside it: it is a switch, not an account.
+              <button type="button" aria-pressed={ownAccountsOnly} onClick={handleToggleOwnAccounts} className={pillClass(ownAccountsOnly)}>
+                {ownAccountsOnly ? <SquareCheck className="size-3.5" aria-hidden /> : <Square className="size-3.5" aria-hidden />}
+                Mine
+              </button>
+            )}
           </div>
         )}
 

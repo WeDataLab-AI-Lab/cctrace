@@ -79,7 +79,7 @@ func (s *PgStore) AISegmentConversation(ctx context.Context, sc AISegmentScope, 
 	if limit > 1000 {
 		limit = 1000
 	}
-	rows, err := s.pool.Query(ctx, `SELECT sr.ts,sr.session_id,sr.uuid,sr.record_type,sr.agent,sr.user_id,sr.profile_email,sr.raw,sr.tool_use_id,sr.is_compact_summary,sr.is_meta
+	rows, err := s.pool.Query(ctx, `SELECT sr.ts,sr.session_id,sr.uuid,sr.record_type,sr.agent,sr.user_id,sr.profile_email,sr.raw,sr.tool_use_id,sr.is_compact_summary,sr.is_meta,sr.prompt_source
  FROM task_segment_facts f JOIN visible_session_records sr ON sr.session_id=f.session_id
  AND sr.ts>=f.start_ts AND (f.end_ts IS NULL OR sr.ts<f.end_ts)
  WHERE `+aiSegmentWhere+` AND f.boundary_record_id=$5
@@ -92,7 +92,7 @@ func (s *PgStore) AISegmentConversation(ctx context.Context, sc AISegmentScope, 
 	result := []*SessionRecord{}
 	for rows.Next() {
 		r := &SessionRecord{}
-		if err = rows.Scan(&r.Ts, &r.SessionID, &r.UUID, &r.RecordType, &r.Agent, &r.UserID, &r.ProfileEmail, &r.Raw, &r.ToolUseID, &r.IsCompactSummary, &r.IsMeta); err != nil {
+		if err = rows.Scan(&r.Ts, &r.SessionID, &r.UUID, &r.RecordType, &r.Agent, &r.UserID, &r.ProfileEmail, &r.Raw, &r.ToolUseID, &r.IsCompactSummary, &r.IsMeta, &r.PromptSource); err != nil {
 			return nil, err
 		}
 		result = append(result, r)

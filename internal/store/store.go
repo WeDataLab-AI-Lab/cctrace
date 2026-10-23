@@ -208,6 +208,10 @@ type EventFilter struct {
 	Until         *time.Time
 	Limit         int
 	Offset        int
+
+	// DecisionSources matches tool_decision events whose attrs source is one of
+	// these (config, hook, user_temporary, ...). Other events never match.
+	DecisionSources []string
 }
 
 // MetricFilter is used to query metrics.

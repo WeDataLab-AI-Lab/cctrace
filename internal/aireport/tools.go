@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -48,7 +49,7 @@ func BuildTools(st Store, sc Scope, wk Week) []airuntime.Tool {
 				"had_compact":{"type":"boolean"},
 				"min_tool_fail":{"type":"integer","minimum":0},
 				"min_typed_turns":{"type":"integer","minimum":0},
-				"agent":{"type":"string"},
+				"agent":{"type":"string","enum":["claude","codex","gjc","omo","all"],"description":"claude = Claude Code, codex = Codex. all 또는 생략이면 전체"},
 				"order_by":{"type":"string","enum":["start_ts","typed_turn_count","tool_fail_count"]},
 				"limit":{"type":"integer","minimum":1,"maximum":50}}}`),
 			Handler: func(ctx context.Context, raw json.RawMessage) (airuntime.ToolOutput, error) {
@@ -168,6 +169,10 @@ func querySegments(ctx context.Context, st Store, scope store.AISegmentScope, ra
 	if a.Limit < 1 || a.Limit > maxQueryLimit || a.MinToolFail < 0 || a.MinTypedTurns < 0 {
 		return airuntime.ToolOutput{}, fmt.Errorf("invalid arguments: limit must be 1..%d and minimums non-negative", maxQueryLimit)
 	}
+	agent, ok := segmentAgent(a.Agent)
+	if !ok {
+		return airuntime.ToolOutput{}, errors.New("invalid arguments: agent must be one of claude, codex, gjc, omo, or all")
+	}
 	summary := map[string]any{"order_by": a.OrderBy, "limit": a.Limit}
 	if a.HadCompact != nil {
 		summary["had_compact"] = *a.HadCompact
@@ -184,7 +189,7 @@ func querySegments(ctx context.Context, st Store, scope store.AISegmentScope, ra
 
 	segs, err := st.AIWeekSegments(ctx, scope, store.AISegmentFilter{
 		HadCompact: a.HadCompact, MinToolFail: a.MinToolFail, MinTypedTurns: a.MinTypedTurns,
-		Agent: a.Agent, OrderBy: a.OrderBy, Limit: a.Limit,
+		Agent: agent, OrderBy: a.OrderBy, Limit: a.Limit,
 	})
 	if err != nil {
 		log.Printf("[aireport] query_segments: %v", err)
@@ -204,6 +209,26 @@ func querySegments(ctx context.Context, st Store, scope store.AISegmentScope, ra
 		Rows:        len(views),
 		ArgsSummary: summary,
 	}, nil
+}
+
+// segmentAgent maps an agent name to the value task_segment_facts stores
+// (claude, codex, gjc, omo); "" means no filter. Models write the names people
+// use -- "Claude Code", "Codex" -- and a value the store never holds would
+// return an empty list the model reads as no such work, so an unknown name is
+// reported instead.
+func segmentAgent(name string) (string, bool) {
+	name = strings.Join(strings.Fields(strings.ToLower(strings.NewReplacer("-", " ", "_", " ").Replace(name))), " ")
+	switch name {
+	case "", "all":
+		return "", true
+	case "claude", "claude code":
+		return "claude", true
+	case "codex", "codex cli":
+		return "codex", true
+	case "gjc", "omo":
+		return name, true
+	}
+	return "", false
 }
 
 type readSegmentArgs struct {
@@ -286,7 +311,14 @@ func conversationEntries(rec *store.SessionRecord) []messageView {
 	if v.AgentTask || v.Kind == sessionview.KindHidden || v.Kind == sessionview.KindReasoning {
 		return nil
 	}
-	out := textEntry(v.Role, v.Text)
+	var out []messageView
+	// prompt_source system names a machine caller, so its text is not the
+	// person's words. sdk stays: Agent-SDK harnesses such as omo mark every turn
+	// sdk, and sessionview has already cut the replayed transcript and prose
+	// tool results, leaving the request.
+	if v.Role != "user" || rec.PromptSource != "system" {
+		out = textEntry(v.Role, v.Text)
+	}
 	for _, c := range v.ToolCalls {
 		out = append(out, messageView{Role: "assistant", Tool: truncateBytes(c.Name, 128)})
 	}
@@ -311,23 +343,76 @@ var injectedTags = []string{
 	"environment_context", "user_instructions",
 }
 
-// injectedBlock matches one tagged block; an unclosed one runs to the end of
-// the text, so a cut-off block is dropped rather than sent.
-var injectedBlock = func() *regexp.Regexp {
-	alts := make([]string, 0, len(injectedTags))
-	for _, tag := range injectedTags {
-		alts = append(alts, "<"+tag+`(?:\s[^>]*)?>.*?(?:</`+tag+`>|\z)`)
+// agentTags wrap what agents write to each other in a user record -- subagent
+// and task notifications, peer-session messages, skill bodies -- which the
+// report would otherwise read as the person asking. People quote these tags,
+// so only user text loses them, and only a closed block or one that opens the
+// text. turn_aborted records the person interrupting, so it becomes the marker
+// Claude writes for that instead of vanishing.
+var agentTags = []string{
+	"subagent_notification", "cross-session-message", "turn_aborted",
+	"skill", "send_user_message", "task-notification",
+}
+
+const interruptMarker = "[Request interrupted by user]"
+
+// injectedLeads open user-role text a machine wrote as prose, not in a tag: a
+// peer session's message and Codex's AGENTS.md preamble. Only the lead marks
+// it; the same words later in a message are the person quoting them.
+var injectedLeads = []string{"Another Claude session sent a message:", "# AGENTS.md instructions"}
+
+// tagBlocks matches one block of any of tags, from its opening tag to its
+// closing tag or, when unclosed is set, to the end of the text.
+func tagBlocks(tags []string, unclosed bool) *regexp.Regexp {
+	end := ""
+	if unclosed {
+		end = `|\z`
+	}
+	alts := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		alts = append(alts, "<"+tag+`(?:\s[^>]*)?>.*?(?:</`+tag+`>`+end+`)`)
 	}
 	return regexp.MustCompile(`(?s)` + strings.Join(alts, "|"))
-}()
+}
+
+var (
+	// injectedBlock runs an unclosed block to the end of the text, so a cut-off
+	// block is dropped rather than sent.
+	injectedBlock = tagBlocks(injectedTags, true)
+	agentBlock    = tagBlocks(agentTags, false)
+	agentOpening  = regexp.MustCompile(`\A<(?:` + strings.Join(agentTags, "|") + `)(?:\s[^>]*)?>`)
+)
 
 // stripInjected removes injected blocks from a message's text.
 func stripInjected(text string) string {
 	return injectedBlock.ReplaceAllString(text, "")
 }
 
+// stripAgentWritten removes agent blocks from user text: closed ones anywhere,
+// an unclosed one only when it opens the text.
+func stripAgentWritten(text string) string {
+	text = strings.TrimSpace(agentBlock.ReplaceAllStringFunc(text, agentReplacement))
+	if open := agentOpening.FindString(text); open != "" {
+		return agentReplacement(open)
+	}
+	return text
+}
+
+func agentReplacement(block string) string {
+	if strings.HasPrefix(block, "<turn_aborted") {
+		return interruptMarker
+	}
+	return ""
+}
+
 func textEntry(role, text string) []messageView {
 	text = strings.TrimSpace(stripInjected(text))
+	if role == "user" {
+		text = stripAgentWritten(text)
+		if slices.ContainsFunc(injectedLeads, func(lead string) bool { return strings.HasPrefix(text, lead) }) {
+			return nil
+		}
+	}
 	if text == "" {
 		return nil
 	}

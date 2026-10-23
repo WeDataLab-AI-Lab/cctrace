@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { CollectingLoader } from '@/components/common/collecting-loader';
+import { ListLoadingRows, rowIn } from '@/components/common/loading-rows';
 import type { SessionOverview } from '@/lib/types';
 import { CLASSIFICATION_LABEL } from './analysis/list-model';
 import { CategoryChip } from './analysis/category-chip';
@@ -94,6 +95,10 @@ interface SessionListProps {
 
 const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoadingMore, onLoadMore, total, pendingCount = 0, unattributedCount = 0, onCommitPending, groups, groupsBusy = false, groupReadError = false, groupWriteError = false, onDismissGroup, onRestoreGroup, preserveGroupOrder = false, analysisMode = false }: SessionListProps) => {
   const periodFormatters = createSessionPeriodFormatters();
+  // Rows render through the group list, which does not pass an index; the entrance
+  // delay follows each row's place in the loaded list instead.
+  const rowOrder = new Map(sessions.map((s, i) => [s.session_id, i]));
+  const entrance = (s: SessionOverview) => rowIn(rowOrder.get(s.session_id) ?? Infinity);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const handleSelect = (session: SessionOverview) => () => onSelect(session);
@@ -191,7 +196,7 @@ const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoa
         onScroll={handleScroll}
       >
         {isLoading ? (
-          <CollectingLoader className="py-8" />
+          <ListLoadingRows />
         ) : sessions.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-ink-3">
             <div>No sessions</div>
@@ -214,14 +219,14 @@ const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoa
               if (analysisMode && s.analysis) {
                 const live = groups ? groups.running.some((item) => item.session_id === s.session_id) : isRecentlyActive(s.end_time);
                 return (
-                  <div key={s.session_id}>
+                  <div key={s.session_id} className={entrance(s)}>
                     <SessionAnalysisRow session={s} selected={isSelected} onSelect={onSelect} live={live} />
                     {action && <div className="border-b border-border/50 px-3 pb-2">{action}</div>}
                   </div>
                 );
               }
               return (
-                <div key={s.session_id} className="relative border-b border-border/50">
+                <div key={s.session_id} className={cn('relative border-b border-border/50', entrance(s))}>
                 <button
                   type="button"
                   onClick={handleSelect(s)}

@@ -88,6 +88,11 @@ func buildEventWhere(f EventFilter) (string, []interface{}) {
 	}
 	add("user_team", f.UserTeam)
 	add("event_name", f.EventName)
+	if len(f.DecisionSources) > 0 {
+		n++
+		conds = append(conds, fmt.Sprintf("(event_name = 'tool_decision' AND attrs->>'source' = ANY($%d::text[]))", n))
+		args = append(args, f.DecisionSources)
+	}
 	if clause := appendAgentScope("agent", f.Agent, &n, &args); clause != "" {
 		conds = append(conds, clause)
 	}

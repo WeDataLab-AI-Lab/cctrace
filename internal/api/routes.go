@@ -119,6 +119,7 @@ func (s *Server) routes() {
 	s.mux.Handle("GET /api/open/v1/metrics", openReadRL((http.HandlerFunc(s.handleOpenAPIMetrics))))
 	s.mux.Handle("GET /api/open/v1/organization-insights", openReadRL(http.HandlerFunc(s.handleOpenAPIOrganizationInsights)))
 	s.mux.Handle("GET /api/open/v1/weekly-insights", openReadRL(http.HandlerFunc(s.handleOpenAPIWeeklyInsights)))
+	s.mux.Handle("GET /api/open/v1/practices", openReadRL(http.HandlerFunc(s.handleOpenAPIPractices)))
 
 	// Dashboard routes (JWT auth required)
 	dashMW := func(next http.Handler) http.Handler {

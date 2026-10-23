@@ -41,6 +41,7 @@ export default function ToolsPage() {
         totalSuccess={totalSuccess}
         totalFail={totalFail}
         overallRate={overallRate}
+        loading={isLoading}
       />
 
       <ToolUsageTable

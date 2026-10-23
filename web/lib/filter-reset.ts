@@ -12,6 +12,13 @@
 const ACCOUNT_KEY = 'cctrace.selectedAccount';
 const AGENT_KEY = 'cctrace.selectedAgent';
 
+/**
+ * localStorage key of the "Mine" (own accounts only) chip setting. Named here, beside the scope keys, because it
+ * is the one account key isFilterKey must leave alone: it is how the viewer wants the header to
+ * look, not a question asked of the data.
+ */
+const OWN_ACCOUNTS_KEY = 'cctrace.ownAccountsOnly';
+
 /** Fired after the filter keys are cleared, so live components drop to their defaults. */
 const FILTER_RESET_EVENT = 'cctrace:filter-reset';
 
@@ -39,4 +46,4 @@ const resetFilters = (): void => {
   window.dispatchEvent(new Event(FILTER_RESET_EVENT));
 };
 
-export { FILTER_RESET_EVENT, ACCOUNT_KEY, AGENT_KEY, isFilterKey, resetFilters };
+export { FILTER_RESET_EVENT, ACCOUNT_KEY, AGENT_KEY, OWN_ACCOUNTS_KEY, isFilterKey, resetFilters };

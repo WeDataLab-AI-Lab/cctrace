@@ -122,6 +122,7 @@ export default function PluginsPage() {
         totalTokens={totalTokens}
         inputTokens={inputTokens}
         outputTokens={outputTokens}
+        loading={isLoading}
       />
 
       <p className="bg-canvas border border-border rounded-lg px-4 py-3 text-[12px] text-ink-2">

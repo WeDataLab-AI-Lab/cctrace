@@ -162,7 +162,7 @@ func (s *Server) readRecords(w http.ResponseWriter, r *http.Request, e fileEntry
 		fail(w, 500, "read_error", "session read failed")
 		return
 	}
-	if err = s.stable(e); err != nil {
+	if err = stable(e); err != nil {
 		fail(w, 409, "revision_changed", "session changed")
 		return
 	}
@@ -179,100 +179,18 @@ func (s *Server) readDetail(w http.ResponseWriter, r *http.Request, e fileEntry,
 		s.readRecords(w, r, e)
 		return
 	}
-	f, err := openEntry(e)
-	if err != nil {
+	a, err := analyze(r.Context(), e, AnalyzeOptions{ReadAt: s.now()})
+	if errors.Is(err, ErrChanged) {
 		fail(w, 409, "revision_changed", "session changed")
 		return
-	}
-	defer f.Close()
-	input := sessionfacts.Input{Agent: e.agent, ReadAt: time.Now()}
-	empty := ""
-	snapshot := sessionfacts.Snapshot{AITitle: &empty, CustomTitle: &empty, AgentName: &empty}
-	headIndex := map[string]int{}
-	incomplete := ""
-	if e.agent == "claude" {
-		err = readClaudeLines(r.Context(), f, e.info.Size(), 0, func(line []byte, offset, _ int64) error {
-			if line == nil {
-				incomplete = "oversized_jsonl"
-				return nil
-			}
-			if len(bytes.TrimSpace(line)) == 0 {
-				return nil
-			}
-			var rec sessionlog.Record
-			if json.Unmarshal(line, &rec) != nil {
-				incomplete = "invalid_jsonl"
-				return nil
-			}
-			projectTitle(&snapshot, rec.Type, line)
-			if rec.Type != "user" && rec.Type != "assistant" && rec.Type != "system" && rec.Type != "progress" {
-				return nil
-			}
-			rec.RawLine = line
-			st := claudeStoreRecord(e, rec, line)
-			row := projectClaude(&rec, &st, offset+1)
-			input.Rows = append(input.Rows, row)
-			addClaudeHead(&input, headIndex, &rec, &st, row.ID)
-			return nil
-		})
-	} else {
-		activeTurn := ""
-		life := map[string]int{}
-		lastNext := int64(0)
-		_, err = codexlog.ScanReaderContext(r.Context(), f, e.info.Size(), nativeID(e), func(rec *codexlog.Record, line []byte, offset, next int64, meta codexlog.Metadata) error {
-			if offset != lastNext {
-				incomplete = "oversized_jsonl"
-			}
-			lastNext = next
-			if len(bytes.TrimSpace(line)) == 0 {
-				return nil
-			}
-			if !json.Valid(line) {
-				incomplete = "invalid_jsonl"
-				return nil
-			}
-			projectCodexLifecycle(&snapshot, life, &activeTurn, line)
-			if rec == nil {
-				return nil
-			}
-			row := codexProjection(rec, offset)
-			row.UUID = hash(e.id, strconv.FormatInt(offset, 10))
-			// The uploader sends this mapping (codex-tui is "cli"); the raw originator
-			// made every interactive turn a non-request in the local analysis.
-			row.Entrypoint = codexlog.EntrypointFromOriginator(meta.Originator, meta.IsSubagentFork)
-			if row.RecordType == "usage" && row.TurnID == "" {
-				row.TurnID = activeTurn
-			}
-			input.CodexRows = append(input.CodexRows, row)
-			if row.RecordType == "usage" {
-				input.Heads = append(input.Heads, sessionfacts.Head{ID: row.ID, UUID: row.UUID, TS: row.TS, Model: row.Model, InputTokens: max(0, row.InputTokens-row.CacheReadTokens), OutputTokens: row.OutputTokens, CacheReadTokens: row.CacheReadTokens})
-			}
-			return nil
-		})
-		if err == nil && lastNext < e.info.Size() {
-			// Distinguish an ordinary unfinished line from a skipped oversized line.
-			if _, seekErr := f.Seek(lastNext, io.SeekStart); seekErr == nil {
-				_, _, _, tailErr := jsonlscan.ReadLine(r.Context(), bufio.NewReader(io.LimitReader(f, e.info.Size()-lastNext)))
-				if errors.Is(tailErr, jsonlscan.ErrLineTooLong) {
-					incomplete = "oversized_jsonl"
-				}
-			}
-		}
 	}
 	if err != nil {
 		fail(w, 500, "read_error", "session read failed")
 		return
 	}
-	if err = s.stable(e); err != nil {
-		fail(w, 409, "revision_changed", "session changed")
-		return
-	}
-	input.Snapshots = []sessionfacts.Snapshot{snapshot}
-	// The worker's computation: it places Codex inputs by their turn id.
-	full := sessionfacts.ComputeWithTimelineAndCommits(input)
-	out := sessionfacts.TimelineOutput{Output: full.Output, Timeline: full.Timeline}
-	response := analysisResponse(e, input, out)
-	if incomplete != "" {
+	out := sessionfacts.TimelineOutput{Output: a.Facts.Output, Timeline: a.Facts.Timeline}
+	response := analysisResponse(e, a.Input, out)
+	if incomplete := a.Incomplete; incomplete != "" {
 		response.Summary.TurnBoundaries = "undeterminable"
 		response.Summary.TurnBoundariesReason = incomplete
 		response.Summary.TurnCount, response.Summary.RequestCount, response.Summary.InputCount = nil, nil, nil

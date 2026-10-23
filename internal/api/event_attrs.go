@@ -18,8 +18,9 @@ import "cctrace/internal/store"
 //
 // A deny list can miss a key an agent adds later. The durable contract is an
 // allow-list DTO, which /api/open/v1/events already has (openAPIEventDTO carries
-// no attrs field at all); the dashboard routes cannot take that shape while the
-// Logs and Tools views render the bag for diagnosis.
+// no attrs bag; it names two keys off tool_decision events, source and
+// tool_use_id, neither of which holds text); the dashboard routes cannot take
+// that shape while the Logs and Tools views render the bag for diagnosis.
 var textBearingEventAttrs = map[string]bool{
 	"prompt":      true,
 	"prompt_text": true,

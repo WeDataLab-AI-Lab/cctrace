@@ -176,6 +176,7 @@ test-unit: web-dist-placeholder test-scope-check
 		./internal/codexrates/... \
 		./internal/codexsyncer/... \
 		./internal/containertest/... \
+		./internal/dependencyaudit/... \
 		./internal/desktop/... \
 		./internal/configtxn/... \
 		./internal/envgen/... \

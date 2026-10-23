@@ -97,6 +97,21 @@ func TestBuildEventWhere_AllFilters(t *testing.T) {
 	}
 }
 
+func TestBuildEventWhere_DecisionSources(t *testing.T) {
+	sources := []string{"user_temporary", "hook"}
+	where, args := buildEventWhere(EventFilter{EventName: "tool_decision", DecisionSources: sources})
+	expected := "WHERE event_name = $1 AND (event_name = 'tool_decision' AND attrs->>'source' = ANY($2::text[]))"
+	if where != expected {
+		t.Errorf("expected %q, got %q", expected, where)
+	}
+	if len(args) != 2 || args[0] != "tool_decision" {
+		t.Fatalf("unexpected args: %v", args)
+	}
+	if got, ok := args[1].([]string); !ok || len(got) != 2 || got[0] != "user_temporary" || got[1] != "hook" {
+		t.Errorf("sources arg = %#v", args[1])
+	}
+}
+
 // --- buildMetricWhere tests ---
 
 func TestBuildMetricWhere_Empty(t *testing.T) {

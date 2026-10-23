@@ -3,7 +3,7 @@
 import { Fragment } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CollectingLoader } from '@/components/common/collecting-loader';
+import { TableLoadingRows, rowIn } from '@/components/common/loading-rows';
 import {
   Table,
   TableBody,
@@ -38,11 +38,7 @@ const UsersTable = ({ byUser, expandedUser, onToggle, isLoading }: UsersTablePro
     </TableHeader>
     <TableBody className="divide-y divide-border/50">
       {isLoading ? (
-        <TableRow className="hover:bg-transparent">
-          <TableCell colSpan={8} className="px-4 py-8 text-center text-ink-3">
-            <CollectingLoader />
-          </TableCell>
-        </TableRow>
+        <TableLoadingRows columns={8} />
       ) : byUser.length === 0 ? (
         <TableRow className="hover:bg-transparent">
           <TableCell colSpan={8} className="px-4 py-12 text-center text-ink-3">
@@ -50,7 +46,7 @@ const UsersTable = ({ byUser, expandedUser, onToggle, isLoading }: UsersTablePro
           </TableCell>
         </TableRow>
       ) : (
-        byUser.map((userRow) => {
+        byUser.map((userRow, i) => {
           const isExpanded = expandedUser === userRow.user;
           const userCalls = userRow.pluginCalls + userRow.skillCalls;
           return (
@@ -59,7 +55,8 @@ const UsersTable = ({ byUser, expandedUser, onToggle, isLoading }: UsersTablePro
                 onClick={() => onToggle(userRow.user)}
                 className={cn(
                   'cursor-pointer transition-colors',
-                  isExpanded ? 'bg-surface-sunk' : 'hover:bg-canvas'
+                  isExpanded ? 'bg-surface-sunk' : 'hover:bg-canvas',
+                  rowIn(i),
                 )}
               >
                 <TableCell className="pl-4 py-3 text-ink-3">

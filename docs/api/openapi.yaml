@@ -78,6 +78,18 @@ paths:
         - name: session_id
           in: query
           schema: {type: string}
+        - name: event_name
+          in: query
+          description: Exact event-name filter, such as tool_decision.
+          schema: {type: string}
+        - name: decision_source
+          in: query
+          description: >-
+            Comma-separated tool_decision sources (config, hook, user_temporary,
+            user_permanent, user_reject, user_abort); matches tool_decision events
+            only. Servers that support it report open_api_decision_source: true
+            from GET /api/sync/capabilities.
+          schema: {type: string}
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Offset'
       responses:
@@ -370,6 +382,26 @@ paths:
         '401': {$ref: '#/components/responses/Unauthorized'}
         '429': {$ref: '#/components/responses/RateLimited'}
         '500': {$ref: '#/components/responses/InternalError'}
+  /api/open/v1/practices:
+    get:
+      summary: Compare human approvals and rejections between users and non-users of a practice
+      description: >-
+        Claude plugins, skills, and hooks observed in the last 30 days ending now;
+        the window is fixed and takes no since or until. Every caller, admin or
+        not, receives the same rows; only self is the caller's own. Rows name
+        practices and never people: no user, email, session, or project
+        identifier is returned. Differences are correlation, not the effect of a
+        practice.
+      responses:
+        '200':
+          description: Practice comparison rows and the caller's own rates
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Practices'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '500': {$ref: '#/components/responses/InternalError'}
 components:
   securitySchemes:
     bearerAuth:
@@ -552,6 +584,12 @@ components:
         tool_decision: {type: string}
         tool_success: {type: boolean}
         speed: {type: string}
+        decision_source:
+          type: string
+          description: Who settled the permission (config, hook, user_temporary, ...); tool_decision events only.
+        tool_use_id:
+          type: string
+          description: The tool call the decision settled; tool_decision events only.
     Metric:
       type: object
       additionalProperties: false
@@ -920,3 +958,71 @@ components:
         tool_name: {type: string}
         use_count: {type: integer, format: int64}
         fail_count: {type: integer, format: int64}
+    Practices:
+      type: object
+      additionalProperties: false
+      required: [window_start, window_end, rows, self, caveats]
+      properties:
+        window_start: {type: string, format: date-time, description: Inclusive start, 30 days before window_end.}
+        window_end: {type: string, format: date-time, description: Exclusive end, the time of the request.}
+        rows:
+          type: array
+          items: {$ref: '#/components/schemas/PracticeRow'}
+          description: Ordered by kind, then users_with descending, then name.
+        self: {$ref: '#/components/schemas/PracticeRates'}
+        caveats:
+          type: array
+          items: {type: string}
+    PracticeRow:
+      type: object
+      additionalProperties: false
+      required: [kind, name, users_with]
+      properties:
+        kind: {type: string, enum: [plugin, skill, hook]}
+        name:
+          type: string
+          description: >-
+            plugin_loaded plugin.name, skill_activated skill.name, or for a hook
+            hook_registered hook_event/hook_source/hook_type, followed by
+            /plugin.name when the event carries one.
+        users_with:
+          type: integer
+          format: int64
+          description: People with at least one event of this practice in the window.
+        users_without:
+          type: integer
+          format: int64
+          description: >-
+            People seen in the window through a Claude tool decision or another
+            practice event, without this practice. Present only with metrics.
+        metrics:
+          $ref: '#/components/schemas/PracticeMetrics'
+          description: >-
+            Present only when both groups have at least 3 people with a Claude
+            tool decision in the window.
+    PracticeMetrics:
+      type: object
+      additionalProperties: false
+      required: [manual_approvals_per_1000, human_rejections_per_1000]
+      properties:
+        manual_approvals_per_1000:
+          $ref: '#/components/schemas/PracticeComparison'
+          description: tool_decision events with source user_temporary or user_permanent per 1,000 decisions.
+        human_rejections_per_1000:
+          $ref: '#/components/schemas/PracticeComparison'
+          description: tool_decision events with source user_reject or user_abort per 1,000 decisions.
+    PracticeComparison:
+      type: object
+      additionalProperties: false
+      required: [with, without]
+      properties:
+        with: {type: number, format: double, description: Median of per-person rates among people with the practice.}
+        without: {type: number, format: double, description: Median of per-person rates among people without it.}
+    PracticeRates:
+      type: object
+      additionalProperties: false
+      description: The caller's own rates; each is null when the caller made no Claude tool decision in the window.
+      required: [manual_approvals_per_1000, human_rejections_per_1000]
+      properties:
+        manual_approvals_per_1000: {type: [number, 'null'], format: double}
+        human_rejections_per_1000: {type: [number, 'null'], format: double}

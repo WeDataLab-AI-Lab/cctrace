@@ -65,7 +65,7 @@ func defaultBillingProviderFor(agent string) string {
 }
 
 func (s *Server) handleSyncCapabilities(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]bool{"reenrich": true, "session_observations": true})
+	writeJSON(w, http.StatusOK, map[string]bool{"reenrich": true, "session_observations": true, "open_api_decision_source": true})
 }
 
 // maxExclusionQueryAccounts caps one exclusion query. A client asks about the

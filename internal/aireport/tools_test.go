@@ -124,6 +124,63 @@ func TestQuerySegmentsRejectsBadArgs(t *testing.T) {
 	}
 }
 
+// Models name agents the way people do -- "Claude Code", "Codex" -- and a
+// filter the store never matches returned an empty list the model read as "no
+// such work", ten calls in a row on a live run. Names map to the stored values,
+// "all" means no filter, and an unknown name is an error the model can correct.
+func TestQuerySegmentsAgentNames(t *testing.T) {
+	wk := testWeek(t)
+	st := NewMemStore()
+	st.AddSegment("me", store.AISegment{ID: 1, StartTs: wk.Since.Add(time.Hour), Agent: "claude"})
+	st.AddSegment("me", store.AISegment{ID: 2, StartTs: wk.Since.Add(2 * time.Hour), Agent: "codex"})
+	tool := toolByName(t, BuildTools(st, Scope{UserID: "me"}, wk), "query_segments")
+
+	for _, c := range []struct {
+		agent, want string
+		rows        int
+	}{
+		{"claude", "claude", 1},
+		{"Claude Code", "claude", 1},
+		{"claude-code", "claude", 1},
+		{"Claude", "claude", 1},
+		{"Codex", "codex", 1},
+		{" CODEX ", "codex", 1},
+		{"Codex CLI", "codex", 1},
+		{"gjc", "gjc", 0},
+		{"OMO", "omo", 0},
+		{"all", "", 2},
+		{"", "", 2},
+	} {
+		inv := callTool(t, tool, `{"agent":`+strconv.Quote(c.agent)+`}`)
+		if !inv.Success {
+			t.Errorf("agent %q failed: %s", c.agent, inv.Output.Text)
+			continue
+		}
+		if f := st.LastFilter(); f.Agent != c.want || inv.Output.Rows != c.rows {
+			t.Errorf("agent %q: filter %q rows %d, want %q rows %d", c.agent, f.Agent, inv.Output.Rows, c.want, c.rows)
+		}
+	}
+	for _, agent := range []string{"gpt", "Claude Desktop", "cursor"} {
+		inv := callTool(t, tool, `{"agent":`+strconv.Quote(agent)+`}`)
+		if inv.Success || !strings.Contains(inv.Output.Text, "claude, codex, gjc, omo") {
+			t.Errorf("agent %q: success=%v text=%s, want an error naming the stored values", agent, inv.Success, inv.Output.Text)
+		}
+	}
+	var schema struct {
+		Properties struct {
+			Agent struct {
+				Enum []string `json:"enum"`
+			} `json:"agent"`
+		} `json:"properties"`
+	}
+	if err := json.Unmarshal(tool.InputSchema, &schema); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(schema.Properties.Agent.Enum, ","); got != "claude,codex,gjc,omo,all" {
+		t.Errorf("agent enum = %s", got)
+	}
+}
+
 func TestReadSegmentOwnershipAndTruncation(t *testing.T) {
 	wk := testWeek(t)
 	st := NewMemStore()
@@ -283,6 +340,146 @@ func TestReadSegmentDropsInjectedBlocksWithinMessage(t *testing.T) {
 			if !strings.Contains(inv.Output.Text, want) {
 				t.Errorf("typed text %q dropped with the %s block", want, tag)
 			}
+		}
+	}
+}
+
+// Agents also write user records the person never typed: subagent and task
+// notifications, peer-session messages, skill bodies. A closed block goes
+// wherever it sits and an unclosed one only when it opens the text; the typed
+// text around it stays. A Codex turn-abort notice records the person
+// interrupting, so it becomes the marker Claude writes instead of vanishing.
+func TestReadSegmentDropsAgentWrittenBlocks(t *testing.T) {
+	wk := testWeek(t)
+	st := NewMemStore()
+	st.AddSegment("me", segAt(7, wk))
+	blocks := func(texts ...string) *store.SessionRecord {
+		content := []map[string]string{}
+		for _, text := range texts {
+			content = append(content, map[string]string{"type": "text", "text": text})
+		}
+		raw, _ := json.Marshal(map[string]any{"message": map[string]any{"role": "user", "content": content}})
+		return &store.SessionRecord{RecordType: "user", Agent: "claude", Raw: raw}
+	}
+	codexBlocks := func(texts ...string) *store.SessionRecord {
+		content := []map[string]string{}
+		for _, text := range texts {
+			content = append(content, map[string]string{"type": "input_text", "text": text})
+		}
+		raw, _ := json.Marshal(map[string]any{"payload": map[string]any{"type": "message", "role": "user", "content": content}})
+		return &store.SessionRecord{RecordType: "user", Agent: "codex", Raw: raw}
+	}
+	const interrupt = "[Request interrupted by user]"
+	markers := []struct{ tag, open string }{
+		{"subagent_notification", "<subagent_notification>"},
+		{"cross-session-message", `<cross-session-message from="peer">`},
+		{"turn_aborted", "<turn_aborted>\n"},
+		// The shape Codex writes when a skill is invoked: name, path, then the body.
+		{"skill", "<skill>\n<name>deploy</name>\n<path>skills/deploy/SKILL.md</path>\n"},
+		{"send_user_message", `<send_user_message to="peer">`},
+		{"task-notification", "<task-notification>\n"},
+	}
+	var recs []*store.SessionRecord
+	for i, m := range markers {
+		n := itoa(i)
+		leak := m.open + "LEAK" + n + "\n</" + m.tag + ">"
+		recs = append(recs,
+			blocks("앞"+n, leak),
+			blocks(leak, "뒤"+n),
+			blocks("사이 앞"+n+" "+leak+" 사이 뒤"+n),
+			blocks(m.open+"LEAK"+n),
+			codexBlocks("코덱스"+n, leak),
+			codexBlocks(m.open+"LEAK"+n),
+		)
+	}
+	st.Conversations[7] = recs
+	inv := callTool(t, toolByName(t, BuildTools(st, Scope{UserID: "me"}, wk), "read_segment"), `{"segment_id":"7"}`)
+	if !inv.Success {
+		t.Fatal(inv.Output.Text)
+	}
+	if strings.Contains(inv.Output.Text, "LEAK") || strings.Contains(inv.Output.Text, "SKILL.md") {
+		t.Errorf("agent-written block reached the model: %s", inv.Output.Text)
+	}
+	for i, m := range markers {
+		n := itoa(i)
+		if strings.Contains(inv.Output.Text, "<"+m.tag) {
+			t.Errorf("%s tag reached the model", m.tag)
+		}
+		for _, want := range []string{"앞" + n, "뒤" + n, "사이 앞" + n, "사이 뒤" + n, "코덱스" + n} {
+			if !strings.Contains(inv.Output.Text, want) {
+				t.Errorf("typed text %q dropped with the %s block", want, m.tag)
+			}
+		}
+	}
+	if got := strings.Count(inv.Output.Text, interrupt); got != 6 {
+		t.Errorf("interrupt markers = %d, want one per turn_aborted record (6)", got)
+	}
+}
+
+// A tag quoted mid-sentence is left unclosed, and the assistant's own text is
+// never an agent-written user record, so neither loses the rest of its words.
+func TestReadSegmentKeepsQuotedAgentTags(t *testing.T) {
+	wk := testWeek(t)
+	st := NewMemStore()
+	st.AddSegment("me", segAt(7, wk))
+	rec := func(role, text string) *store.SessionRecord {
+		raw, _ := json.Marshal(map[string]any{"message": map[string]any{"role": role, "content": []map[string]string{{"type": "text", "text": text}}}})
+		return &store.SessionRecord{RecordType: role, Agent: "claude", Raw: raw}
+	}
+	st.Conversations[7] = []*store.SessionRecord{
+		rec("user", "이 <skill> 태그는 어디서 와? 뒤 문장 하나"),
+		rec("user", "앞 설명 <task-notification> 뒤 문장 둘"),
+		rec("assistant", "<skill> 은 Codex 가 씀. 뒤 문장 셋"),
+		rec("assistant", "앞 설명 <task-notification> 뒤 문장 넷"),
+		rec("assistant", "예시 <task-notification>완료</task-notification> 뒤 문장 다섯"),
+	}
+	inv := callTool(t, toolByName(t, BuildTools(st, Scope{UserID: "me"}, wk), "read_segment"), `{"segment_id":"7"}`)
+	if !inv.Success || inv.Output.Rows != 5 {
+		t.Fatalf("rows=%d text=%s", inv.Output.Rows, inv.Output.Text)
+	}
+	for _, want := range []string{"뒤 문장 하나", "뒤 문장 둘", "뒤 문장 셋", "뒤 문장 넷", "완료</task-notification> 뒤 문장 다섯"} {
+		if !strings.Contains(inv.Output.Text, want) {
+			t.Errorf("text %q dropped", want)
+		}
+	}
+}
+
+// prompt_source system names a machine caller, and a peer session's message or
+// Codex's AGENTS.md preamble opens with a fixed sentence: none is the person's
+// words. A dropped record's tool results still count. An SDK turn stays:
+// sessionview cuts its replayed transcript and prose tool results, leaving the
+// caller's request. The same sentence quoted later in a message is typed text.
+func TestReadSegmentDropsMachineWrittenUserRecords(t *testing.T) {
+	wk := testWeek(t)
+	st := NewMemStore()
+	st.AddSegment("me", segAt(7, wk))
+	user := func(source, text string) *store.SessionRecord {
+		raw, _ := json.Marshal(map[string]any{"message": map[string]any{"role": "user", "content": text}})
+		return &store.SessionRecord{RecordType: "user", Agent: "claude", PromptSource: source, Raw: raw}
+	}
+	codexUser := func(text string) *store.SessionRecord {
+		raw, _ := json.Marshal(map[string]any{"payload": map[string]any{"type": "message", "role": "user", "content": []map[string]string{{"type": "input_text", "text": text}}}})
+		return &store.SessionRecord{RecordType: "user", Agent: "codex", Raw: raw}
+	}
+	systemWithResult := &store.SessionRecord{RecordType: "user", Agent: "claude", PromptSource: "system",
+		Raw: json.RawMessage(`{"message":{"role":"user","content":[{"type":"text","text":"LEAK1 시스템 호출"},{"type":"tool_result","tool_use_id":"toolu_9","is_error":true,"content":"LEAK_OUT1"}]}}`)}
+	st.Conversations[7] = []*store.SessionRecord{
+		systemWithResult,
+		user("sdk", "LEAK2 이전 대화\nThe above is the conversation history so far. Please continue the transcript.\nSDK 실제 요청\nTool result (Bash, id=toolu_01):\nLEAK_OUT2"),
+		user("", "Another Claude session sent a message:\nLEAK3"),
+		user("", "<system-reminder>x</system-reminder>\nAnother Claude session sent a message: LEAK4"),
+		codexUser("# AGENTS.md instructions for example-project\n\n<INSTRUCTIONS>\nLEAK5\n</INSTRUCTIONS>"),
+		user("typed", "직접 친 요청"),
+		user("", "이 문구가 뭐야: Another Claude session sent a message:"),
+		codexUser("인용한 제목 # AGENTS.md instructions 은 어디서 와"),
+	}
+	inv := callTool(t, toolByName(t, BuildTools(st, Scope{UserID: "me"}, wk), "read_segment"), `{"segment_id":"7"}`)
+	if !inv.Success || strings.Contains(inv.Output.Text, "LEAK") || inv.Output.Rows != 5 {
+		t.Fatalf("rows=%d text=%s", inv.Output.Rows, inv.Output.Text)
+	}
+	for _, want := range []string{`{"role":"tool_result","is_error":true}`, "SDK 실제 요청", "직접 친 요청", "이 문구가 뭐야", "인용한 제목"} {
+		if !strings.Contains(inv.Output.Text, want) {
+			t.Errorf("%q dropped: %s", want, inv.Output.Text)
 		}
 	}
 }

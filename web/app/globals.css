@@ -373,10 +373,28 @@ body {
 @keyframes cctraceSpin { to { transform: rotate(360deg); } }
 @keyframes cctracePageFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes cctraceBar { 0%, 100% { transform: scaleY(0.3); opacity: 0.45; } 50% { transform: scaleY(1); opacity: 1; } }
+/* A light band sliding left to right over a placeholder: 100% -> 0% of a 300%-wide
+   gradient walks its bright middle across the box, off-screen at both ends. */
+@keyframes cctraceShimmer { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+@keyframes cctraceRowIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
 .page-fade { animation: cctracePageFade 0.22s ease both; }
-.cctrace-bar { animation: cctraceBar 0.9s ease-in-out infinite; transform-origin: bottom; }
+.cctrace-bar { animation: cctraceBar 0.6s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 60ms); transform-origin: bottom; }
+.cctrace-shimmer {
+  background: linear-gradient(100deg, var(--border) 35%, var(--surface-2) 50%, var(--border) 65%);
+  background-size: 300% 100%;
+  animation: cctraceShimmer 1.2s linear infinite;
+}
+/* --i / --j: row and column position, set by classes in components/common/loading-rows.tsx
+   (and bar position in collecting-loader.tsx).
+   Real rows enter 30ms apart; ghost rows fill in 40ms apart, and their light band
+   starts 80ms later per row and 60ms per column so it crosses the table on a slant. */
+.cctrace-row-in { animation: cctraceRowIn 0.25s ease-out both; animation-delay: calc(var(--i, 0) * 30ms); }
+.cctrace-ghost-row { animation-delay: calc(var(--i, 0) * 40ms); }
+.cctrace-ghost-row .cctrace-shimmer { animation-delay: calc(var(--i, 0) * 80ms + var(--j, 0) * 60ms); }
 
 @media (prefers-reduced-motion: reduce) {
   .page-fade { animation: none; }
   .cctrace-bar { animation: none; opacity: 0.6; }
+  .cctrace-shimmer { animation: none; }
+  .cctrace-row-in { animation: none; }
 }

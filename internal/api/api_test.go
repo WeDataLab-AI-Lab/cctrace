@@ -129,6 +129,7 @@ type mockStore struct {
 	pluginUsageFn                         func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID, agent string) ([]*store.PluginUsageSummary, error)
 	skillUsageFn                          func(ctx context.Context, since, until time.Time, profileEmail, loginEmail, userID string, agent string) ([]*store.SkillUsageSummary, error)
 	organizationInsightsFn                func(ctx context.Context, since, until time.Time, minUsers int64) (*store.OrganizationInsights, error)
+	listLoginAccountsFn                   func(ctx context.Context, userID string) ([]string, error)
 	backfillTaskTypesFn                   func(ctx context.Context, limit int) (int, error)
 	sessionListFn                         func(ctx context.Context, userEmail string, limit, offset int) ([]string, error)
 	latestEventTimeFn                     func(ctx context.Context) (*time.Time, error)
@@ -281,6 +282,9 @@ func (m *mockStore) OrganizationInsights(ctx context.Context, since, until time.
 }
 
 func (m *mockStore) ListLoginAccounts(ctx context.Context, userID string) ([]string, error) {
+	if m.listLoginAccountsFn != nil {
+		return m.listLoginAccountsFn(ctx, userID)
+	}
 	return nil, nil
 }
 func (m *mockStore) ListSessionSummaries(ctx context.Context, profileEmail string, userID string, limit int) ([]*store.SessionSummary, error) {

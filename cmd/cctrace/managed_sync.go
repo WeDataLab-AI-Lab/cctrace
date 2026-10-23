@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -81,6 +82,22 @@ func runManagedStart(claudeDir string, interval time.Duration, name, email, endp
 	ctx, cancel := context.WithTimeout(context.Background(), syncLockWait)
 	defer cancel()
 	if running, err := localdaemon.Running(root); err == nil && running {
+		// The SessionStart hook always passes --claude-dir, and what it passes is
+		// the home the profile is configured with (envgen.syncCommands): the home
+		// the running daemon already collects for it, so not an override. The
+		// unconfigured default is ~/.claude as the hook writes it, never this
+		// process's CLAUDE_CONFIG_DIR, which is the session's and not the daemon's.
+		if claudeDir != "" {
+			if entry, err := (profile.Registry{Root: root}).Load(resolved); err == nil {
+				home, _ := os.UserHomeDir()
+				for _, h := range entry.Profile.ProviderHomes("claude", filepath.Join(home, ".claude")) {
+					if filepath.Clean(h.Home) == filepath.Clean(claudeDir) {
+						claudeDir = ""
+						break
+					}
+				}
+			}
+		}
 		if claudeDir != "" || email != "" || endpoint != "" || local {
 			return errors.New("runtime overrides require stopping the local daemon first; configure the profile before restarting")
 		}

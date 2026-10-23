@@ -30,6 +30,7 @@ type Server struct {
 	roots       []root
 	origins     map[string]bool
 	fingerprint string
+	now         func() time.Time
 }
 type root struct{ path, agent string }
 type fileEntry struct {
@@ -67,7 +68,7 @@ func New(opts Options) (*Server, error) {
 	if len(opts.AllowedOrigins) == 0 {
 		return nil, errors.New("at least one origin required")
 	}
-	s := &Server{opts: opts, origins: map[string]bool{}}
+	s := &Server{opts: opts, origins: map[string]bool{}, now: time.Now}
 	if opts.SelectionPath != "" && !filepath.IsAbs(opts.SelectionPath) {
 		return nil, errors.New("profile selection path must be absolute")
 	}
@@ -86,11 +87,32 @@ func New(opts Options) (*Server, error) {
 		}
 		s.origins[origin] = true
 	}
+	roots, err := resolveRoots(opts.ClaudeDirs, opts.CodexDirs)
+	if err != nil {
+		return nil, err
+	}
+	s.roots = roots
+	keys := make([]string, 0, len(s.roots))
+	for _, r := range s.roots {
+		keys = append(keys, r.agent+":"+r.path)
+	}
+	sort.Strings(keys)
+	sum := sha256.Sum256([]byte(strings.Join(keys, "\x00")))
+	s.fingerprint = hex.EncodeToString(sum[:16])
+	if opts.ProfileFingerprint != "" {
+		s.fingerprint = opts.ProfileFingerprint
+	}
+	return s, nil
+}
+
+// resolveRoots resolves each configured home once; a missing home is skipped.
+func resolveRoots(claudeDirs, codexDirs []string) ([]root, error) {
+	var roots []root
 	seen := map[string]bool{}
 	for _, group := range []struct {
 		agent string
 		dirs  []string
-	}{{"claude", opts.ClaudeDirs}, {"codex", opts.CodexDirs}} {
+	}{{"claude", claudeDirs}, {"codex", codexDirs}} {
 		for _, dir := range group.dirs {
 			abs, e := filepath.Abs(codexlog.ExpandHome(dir))
 			if e != nil {
@@ -109,22 +131,12 @@ func New(opts Options) (*Server, error) {
 			}
 			key := group.agent + ":" + abs
 			if !seen[key] {
-				s.roots = append(s.roots, root{abs, group.agent})
+				roots = append(roots, root{abs, group.agent})
 				seen[key] = true
 			}
 		}
 	}
-	keys := make([]string, 0, len(s.roots))
-	for _, r := range s.roots {
-		keys = append(keys, r.agent+":"+r.path)
-	}
-	sort.Strings(keys)
-	sum := sha256.Sum256([]byte(strings.Join(keys, "\x00")))
-	s.fingerprint = hex.EncodeToString(sum[:16])
-	if opts.ProfileFingerprint != "" {
-		s.fingerprint = opts.ProfileFingerprint
-	}
-	return s, nil
+	return roots, nil
 }
 func (s *Server) Fingerprint() string   { return s.fingerprint }
 func (s *Server) Handler() http.Handler { return http.HandlerFunc(s.handle) }
@@ -237,10 +249,11 @@ func hash(parts ...string) string {
 	sum := sha256.Sum256([]byte(strings.Join(parts, "\x00")))
 	return hex.EncodeToString(sum[:16])
 }
-func (s *Server) files() ([]fileEntry, error) {
+func (s *Server) files() ([]fileEntry, error) { return findEntries(s.roots) }
+func findEntries(roots []root) ([]fileEntry, error) {
 	var entries []fileEntry
 	seenFiles := map[string]bool{}
-	for _, root := range s.roots {
+	for _, root := range roots {
 		files, err := findFiles(root.path, root.agent)
 		if err != nil {
 			return nil, err
@@ -410,7 +423,7 @@ func (s *Server) detail(w http.ResponseWriter, r *http.Request) {
 func fileIdentity(a, b os.FileInfo) bool {
 	return os.SameFile(a, b) && a.Size() == b.Size() && a.ModTime().Equal(b.ModTime())
 }
-func (s *Server) stable(e fileEntry) error {
+func stable(e fileEntry) error {
 	fi, err := os.Stat(e.path)
 	if err != nil {
 		return err

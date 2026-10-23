@@ -3,7 +3,7 @@
 import { Fragment } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CollectingLoader } from '@/components/common/collecting-loader';
+import { TableLoadingRows, rowIn } from '@/components/common/loading-rows';
 import {
   Table,
   TableBody,
@@ -45,11 +45,7 @@ const DimensionUsageTable = ({
     </TableHeader>
     <TableBody className="divide-y divide-border/50">
       {isLoading ? (
-        <TableRow className="hover:bg-transparent">
-          <TableCell colSpan={8} className="px-4 py-8 text-center text-ink-3">
-            <CollectingLoader />
-          </TableCell>
-        </TableRow>
+        <TableLoadingRows columns={8} />
       ) : groups.length === 0 ? (
         <TableRow className="hover:bg-transparent">
           <TableCell colSpan={8} className="px-4 py-12 text-center text-ink-3">
@@ -57,7 +53,7 @@ const DimensionUsageTable = ({
           </TableCell>
         </TableRow>
       ) : (
-        groups.map((group) => {
+        groups.map((group, i) => {
           const isExpanded = expanded === group.key;
           const groupCalls = group.pluginCalls + group.skillCalls;
           return (
@@ -66,7 +62,8 @@ const DimensionUsageTable = ({
                 onClick={() => onToggle(group.key)}
                 className={cn(
                   'cursor-pointer transition-colors',
-                  isExpanded ? 'bg-surface-sunk' : 'hover:bg-canvas'
+                  isExpanded ? 'bg-surface-sunk' : 'hover:bg-canvas',
+                  rowIn(i),
                 )}
               >
                 <TableCell className="pl-4 py-3 text-ink-3">

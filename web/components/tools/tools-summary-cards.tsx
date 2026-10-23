@@ -5,19 +5,29 @@ interface ToolsSummaryCardsProps {
   totalSuccess: number;
   totalFail: number;
   overallRate: string;
+  loading?: boolean;
 }
+
+const fmtRate = (n: number) => `${n.toFixed(1)}%`;
 
 const ToolsSummaryCards = ({
   totalUse,
   totalSuccess,
   totalFail,
   overallRate,
+  loading,
 }: ToolsSummaryCardsProps) => (
   <div className="grid grid-cols-4 gap-4">
-    <SummaryCard title="Total Uses" value={totalUse.toLocaleString()} subtitle="This month" />
-    <SummaryCard title="Success" value={totalSuccess.toLocaleString()} />
-    <SummaryCard title="Failures" value={totalFail.toLocaleString()} />
-    <SummaryCard title="Success Rate" value={overallRate === '-' ? '-' : `${overallRate}%`} />
+    <SummaryCard title="Total Uses" value={totalUse.toLocaleString()} count={totalUse} loading={loading} subtitle="This month" />
+    <SummaryCard title="Success" value={totalSuccess.toLocaleString()} count={totalSuccess} loading={loading} />
+    <SummaryCard title="Failures" value={totalFail.toLocaleString()} count={totalFail} loading={loading} />
+    <SummaryCard
+      title="Success Rate"
+      value={overallRate === '-' ? '-' : `${overallRate}%`}
+      count={overallRate === '-' ? 0 : Number(overallRate)}
+      format={fmtRate}
+      loading={loading}
+    />
   </div>
 );
 

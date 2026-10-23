@@ -3,7 +3,7 @@
 import { Fragment } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CollectingLoader } from '@/components/common/collecting-loader';
+import { TableLoadingRows, rowIn } from '@/components/common/loading-rows';
 import {
   Table,
   TableBody,
@@ -46,11 +46,7 @@ const SkillsTable = ({
     </TableHeader>
     <TableBody className="divide-y divide-border/50">
       {isLoading ? (
-        <TableRow className="hover:bg-transparent">
-          <TableCell colSpan={9} className="px-4 py-8 text-center text-ink-3">
-            <CollectingLoader />
-          </TableCell>
-        </TableRow>
+        <TableLoadingRows columns={9} />
       ) : rows.length === 0 ? (
         <TableRow className="hover:bg-transparent">
           <TableCell colSpan={9} className="px-4 py-12 text-center text-ink-3">
@@ -58,7 +54,7 @@ const SkillsTable = ({
           </TableCell>
         </TableRow>
       ) : (
-        rows.map((row) => {
+        rows.map((row, i) => {
           const rowCalls = totalCalls(row);
           const users = bySkillUser.get(row.name) ?? [];
           const isExpanded = expandedSkill === row.name;
@@ -68,7 +64,8 @@ const SkillsTable = ({
                 onClick={() => onToggle(row.name)}
                 className={cn(
                   'cursor-pointer transition-colors',
-                  isExpanded ? 'bg-surface-sunk' : 'hover:bg-canvas'
+                  isExpanded ? 'bg-surface-sunk' : 'hover:bg-canvas',
+                  rowIn(i),
                 )}
               >
                 <TableCell className="pl-4 py-3 text-ink-3">

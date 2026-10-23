@@ -176,8 +176,8 @@ export default function RulesPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <SummaryCard title="Repositories" value={repositories.size.toLocaleString()} />
-          <SummaryCard title="Rule Files" value={rows.length.toLocaleString()} />
+          <SummaryCard title="Repositories" value={repositories.size.toLocaleString()} count={repositories.size} loading={isLoading} />
+          <SummaryCard title="Rule Files" value={rows.length.toLocaleString()} count={rows.length} loading={isLoading} />
         </div>
       </div>
 

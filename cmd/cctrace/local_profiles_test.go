@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -88,6 +89,61 @@ func TestProfileAddDoesNotInheritDefaultCodexHome(t *testing.T) {
 		t.Fatal("default execution home changed")
 	}
 
+}
+
+// local serve, which the dashboard's local-session view reads, keeps the home
+// rules it had before multi-home profiles: a profile's legacy single-home
+// fields only. The dependency audit reads every home a profile registers,
+// whatever its transmission choice, and says which choice that was; a home two
+// profiles register differently is "mixed".
+func TestLocalServeKeepsLegacyHomesWhileTheAuditReadsEveryMembership(t *testing.T) {
+	// Not parallel: the profiles live under HOME, set with t.Setenv.
+	setupTestHome(t)
+	root := t.TempDir()
+	dir := func(name string) string {
+		t.Helper()
+		path := filepath.Join(root, name)
+		if err := os.Mkdir(path, 0700); err != nil {
+			t.Fatal(err)
+		}
+		canonical, err := profile.NormalizeCodexHome(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return canonical
+	}
+	claudeAllow, claudeExclude, claudeLegacy := dir("claude-work"), dir("claude-team"), dir("claude-old")
+	codexAllow, codexUndecided := dir("codex-work"), dir("codex-team")
+	multi := profile.NewDefault()
+	multi.HomesVersion = 1
+	multi.Homes = []profile.HomeMembership{
+		{Provider: "claude", Home: claudeAllow, Transmission: "allow"},
+		{Provider: "claude", Home: claudeExclude, Transmission: "exclude"},
+		{Provider: "codex", Home: codexAllow, Transmission: "allow"},
+		{Provider: "codex", Home: codexUndecided, Transmission: "undecided"},
+	}
+	multi.ClaudeConfigDir = claudeLegacy
+	if err := profile.SaveNamed(multi, "multi"); err != nil {
+		t.Fatal(err)
+	}
+	other := profile.NewDefault()
+	other.HomesVersion = 1
+	other.Homes = []profile.HomeMembership{{Provider: "codex", Home: codexAllow, Transmission: "exclude"}}
+	if err := profile.SaveNamed(other, "other"); err != nil {
+		t.Fatal(err)
+	}
+	if got := localProfileHomes("claude"); !slices.Equal(got, []string{claudeLegacy}) {
+		t.Errorf("local serve claude homes = %v, want only the legacy field %v", got, claudeLegacy)
+	}
+	if got := localProfileHomes("codex"); len(got) != 0 {
+		t.Errorf("local serve codex homes = %v, want none", got)
+	}
+	if got, want := dependencyProfileHomes("claude"), []dependencyHome{{claudeAllow, "allow"}, {claudeExclude, "exclude"}}; !slices.Equal(got, want) {
+		t.Errorf("audit claude homes = %v, want %v", got, want)
+	}
+	if got, want := dependencyProfileHomes("codex"), []dependencyHome{{codexAllow, "mixed"}, {codexUndecided, "undecided"}}; !slices.Equal(got, want) {
+		t.Errorf("audit codex homes = %v, want %v", got, want)
+	}
 }
 
 func TestLocalProfileHomesDoNotPromoteCodexScanDirs(t *testing.T) {

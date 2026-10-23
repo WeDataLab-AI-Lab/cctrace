@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"testing"
 	"time"
 
@@ -513,6 +514,89 @@ func TestOpenAPIEventsRejectsMalformedTimes(t *testing.T) {
 		if rec.Code != http.StatusBadRequest {
 			t.Errorf("query %q: status = %d, want 400", query, rec.Code)
 		}
+	}
+}
+
+// event_name and decision_source narrow the list; they never widen it. A
+// regular user who names someone else still reads only their own decisions.
+func TestOpenAPIEventsDecisionFiltersKeepOwnerScope(t *testing.T) {
+	for _, tt := range []struct {
+		name, token, query string
+		role, wantUserID   string
+		wantSources        []string
+	}{
+		{name: "single source", token: "alice-token", role: "user", query: "event_name=tool_decision&decision_source=user_temporary&user_id=bob",
+			wantUserID: "alice", wantSources: []string{"user_temporary"}},
+		{name: "multiple sources", token: "alice-token", role: "user", query: "event_name=tool_decision&decision_source=user_temporary,user_permanent,user_reject&user_id=bob",
+			wantUserID: "alice", wantSources: []string{"user_temporary", "user_permanent", "user_reject"}},
+		{name: "admin keeps owner filter", token: "admin-token", role: "admin", query: "event_name=tool_decision&decision_source=hook&user_id=bob",
+			wantUserID: "bob", wantSources: []string{"hook"}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			var got store.EventFilter
+			m := &mockStore{
+				getDashboardUserByAPITokenFn: apiUserTokenLookup(tt.token, &store.DashboardUser{Role: tt.role, IsActive: true, CctraceUserID: "alice"}),
+				listEventsFn: func(_ context.Context, filter store.EventFilter) ([]*store.OtelEvent, error) {
+					got = filter
+					return nil, nil
+				},
+			}
+			rec := openAPIRequest(t, newTestServer(m, nil), http.MethodGet, "/api/open/v1/events?"+tt.query, "Bearer "+tt.token)
+			if rec.Code != http.StatusOK {
+				t.Fatalf("status = %d, want 200; body=%s", rec.Code, rec.Body.String())
+			}
+			if got.EventName != "tool_decision" || got.UserID != tt.wantUserID || !slices.Equal(got.DecisionSources, tt.wantSources) {
+				t.Fatalf("filter = %+v, want event_name tool_decision, user %q, sources %v", got, tt.wantUserID, tt.wantSources)
+			}
+		})
+	}
+}
+
+// decision_source and tool_use_id are the only attrs the DTO lifts, and only off
+// tool_decision events: another event's "source" means something else, and the
+// text-bearing keys beside them stay out.
+func TestOpenAPIEventsExposeDecisionFieldsOnlyOnToolDecision(t *testing.T) {
+	m := &mockStore{
+		getDashboardUserByAPITokenFn: apiUserTokenLookup("alice-token", &store.DashboardUser{Role: "user", IsActive: true, CctraceUserID: "alice"}),
+		listEventsFn: func(context.Context, store.EventFilter) ([]*store.OtelEvent, error) {
+			return []*store.OtelEvent{
+				{EventName: "tool_decision", SessionID: "s1", ToolName: "Bash", ToolDecision: "accept", Attrs: map[string]interface{}{
+					"source": "user_temporary", "tool_use_id": "toolu_1", "permission_mode": "default",
+					"prompt": "typed text", "command": "secret command", "tool_source": "builtin",
+				}},
+				{EventName: "skill_activated", SessionID: "s1", Attrs: map[string]interface{}{"source": "user_temporary", "tool_use_id": "toolu_2"}},
+			}, nil
+		},
+	}
+	rec := openAPIRequest(t, newTestServer(m, nil), http.MethodGet, "/api/open/v1/events", "Bearer alice-token")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200; body=%s", rec.Code, rec.Body.String())
+	}
+	var body []map[string]interface{}
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if len(body) != 2 {
+		t.Fatalf("got %d events, want 2", len(body))
+	}
+	assertJSONKeysExactly(t, body[0], "ts", "event_name", "session_id", "tool_name", "tool_decision", "decision_source", "tool_use_id")
+	if body[0]["decision_source"] != "user_temporary" || body[0]["tool_use_id"] != "toolu_1" {
+		t.Fatalf("decision fields = %v / %v", body[0]["decision_source"], body[0]["tool_use_id"])
+	}
+	assertJSONKeysExactly(t, body[1], "ts", "event_name", "session_id")
+}
+
+// A client cannot tell an old server from a new one with no matching decisions
+// by reading an empty list, so support is announced here.
+func TestSyncCapabilitiesReportsOpenAPIDecisionSource(t *testing.T) {
+	rec := httptest.NewRecorder()
+	newTestServer(&mockStore{}, nil).Handler().ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/sync/capabilities", nil))
+	var got map[string]bool
+	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+		t.Fatalf("decode: %v (body %s)", err, rec.Body.String())
+	}
+	if !got["open_api_decision_source"] {
+		t.Fatalf("capabilities = %v, want open_api_decision_source", got)
 	}
 }
 

@@ -172,6 +172,7 @@ export default function OverviewPage() {
         activeUsers={activeUsers}
         totalEvents={totalEvents}
         subtitle={trendSubtitle}
+        loading={isCostDataPending}
       />
 
       <FilterBar

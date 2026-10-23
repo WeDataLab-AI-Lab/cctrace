@@ -142,6 +142,11 @@ func TestOpenAPISchemasMatchResponseFields(t *testing.T) {
 		"OrganizationHourInsight":       store.OrganizationHourInsight{},
 		"OrganizationProjectInsight":    store.OrganizationProjectInsight{},
 		"OrganizationBottleneckInsight": store.OrganizationBottleneckInsight{},
+		"Practices":                     store.Practices{},
+		"PracticeRow":                   store.PracticeRow{},
+		"PracticeMetrics":               store.PracticeMetrics{},
+		"PracticeComparison":            store.PracticeComparison{},
+		"PracticeRates":                 store.PracticeRates{},
 		// The handler builds a map from these fields, so the struct's tags are
 		// the keys it can send.
 		"OrganizationInsights": store.OrganizationInsights{},

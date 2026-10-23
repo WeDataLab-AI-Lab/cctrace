@@ -15,16 +15,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// insightsCmd answers decision-oriented questions from the Open API. The
-// aggregation happens here, not in the agent reading the output, so a skill
-// gets a small verified summary instead of thousands of raw rows.
+// insightsCmd answers decision-oriented questions from the Open API, and from
+// local session files for dependency. The aggregation happens here, not in the
+// agent reading the output, so a skill gets a small verified summary instead
+// of thousands of raw rows.
 func insightsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "insights",
-		Short: "Summarize cost changes and context waste (reads the Open API)",
+		Short: "Summarize cost changes, context waste, and where work returned to you",
 	}
 	cmd.AddCommand(insightsSubcmd("cost", "Explain why cost changed against the previous window", false))
 	cmd.AddCommand(insightsSubcmd("context", "Measure cache hit rate, cache rebuilds, and bloated contexts", true))
+	cmd.AddCommand(insightsDependencyCmd())
 	return cmd
 }
 

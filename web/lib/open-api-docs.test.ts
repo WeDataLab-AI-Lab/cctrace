@@ -15,7 +15,14 @@ describe('Open API manual content', () => {
       '/api/open/v1/events',
       '/api/open/v1/metrics',
       '/api/open/v1/usage',
+      '/api/open/v1/practices',
     ]);
+  });
+
+  it('documents the decision-source filter and fields on events', () => {
+    const events = OPEN_API_ENDPOINTS.find((endpoint) => endpoint.path === '/api/open/v1/events');
+    expect(events?.parameters.map((parameter) => parameter.name)).toEqual(expect.arrayContaining(['event_name', 'decision_source']));
+    expect(JSON.stringify(events?.fields)).toContain('decision_source / tool_use_id');
   });
 
   it('keeps English and Korean manuals structurally aligned', () => {

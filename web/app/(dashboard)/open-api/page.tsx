@@ -322,28 +322,32 @@ const EndpointCard = ({ endpoint, locale }: EndpointCardProps) => {
         <p className="text-[13px] leading-5 text-ink-2">{endpoint.description[locale]}</p>
 
         <h4 className="mb-2 mt-5 text-[12px] font-semibold uppercase tracking-[0.04em] text-ink-3">{text.parameters}</h4>
-        <div className="overflow-x-auto rounded-md border border-border">
-          <table className="w-full min-w-[620px] text-left text-[12px]">
-            <thead className="bg-surface-2 text-ink-3">
-              <tr>
-                <th className="px-3 py-2 font-medium">Name</th>
-                <th className="px-3 py-2 font-medium">Type</th>
-                <th className="px-3 py-2 font-medium">Required</th>
-                <th className="px-3 py-2 font-medium">Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              {endpoint.parameters.map((parameter) => (
-                <tr key={parameter.name} className="border-t border-border-subtle">
-                  <td className="px-3 py-2 font-mono text-ink">{parameter.name}</td>
-                  <td className="px-3 py-2 font-mono text-ink-2">{parameter.type}</td>
-                  <td className="px-3 py-2 text-ink-2">{parameter.required ? text.required : text.optional}</td>
-                  <td className="px-3 py-2 text-ink-2">{parameter.description[locale]}</td>
+        {endpoint.parameters.length === 0 ? (
+          <p className="text-[13px] text-ink-2">{text.noParameters}</p>
+        ) : (
+          <div className="overflow-x-auto rounded-md border border-border">
+            <table className="w-full min-w-[620px] text-left text-[12px]">
+              <thead className="bg-surface-2 text-ink-3">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Name</th>
+                  <th className="px-3 py-2 font-medium">Type</th>
+                  <th className="px-3 py-2 font-medium">Required</th>
+                  <th className="px-3 py-2 font-medium">Description</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {endpoint.parameters.map((parameter) => (
+                  <tr key={parameter.name} className="border-t border-border-subtle">
+                    <td className="px-3 py-2 font-mono text-ink">{parameter.name}</td>
+                    <td className="px-3 py-2 font-mono text-ink-2">{parameter.type}</td>
+                    <td className="px-3 py-2 text-ink-2">{parameter.required ? text.required : text.optional}</td>
+                    <td className="px-3 py-2 text-ink-2">{parameter.description[locale]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         <h4 className="mb-2 mt-5 text-[12px] font-semibold uppercase tracking-[0.04em] text-ink-3">{text.responseFields}</h4>
         <div className="overflow-x-auto rounded-md border border-border">

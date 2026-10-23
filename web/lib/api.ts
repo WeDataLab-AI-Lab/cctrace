@@ -162,8 +162,10 @@ export async function backfillTaskTypes(): Promise<{ updated: number }> {
   return res.json();
 }
 
-export async function fetchAccounts(): Promise<string[]> {
-  const res = await apiFetch(buildUrl('/api/accounts'));
+// 'mine' trims a role=user caller's list to the accounts in their own rows; the server
+// ignores it for an admin.
+export async function fetchAccounts(scope: 'all' | 'mine' = 'all'): Promise<string[]> {
+  const res = await apiFetch(buildUrl('/api/accounts', { scope: scope === 'mine' ? 'mine' : '' }));
   if (!res.ok) throw new Error('Failed to fetch accounts');
   return res.json();
 }

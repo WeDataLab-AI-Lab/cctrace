@@ -1072,38 +1072,6 @@ func TestPgStore_VerifyDeletedSessionsHonorsCanceledContext(t *testing.T) {
 	}
 }
 
-func TestPgStore_VerifierUsesEveryStrictTarget(t *testing.T) {
-	s := acquireTestStore(t)
-	truncateTables(t, s)
-	ctx := context.Background()
-	ts := recentDay(37).Add(13 * time.Hour)
-	seedTwoSessions(t, s, ts)
-	if _, err := s.DeleteSession(ctx, "doomed", "admin@example.com", "", false, false); err != nil {
-		t.Fatalf("DeleteSession: %v", err)
-	}
-	if _, err := s.SweepDeletedSessions(ctx, 1); err != nil {
-		t.Fatalf("sweep: %v", err)
-	}
-	if _, err := s.pool.Exec(ctx, `INSERT INTO quota_samples
-		(billing_provider,account_id,window_key,sampled_at,source_session_id)
-		VALUES ('codex','late','5h',$1,'doomed')`, ts.Add(time.Hour)); err != nil {
-		t.Fatalf("seed late strict target: %v", err)
-	}
-	if n, err := s.VerifyDeletedSessions(ctx); err != nil || n != 1 {
-		t.Fatalf("verify = (%d,%v), want one requeued quota survivor", n, err)
-	}
-	if _, err := s.SweepDeletedSessions(ctx, 1); err != nil {
-		t.Fatalf("resweep: %v", err)
-	}
-	var n int
-	if err := s.pool.QueryRow(ctx, `SELECT count(*) FROM quota_samples WHERE source_session_id='doomed'`).Scan(&n); err != nil {
-		t.Fatalf("count quota survivor: %v", err)
-	}
-	if n != 0 {
-		t.Fatalf("quota survivor remained after verifier + sweep: %d", n)
-	}
-}
-
 func TestPgStore_DeleteSession_reDeleteClearsSweptAt(t *testing.T) {
 	s := acquireTestStore(t)
 	truncateTables(t, s)

@@ -297,6 +297,15 @@ const OPEN_API_ENDPOINTS: OpenAPIEndpoint[] = [
       { name: 'project_hash', type: 'string', description: { en: 'Single project hash.', ko: '단일 프로젝트 해시.' } },
       ...ownerParameters,
       { name: 'session_id', type: 'string', description: { en: 'Exact session filter.', ko: '정확한 세션 필터.' } },
+      { name: 'event_name', type: 'string', description: { en: 'Exact event-name filter, such as tool_decision.', ko: '정확한 이벤트 이름 필터. 예: tool_decision.' } },
+      {
+        name: 'decision_source',
+        type: 'string (CSV)',
+        description: {
+          en: 'Comma-separated tool_decision sources (config, hook, user_temporary, user_permanent, user_reject, user_abort); matches tool_decision events only. Supported when GET /api/sync/capabilities reports open_api_decision_source: true.',
+          ko: '쉼표로 구분한 tool_decision 출처(config, hook, user_temporary, user_permanent, user_reject, user_abort). tool_decision 이벤트만 일치. GET /api/sync/capabilities 의 open_api_decision_source: true 로 지원 확인.',
+        },
+      },
       ...pagingParameters,
     ],
     fields: [
@@ -308,6 +317,11 @@ const OPEN_API_ENDPOINTS: OpenAPIEndpoint[] = [
       { name: 'cache_read_tokens / cache_create_tokens', type: 'integer?', description: { en: 'Cache token counts.', ko: '캐시 토큰 수.' } },
       { name: 'duration_ms', type: 'integer?', description: { en: 'Observed duration in milliseconds.', ko: '관측 시간(밀리초).' } },
       { name: 'tool_name / tool_decision / tool_success', type: 'mixed?', description: { en: 'Sanitized tool outcome fields.', ko: '정제된 도구 실행 결과 필드.' } },
+      {
+        name: 'decision_source / tool_use_id',
+        type: 'string?',
+        description: { en: 'Who settled the permission and the tool call it settled; tool_decision events only.', ko: '권한을 정한 주체와 그 결정의 도구 호출. tool_decision 이벤트만.' },
+      },
     ],
   },
   {
@@ -356,6 +370,37 @@ const OPEN_API_ENDPOINTS: OpenAPIEndpoint[] = [
       { name: 'work_time_seconds', type: 'int64', description: { en: 'Sum of each session elapsed time; overlapping sessions remain additive.', ko: '세션별 경과시간 합계. 동시 세션도 각각 합산.' } },
       { name: 'by_model[]', type: 'array', description: { en: 'Input, output, and total tokens grouped by model.', ko: '모델별 입력·출력·전체 토큰.' } },
       { name: 'items[] / total (group_by)', type: 'object', description: { en: 'Rows of key, cost_usd, input/output/total tokens, and request_count.', ko: 'key, cost_usd, 입력·출력·전체 토큰, request_count 행 목록.' } },
+    ],
+  },
+  {
+    method: 'GET',
+    path: '/api/open/v1/practices',
+    title: { en: 'Compare practices', ko: '실천별 비교' },
+    description: {
+      en: 'Compares manual approvals and human rejections between people who show a Claude plugin, skill, or hook in the last 30 days and people who do not. The window is fixed and takes no since or until. Every caller, admin or not, receives the same rows; only self is the caller\'s own. No user, email, session, or project identifier is returned. Differences are correlation, not the effect of a practice.',
+      ko: '최근 30일 Claude 플러그인·스킬·훅을 쓴 사람과 쓰지 않은 사람의 수동 승인·사람 거절 비교. 창은 고정이며 since·until 없음. 관리자 여부와 무관하게 같은 행, self 만 호출자 본인. 사용자·이메일·세션·프로젝트 식별자 미포함. 차이는 상관이며 실천의 효과 아님.',
+    },
+    parameters: [],
+    fields: [
+      { name: 'window_start / window_end', type: 'RFC3339', description: { en: 'The fixed 30-day window ending at the request.', ko: '요청 시각에서 끝나는 고정 30일 창.' } },
+      {
+        name: 'rows[]',
+        type: 'array',
+        description: {
+          en: 'kind (plugin, skill, hook), name, and users_with; users_without and metrics only when both groups have at least 3 people with a Claude tool decision.',
+          ko: 'kind(plugin, skill, hook), name, users_with. 두 묶음 모두 Claude 도구 결정이 있는 사람이 3명 이상일 때만 users_without·metrics.',
+        },
+      },
+      {
+        name: 'metrics',
+        type: 'object?',
+        description: {
+          en: 'manual_approvals_per_1000 and human_rejections_per_1000, each the median of per-person rates with and without the practice.',
+          ko: 'manual_approvals_per_1000, human_rejections_per_1000. 각각 실천 사용·미사용 묶음의 사람별 비율 중앙값.',
+        },
+      },
+      { name: 'self', type: 'object', description: { en: 'The caller\'s own two rates; null when the caller made no decision.', ko: '호출자 본인의 두 비율. 결정이 없으면 null.' } },
+      { name: 'caveats[]', type: 'string[]', description: { en: 'Limits to report with the numbers.', ko: '수치와 함께 알릴 한계.' } },
     ],
   },
 ];

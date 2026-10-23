@@ -1,6 +1,6 @@
 import { GitBranch } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CollectingLoader } from '@/components/common/collecting-loader';
+import { ListLoadingRows, rowIn } from '@/components/common/loading-rows';
 import { StatusBadge } from './status-badge';
 import { agentLabel } from './rule-helpers';
 import type { RuleRow } from './rule-helpers';
@@ -21,7 +21,7 @@ interface RuleListProps {
 
 const RuleList = ({ groups, selectedKey, isLoading, emptyMessage, onSelectRule }: RuleListProps) => {
   if (isLoading) {
-    return <CollectingLoader className="py-8" />;
+    return <ListLoadingRows />;
   }
 
   if (groups.length === 0) {
@@ -30,8 +30,8 @@ const RuleList = ({ groups, selectedKey, isLoading, emptyMessage, onSelectRule }
 
   return (
     <div className="divide-y divide-surface-sunk">
-      {groups.map(group => (
-        <div key={group.key} className="px-3 py-3">
+      {groups.map((group, i) => (
+        <div key={group.key} className={cn('px-3 py-3', rowIn(i))}>
           <div className="mb-2 flex items-center gap-2 px-1">
             <GitBranch size={13} className="text-ink-3" />
             <div className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">{group.name}</div>

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync"
 	"testing"
 	"time"
@@ -621,6 +622,52 @@ func TestPgStore_ListEvents_FilterByEventName(t *testing.T) {
 	}
 	if len(events) != 1 || events[0].EventName != "tool_result" {
 		t.Errorf("expected 1 tool_result event, got %d", len(events))
+	}
+}
+
+// decision_source reads the tool_decision attrs; a "source" key on any other
+// event is not a permission decision and must not match.
+func TestPgStore_ListEvents_FilterByDecisionSource(t *testing.T) {
+	s := acquireTestStore(t)
+	truncateTables(t, s)
+	ctx := context.Background()
+
+	now := time.Now().UTC()
+	decision := func(offset time.Duration, source, toolUseID string) *OtelEvent {
+		return &OtelEvent{Ts: now.Add(offset), EventName: "tool_decision", Attrs: map[string]interface{}{"source": source, "tool_use_id": toolUseID}}
+	}
+	if err := s.InsertEvents(ctx, []*OtelEvent{
+		decision(0, "config", "toolu_1"),
+		decision(time.Second, "user_temporary", "toolu_2"),
+		decision(2*time.Second, "hook", "toolu_3"),
+		decision(3*time.Second, "user_reject", "toolu_4"),
+		{Ts: now.Add(4 * time.Second), EventName: "skill_activated", Attrs: map[string]interface{}{"source": "user_temporary"}},
+	}); err != nil {
+		t.Fatalf("InsertEvents: %v", err)
+	}
+
+	for _, tt := range []struct {
+		sources []string
+		want    []string
+	}{
+		{sources: []string{"user_temporary"}, want: []string{"toolu_2"}},
+		{sources: []string{"user_temporary", "hook", "user_reject"}, want: []string{"toolu_4", "toolu_3", "toolu_2"}},
+	} {
+		events, err := s.ListEvents(ctx, EventFilter{DecisionSources: tt.sources})
+		if err != nil {
+			t.Fatalf("ListEvents %v: %v", tt.sources, err)
+		}
+		var got []string
+		for _, e := range events {
+			if e.EventName != "tool_decision" {
+				t.Errorf("sources %v matched %s", tt.sources, e.EventName)
+			}
+			id, _ := e.Attrs["tool_use_id"].(string)
+			got = append(got, id)
+		}
+		if !slices.Equal(got, tt.want) {
+			t.Errorf("sources %v: got %v, want %v", tt.sources, got, tt.want)
+		}
 	}
 }
 

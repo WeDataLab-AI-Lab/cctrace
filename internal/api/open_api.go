@@ -234,16 +234,25 @@ type openAPIEventDTO struct {
 	ToolDecision      string    `json:"tool_decision,omitempty"`
 	ToolSuccess       *bool     `json:"tool_success,omitempty"`
 	Speed             string    `json:"speed,omitempty"`
+	// Lifted from tool_decision attrs only: who settled the permission (config,
+	// hook, user_temporary, ...) and the call it settled. Neither carries text.
+	DecisionSource string `json:"decision_source,omitempty"`
+	ToolUseID      string `json:"tool_use_id,omitempty"`
 }
 
 func newOpenAPIEventDTO(event *store.OtelEvent) openAPIEventDTO {
-	return openAPIEventDTO{
+	dto := openAPIEventDTO{
 		Ts: event.Ts, EventName: event.EventName, SessionID: event.SessionID, UserID: event.UserID,
 		Model: event.Model, CostUSD: event.CostUSD, InputTokens: event.InputTokens,
 		OutputTokens: event.OutputTokens, CacheReadTokens: event.CacheReadTokens,
 		CacheCreateTokens: event.CacheCreateTokens, DurationMs: event.DurationMs, ToolName: event.ToolName,
 		ToolDecision: event.ToolDecision, ToolSuccess: event.ToolSuccess, Speed: event.Speed,
 	}
+	if event.EventName == "tool_decision" {
+		dto.DecisionSource, _ = event.Attrs["source"].(string)
+		dto.ToolUseID, _ = event.Attrs["tool_use_id"].(string)
+	}
+	return dto
 }
 
 func (s *Server) handleOpenAPIListEvents(w http.ResponseWriter, r *http.Request) {
@@ -261,6 +270,7 @@ func (s *Server) handleOpenAPIListEvents(w http.ResponseWriter, r *http.Request)
 		SessionID: r.URL.Query().Get("session_id"), ProjectHash: queryProjectHash(r, "project_hash"),
 		ProfileEmail: r.URL.Query().Get("profile_email"), LoginEmail: r.URL.Query().Get("login_email"),
 		UserID: r.URL.Query().Get("user_id"), Since: since, Until: until,
+		EventName: r.URL.Query().Get("event_name"), DecisionSources: queryCSV(r, "decision_source"),
 		Limit: queryInt(r, "limit", 100), Offset: queryInt(r, "offset", 0),
 	}
 	if user.Role != "admin" {

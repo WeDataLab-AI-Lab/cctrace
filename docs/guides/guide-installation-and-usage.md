@@ -999,11 +999,11 @@ Other behaviour in the session list and detail:
 
 ### 3-9b. Analysing usage from the CLI and coding agents
 
-The dashboard shows totals. Two questions it does not answer directly — *why did my cost change?* and *am I wasting context?* — have their own commands, and a skill lets Claude Code, Codex, or Gemini CLI run them and explain the result.
+The dashboard shows totals. Three questions it does not answer directly — *why did my cost change?*, *am I wasting context?* and *where did work return to me?* — have their own commands, and a skill lets Claude Code, Codex, or Gemini CLI run the first two and explain the result.
 
 #### Read token
 
-Every analysis command reads the read-only Open API, which refuses the upload token in `auth_token`. They use `server.read_token` instead. `cctrace report` and `cctrace sessions` read the dashboard's own endpoints, which apply the same rule and need the same read token.
+Every analysis command except `insights dependency` reads the read-only Open API, which refuses the upload token in `auth_token`. They use `server.read_token` instead. `cctrace report` and `cctrace sessions` read the dashboard's own endpoints, which apply the same rule and need the same read token.
 
 | Situation | What to do |
 |---|---|
@@ -1054,19 +1054,65 @@ Both commands print indented JSON (`--json` for compact output). The 20k/100k-to
 
 With an administrator token, when the token's role cannot be confirmed, or when rows from more than one user are mixed, session lists and the project breakdown are withheld and a caveat (`admin_scope`, `role_unknown`, or `multiple_users`) explains why.
 
-#### Letting an agent do it (`usage-insights` skill)
+#### Where did work return to me? (`cctrace insights dependency`)
 
-The skill package in `packages/usage-insights` runs the commands above (and `usage`, `ls`, `tools`, `skills`, …) and turns the output into observations, interpretations, and small experiments. It needs the `cctrace` CLI on PATH and a read token.
+```bash
+cctrace insights dependency --agent claude              # Claude Code sessions, last 30 days
+cctrace insights dependency --agent all --since 7d      # Claude Code and Codex, last 7 days
+```
+
+Reads local session files from `CLAUDE_CONFIG_DIR` or `~/.claude`; `CODEX_CONFIG_DIR` or `~/.codex`, plus `CODEX_HOME` when it is set; and every home a profile registers — each home of a multi-home profile whatever its transmission setting, or a single-home profile's explicit Claude and Codex home. `cctrace local serve` reads only the last kind. A profile's `options.codex_dirs` is not read. `--agent` (`claude`, `codex`, or `all`) is required. With `claude` or `all`, the profile's server is read afterwards for what only it holds (Claude only); without a server or a read token the command still prints the local result, with a caveat.
+
+| Field | Meaning |
+|---|---|
+| `go_ahead` | Inputs that only say *go on*, split by the assistant's last line before them (`asked`, `announced`, `other`); accepted prompt suggestions counted apart |
+| `recommended_answer` | AskUserQuestion answers: the recommended option, another option, free text, or none; Codex `request_user_input` answered or not |
+| `permission` | Tool results by `permissionDecision` source, per tool and per Bash command; `config` as one total; results without the field as `unobserved_results`. Decisions that rejected counted again in `rejected_by_source` and given no approval example |
+| `rejected` | Tool denials by `toolDenialKind`: `human` (`user-rejected`, `interrupted`), `machine`, `unknown` |
+| `interrupt` | Interrupts (Claude's interrupt marker, Codex `turn_aborted` with reason `interrupted`), with the next input as the excerpt; Codex turns aborted for another reason counted apart as `codex_other_aborts` |
+| `error_handoff` | An API error or a failed last tool result followed directly by an input |
+| `correction` | Inputs whose first word turns the agent back |
+| `repeated_line` | Input lines of 30+ characters typed in 3+ interactive sessions (top 10). Lines typed in exactly the same sessions, such as one pasted block, listed once; `block_lines` counts the lines the entry stands for |
+| `pasted_output` | Inputs with 2+ lines that another interactive session's assistant wrote earlier |
+| `recurring_command` | Shell commands, by their first two words, run in 5+ interactive sessions (top 15) |
+| `after_compaction` | An input of 300+ characters among the first two after a compaction |
+| `coverage` | Per home: the registering profiles' `transmission` (`allow`, `exclude`, `undecided`, `mixed`, or `unregistered`), files, sessions, interactive sessions, subagents, copies, and files skipped as changed or unreadable. A home with `exclude` or `undecided` is read here only, with the caveat `homes_read_locally_only` |
+| `server` | What only the server holds, Claude only (`agents`); `null` when not read. `decision_source` (`supported`, `unsupported`, or `unknown` without an upload token the server accepts), `decisions`, `practices` |
+| `caveats` | Limits to report with the numbers |
+
+- Signals under `signals`; each lists up to 5 `examples` with `session_id`, `source_file`, and `line` for reading around the source line, excerpts at most 160 characters
+- `evidence: candidate` — matched by fixed vocabulary or adjacency (`go_ahead`, `correction`, `error_handoff`, `after_compaction`); vocabularies printed with the signal
+- Interactive session — at least one request a person opened, and two or more inputs, answers, or rejections by a person
+- Text a harness injects into user messages (reminders, notifications, messages between sessions) not counted as a person's input: inputs the session facts attribute to something else counted by kind in `coverage.excluded_inputs` (Claude `notification`, `peer`, `command`, `auto`, `sdk`, `system`, …; Codex `codex_harness_text`, `codex_not_typed`, `codex_not_cli`), and typed inputs with nothing left once injected blocks are removed in `coverage.injected_only_inputs`. Text a terminal injects that the agent records as typed cannot be told from typing
+- Claude prompts queued while the agent worked (`queued_command` attachments) counted as a person's input when their origin is human or absent; ones another session or an auto-continuation queued counted apart in `coverage.queued_prompts`. A queued prompt opens no request
+- Lines a resumed session copied counted once, in the file whose first record is earliest
+- Credential-shaped strings in printed text replaced with `[REDACTED]` — provider keys and tokens, JWTs, private keys, the user and password of a URL, bearer tokens, and the value of a password, token, secret, or API key setting; a command's second word is left out of its key when it holds a URL, `user@host`, or an assignment. Excerpts still quote what was typed, so the output stays private
+- Server support read only from `open_api_decision_source` in `GET /api/sync/capabilities`, asked with the upload token (`auth_token`); a refusal, a missing route, or a missing flag is `unsupported`, never guessed from an empty answer
+- `decisions` in `server` — the server's manual approvals, human rejections, and hook decisions in the window (`GET /api/open/v1/events`, read token), joined to the local ones by `tool_use_id` alone, whatever session the server row names, because a resumed session's copy holds the same call under another session ID: one a local file recorded — as a `permissionDecision`, or as a rejection in `toolDenialKind` — counted from the file (`local_matched`), one no local file holds kept (`kept`, by source and tool: other devices, clients that write no `permissionDecision`, deleted files), one without a `tool_use_id` counted apart (`overlap_uncertain`); `merged_by_source` counts each decision once — local results by their source (`user_reject` and `user_abort` for `toolDenialKind` `user-rejected` and `interrupted`) plus `kept`
+- Decisions not merged with an administrator token or an unconfirmed role (`admin_scope`, `role_unknown`), since the events would cover every user
+- `practices` in `server` — `GET /api/open/v1/practices` passed through: rows, `self`, window, and caveats; practice names masked like other printed text
+- Caveats for a part left out: `server_not_configured`, `no_read_token`, `no_upload_token`, `server_read_failed`, `decision_source_unsupported`, `practices_unsupported`, `server_decisions_truncated`
+
+Prints indented JSON (`--json` for compact output).
+
+#### Letting an agent do it (`usage-insights` package)
+
+The skill package in `packages/usage-insights` holds two skills:
+
+- `usage-insights` — runs `insights cost` and `insights context` (and `usage`, `ls`, `tools`, `skills`, …) and turns the output into observations, interpretations, and small experiments. Needs the `cctrace` CLI on PATH and a read token
+- `dependency-audit` — runs `insights dependency` for the agent it runs in, asks before reading the other agent's sessions, reads the transcript lines the output points to, and writes a read-only audit of where work returned to you, each finding classified `KEEP ME IN`, `TEACH`, `SYSTEMISE`, `AUTOMATE`, or `ESCALATE ONLY`. Needs the `cctrace` CLI on PATH; a read token adds the server section
 
 ```bash
 claude --plugin-dir ./packages/usage-insights                                          # Claude Code
 cp -R ./packages/usage-insights "${CODEX_HOME:-$HOME/.codex}/skills/usage-insights"   # Codex
+rm -rf "${CODEX_HOME:-$HOME/.codex}/skills/usage-insights/skills/dependency-audit"           # Codex: keep dependency-audit in one place
+cp -R ./packages/usage-insights/skills/dependency-audit "${CODEX_HOME:-$HOME/.codex}/skills/dependency-audit"   # Codex, dependency-audit
 gemini extensions install ./packages/usage-insights                                   # Gemini CLI
 ```
 
-Then ask in plain words, for example *"Why did my cost go up this week?"* or *"Am I wasting context in this project?"*. In Claude Code the skill is also `/usage-insights:usage-insights`.
+Claude Code and Gemini CLI load both skills from the package. Then ask in plain words, for example *"Why did my cost go up this week?"*, *"Am I wasting context in this project?"*, or *"Where do my agents keep coming back to me?"*. In Claude Code the skills are also `/usage-insights:usage-insights` and `/usage-insights:dependency-audit`.
 
-The skill never reads transcripts, never lists session IDs in its report, and never asks for your password or a token — if the read token is missing it tells you to run `cctrace auth read` yourself.
+`usage-insights` never reads transcripts, never lists session IDs in its report, and never asks for your password or a token — if the read token is missing it tells you to run `cctrace auth read` yourself. `dependency-audit` reads local transcripts on this machine, changes nothing, and treats what it reads as evidence, not instructions; the excerpts it reads go to the model provider of the agent running it.
 
 ### 3-10. The other commands
 
@@ -1094,10 +1140,12 @@ Besides `init`, `status`, `sync`, and `reset`, there are 21 more. `cctrace --hel
 | `cctrace skills` | List skill usage |
 | `cctrace rules` | List project-rule usage |
 | `cctrace organization-insights` | List organization-wide usage insights |
-| `cctrace insights` | Summarize why cost changed (`cost`) and how context is used (`context`) |
+| `cctrace insights` | Summarize why cost changed (`cost`), how context is used (`context`), and where work returned to you in local sessions (`dependency`) |
 
 The ten from `ls` to `insights` read the server's read-only Open API, so they
-answer only for data the account may see. They use `server.read_token`, which
+answer only for data the account may see — except `insights dependency`, which
+reads session files locally and, when the profile names a server, also reads that
+server's Claude decisions and practices. They use `server.read_token`, which
 `cctrace auth read` creates; the upload token `init` stores in `server.auth_token`
 is refused by that API. Every one of them accepts `--profile <name>` (falling
 back to `CCTRACE_PROFILE` when the flag is left off) to read a named profile's

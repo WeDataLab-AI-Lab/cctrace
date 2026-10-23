@@ -53,6 +53,13 @@ func TestAISegmentsScopeVisibilityAndBoundaries(t *testing.T) {
 	if err != nil || len(conv) != 2 || conv[0].UUID != "u1" || conv[1].UUID != "inside" {
 		t.Fatalf("conversation=%+v err=%v", conv, err)
 	}
+	// read_segment drops user records a machine wrote, which only prompt_source says.
+	if _, err := s.pool.Exec(ctx, `UPDATE session_records SET prompt_source='system' WHERE uuid='u1'`); err != nil {
+		t.Fatal(err)
+	}
+	if conv, err := s.AISegmentConversation(ctx, sc, id, 0, 1); err != nil || len(conv) != 1 || conv[0].PromptSource != "system" {
+		t.Fatalf("prompt_source=%+v err=%v", conv, err)
+	}
 	page, err := s.AISegmentConversation(ctx, sc, id, 1, 1)
 	if err != nil || len(page) != 1 || page[0].UUID != "inside" {
 		t.Fatalf("page=%+v %v", page, err)
