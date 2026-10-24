@@ -1,0 +1,37 @@
+[
+  {
+    "key": "GET /api/ai-reports?week=2026-W37",
+    "status": 200,
+    "body": "184e01ba5670c249183768a0"
+  },
+  {
+    "key": "GET /api/ai-reports?week=2026-W38",
+    "status": 200,
+    "body": "25fe85a0d932b797fb8d2b13"
+  },
+  {
+    "key": "GET /api/ai-reports?week=2026-W39",
+    "status": 200,
+    "body": "9462052d39eea5225e42f9b4"
+  },
+  {
+    "key": "GET /api/ai-reports?week=2026-W40",
+    "status": 200,
+    "body": "335b7c4121253100f6b3d0fc"
+  },
+  {
+    "key": "GET /api/ai-reports?week=2026-W41",
+    "status": 200,
+    "body": "f633a4034b96401e5418b0af"
+  },
+  {
+    "key": "GET /api/ai-reports?week=2026-W42",
+    "status": 200,
+    "body": "d05063ab25168426268fbd44"
+  },
+  {
+    "key": "GET /api/ai-reports?week=2026-W43",
+    "status": 200,
+    "body": "ec6232c1434bfd8da3b00888"
+  }
+]

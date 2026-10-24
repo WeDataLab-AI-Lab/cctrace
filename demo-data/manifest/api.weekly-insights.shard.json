@@ -1,0 +1,37 @@
+[
+  {
+    "key": "GET /api/weekly-insights?since=@-16840m\u0026until=@-6760m",
+    "status": 200,
+    "body": "853d7404635ac92ad2b31f0f"
+  },
+  {
+    "key": "GET /api/weekly-insights?since=@-26920m\u0026until=@-16840m",
+    "status": 200,
+    "body": "b368ab88dee0a7b6c8425b4d"
+  },
+  {
+    "key": "GET /api/weekly-insights?since=@-37000m\u0026until=@-26920m",
+    "status": 200,
+    "body": "80221eb1ec8fc3675728bff8"
+  },
+  {
+    "key": "GET /api/weekly-insights?since=@-47080m\u0026until=@-37000m",
+    "status": 200,
+    "body": "9b2dee8f29ad1ae86f161211"
+  },
+  {
+    "key": "GET /api/weekly-insights?since=@-57160m\u0026until=@-47080m",
+    "status": 200,
+    "body": "151515364873829361ffcda2"
+  },
+  {
+    "key": "GET /api/weekly-insights?since=@-67240m\u0026until=@-57160m",
+    "status": 200,
+    "body": "f07f6fa77782e7165cd6ee6d"
+  },
+  {
+    "key": "GET /api/weekly-insights?since=@-6760m\u0026until=@3320m",
+    "status": 200,
+    "body": "10f2bcedc9b37120a7cbcc3c"
+  }
+]

@@ -1,0 +1,152 @@
+[
+  {
+    "key": "GET /api/cost/by-user?login_email=ivy.nonrealton@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "e7870eea9cc7878794aa147f"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=ivy.nonrealton@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "9a51fb7fd315fef53e4f5e80"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=ivy.nonrealton@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "d2d6c2d49e3ed7d0f1b612f5"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=ivy.nonrealton@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "6a18861f80998d294b900edd"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=ivy.nonrealton@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "9a51fb7fd315fef53e4f5e80"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=marcus.fablewright@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "ab29b977c824af4166b85946"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=marcus.fablewright@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "80ab155546f00d1132098c04"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=marcus.fablewright@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "f08ad614a143e5f364870770"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=marcus.fablewright@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "ae8c9294fbaa819b369fe53a"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=marcus.fablewright@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "80ab155546f00d1132098c04"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=priya.notarealsen@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "f03847f0a594c4a53228095b"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=priya.notarealsen@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "8fb20cf3210dd286d7462abf"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=priya.notarealsen@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "8e18302b69b81670551b48b7"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=priya.notarealsen@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "3c06a05a4699fc28b828a242"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=priya.notarealsen@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "8fb20cf3210dd286d7462abf"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=tomas.ficticio@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "1444571608c8b63a2ed53185"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=tomas.ficticio@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "c265db9af33aafbe4f4d50e9"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=tomas.ficticio@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "f65e118db2ec5cd94f02c452"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=tomas.ficticio@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "75943a7f2e5251f07cc5d224"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=tomas.ficticio@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "c265db9af33aafbe4f4d50e9"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=yuki.testonaga@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "866f0fa313849d4c08dc03f6"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=yuki.testonaga@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "e5bf9db437fc379342666d03"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=yuki.testonaga@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "c657af94d988706ec2fd86d9"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=yuki.testonaga@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "a4d4c2f48c0bc74c0da7fa26"
+  },
+  {
+    "key": "GET /api/cost/by-user?login_email=yuki.testonaga@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "e5bf9db437fc379342666d03"
+  },
+  {
+    "key": "GET /api/cost/by-user?since=@-180m",
+    "status": 200,
+    "body": "8ae54cc3ecce0e829db7455e"
+  },
+  {
+    "key": "GET /api/cost/by-user?since=@-262080m",
+    "status": 200,
+    "body": "cb9b4cf2ed7ffb47e60e2093"
+  },
+  {
+    "key": "GET /api/cost/by-user?since=@-43200m",
+    "status": 200,
+    "body": "53a5d6ccadaca35dd7c1be1d"
+  },
+  {
+    "key": "GET /api/cost/by-user?since=@-4320m",
+    "status": 200,
+    "body": "7f114799d7881c42a8e0f500"
+  },
+  {
+    "key": "GET /api/cost/by-user?since=@-525600m",
+    "status": 200,
+    "body": "92246eef44d7af85691fc657"
+  }
+]

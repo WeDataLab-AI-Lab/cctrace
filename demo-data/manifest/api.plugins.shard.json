@@ -1,0 +1,362 @@
+[
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=ivy.nonrealton@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "b8654650d299611662bf9486"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=ivy.nonrealton@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "81b52715a04cc0b6aaa53b27"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=ivy.nonrealton@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "81b52715a04cc0b6aaa53b27"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "e24c22b83fc0524fb1160649"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=marcus.fablewright@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "2d2cd5d760e6ed169140307f"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=marcus.fablewright@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "e4cf1ff26f37b85479acad21"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=marcus.fablewright@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "e4cf1ff26f37b85479acad21"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "e2dedd3951ba48470dd3943d"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=priya.notarealsen@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "c3c09a9b69f0ccebf6fef14c"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=priya.notarealsen@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "823df6c40800123c3aebb4b2"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=priya.notarealsen@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "823df6c40800123c3aebb4b2"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "b82c2b213ffac594be9332bd"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=tomas.ficticio@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "4fde944d3d60d7c166dd9980"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=tomas.ficticio@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "7efe6f9df6d15f53b4512aad"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=tomas.ficticio@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "7efe6f9df6d15f53b4512aad"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "8c854f133508f7b3bd04c96e"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=yuki.testonaga@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "35504669c48938551fc75719"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=yuki.testonaga@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "fe8229a312ee0973f75b7282"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=yuki.testonaga@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "fe8229a312ee0973f75b7282"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "89ce437acc970b5f6852a586"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026since=@-10080m",
+    "status": 200,
+    "body": "b7e3bca41270315c032b36a8"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026since=@-129600m",
+    "status": 200,
+    "body": "7df8cbb3120325420760a7b8"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026since=@-29879020m",
+    "status": 200,
+    "body": "7df8cbb3120325420760a7b8"
+  },
+  {
+    "key": "GET /api/plugins?agent=claude\u0026since=@-43200m",
+    "status": 200,
+    "body": "864bab973830ab96c3b95823"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=ivy.nonrealton@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "ed4e198f69eaf0ce17e4805a"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=ivy.nonrealton@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "28506776c425ae3c5035ef3f"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=ivy.nonrealton@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "28506776c425ae3c5035ef3f"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "95a5ac67c2784d223880b202"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=marcus.fablewright@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "78bf8132062f1620e74746d3"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=marcus.fablewright@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "74e77d9ee2f0f1d0a4eff26f"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=marcus.fablewright@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "74e77d9ee2f0f1d0a4eff26f"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "00cc4a8af27afd786ff242c5"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=priya.notarealsen@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "4fc61de66fefe3814681a756"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=priya.notarealsen@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "2d49446547011acd98abe823"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=priya.notarealsen@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "2d49446547011acd98abe823"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "ca6d718f9766f86adcc58dc3"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=tomas.ficticio@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "3b6076d37dce38918126c12d"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=tomas.ficticio@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "e2b7d4a350c582697a1dff7f"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=tomas.ficticio@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "e2b7d4a350c582697a1dff7f"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "6cada925a59a48930d1eca2e"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=yuki.testonaga@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "14e044e1e499b53c23db7236"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=yuki.testonaga@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "4d94391fd4c52e11d9c411e7"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=yuki.testonaga@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "4d94391fd4c52e11d9c411e7"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "55f9c48b0dd40e8d032de4c7"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026since=@-10080m",
+    "status": 200,
+    "body": "37a21d52888261e664fe9842"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026since=@-129600m",
+    "status": 200,
+    "body": "8be2a79b0a0c6bfa7ebc8613"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026since=@-29879020m",
+    "status": 200,
+    "body": "8be2a79b0a0c6bfa7ebc8613"
+  },
+  {
+    "key": "GET /api/plugins?agent=codex\u0026since=@-43200m",
+    "status": 200,
+    "body": "cef5601cbc16a8ddd20dfa85"
+  },
+  {
+    "key": "GET /api/plugins?login_email=ivy.nonrealton@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "67a9f7d27a76281a070c5c11"
+  },
+  {
+    "key": "GET /api/plugins?login_email=ivy.nonrealton@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "03ac335b805ed7e6ee184d0b"
+  },
+  {
+    "key": "GET /api/plugins?login_email=ivy.nonrealton@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "03ac335b805ed7e6ee184d0b"
+  },
+  {
+    "key": "GET /api/plugins?login_email=ivy.nonrealton@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "50aa952110ea924de5ceb28f"
+  },
+  {
+    "key": "GET /api/plugins?login_email=marcus.fablewright@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "6417302377882cfb6102964b"
+  },
+  {
+    "key": "GET /api/plugins?login_email=marcus.fablewright@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "f347f826e04427f6acd4f46e"
+  },
+  {
+    "key": "GET /api/plugins?login_email=marcus.fablewright@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "f347f826e04427f6acd4f46e"
+  },
+  {
+    "key": "GET /api/plugins?login_email=marcus.fablewright@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "8eeed639b5e42050c0b65c80"
+  },
+  {
+    "key": "GET /api/plugins?login_email=priya.notarealsen@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "89b649fccc2e60fc98437498"
+  },
+  {
+    "key": "GET /api/plugins?login_email=priya.notarealsen@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "5e8e95003163c118386311e7"
+  },
+  {
+    "key": "GET /api/plugins?login_email=priya.notarealsen@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "5e8e95003163c118386311e7"
+  },
+  {
+    "key": "GET /api/plugins?login_email=priya.notarealsen@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "dadc3d9f380cc4e732cec0b2"
+  },
+  {
+    "key": "GET /api/plugins?login_email=tomas.ficticio@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "695bd9cd39bb1c61fd200004"
+  },
+  {
+    "key": "GET /api/plugins?login_email=tomas.ficticio@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "b2077fd6c1a1504443c96131"
+  },
+  {
+    "key": "GET /api/plugins?login_email=tomas.ficticio@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "b2077fd6c1a1504443c96131"
+  },
+  {
+    "key": "GET /api/plugins?login_email=tomas.ficticio@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "83eb8177a4507765d58c188d"
+  },
+  {
+    "key": "GET /api/plugins?login_email=yuki.testonaga@example.com\u0026since=@-10080m",
+    "status": 200,
+    "body": "b9c2d629f3d7e2ed15999301"
+  },
+  {
+    "key": "GET /api/plugins?login_email=yuki.testonaga@example.com\u0026since=@-129600m",
+    "status": 200,
+    "body": "3ca04b9eaca02a6c5ff9ed84"
+  },
+  {
+    "key": "GET /api/plugins?login_email=yuki.testonaga@example.com\u0026since=@-29879020m",
+    "status": 200,
+    "body": "3ca04b9eaca02a6c5ff9ed84"
+  },
+  {
+    "key": "GET /api/plugins?login_email=yuki.testonaga@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "fc3535e6e5f0ab91f77ec892"
+  },
+  {
+    "key": "GET /api/plugins?since=@-10080m",
+    "status": 200,
+    "body": "4d8bb51f528184a5fdfd5a00"
+  },
+  {
+    "key": "GET /api/plugins?since=@-129600m",
+    "status": 200,
+    "body": "b4814f29879bd3581ecd12bc"
+  },
+  {
+    "key": "GET /api/plugins?since=@-29879020m",
+    "status": 200,
+    "body": "b4814f29879bd3581ecd12bc"
+  },
+  {
+    "key": "GET /api/plugins?since=@-43200m",
+    "status": 200,
+    "body": "7730784a2f7952c212532a17"
+  }
+]

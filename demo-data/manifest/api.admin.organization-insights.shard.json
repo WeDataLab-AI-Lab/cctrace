@@ -1,0 +1,7 @@
+[
+  {
+    "key": "GET /api/admin/organization-insights?since=@-10080m\u0026until=@0m",
+    "status": 200,
+    "body": "b9157ae7a49bb846b402b01a"
+  }
+]

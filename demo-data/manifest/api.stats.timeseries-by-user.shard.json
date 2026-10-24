@@ -1,0 +1,502 @@
+[
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=claude\u0026granularity=day\u0026since=@-43200m",
+    "status": 200,
+    "body": "56a3b4ed38b100a91df44df1"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=claude\u0026granularity=hour\u0026since=@-4320m",
+    "status": 200,
+    "body": "2f97f0dc989fe8041ffeb34b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=claude\u0026granularity=minute\u0026since=@-180m",
+    "status": 200,
+    "body": "2ed9db50186a615b2d09bcb8"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=claude\u0026granularity=month\u0026since=@-525600m",
+    "status": 200,
+    "body": "5f8f8519842e34d02ab444f2"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=claude\u0026granularity=week\u0026since=@-262080m",
+    "status": 200,
+    "body": "86c00310603d55c79c48212a"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=codex\u0026granularity=day\u0026since=@-43200m",
+    "status": 200,
+    "body": "b0ed0fd76d6c06a4ba2e50cd"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=codex\u0026granularity=hour\u0026since=@-4320m",
+    "status": 200,
+    "body": "223fc18f69027287f939ea54"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=codex\u0026granularity=minute\u0026since=@-180m",
+    "status": 200,
+    "body": "2caf7dddcecb44522258bca6"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=codex\u0026granularity=month\u0026since=@-525600m",
+    "status": 200,
+    "body": "175e9b9d20d5e14f6d987aa4"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=codex\u0026granularity=week\u0026since=@-262080m",
+    "status": 200,
+    "body": "22235ddccc8f40eb5882f84a"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=other\u0026granularity=day\u0026since=@-43200m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=other\u0026granularity=hour\u0026since=@-4320m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=other\u0026granularity=minute\u0026since=@-180m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=other\u0026granularity=month\u0026since=@-525600m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=other\u0026granularity=week\u0026since=@-262080m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=weekly\u0026granularity=day\u0026since=@-43200m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=weekly\u0026granularity=hour\u0026since=@-4320m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=weekly\u0026granularity=minute\u0026since=@-180m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=weekly\u0026granularity=month\u0026since=@-525600m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?agent=weekly\u0026granularity=week\u0026since=@-262080m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "6cc753790c196723091291d6"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "3eb98abfc4eafd68c23422d2"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "3bdb5b50236c8d02f9b6443f"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "ad612b0a9a8592cae1daaae5"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "9307ad746d97bbb75783efe7"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model=claude-fable-5-1\u0026since=@-43200m",
+    "status": 200,
+    "body": "7dd71d1c0b58bd0be2e81533"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model=claude-haiku-5-5\u0026since=@-43200m",
+    "status": 200,
+    "body": "a20d811a25f47fe3349464c9"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model=claude-opus-5-5\u0026since=@-43200m",
+    "status": 200,
+    "body": "3d92f6bc73cf0b3371cd42f3"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model=claude-sonnet-5-5\u0026since=@-43200m",
+    "status": 200,
+    "body": "f586f99266758191ee5198a7"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model=gpt-6-astra\u0026since=@-43200m",
+    "status": 200,
+    "body": "6ddfb674918f3f1345a63dc3"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model=gpt-6-luna\u0026since=@-43200m",
+    "status": 200,
+    "body": "cd07fe819c15d3d5f29e5d1c"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model=gpt-6.1-sol\u0026since=@-43200m",
+    "status": 200,
+    "body": "ba44c8858756900dea21f635"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model_category=anthropic\u0026since=@-43200m",
+    "status": 200,
+    "body": "56a3b4ed38b100a91df44df1"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model_category=codex\u0026since=@-43200m",
+    "status": 200,
+    "body": "b0ed0fd76d6c06a4ba2e50cd"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026model_category=compatible\u0026since=@-43200m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=day\u0026since=@-43200m",
+    "status": 200,
+    "body": "25e1be21c91b0c57f6a7dcc7"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026login_email=ivy.nonrealton@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "55b3e32667eaab593f9644da"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026login_email=marcus.fablewright@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "834c1703d9e4087eeb6043c6"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026login_email=priya.notarealsen@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "78a0386301b43e817c44ae83"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026login_email=tomas.ficticio@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "6d119a82d20dd367611006fc"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026login_email=yuki.testonaga@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "c8b36b0a3c9f224c3afddc2c"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model=claude-fable-5-1\u0026since=@-4320m",
+    "status": 200,
+    "body": "10c9fe21ac2465dbff9f1cdd"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model=claude-haiku-5-5\u0026since=@-4320m",
+    "status": 200,
+    "body": "57272db9707fd2078d1d1539"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model=claude-opus-5-5\u0026since=@-4320m",
+    "status": 200,
+    "body": "fa2cf740585fc852f91b5e4b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model=claude-sonnet-5-5\u0026since=@-4320m",
+    "status": 200,
+    "body": "05571034a6586607c92ad21b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model=gpt-6-astra\u0026since=@-4320m",
+    "status": 200,
+    "body": "8ffe6fdba4576464b11cd09a"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model=gpt-6-luna\u0026since=@-4320m",
+    "status": 200,
+    "body": "0aaf617adc38edec462b4cdd"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model=gpt-6.1-sol\u0026since=@-4320m",
+    "status": 200,
+    "body": "ae997812cf38444af343232b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model_category=anthropic\u0026since=@-4320m",
+    "status": 200,
+    "body": "2f97f0dc989fe8041ffeb34b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model_category=codex\u0026since=@-4320m",
+    "status": 200,
+    "body": "223fc18f69027287f939ea54"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026model_category=compatible\u0026since=@-4320m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=hour\u0026since=@-4320m",
+    "status": 200,
+    "body": "53d65c013e10176183266828"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026login_email=ivy.nonrealton@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "b349ae1c6f42c9d27d78eb0e"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026login_email=marcus.fablewright@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "426694edd13c195b3e4a86f0"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026login_email=priya.notarealsen@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "aee7d7a3da55415164d7b7e6"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026login_email=tomas.ficticio@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "a3fb04f11ea5143da51a520d"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026login_email=yuki.testonaga@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "2b1a644369c3b282717c9d0a"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model=claude-fable-5-1\u0026since=@-180m",
+    "status": 200,
+    "body": "e2e99cfba4015036eb9677a5"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model=claude-haiku-5-5\u0026since=@-180m",
+    "status": 200,
+    "body": "0a10dbd97d629fd360fca024"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model=claude-opus-5-5\u0026since=@-180m",
+    "status": 200,
+    "body": "91b2962e2df12a96ded459af"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model=claude-sonnet-5-5\u0026since=@-180m",
+    "status": 200,
+    "body": "3aa177efdd53b7a9b5b44137"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model=gpt-6-astra\u0026since=@-180m",
+    "status": 200,
+    "body": "7e62625d5b7faaa380a45407"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model=gpt-6-luna\u0026since=@-180m",
+    "status": 200,
+    "body": "032a6730a3d2bc12d0be5829"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model=gpt-6.1-sol\u0026since=@-180m",
+    "status": 200,
+    "body": "bf1d469f02f76190734b22e0"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model_category=anthropic\u0026since=@-180m",
+    "status": 200,
+    "body": "2ed9db50186a615b2d09bcb8"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model_category=codex\u0026since=@-180m",
+    "status": 200,
+    "body": "2caf7dddcecb44522258bca6"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026model_category=compatible\u0026since=@-180m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=minute\u0026since=@-180m",
+    "status": 200,
+    "body": "bf63026ccf48834ec18c0ab6"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026login_email=ivy.nonrealton@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "cebdb5ad3174cf286f03a789"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026login_email=marcus.fablewright@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "edb19ac0af9337cf4a650e40"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026login_email=priya.notarealsen@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "1b5c6a3eb201094ce6f97bcf"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026login_email=tomas.ficticio@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "d95cd4cdfe27f2a7bcb5f1c0"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026login_email=yuki.testonaga@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "bb2e266536bf176c469b4b94"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model=claude-fable-5-1\u0026since=@-525600m",
+    "status": 200,
+    "body": "83d6a23b7e9e2b5597a8e9be"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model=claude-haiku-5-5\u0026since=@-525600m",
+    "status": 200,
+    "body": "f5c009e1ab0a53e3b654cebd"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model=claude-opus-5-5\u0026since=@-525600m",
+    "status": 200,
+    "body": "1a85116ac4a8bb173a10af8f"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model=claude-sonnet-5-5\u0026since=@-525600m",
+    "status": 200,
+    "body": "9009f91f896edb0d93e71aaa"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model=gpt-6-astra\u0026since=@-525600m",
+    "status": 200,
+    "body": "0a71c1584e286f9d3d19abb2"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model=gpt-6-luna\u0026since=@-525600m",
+    "status": 200,
+    "body": "52961b003ae5ad147ff0fe99"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model=gpt-6.1-sol\u0026since=@-525600m",
+    "status": 200,
+    "body": "33954d94291032a11873a770"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model_category=anthropic\u0026since=@-525600m",
+    "status": 200,
+    "body": "5f8f8519842e34d02ab444f2"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model_category=codex\u0026since=@-525600m",
+    "status": 200,
+    "body": "175e9b9d20d5e14f6d987aa4"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026model_category=compatible\u0026since=@-525600m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=month\u0026since=@-525600m",
+    "status": 200,
+    "body": "1cfc304b465c68aa974308bc"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026login_email=ivy.nonrealton@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "85d796c8d9ff4feb317c301a"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026login_email=marcus.fablewright@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "da04e4971fe279d8fbc31f23"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026login_email=priya.notarealsen@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "34e6c77e2765ab0568777877"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026login_email=tomas.ficticio@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "07e5a06595deac018bdae712"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026login_email=yuki.testonaga@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "2b212a4d8998062e9876cbdc"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model=claude-fable-5-1\u0026since=@-262080m",
+    "status": 200,
+    "body": "d8204b66884a1c066dc0485c"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model=claude-haiku-5-5\u0026since=@-262080m",
+    "status": 200,
+    "body": "925b7c6c5f7543ac5e50fc21"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model=claude-opus-5-5\u0026since=@-262080m",
+    "status": 200,
+    "body": "1c253a13a79e1e0102f7592e"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model=claude-sonnet-5-5\u0026since=@-262080m",
+    "status": 200,
+    "body": "8fb4920142061b15a6c2c417"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model=gpt-6-astra\u0026since=@-262080m",
+    "status": 200,
+    "body": "38daf3e97ba4827aa3474ee1"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model=gpt-6-luna\u0026since=@-262080m",
+    "status": 200,
+    "body": "2213d857c523070cba5ee94b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model=gpt-6.1-sol\u0026since=@-262080m",
+    "status": 200,
+    "body": "8d8d72f7c15262a301b9bb79"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model_category=anthropic\u0026since=@-262080m",
+    "status": 200,
+    "body": "86c00310603d55c79c48212a"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model_category=codex\u0026since=@-262080m",
+    "status": 200,
+    "body": "22235ddccc8f40eb5882f84a"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026model_category=compatible\u0026since=@-262080m",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/stats/timeseries-by-user?granularity=week\u0026since=@-262080m",
+    "status": 200,
+    "body": "c67f5d18dc186dbe6edd8b84"
+  }
+]

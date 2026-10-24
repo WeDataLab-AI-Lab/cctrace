@@ -1,0 +1,7 @@
+[
+  {
+    "key": "GET /api/auth/me?",
+    "status": 200,
+    "body": "78ebe2f47d963dfa296de939"
+  }
+]

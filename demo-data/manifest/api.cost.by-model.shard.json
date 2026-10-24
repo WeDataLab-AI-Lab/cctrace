@@ -1,0 +1,277 @@
+[
+  {
+    "key": "GET /api/cost/by-model?login_email=ivy.nonrealton@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "49ba4855d687f5068d825b58"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=ivy.nonrealton@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "0ebbec01954b4157cf678af8"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=ivy.nonrealton@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "2552725ed6d1ed21c72b360f"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=ivy.nonrealton@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "682f056f1bb624cd5fcf99dc"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=ivy.nonrealton@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "0ebbec01954b4157cf678af8"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=marcus.fablewright@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "ff51ce1a4aec99dc4c019b28"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=marcus.fablewright@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "21b13bacf22dc6de54af5b0f"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=marcus.fablewright@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "cc6576c77a227b84b22465d0"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=marcus.fablewright@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "8def5df1941e2dd01ad99d93"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=marcus.fablewright@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "21b13bacf22dc6de54af5b0f"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=priya.notarealsen@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "3becbcd5dc6c0ebfc9db330a"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=priya.notarealsen@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "5107fb41ac1208db6724dcdf"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=priya.notarealsen@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "6a92630e8eb6584b47ca8d5b"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=priya.notarealsen@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "25a21bf70ae82bf92b437267"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=priya.notarealsen@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "5107fb41ac1208db6724dcdf"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=tomas.ficticio@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "3481a89efccdca6ef0ababcc"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=tomas.ficticio@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "25561b2ed37c678fd15ee8bc"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=tomas.ficticio@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "79454650c7d4019d56643ca2"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=tomas.ficticio@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "b36b712f22b5c6cb8e9ac1de"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=tomas.ficticio@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "25561b2ed37c678fd15ee8bc"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=yuki.testonaga@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "53e691c10525dc6c873e510c"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=yuki.testonaga@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "b67e8ebdd3af9f356a4a8a2a"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=yuki.testonaga@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "5bf48556602a1b0730e15305"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=yuki.testonaga@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "01ce7d9e71a52b561e723bea"
+  },
+  {
+    "key": "GET /api/cost/by-model?login_email=yuki.testonaga@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "b67e8ebdd3af9f356a4a8a2a"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-180m",
+    "status": 200,
+    "body": "2c924e6e0bf28c4f83dd965c"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-180m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "48bc38cb53ba2d2dafa82147"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-180m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "ff51ce1a4aec99dc4c019b28"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-180m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "3becbcd5dc6c0ebfc9db330a"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-180m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "3481a89efccdca6ef0ababcc"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-180m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "53e691c10525dc6c873e510c"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-262080m",
+    "status": 200,
+    "body": "84e9d7a5ef9466349ebc19d8"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-262080m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "0ebbec01954b4157cf678af8"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-262080m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "21b13bacf22dc6de54af5b0f"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-262080m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "5107fb41ac1208db6724dcdf"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-262080m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "25561b2ed37c678fd15ee8bc"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-262080m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "b67e8ebdd3af9f356a4a8a2a"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-43200m",
+    "status": 200,
+    "body": "74b58c18f7506a5402058faa"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-43200m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "2552725ed6d1ed21c72b360f"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-43200m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "cc6576c77a227b84b22465d0"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-43200m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "6a92630e8eb6584b47ca8d5b"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-43200m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "79454650c7d4019d56643ca2"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-43200m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "5bf48556602a1b0730e15305"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-4320m",
+    "status": 200,
+    "body": "9b56fec7ea13ab7fa87a2fe2"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-4320m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "a8c677bbbf39283454f901d5"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-4320m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "8def5df1941e2dd01ad99d93"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-4320m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "25a21bf70ae82bf92b437267"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-4320m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "b36b712f22b5c6cb8e9ac1de"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-4320m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "01ce7d9e71a52b561e723bea"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-525600m",
+    "status": 200,
+    "body": "e15c0ee89161e7755fe0492e"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-525600m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "0ebbec01954b4157cf678af8"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-525600m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "21b13bacf22dc6de54af5b0f"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-525600m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "5107fb41ac1208db6724dcdf"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-525600m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "25561b2ed37c678fd15ee8bc"
+  },
+  {
+    "key": "GET /api/cost/by-model?since=@-525600m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "b67e8ebdd3af9f356a4a8a2a"
+  }
+]
