@@ -47,7 +47,7 @@ import type { SeriesKind, WindowSeries } from '@/lib/quota-usage';
 import type { QuotaSample } from '@/lib/types';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { ChartSkeleton } from '@/components/common/chart-skeleton';
-import { formatTrendTick, trendTickInterval } from '@/lib/trend-axis';
+import { formatTrendTick, trendTickCount, trendTickInterval } from '@/lib/trend-axis';
 import type { TrendGranularity } from '@/lib/trend-axis';
 
 /**
@@ -170,6 +170,7 @@ const UsageChart = ({
   // 2026-08-26. The chart now refuses such a pair and says which it is, so the
   // misreading the collapse was hedging against no longer has a way to happen.
   const [expanded, setExpanded] = useState(true);
+  const [chartWidth, setChartWidth] = useState(0);
 
   // A chip isolates its window/provider; clicking the sole selected chip
   // restores the full set. This keeps comparisons one click away without an
@@ -249,7 +250,12 @@ const UsageChart = ({
     ? buildBurnBuckets(scoped, selectedWindows, selectedProviders, granularity, from, until ?? new Date(mountedAt).toISOString())
     : [];
   const chartData = isBucketMode ? mergeBurnRows(burnBuckets) : mergeRows(windowSeries);
-  const xTickInterval = trendTickInterval(granularity, chartData.length);
+  // The default Y axis is 60px; keep extra room for the chart's right margin
+  // and Recharts offsets before planning x-axis label spacing.
+  const plotWidth = Math.max(0, chartWidth - 84);
+  const xTickInterval = trendTickInterval(granularity, chartData.length, plotWidth);
+  const xTickCount = trendTickCount(granularity, plotWidth);
+  const handleChartResize = (width: number) => setChartWidth(width);
   const formatXAxisTick = (value: number) => formatTrendTick(granularity, value);
 
   // Coverage is reported across everything currently drawn: an account counts
@@ -392,15 +398,17 @@ const UsageChart = ({
         />
       ) : (
         <div>
-          <ResponsiveContainer width="100%" height={height}>
+          <ResponsiveContainer width="100%" height={height} onResize={handleChartResize}>
             {isBucketMode ? (
             <BarChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 10 }}
+                fontSize={10}
                 tickFormatter={formatXAxisTick}
                 interval={xTickInterval}
+                minTickGap={6}
               />
               {/* Still reversed. The axis direction is a property of the card, not
                   of the granularity: a y axis that flips when a chip elsewhere on
@@ -445,8 +453,11 @@ const UsageChart = ({
               domain={xDomain}
               scale="time"
               tick={{ fontSize: 10 }}
+              fontSize={10}
               tickFormatter={formatXAxisTick}
-              interval={xTickInterval}
+              tickCount={xTickCount}
+              interval="preserveStartEnd"
+              minTickGap={6}
             />
             {/* reversed + a fixed [0,100] domain: the floor is the limit, so the
                 height of the line is the money still unspent. */}

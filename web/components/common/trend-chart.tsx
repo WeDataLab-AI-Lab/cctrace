@@ -416,6 +416,7 @@ const TrendChart = ({
   // On by default: seen on real data the overlay reads as a plain extra
   // series, and the point of the chart is to show what is not measured.
   const [showUnknown, setShowUnknown] = useState(true);
+  const [chartWidth, setChartWidth] = useState(0);
   const handleToggleUnknown = () => setShowUnknown((v) => !v);
   const [internalModelFilter] = useState<string>('__all__');
   const [internalUserFilter] = useState<string>('__all__');
@@ -621,7 +622,10 @@ const TrendChart = ({
   };
   const handleDoubleClick = () => { setZoomRange(null); setOffset(0); setCustomSince(''); setCustomUntil(''); clearPointSelection(); };
 
-  const tickInterval = trendTickInterval(effectiveGranularity, displayData.length, zoomRange !== null);
+  // ResponsiveContainer measures the chart container. Reserve the default
+  // 60px Y axis plus room for Recharts' axis offsets to get a plot-width budget.
+  const tickInterval = trendTickInterval(effectiveGranularity, displayData.length, Math.max(0, chartWidth - 76));
+  const handleChartResize = (width: number) => setChartWidth(width);
 
   const yAxisFmt = (v: number) => viewMode === 'token' ? fmt(v) : `$${v}`;
   const tooltipFmt = (v: number) => viewMode === 'token' ? fmt(v) : `$${Number(v).toFixed(4)}`;
@@ -863,13 +867,19 @@ const TrendChart = ({
             </button>
           )}
         </div>
-        <div className="flex min-w-0 flex-wrap items-center justify-end gap-1.5 max-lg:[&_button]:min-h-11 max-lg:[&_input]:min-h-11">
+        <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-1.5 max-lg:[&_button]:min-h-11 max-lg:[&_input]:min-h-11 lg:w-auto">
           {!collapsed && <>
+          <div className="grid w-full grid-cols-[44px_44px_minmax(0,1fr)_auto] items-center gap-1.5 lg:contents">
           {/* Arrow navigation */}
           <button onClick={goBack} aria-label="이전 기간" className="min-h-11 min-w-11 px-2.5 py-0.5 text-[11px] rounded border border-border bg-surface text-ink-2 hover:bg-surface-sunk transition-colors lg:min-h-0 lg:min-w-0">←</button>
           <button onClick={goForward} aria-label="다음 기간" disabled={isAtPresent} className="min-h-11 min-w-11 px-2.5 py-0.5 text-[11px] rounded border border-border bg-surface text-ink-2 hover:bg-surface-sunk disabled:opacity-30 transition-colors lg:min-h-0 lg:min-w-0">→</button>
-          <span className="min-w-0 text-[11px] text-ink-3">{formatTrendTick(effectiveGranularity, sinceTs)} – {formatTrendTick(effectiveGranularity, untilTs ?? new Date(nowAnchor).toISOString())}</span>
-          <button onClick={toggleDatePicker} className={cn('px-2.5 py-0.5 text-[11px] rounded border font-medium transition-colors', showDatePicker ? 'border-brand bg-brand-soft text-brand' : 'border-border bg-surface text-ink-2 hover:bg-surface-sunk')}>Date</button>
+          <span className="flex min-w-0 flex-col text-center text-[11px] leading-4 text-ink-3 lg:flex-row lg:gap-1 lg:text-left">
+            <span className="whitespace-nowrap">{formatTrendTick(effectiveGranularity, sinceTs)}</span>
+            <span className="whitespace-nowrap">– {formatTrendTick(effectiveGranularity, untilTs ?? new Date(nowAnchor).toISOString())}</span>
+          </span>
+          <button onClick={toggleDatePicker} className={cn('min-w-11 px-2.5 py-0.5 text-[11px] rounded border font-medium transition-colors lg:min-w-0', showDatePicker ? 'border-brand bg-brand-soft text-brand' : 'border-border bg-surface text-ink-2 hover:bg-surface-sunk')}>Date</button>
+          </div>
+          <div className="flex w-full flex-wrap items-center justify-between gap-1.5 lg:contents">
           {!isAtPresent && <>
             <button onClick={goToPresent} className="px-2.5 py-0.5 text-[11px] rounded font-medium bg-brand text-brand-ink hover:bg-brand-hover transition-colors">Now</button>
             <button onClick={handleDoubleClick} className="px-2.5 py-0.5 text-[11px] rounded border border-border bg-surface text-ink-2 hover:bg-surface-sunk transition-colors">Reset</button>
@@ -881,14 +891,14 @@ const TrendChart = ({
             <button onClick={applyCustomRange} className="px-2.5 py-0.5 text-[11px] rounded font-medium bg-brand text-brand-ink hover:bg-brand-hover transition-colors">Apply</button>
           </>}
           {/* Separator */}
-          <div className="w-px h-4 bg-border mx-0.5" />
+          <div className="hidden w-px h-4 bg-border mx-0.5 lg:block" />
           {showCoverage && (
             <UnknownHint>
               <button
                 type="button"
                 onClick={handleToggleUnknown}
                 disabled={coverageReason !== null || !coverageGap?.eligible}
-                className={cn('px-2.5 py-0.5 text-[11px] rounded border font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-35', showUnknown ? 'border-brand bg-brand-soft text-brand' : 'border-border bg-surface text-ink-2 hover:bg-surface-sunk')}
+                className={cn('min-w-20 flex-1 px-2.5 py-0.5 text-[11px] rounded border font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-35 lg:min-w-0 lg:flex-none', showUnknown ? 'border-brand bg-brand-soft text-brand' : 'border-border bg-surface text-ink-2 hover:bg-surface-sunk')}
               >
                 Unknown
               </button>
@@ -900,7 +910,7 @@ const TrendChart = ({
               <button onClick={handleViewToken} className={cn('px-2.5 py-0.5 text-[11px] font-medium transition-colors', viewMode === 'token' ? 'bg-brand text-brand-ink' : 'bg-surface text-ink-2')}>Token</button>
             </div>
           )}
-          <select aria-label="차트 간격" value={effectiveGranularity} onChange={handleMobileGranularityChange} className="min-h-11 rounded border border-border bg-surface px-2 text-xs text-ink lg:hidden">
+          <select aria-label="차트 간격" value={effectiveGranularity} onChange={handleMobileGranularityChange} className="min-h-11 min-w-24 flex-1 rounded border border-border bg-surface px-2 text-xs text-ink lg:hidden">
             {GRANULARITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
           <div className="hidden flex-wrap gap-1 lg:flex">
@@ -909,6 +919,7 @@ const TrendChart = ({
                 {opt.label}
               </button>
             ))}
+          </div>
           </div>
           </>}
           {onCollapseToggle && (
@@ -929,7 +940,7 @@ const TrendChart = ({
         {isChartLoading ? (
           <ChartSkeleton className={chartSkeletonHeightClassName} />
         ) : (effectiveGranularity === 'minute' || effectiveGranularity === 'hour') ? (
-          <ResponsiveContainer width="100%" height={height}>
+          <ResponsiveContainer width="100%" height={height} onResize={handleChartResize}>
             <AreaChart
               data={chartData}
               margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
@@ -941,7 +952,7 @@ const TrendChart = ({
               style={chartCursorVar} // eslint-disable-line no-restricted-syntax
             >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v) => formatTrendTick(effectiveGranularity, v)} interval={tickInterval} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} fontSize={10} minTickGap={6} tickFormatter={(v) => formatTrendTick(effectiveGranularity, v)} interval={tickInterval} />
               <YAxis tick={{ fontSize: 10 }} tickFormatter={yAxisFmt} />
               <Tooltip content={<TrendTooltip groupBy={effectiveGroupBy} nameMap={nameMap} granularity={effectiveGranularity} formatValue={tooltipFmt} />} isAnimationActive={false} />
               {noData && <Area type="monotone" dataKey="_anchor" stroke="transparent" fill="transparent" isAnimationActive={false} />}
@@ -961,7 +972,7 @@ const TrendChart = ({
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <ResponsiveContainer width="100%" height={height}>
+          <ResponsiveContainer width="100%" height={height} onResize={handleChartResize}>
             <BarChart
               data={chartData}
               margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
@@ -973,7 +984,7 @@ const TrendChart = ({
               style={chartCursorVar} // eslint-disable-line no-restricted-syntax
             >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v) => formatTrendTick(effectiveGranularity, v)} interval={tickInterval} />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} fontSize={10} minTickGap={6} tickFormatter={(v) => formatTrendTick(effectiveGranularity, v)} interval={tickInterval} />
               <YAxis tick={{ fontSize: 10 }} tickFormatter={yAxisFmt} />
               <Tooltip content={<TrendTooltip groupBy={effectiveGroupBy} nameMap={nameMap} granularity={effectiveGranularity} formatValue={tooltipFmt} />} isAnimationActive={false} />
               {noData && <Bar dataKey="_anchor" fill="transparent" isAnimationActive={false} />}

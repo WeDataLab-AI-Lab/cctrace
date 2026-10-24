@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Sidebar } from '@/components/common/sidebar';
@@ -18,15 +18,22 @@ import { SessionLayoutProvider, useSessionLayout } from '@/components/common/ses
 
 const DashboardChrome = ({ children, compatibilityRoute, pending }: { children: React.ReactNode; compatibilityRoute: boolean; pending?: boolean }) => {
   const { menuCollapsed, expanded } = useSessionLayout();
+  const pathname = usePathname();
+  const mainRef = useRef<HTMLElement>(null);
   const hideChrome = expanded || compatibilityRoute;
-  return <div className="flex h-screen overflow-hidden bg-canvas">
+  useEffect(() => {
+    if (!mainRef.current) return;
+    mainRef.current.scrollTop = 0;
+    mainRef.current.scrollLeft = 0;
+  }, [pathname]);
+  return <div className="flex h-dvh min-h-0 overflow-hidden bg-canvas">
     <div hidden={hideChrome} className={hideChrome ? 'hidden' : 'contents'}><Sidebar collapsed={menuCollapsed} /></div>
-    <div className="flex min-w-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div hidden={hideChrome} className={hideChrome ? 'hidden' : 'contents'}><Header /></div>
-      {process.env.NEXT_PUBLIC_DEMO === '1' && !hideChrome && <DemoBanner className="mx-4 mt-4 md:mx-8" />}
-      {!hideChrome && <CatchingUpNote pending={pending} message={TOKEN_RULE_NOTE} className="mx-4 mt-4 md:mx-8" />}
-      <main className={cn('min-h-0 min-w-0 flex-1', hideChrome ? 'overflow-hidden' : 'mx-auto w-full max-w-[1600px] overflow-auto p-4 md:p-8')}>
-        {children}
+      <main ref={mainRef} className={cn('flex min-h-0 min-w-0 flex-1 flex-col', hideChrome ? 'overflow-hidden' : 'mx-auto w-full max-w-[1600px] overflow-auto overscroll-contain p-4 md:p-8')}>
+        {process.env.NEXT_PUBLIC_DEMO === '1' && !hideChrome && <DemoBanner className="mb-4" />}
+        {!hideChrome && <CatchingUpNote pending={pending} message={TOKEN_RULE_NOTE} className="mb-4 shrink-0" />}
+        <div className="min-h-0 min-w-0 flex-1">{children}</div>
       </main>
     </div>
   </div>;
@@ -72,7 +79,7 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-canvas">
+      <div className="flex h-dvh items-center justify-center bg-canvas">
         <CollectingLoader />
       </div>
     );

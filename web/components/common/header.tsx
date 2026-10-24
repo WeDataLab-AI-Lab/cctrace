@@ -177,7 +177,7 @@ const Header = () => {
 
   return (
     <DialogPrimitive.Root open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-    <header className="flex min-w-0 flex-col gap-2 border-b border-border bg-surface px-4 py-2 lg:px-6">
+    <header className="flex min-w-0 shrink-0 flex-col gap-2 border-b border-border bg-surface px-4 py-2 lg:px-6">
       <div className="flex min-w-0 items-center gap-2">
         <DialogPrimitive.Trigger asChild>
           <button type="button" aria-label="앱 메뉴 열기" aria-controls="app-menu-mobile" className="inline-flex size-11 shrink-0 items-center justify-center rounded text-ink-3 hover:bg-surface-sunk lg:hidden"><Menu className="size-5" /></button>
@@ -212,7 +212,7 @@ const Header = () => {
         </span>
         <button type="button" aria-label={mobileFiltersOpen ? '필터 닫기' : '필터 열기'} aria-expanded={mobileFiltersOpen} aria-controls="mobile-filters" onClick={handleMobileFiltersToggle} className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg bg-surface-sunk text-ink-2"><SlidersHorizontal className="size-5" /></button>
       </div>
-      <div id="mobile-filters" ref={filtersRef} className={cn('min-w-0 flex-wrap items-center justify-start gap-2 lg:flex lg:gap-4', mobileFiltersOpen ? 'flex' : 'hidden')}>
+      <div id="mobile-filters" ref={filtersRef} className={cn('min-w-0 flex-wrap items-center justify-start gap-2 max-lg:max-h-[50dvh] max-lg:overflow-y-auto max-lg:overscroll-contain lg:flex lg:gap-4', mobileFiltersOpen ? 'flex' : 'hidden')}>
         {user && <div className="w-full lg:w-auto max-lg:[&>div]:w-full max-lg:[&_input]:h-11 max-lg:[&_input]:w-full max-lg:[&_[role=region]]:left-0 max-lg:[&_[role=region]]:right-auto"><SessionSearchBox key={sessionSearchScope} scopeKey={sessionSearchScope} onSelect={handleSessionSearchSelect} /></div>}
         <QuotaHeaderMeters enabled={!!user} />
         {showScopeFilters && (

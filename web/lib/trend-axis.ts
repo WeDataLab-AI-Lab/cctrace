@@ -1,5 +1,5 @@
 type TrendGranularity = 'minute' | 'hour' | 'day' | 'week' | 'month';
-type TrendTickInterval = number | 'preserveStartEnd';
+type TrendTickInterval = number;
 
 /**
  * Formats an x-axis tick using the Cost Trend chart's labels.
@@ -29,18 +29,21 @@ const formatTrendTick = (granularity: TrendGranularity, value: string | number):
   return `${month}/${day} ${hour}h`;
 };
 
-/** Cost Trend shows about twelve minute/short-zoom labels; coarser axes let
- * Recharts preserve the first and last labels while removing collisions. */
+// XAxis uses 10px text. Seven pixels per character is conservative for its
+// date/time labels; the extra six pixels belong between adjacent labels.
+const trendTickWidth = (granularity: TrendGranularity): number =>
+  (granularity === 'hour' ? 9 : granularity === 'month' ? 7 : 5) * 7 + 6;
+
+/** Recharts numeric intervals show every (interval + 1)th category tick. */
 const trendTickInterval = (
   granularity: TrendGranularity,
   pointCount: number,
-  zoomed = false,
-): TrendTickInterval => {
-  if (granularity === 'minute' || (zoomed && pointCount < 60)) {
-    return Math.max(1, Math.floor(pointCount / 12));
-  }
-  return 'preserveStartEnd';
-};
+  plotWidth: number,
+): TrendTickInterval => Math.max(0, Math.ceil(trendTickWidth(granularity) * pointCount / Math.max(1, plotWidth)) - 1);
+
+/** Continuous time axes use Recharts-generated ticks, bounded by the same width budget. */
+const trendTickCount = (granularity: TrendGranularity, plotWidth: number): number =>
+  Math.max(1, Math.floor(Math.max(0, plotWidth) / trendTickWidth(granularity)));
 
 /**
  * Bucket boundaries and keys, shared by both charts on the Overview page.
@@ -96,5 +99,5 @@ const bucketDate = (key: string): Date => {
   return new Date(key);
 };
 
-export { advanceBucket, alignBucketStart, bucketDate, bucketKey, formatTrendTick, trendTickInterval };
+export { advanceBucket, alignBucketStart, bucketDate, bucketKey, formatTrendTick, trendTickCount, trendTickInterval };
 export type { TrendGranularity, TrendTickInterval };

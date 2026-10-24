@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FlaskConical } from 'lucide-react';
+import { ChevronDown, FlaskConical } from 'lucide-react';
 import { DEMO_EVENT, type DemoNotice } from '@/lib/demo/runtime';
 import { cn } from '@/lib/utils';
 
@@ -43,25 +43,28 @@ const DemoBanner = ({ className }: DemoBannerProps) => {
   }, []);
 
   return (
-    <p
+    <div
       role="status"
       className={cn(
-        'flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-canvas px-3 py-2 text-[12px] text-ink-2',
+        'shrink-0 rounded-lg border border-border bg-canvas text-xs text-ink-2',
         className,
       )}
     >
-      <FlaskConical size={13} className="shrink-0 text-ink-3" />
-      <span>
-        Demo: a fictitious five-person team, recorded {recordedLabel(RECORDED_AT)}. Nothing you change here is saved.
-      </span>
-      {readOnly && <span className="text-ink-3">That action is not available in the demo.</span>}
-      {missing > 0 && <span className="text-ink-3">{missing} view{missing === 1 ? ' was' : 's were'} not recorded.</span>}
-      {DOCS_URL && (
-        <a href={DOCS_URL} className="ml-auto font-medium text-brand hover:underline">
-          cctrace docs
-        </a>
-      )}
-    </p>
+      <details className="group">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 [&::-webkit-details-marker]:hidden">
+          <FlaskConical size={14} className="shrink-0 text-ink-3" />
+          <span className="min-w-0 flex-1 truncate font-medium">Demo · Sample data</span>
+          {(readOnly || missing > 0) && <span className="shrink-0 text-ink-3">{readOnly ? 'Read-only' : `${missing} unavailable`}</span>}
+          <ChevronDown size={16} className="shrink-0 text-ink-3 transition-transform group-open:rotate-180" aria-hidden />
+        </summary>
+        <div className="space-y-2 border-t border-border px-3 py-2 leading-relaxed">
+          <p>Demo: a fictitious five-person team, recorded {recordedLabel(RECORDED_AT)}. Nothing you change here is saved.</p>
+          {readOnly && <p className="text-ink-3">That action is not available in the demo.</p>}
+          {missing > 0 && <p className="text-ink-3">{missing} view{missing === 1 ? ' was' : 's were'} not recorded.</p>}
+          {DOCS_URL && <a href={DOCS_URL} className="inline-flex min-h-11 items-center font-medium text-brand hover:underline">cctrace docs</a>}
+        </div>
+      </details>
+    </div>
   );
 };
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatTrendTick, trendTickInterval } from './trend-axis';
+import { formatTrendTick, trendTickCount, trendTickInterval } from './trend-axis';
 
 describe('formatTrendTick', () => {
   it('uses the Cost Trend labels for every granularity', () => {
@@ -55,17 +55,31 @@ describe('formatTrendTick with full ISO timestamps (period label)', () => {
 });
 
 describe('trendTickInterval', () => {
-  it('shares Cost Trend minute spacing with Subscription Burn', () => {
-    expect(trendTickInterval('minute', 181)).toBe(15);
-    expect(trendTickInterval('minute', 12)).toBe(1);
+  it('spaces every granularity by the available plot width, including a zoomed range', () => {
+    const cases = [
+      ['minute', 181, 41], ['hour', 73, 69], ['day', 31, 41],
+      ['week', 27, 41], ['month', 13, 55], ['hour', 24, 69],
+    ] as const;
+    // Representative chart plot widths inside 320, 393, 430, and 768px viewports.
+    for (const plotWidth of [160, 233, 270, 608]) {
+      for (const [granularity, points, labelWithGap] of cases) {
+        const interval = trendTickInterval(granularity, points, plotWidth);
+        expect((interval + 1) * plotWidth / points).toBeGreaterThanOrEqual(labelWithGap);
+      }
+    }
   });
 
-  it('preserves the Cost Trend endpoints at coarser granularities', () => {
-    expect(trendTickInterval('hour', 73)).toBe('preserveStartEnd');
-    expect(trendTickInterval('day', 31)).toBe('preserveStartEnd');
+  it('shows more labels as the plot grows, without changing the underlying points', () => {
+    expect(trendTickInterval('minute', 181, 160)).toBe(46);
+    expect(trendTickInterval('minute', 181, 608)).toBe(12);
+    expect(trendTickInterval('day', 1, 160)).toBe(0);
   });
+});
 
-  it('uses Cost Trend zoom spacing for a short zoomed range', () => {
-    expect(trendTickInterval('hour', 24, true)).toBe(2);
+describe('trendTickCount', () => {
+  it('bounds the continuous Subscription Burn axis by the same label width', () => {
+    expect(trendTickCount('minute', 160)).toBe(3);
+    expect(trendTickCount('hour', 160)).toBe(2);
+    expect(trendTickCount('month', 270)).toBe(4);
   });
 });
