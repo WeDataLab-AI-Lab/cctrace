@@ -217,15 +217,20 @@ html,
 }
 
 /* The demo card above the table of contents (docs-overrides/partials/toc.html).
-   A surface step and a hairline, like the tables. */
+   A surface step and a hairline, like the tables. It spans the table of
+   contents' column with no outer margin and hangs off the sidebar's divider:
+   the divider is its left edge, so that side has no border and no rounding.
+   Its top lines up with the left navigation's first line, and its 0.6rem
+   inset with the contents' text. */
 .cctrace-demo-card {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  margin: 0.6rem 0.6rem 1rem;
+  margin: 0 0 1rem;
   padding: 0 0 0.6rem;
   border: 1px solid var(--border);
-  border-radius: var(--r-md);
+  border-left: 0;
+  border-radius: 0 var(--r-md) var(--r-md) 0;
   background-color: var(--surface-2);
   color: var(--ink);
   overflow: hidden;
