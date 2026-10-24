@@ -7,6 +7,8 @@ Self-hosted telemetry for [Claude Code](https://claude.com/claude-code) and
 cost, tool calls, and the conversation itself — into your own database, and
 serves a dashboard over it. Nothing leaves the machines you run it on.
 
+**[Documentation](https://wedatalab-ai-lab.github.io/cctrace/)** · **[Live demo](https://wedatalab-ai-lab.github.io/cctrace/demo/)**
+
 > **Status:** early. The server API and the database schema still change between
 > releases. Pin a version if you depend on either.
 

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "clock params become minutes from the recording moment; tz and empty values drop out",
+    "now": "2026-10-24T03:00:00Z",
+    "method": "GET",
+    "path": "/api/stats/timeseries-by-user",
+    "query": "granularity=day&since=2026-09-24T03:00:00.000Z&tz=Asia%2FSeoul&agent=",
+    "key": "GET /api/stats/timeseries-by-user?granularity=day&since=@-43200m"
+  },
+  {
+    "name": "order and sub-minute precision do not matter",
+    "now": "2026-10-24T03:00:00Z",
+    "method": "GET",
+    "path": "/api/stats/timeseries-by-user",
+    "query": "since=2026-09-24T03:00:20.512Z&granularity=day",
+    "key": "GET /api/stats/timeseries-by-user?granularity=day&since=@-43200m"
+  },
+  {
+    "name": "a timestamp outside the clock params stays absolute",
+    "now": "2026-10-24T03:00:00Z",
+    "method": "GET",
+    "path": "/api/sessions",
+    "query": "session_id=s1&anchor_ts=2026-10-01T00:00:00Z",
+    "key": "GET /api/sessions?anchor_ts=2026-10-01T00:00:00Z&session_id=s1"
+  },
+  {
+    "name": "both ends of a range",
+    "now": "2026-10-24T03:00:00Z",
+    "method": "GET",
+    "path": "/api/session-calendar",
+    "query": "from=2026-10-18T15:00:00.000Z&to=2026-10-25T15:00:00.000Z&source=interactive&assembled=1",
+    "key": "GET /api/session-calendar?assembled=1&from=@-7920m&source=interactive&to=@2160m"
+  },
+  {
+    "name": "values are compared decoded",
+    "now": "2026-10-24T03:00:00Z",
+    "method": "GET",
+    "path": "/api/session-overview",
+    "query": "project_hashes=a%2Cb&login_email=ivy.nonrealton%40example.com",
+    "key": "GET /api/session-overview?login_email=ivy.nonrealton@example.com&project_hashes=a,b"
+  },
+  {
+    "name": "no query at all",
+    "now": "2026-10-24T03:00:00Z",
+    "method": "GET",
+    "path": "/api/accounts",
+    "query": "",
+    "key": "GET /api/accounts?"
+  }
+]

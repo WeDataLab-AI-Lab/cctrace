@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{#- The banner appears only when the docs workflow found a recorded demo
+    (extra.demo). The demo is the dashboard itself, answering from responses
+    recorded against a fictitious team, so it needs no server. -#}
+{% block announce -%}
+  {%- if config.extra.demo %}
+  {%- set demo = (config.site_url or (base_url ~ "/")) ~ "demo/" %}
+  <a href="{{ demo }}">Try the demo dashboard</a>: a fictitious five-person team, nothing to install.
+  · <a href="{{ demo }}" lang="ko">데모 대시보드 보기</a>
+  {%- endif %}
+{%- endblock %}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net"
 	"os"
 	"path/filepath"
@@ -59,7 +60,12 @@ func TestManagedPolicyRestartsOnlyItsProfileJob(t *testing.T) {
 				}
 				time.Sleep(time.Millisecond)
 			}
+			// The supervisor republishes its status every 5ms, and a read that
+			// races a rewrite is refused with ErrMetadataChanged; read again.
 			snapshot, err := localdaemon.ReadSnapshot(root)
+			for i := 0; errors.Is(err, localdaemon.ErrMetadataChanged) && i < 100; i++ {
+				snapshot, err = localdaemon.ReadSnapshot(root)
+			}
 			if err != nil {
 				t.Fatal(err)
 			}

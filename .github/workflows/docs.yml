@@ -25,6 +25,10 @@ on:
       - web/app/globals.css
       - .github/workflows/docs.yml
   workflow_dispatch:
+  # A new demo (demo.yml) is published as soon as it is recorded.
+  workflow_run:
+    workflows: [Demo]
+    types: [completed]
 
 permissions:
   contents: write
@@ -36,11 +40,22 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     steps:
       # Pinned to a commit SHA, not a tag: a tag is mutable.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
+      # The static demo is built by demo.yml onto the demo-site branch. MkDocs
+      # copies it as it copies any non-Markdown file, and the banner that links
+      # to it is shown only when it is there (DEMO in mkdocs.yml).
+      - name: Add the recorded demo
+        run: |
+          if git rev-parse --verify -q origin/demo-site > /dev/null; then
+            mkdir -p site-docs/demo
+            git archive origin/demo-site | tar -x -C site-docs/demo
+            echo "DEMO=true" >> "$GITHUB_ENV"
+          fi
       - name: Install MkDocs
         run: |
           python3 -m venv .venv

@@ -29,6 +29,9 @@ theme:
 
 extra:
   generator: false
+  # Set by the docs workflow when the demo-site branch holds a recorded demo
+  # (demo.yml); the banner in docs-overrides/main.html links to it then.
+  demo: !ENV [DEMO, false]
 
 hooks:
   - hooks/design_tokens.py

@@ -1,0 +1,147 @@
+name: Demo
+
+# Rebuilds the static demo the docs site serves under /demo: the dashboard with
+# no server behind it, answering from responses recorded against a fictitious
+# five-person team. Run it by hand when the demo should show the current
+# dashboard. The result is pushed to the demo-site branch, and the docs
+# workflow publishes it with the site.
+#
+# Everything is built from this repository. cmd/demo-seed makes the team's
+# activity up and sends it through the same paths a real client uses -- the
+# cctrace client's sync, OTLP and the plan-limit endpoint -- then records what
+# the running server answers. No real usage data is involved at any step.
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: Days of history to generate
+        default: "35"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: demo
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      DAYS: ${{ inputs.days }}
+    steps:
+      # Pinned to a commit SHA, not a tag: a tag is mutable.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # The demo's "now": the latest weekday afternoon in Seoul, so the opening
+      # view shows the team at work. Recording and replay both freeze there.
+      - name: Pick the moment
+        run: |
+          {
+            echo "STACK=$RUNNER_TEMP/demo-stack"
+            echo "ANCHOR=$(go run ./cmd/demo-seed anchor)"
+            version=$(git log -1 --format=%s | sed -n 's/.*(\(v[0-9][0-9.]*\)).*/\1/p')
+            echo "VERSION=${version:-dev}"
+          } >> "$GITHUB_ENV"
+
+      - name: Build the images
+        run: |
+          docker build -t cctrace/timescaledb-pgmq:latest docker/timescaledb-pgmq/
+          docker build -f deploy/Dockerfile --build-arg UPDATE_SIGNING=optional \
+            --build-arg VERSION="$VERSION" -t cctrace/cctraced:latest .
+
+      # Throwaway secrets, masked all the same: this log is public.
+      - name: Start the server
+        run: |
+          mkdir -p "$STACK/logs" "$STACK/bin"
+          jwt=$(openssl rand -hex 32); db=$(openssl rand -hex 20); setup=$(openssl rand -hex 16); admin=$(openssl rand -hex 12)
+          for s in "$jwt" "$db" "$setup" "$admin"; do echo "::add-mask::$s"; done
+          cat > "$STACK/demo.env" <<EOF
+          JWT_SECRET=$jwt
+          DB_PASSWORD=$db
+          CCTRACE_SETUP_TOKEN=$setup
+          LOGS_DIR=$STACK/logs
+          CONTAINER_PREFIX=cctrace-demo
+          GRPC_BIND=127.0.0.1
+          OTEL_HTTP_BIND=127.0.0.1
+          CCTRACE_SESSION_ANALYSIS=on
+          EOF
+          cat > "$STACK/seed.env" <<EOF
+          DEMO_ADMIN_EMAIL=ivy.nonrealton@example.com
+          DEMO_ADMIN_PASSWORD=$admin
+          DEMO_DATABASE_URL=postgres://cctrace:$db@timescaledb:5432/cctrace?sslmode=disable
+          EOF
+          echo "HOST_DATABASE_URL=postgres://cctrace:$db@127.0.0.1:5432/cctrace?sslmode=disable" >> "$GITHUB_ENV"
+          docker compose -p cctrace-demo --env-file "$STACK/demo.env" -f deploy/docker-compose.yml up -d
+          for _ in $(seq 1 60); do curl -sf http://127.0.0.1:8080/api/version > /dev/null && break; sleep 3; done
+          curl -sf -o /dev/null -X POST http://127.0.0.1:8080/api/auth/setup \
+            -H 'Content-Type: application/json' -H 'X-Requested-With: XMLHttpRequest' \
+            -H 'Origin: http://127.0.0.1:8080' -H "X-Setup-Token: $setup" \
+            -d "{\"email\":\"ivy.nonrealton@example.com\",\"name\":\"Ivy Nonrealton\",\"password\":\"$admin\"}"
+
+      # The client runs in a Linux container so each person gets a real
+      # /home/<name> with git repositories in it, the paths a session records.
+      - name: Fill it with the demo team
+        run: |
+          CGO_ENABLED=0 go build -trimpath -ldflags "-X main.version=$VERSION" -o "$STACK/bin/cctrace" ./cmd/cctrace
+          CGO_ENABLED=0 go build -trimpath -o "$STACK/bin/demo-seed" ./cmd/demo-seed
+          printf 'FROM alpine:3.20\nRUN apk add --no-cache git ca-certificates tzdata\nCOPY bin/ /opt/demo/\n' > "$STACK/Dockerfile.runner"
+          docker build -q -t cctrace-demo-runner -f "$STACK/Dockerfile.runner" "$STACK"
+          docker run --rm --network cctrace-demo_default --env-file "$STACK/seed.env" cctrace-demo-runner \
+            /opt/demo/demo-seed -days "$DAYS" -anchor "$ANCHOR"
+          # History older than the server's periodic windows is folded into the
+          # hourly rollups only by its boot repairs, which the seeder re-armed.
+          restart() {
+            docker restart cctrace-demo-cctraced
+            for _ in $(seq 1 60); do curl -sf http://127.0.0.1:8080/api/version > /dev/null && break; sleep 3; done
+            DEMO_DATABASE_URL="$HOST_DATABASE_URL" "$STACK/bin/demo-seed" settle
+          }
+          restart
+          # Once more for the hourly aggregates: the first boot builds them before
+          # it attributes Codex usage to its login (demo-seed rollups explains).
+          DEMO_DATABASE_URL="$HOST_DATABASE_URL" "$STACK/bin/demo-seed" rollups
+          restart
+
+      - name: Record the dashboard
+        run: |
+          set -a; . "$STACK/seed.env"; set +a
+          DEMO_DATABASE_URL="$HOST_DATABASE_URL" "$STACK/bin/demo-seed" record \
+            -server http://127.0.0.1:8080 -out "$STACK/demo-data" -now "$ANCHOR" -days "$DAYS"
+
+      # The demo computes windows nobody recorded; every recorded window it could
+      # have computed must come out the same.
+      - name: Check the computed answers
+        working-directory: web
+        run: |
+          npm ci
+          DEMO_DATA="$STACK/demo-data" npm run test:demo-data
+
+      - name: Build the demo
+        working-directory: web
+        run: |
+          repo="${GITHUB_REPOSITORY#*/}"
+          NEXT_PUBLIC_DEMO=1 NEXT_PUBLIC_BASE_PATH="/$repo/demo" NEXT_PUBLIC_DEMO_RECORDED_AT="$ANCHOR" \
+            NEXT_PUBLIC_DEMO_DOCS_URL="/$repo/" NEXT_PUBLIC_API_URL= npx next build
+          cp -R "$STACK/demo-data" out/demo-data
+          # Published gzipped; the demo runtime inflates them (lib/demo/runtime.ts).
+          gzip -9 -n out/demo-data/facts.json
+          find out/demo-data/bodies -name '*.json' -exec gzip -9 -n {} +
+
+      # One commit, replaced each run: the branch holds the latest demo, not its
+      # history. The push reuses the credential actions/checkout left behind.
+      - name: Publish to the demo-site branch
+        run: |
+          auth=$(git config --get http.https://github.com/.extraheader)
+          cd web/out
+          git init -q -b demo-site
+          git config user.name docs-bot
+          git config user.email ""
+          git add -A
+          git commit -q -m "Demo recorded at $ANCHOR from ${GITHUB_SHA::12}"
+          git -c http.https://github.com/.extraheader="$auth" push -f "https://github.com/$GITHUB_REPOSITORY.git" demo-site
+
+      - name: Server logs
+        if: failure()
+        run: docker logs --tail 200 cctrace-demo-cctraced

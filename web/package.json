@@ -7,9 +7,10 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/check-no-demo.mjs",
     "start": "next start",
     "test": "vitest run",
+    "test:demo-data": "vitest run --config vitest.demo.config.mts",
     "lint": "eslint"
   },
   "dependencies": {

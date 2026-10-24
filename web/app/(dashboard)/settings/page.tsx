@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { KeyRound, Shield } from 'lucide-react';
 import { changePassword, refreshToken } from '@/lib/api';
+import { withBasePath } from '@/lib/base-path';
 import { useAuth } from '@/components/common/auth-context';
 import { AppearanceControls } from '@/components/common/appearance-controls';
 import { APITokenManagement } from '@/components/settings/api-token-management';
@@ -51,7 +52,7 @@ export default function SettingsPage() {
       setNewPassword('');
       setConfirmPassword('');
       // Reload to update auth state across the app
-      window.location.href = '/';
+      window.location.href = withBasePath('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to change password');
     } finally {

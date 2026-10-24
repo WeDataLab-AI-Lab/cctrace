@@ -218,11 +218,15 @@ test-unit: web-dist-placeholder test-scope-check
 		-race -count=1 -timeout 300s
 	$(if $(wildcard scripts/*_test.go),go test ./scripts/... -race -count=1 -timeout 600s)
 
-# Packages intentionally outside the test targets. Empty on purpose: scripts/
-# used to sit here as "dev-only helpers", but it now also holds the open-source
-# mirror leak gate, whose whole failure mode is passing quietly. That guard has
-# to run on the pre-commit path, not only under `make test`.
-TEST_SCOPE_EXEMPT :=
+# Packages intentionally outside the test targets. scripts/ used to sit here as
+# "dev-only helpers", but it now also holds the open-source mirror leak gate,
+# whose whole failure mode is passing quietly. That guard has to run on the
+# pre-commit path, not only under `make test`.
+#
+# cmd/demo-seed generates the docs site's static demo, a showcase rebuilt by
+# hand from the public Demo workflow; its tests are not a merge gate (owner's
+# decision, 2026-10-24). Run them with `go test ./cmd/demo-seed` when changing it.
+TEST_SCOPE_EXEMPT := cmd/demo-seed
 
 # Guard against scope drift: a package whose tests are in neither test-unit nor
 # test-integration only ever runs under `make test`, so it silently drops out of

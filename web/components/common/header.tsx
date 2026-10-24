@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { LogOut, User, PanelLeftClose, PanelLeftOpen, Square, SquareCheck } from 'lucide-react';
 import { fetchAccounts } from '@/lib/api';
+import { withBasePath } from '@/lib/base-path';
 import { cn } from '@/lib/utils';
 import { WEEKLY_USAGE_HINT } from '@/lib/weekly-usage';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -117,7 +118,7 @@ const Header = () => {
   const handleProfileToggle = () => setShowProfileMenu((v) => !v);
   const handleLogout = async () => {
     await logout();
-    window.location.href = '/login';
+    window.location.href = withBasePath('/login');
   };
   const handleSessionSearchSelect = (result: SessionRecordSearchResult, match: SessionRecordSearchMatch) => {
     const params = new URLSearchParams({ session_id: result.session_id, session_search: '1' });

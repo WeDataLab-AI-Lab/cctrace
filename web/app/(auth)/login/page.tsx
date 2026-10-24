@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/common/auth-context';
+import { withBasePath } from '@/lib/base-path';
 import { CollectingLoader } from '@/components/common/collecting-loader';
 import { CctraceIcon } from '@/components/icons/cctrace-icon';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(email, password);
-      window.location.href = '/';
+      window.location.href = withBasePath('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -38,7 +39,7 @@ export default function LoginPage() {
    * setup이 필요한 경우 setup 화면으로 이동한다.
    */
   useEffect(() => {
-    if (needsSetup) window.location.assign('/setup');
+    if (needsSetup) window.location.assign(withBasePath('/setup'));
   }, [needsSetup]);
 
   if (isLoading) {

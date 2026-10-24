@@ -215,3 +215,27 @@ html,
   --arch-line: #91a0b4;
   --arch-accent: #ff9b7c;
 }
+
+/* The demo card above the table of contents (docs-overrides/partials/toc.html).
+   A surface step and a hairline, like the tables. */
+.cctrace-demo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.6rem 0.6rem 1rem;
+  padding: 0 0 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background-color: var(--surface-2);
+  color: var(--ink);
+  overflow: hidden;
+}
+.cctrace-demo-card:hover { border-color: var(--border-strong); }
+.cctrace-demo-card img { display: block; width: 100%; border-bottom: 1px solid var(--border); }
+.cctrace-demo-card__title { padding: 0.3rem 0.6rem 0; font-size: 0.7rem; font-weight: 600; }
+.cctrace-demo-card__text { padding: 0 0.6rem; font-size: 0.62rem; line-height: 1.5; color: var(--ink-2); }
+.cctrace-demo-card__cta { padding: 0.15rem 0.6rem 0; font-size: 0.62rem; font-weight: 600; }
+.cctrace-demo-card:hover .cctrace-demo-card__cta { color: var(--accent-hover); }
+/* Material renders the same partial again inside the left navigation, under
+   the current page; the card belongs to the right sidebar only. */
+.md-nav--primary .cctrace-demo-card { display: none; }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { setup } from '@/lib/api';
+import { withBasePath } from '@/lib/base-path';
 import { useAuth } from '@/components/common/auth-context';
 import { CollectingLoader } from '@/components/common/collecting-loader';
 import { CctraceIcon } from '@/components/icons/cctrace-icon';
@@ -48,7 +49,7 @@ export default function SetupPage() {
     setSubmitting(true);
     try {
       await setup(email, name, password, setupToken);
-      window.location.href = '/';
+      window.location.href = withBasePath('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Setup failed');
     } finally {

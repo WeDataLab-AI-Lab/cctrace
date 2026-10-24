@@ -1,0 +1,38 @@
+{#-
+  Material for MkDocs 9.7.7's partials/toc.html (requirements-docs.txt pins the
+  version), with the demo card above the table of contents. Material has no
+  block inside the right sidebar, so the partial is copied whole; on a Material
+  upgrade, copy the new one and keep the card.
+-#}
+{% if config.extra.demo %}
+  {% set demo = (config.site_url or (base_url ~ "/")) ~ "demo/" %}
+  {% set ko = config.theme.language == "ko" %}
+  <a class="cctrace-demo-card" href="{{ demo }}">
+    <img src="{{ 'assets/screenshots/40-overview.png' | url }}" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">{{ "데모 대시보드" if ko else "Demo dashboard" }}</span>
+    <span class="cctrace-demo-card__text">{{ "가상의 5인 팀으로 채운 대시보드를 설치 없이 브라우저에서 봅니다." if ko else "A fictitious five-person team, in your browser, nothing to install." }}</span>
+    <span class="cctrace-demo-card__cta">{{ "데모 열기 →" if ko else "Open the demo →" }}</span>
+  </a>
+{% endif %}
+{% set title = lang.t("toc") %}
+{% if config.mdx_configs.toc and config.mdx_configs.toc.title %}
+  {% set title = config.mdx_configs.toc.title %}
+{% endif %}
+<nav class="md-nav md-nav--secondary" aria-label="{{ title | e }}">
+  {% set toc = page.toc %}
+  {% set first = toc | first %}
+  {% if first and first.level == 1 %}
+    {% set toc = first.children %}
+  {% endif %}
+  {% if toc %}
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      {{ title }}
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      {% for toc_item in toc %}
+        {% include "partials/toc-item.html" %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+</nav>
