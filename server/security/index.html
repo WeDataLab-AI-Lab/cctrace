@@ -1,0 +1,1994 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/server/security/">
+      
+      
+        <link rel="prev" href="../operations/">
+      
+      
+        <link rel="next" href="../../client/install/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../ko/server/security/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Security - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#security-operations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+            
+  <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/">Try the demo dashboard</a>: a fictitious five-person team, nothing to install.
+  · <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/" lang="ko">데모 대시보드 보기</a>
+          </div>
+          
+        </aside>
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Security
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ko/server/security/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Server
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">Demo dashboard</span>
+    <span class="cctrace-demo-card__text">A fictitious five-person team, in your browser, nothing to install.</span>
+    <span class="cctrace-demo-card__cta">Open the demo →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#two-trust-roots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two trust roots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generate-a-key-pair" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate a key pair
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-the-keys-into-clients" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the keys into clients
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-a-signed-server-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build a signed server image
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-a-client-updates-itself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When a client updates itself
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#store-the-private-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Store the private keys
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rotate-the-update-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotate the update key
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rotate-the-policy-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotate the policy key
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#if-a-key-is-lost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        If a key is lost
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sign-a-server-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign a server policy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sign a server policy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-and-sign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write and sign
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-numbers-and-validity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy numbers and validity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Client
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Profiles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sync daemon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/local/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reset and uninstall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC and OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Dashboard
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First admin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/pages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">Demo dashboard</span>
+    <span class="cctrace-demo-card__text">A fictitious five-person team, in your browser, nothing to install.</span>
+    <span class="cctrace-demo-card__cta">Open the demo →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#two-trust-roots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two trust roots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generate-a-key-pair" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate a key pair
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-the-keys-into-clients" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build the keys into clients
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-a-signed-server-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build a signed server image
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-a-client-updates-itself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When a client updates itself
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#store-the-private-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Store the private keys
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rotate-the-update-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotate the update key
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rotate-the-policy-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotate the policy key
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#if-a-key-is-lost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        If a key is lost
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sign-a-server-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign a server policy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sign a server policy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-and-sign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write and sign
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#policy-numbers-and-validity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy numbers and validity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="security-operations">Security operations<a class="headerlink" href="#security-operations" title="Permanent link">&para;</a></h1>
+<p>How to let clients update themselves from your server, how to sign a server policy, and how to keep the keys behind both.</p>
+<p>A server built as in <a href="../install/">Install</a>, with <code>UPDATE_SIGNING=optional</code> and no keys, uses none of this. Its clients link empty public keys: they refuse automatic updates and never apply a server policy. Everything on this page starts from key pairs you generate yourself.</p>
+<h2 id="two-trust-roots">Two trust roots<a class="headerlink" href="#two-trust-roots" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Key pair</th>
+<th>Signs</th>
+<th>Clients accept it for</th>
+<th>Its private key is used by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Update key</td>
+<td>The manifest beside each client binary in <code>/downloads</code></td>
+<td>Updates and server policies</td>
+<td>The image build, as a BuildKit secret</td>
+</tr>
+<tr>
+<td>Policy key</td>
+<td>Server policies</td>
+<td>Server policies only</td>
+<td>The policy signing tool, each time you sign a policy</td>
+</tr>
+</tbody>
+</table>
+<p>A client trusts only the public keys linked into it at build time, never a key a server hands it. It checks an update manifest against its update public keys. It checks a policy against its policy public keys and its update public keys together. Each of the two build values takes a comma-separated list, and a signature made with any listed key passes.</p>
+<p>Use two different key pairs. A policy rewrites every server address a client uses and the certificate authority it trusts; an update replaces the binary itself. With separate pairs, the key you take out to sign policies cannot sign a binary that clients install. The image build refuses a policy public key that repeats an update public key. The update key stays trusted for policies so that a policy can still be signed if the policy private key is lost.</p>
+<h2 id="generate-a-key-pair">Generate a key pair<a class="headerlink" href="#generate-a-key-pair" title="Permanent link">&para;</a></h2>
+<p>Both pairs are raw Ed25519 keys in standard base64:</p>
+<ul>
+<li>Public key: 32 bytes, one line of 44 characters.</li>
+<li>Private key: 64 bytes in a file, the 32-byte seed followed by the 32-byte public key.</li>
+</ul>
+<p>OpenSSL writes keys in DER or PEM containers, which neither the build nor the signing tools accept. The commands below take the raw bytes out of DER files. They need OpenSSL 1.1.1 or later. The LibreSSL that macOS ships answers <code>Algorithm ed25519 not found</code>.</p>
+<p>Keep the keys in a directory outside the repository, so that no build context can pick them up. The examples on this page set <code>KEYS=../cctrace-keys</code>, a directory next to your clone, and run from the repository root:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span><span class="nv">KEYS</span><span class="o">=</span>../cctrace-keys
+<span class="gp">$ </span>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>chmod<span class="w"> </span><span class="m">700</span><span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">"</span>
+<span class="gp">$ </span><span class="nb">umask</span><span class="w"> </span><span class="m">077</span>
+<span class="gp">$ </span>openssl<span class="w"> </span>genpkey<span class="w"> </span>-algorithm<span class="w"> </span>ed25519<span class="w"> </span>-outform<span class="w"> </span>DER<span class="w"> </span>-out<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update.der"</span>
+<span class="gp">$ </span>openssl<span class="w"> </span>pkey<span class="w"> </span>-inform<span class="w"> </span>DER<span class="w"> </span>-in<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update.der"</span><span class="w"> </span>-pubout<span class="w"> </span>-outform<span class="w"> </span>DER<span class="w"> </span>-out<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update.pub.der"</span>
+<span class="gp">$ </span>tail<span class="w"> </span>-c<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update.pub.der"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>openssl<span class="w"> </span>base64<span class="w"> </span>-A<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-public-key.txt"</span>
+<span class="gp">$ </span>cat<span class="w"> </span>&lt;<span class="o">(</span>tail<span class="w"> </span>-c<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update.der"</span><span class="o">)</span><span class="w"> </span>&lt;<span class="o">(</span>tail<span class="w"> </span>-c<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update.pub.der"</span><span class="o">)</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="p">|</span><span class="w"> </span>openssl<span class="w"> </span>base64<span class="w"> </span>-A<span class="w"> </span>&gt;<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-private-key"</span>
+<span class="gp">$ </span>rm<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update.der"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update.pub.der"</span>
+</code></pre></div>
+<p>The last 32 bytes of the DER private key are the seed, and the last 32 bytes of the DER public key are the public key. Run the same commands with <code>policy</code> in place of <code>update</code> to make the policy pair.</p>
+<p>Check the format before you use a key:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>openssl<span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span>-A<span class="w"> </span>&lt;<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-public-key.txt"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-c
+<span class="go">32</span>
+<span class="gp">$ </span>openssl<span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span>-A<span class="w"> </span>&lt;<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-private-key"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-c
+<span class="go">64</span>
+<span class="gp">$ </span>openssl<span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span>-A<span class="w"> </span>&lt;<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-private-key"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-c<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>openssl<span class="w"> </span>base64<span class="w"> </span>-A<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="p">|</span><span class="w"> </span>cmp<span class="w"> </span>-<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-public-key.txt"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"pair ok"</span>
+<span class="go">pair ok</span>
+</code></pre></div>
+<p>The third command confirms that the private key file ends with the public key you build into clients. A bare 32-byte seed or a PEM file does not decode to 64 bytes, and the signing tools refuse it.</p>
+<h2 id="build-the-keys-into-clients">Build the keys into clients<a class="headerlink" href="#build-the-keys-into-clients" title="Permanent link">&para;</a></h2>
+<p>A client links the keys through the Go linker flags <code>-X main.updatePublicKeyBase64=...</code> and <code>-X main.policyPublicKeyBase64=...</code>, which the builds below set for you. Two kinds of build produce clients:</p>
+<table>
+<thead>
+<tr>
+<th>Build</th>
+<th>Where the keys go</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The server image, for the binaries it serves at <code>/downloads</code></td>
+<td><code>--build-arg UPDATE_PUBLIC_KEY=...</code> and <code>--build-arg POLICY_PUBLIC_KEY=...</code>; see <a href="#build-a-signed-server-image">the next section</a></td>
+</tr>
+<tr>
+<td><code>make build-client</code>, <code>build-linux</code>, <code>build-windows</code>, <code>build</code>, <code>install</code></td>
+<td>The Make variables <code>UPDATE_PUBLIC_KEY</code> and <code>POLICY_PUBLIC_KEY</code></td>
+</tr>
+</tbody>
+</table>
+<p>For make, pass the variables on the command line, or set them in the local-defaults.env file that also holds the default endpoints (<a href="../../client/install/">Install the client</a>):</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>make<span class="w"> </span>build-client<span class="w"> </span><span class="nv">UPDATE_PUBLIC_KEY</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-public-key.txt"</span><span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">POLICY_PUBLIC_KEY</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/policy-public-key.txt"</span><span class="k">)</span><span class="s2">"</span>
+</code></pre></div>
+<p><code>make print-update-public-key</code> and <code>make print-policy-public-key</code> print the values make would link. They print empty lines when neither the command line nor that file sets them, and a client built then links empty keys. The image build does not read local-defaults.env.</p>
+<h2 id="build-a-signed-server-image">Build a signed server image<a class="headerlink" href="#build-a-signed-server-image" title="Permanent link">&para;</a></h2>
+<p>The image build signs a manifest for each client binary it serves. With <code>UPDATE_SIGNING=required</code>, the default, it needs three inputs and stops if any is missing: both public keys as build arguments, and the update private key as the BuildKit secret <code>update_signing_key</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>build<span class="w"> </span>-f<span class="w"> </span>deploy/Dockerfile<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--build-arg<span class="w"> </span><span class="nv">VERSION</span><span class="o">=</span>v1.0.0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--build-arg<span class="w"> </span><span class="nv">UPDATE_PUBLIC_KEY</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-public-key.txt"</span><span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--build-arg<span class="w"> </span><span class="nv">POLICY_PUBLIC_KEY</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/policy-public-key.txt"</span><span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--secret<span class="w"> </span><span class="nv">id</span><span class="o">=</span>update_signing_key,src<span class="o">=</span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-private-key"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-t<span class="w"> </span>cctrace/cctraced:latest<span class="w"> </span>.
+</code></pre></div>
+<ul>
+<li><code>VERSION</code> is the version the server reports and the version stamped into every client binary in the image. Clients update only to a higher version of the form v1.2.3 (<a href="#when-a-client-updates-itself">below</a>). Without it both are <code>dev</code>, and no client updates.</li>
+<li><code>--secret</code> needs BuildKit, the builder <code>docker build</code> uses by default since Docker Engine 23.0. The secret is mounted for the signing step only. It does not enter the build context, a layer, or the image. Pass the private key only this way: not as a build argument, and not as a file under the repository, which is the build context the build copies.</li>
+<li>Without the secret, the signing step fails with exit code 1 and no message of its own.</li>
+<li>The signing step checks that the private key belongs to one of the keys in <code>UPDATE_PUBLIC_KEY</code>, and otherwise stops with <code>signing private key is not among the declared update public keys</code>.</li>
+<li><code>POLICY_PUBLIC_KEY</code> is required in this mode too. Each entry must be a 32-byte key in standard base64, and no entry may repeat one in <code>UPDATE_PUBLIC_KEY</code>.</li>
+<li>Endpoint defaults for the served binaries are passed the same way, as <code>DEFAULT_SYNC_ENDPOINT</code> and <code>DEFAULT_OTEL_ENDPOINT</code>.</li>
+</ul>
+<p>Check the result. The image should hold five binaries, a manifest beside each, and no secret:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--entrypoint<span class="w"> </span>sh<span class="w"> </span>cctrace/cctraced:latest<span class="w"> </span>-c<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="s1">'ls -1 /downloads; test ! -e /run/secrets/update_signing_key &amp;&amp; echo "no secret"'</span>
+<span class="go">cctrace-darwin-amd64</span>
+<span class="go">cctrace-darwin-amd64.manifest.json</span>
+<span class="go">cctrace-darwin-arm64</span>
+<span class="go">cctrace-darwin-arm64.manifest.json</span>
+<span class="go">cctrace-linux-amd64</span>
+<span class="go">cctrace-linux-amd64.manifest.json</span>
+<span class="go">cctrace-linux-arm64</span>
+<span class="go">cctrace-linux-arm64.manifest.json</span>
+<span class="go">cctrace-windows-amd64.exe</span>
+<span class="go">cctrace-windows-amd64.exe.manifest.json</span>
+<span class="go">no secret</span>
+</code></pre></div>
+<p>A manifest names its file and carries the file's SHA-256, the version, and two signatures: one over the file name and checksum, and one that adds the version.</p>
+<p><code>/downloads</code> is a directory inside the <code>cctraced</code> image. The compose file mounts no volume over it, so the binaries and manifests change only when you rebuild the image and recreate the container, as in <a href="../operations/#upgrade">Upgrade</a>. Each release is one signed build with a higher <code>VERSION</code>.</p>
+<h2 id="when-a-client-updates-itself">When a client updates itself<a class="headerlink" href="#when-a-client-updates-itself" title="Permanent link">&para;</a></h2>
+<p>A client replaces its own binary only when all of these hold:</p>
+<ul>
+<li>It links an update public key: it was downloaded from a signed image, or built by make with <code>UPDATE_PUBLIC_KEY</code>.</li>
+<li>Its own version has the form v1.2.3, and the server reports a higher one. A suffix after the third number, as in v1.2.3-rc1, is ignored when comparing. A <code>dev</code> build never updates. Neither does a make build in a clone without tags, whose version is a bare commit hash; pass <code>VERSION=v1.2.3</code> to make.</li>
+<li>Its sync endpoint uses HTTPS, or plain HTTP to <code>localhost</code> or to an IP address in a loopback, private (RFC 1918, RFC 4193) or link-local range. Plain HTTP to a host name is refused, because the client cannot tell where the name resolves. A redirect to an address outside these rules is refused as well.</li>
+<li>The manifest verifies with one of its update public keys, both signatures pass, the manifest's version equals the version the server reports, and the downloaded file matches the manifest's checksum.</li>
+<li>The user running the client can write to the directory that holds the binary. The update writes its new file next to the old one, so a binary in a directory only root can write to, such as a root-owned <code>/usr/local/bin</code>, cannot update itself.</li>
+</ul>
+<p>A one-shot <code>cctrace sync</code> checks before it uploads. The sync daemon checks when it starts and about every five minutes while it runs. A failed attempt leaves an <code>update:</code> line in the profile's log (<code>~/.cctrace/sync.log</code> for the default profile), and collection continues on the current binary; after a failure the daemon waits 15 minutes, then 30, then an hour between attempts at the same version, while a <code>cctrace sync</code> you run by hand tries at once. <strong>Admin &gt; Clients</strong> in the dashboard shows which version each client last reported.</p>
+<p>For a private network on routable addresses, which the client cannot recognize, setting <code>CCTRACE_UPDATE_ALLOW_INSECURE_ENDPOINT=1</code> in the client's environment skips the transport rule. The signature and checksum checks still apply.</p>
+<h2 id="store-the-private-keys">Store the private keys<a class="headerlink" href="#store-the-private-keys" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Never keep a private key on the server that serves <code>/downloads</code>. Signing exists so that clients refuse a forged binary even when that server is taken over; a key on the same host hands an attacker the binary and the signature together.</li>
+<li>Keep each private key file at mode 0600, outside the repository and every build context. The image build does not use the policy private key; take it out only to sign a policy.</li>
+<li>Keep an offline copy of each private key, for example on removable media in a locked place, and keep the update and policy copies apart. After making a copy, compare it with the original and check it against the public key:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cmp<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-private-key"</span><span class="w"> </span><span class="s2">"&lt;copy&gt;"</span>
+<span class="gp">$ </span>openssl<span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span>-A<span class="w"> </span>&lt;<span class="w"> </span><span class="s2">"&lt;copy&gt;"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-c<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>openssl<span class="w"> </span>base64<span class="w"> </span>-A<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="p">|</span><span class="w"> </span>cmp<span class="w"> </span>-<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-public-key.txt"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"pair ok"</span>
+</code></pre></div>
+<h2 id="rotate-the-update-key">Rotate the update key<a class="headerlink" href="#rotate-the-update-key" title="Permanent link">&para;</a></h2>
+<p>A client accepts a manifest that any of its update public keys verifies. Rotate through a period in which clients trust both keys:</p>
+<ol>
+<li>Generate the new pair.</li>
+<li>Release with <code>UPDATE_PUBLIC_KEY="&lt;old&gt;,&lt;new&gt;"</code>, still signing with the old private key.</li>
+<li>Wait until every client runs that release (<strong>Admin &gt; Clients</strong>).</li>
+<li>Release signed with the new private key. Keep both keys in the list.</li>
+<li>In a later release, list only the new key.</li>
+</ol>
+<p>Each step is a release, so <code>VERSION</code> goes up each time. A client that has not updated to the release of step 2 by the time of step 4 trusts only the old key. It refuses each new release with <code>update manifest signature verification failed</code>, keeps running the binary it has, and needs one manual reinstall.</p>
+<h2 id="rotate-the-policy-key">Rotate the policy key<a class="headerlink" href="#rotate-the-policy-key" title="Permanent link">&para;</a></h2>
+<p>The same overlap, through <code>POLICY_PUBLIC_KEY</code>:</p>
+<ol>
+<li>Generate the new policy pair.</li>
+<li>Release with <code>POLICY_PUBLIC_KEY="&lt;old&gt;,&lt;new&gt;"</code>.</li>
+<li>Once every client runs that release, sign new policies with the new private key.</li>
+<li>In a later release, list only the new key.</li>
+</ol>
+<p>A client that has not reached the release in step 2 refuses a policy signed with the new key: <code>untrusted policy signature</code>.</p>
+<h2 id="if-a-key-is-lost">If a key is lost<a class="headerlink" href="#if-a-key-is-lost" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Update private key, with no copy.</strong> Nothing clients trust can sign a new release. Generate a new pair, release with the new key only, and reinstall every client by hand once, downloading the binary from <code>/downloads</code> as in <a href="../../client/install/">Install the client</a>. Automatic updates work again from there.</li>
+<li><strong>Policy private key.</strong> Clients also trust the update key for policies, so sign the next policy with the update private key. Release a new policy public key in place of the lost one; once clients run it, sign policies with the new policy key.</li>
+<li><strong>A private key that may have been copied</strong> counts as lost. Clients keep accepting whatever it signs until they run a release that no longer lists its public key.</li>
+</ul>
+<h2 id="sign-a-server-policy">Sign a server policy<a class="headerlink" href="#sign-a-server-policy" title="Permanent link">&para;</a></h2>
+<p>A policy moves profiles to new addresses on the same server host: from plaintext to HTTPS, to other ports, and to a new certificate authority. It cannot move a client to another host. The server hands the signed file to the clients the policy names, and each client checks the signature, the validity window, and the policy number itself. How the server serves the file is in <a href="../operations/#server-policy">Operations</a>; what a client changes when it applies a policy is in <a href="../../client/sync/#server-policy">Sync daemon</a>.</p>
+<h3 id="fields">Fields<a class="headerlink" href="#fields" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>schema</code></td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>sequence</code></td>
+<td>The policy number, greater than 0. See <a href="#policy-numbers-and-validity">Policy numbers and validity</a>.</td>
+</tr>
+<tr>
+<td><code>server_host</code></td>
+<td>The host of every address in the policy: lowercase, without scheme or port</td>
+</tr>
+<tr>
+<td><code>not_before</code>, <code>expires_at</code></td>
+<td>The validity window, in RFC 3339, for example <code>2026-11-02T00:00:00Z</code></td>
+</tr>
+<tr>
+<td><code>targets</code></td>
+<td>An array of <code>{"installation_id": ..., "profile": ...}</code>. <code>profile</code> is empty for the default profile.</td>
+</tr>
+<tr>
+<td><code>all_targets</code></td>
+<td><code>true</code> names every installation and profile that asks this server; <code>targets</code> must then be empty. Omit it otherwise.</td>
+</tr>
+<tr>
+<td><code>from</code></td>
+<td>An array of the address sets the policy moves from, each <code>{"sync": ..., "otel": ..., "protocol": ...}</code></td>
+</tr>
+<tr>
+<td><code>to</code></td>
+<td>The address set the policy moves to</td>
+</tr>
+<tr>
+<td><code>ca_pem</code></td>
+<td>One or more CA certificates in PEM, as one string</td>
+</tr>
+<tr>
+<td><code>ca_sha256</code></td>
+<td>The SHA-256 of the <code>ca_pem</code> bytes, in lowercase hex</td>
+</tr>
+</tbody>
+</table>
+<p>The signing tool and every client check:</p>
+<ul>
+<li>Every address uses <code>server_host</code> and an explicit port. The path is empty or <code>/</code>. User info, a query, or a fragment is refused.</li>
+<li>Each <code>protocol</code> is grpc or http/protobuf. In <code>to</code>, both addresses start with <code>https://</code> and the protocol is http/protobuf.</li>
+<li>Every certificate in <code>ca_pem</code> is a CA certificate.</li>
+<li>No unknown field, and no more than 256 KiB once signed.</li>
+</ul>
+<p>Where the values come from:</p>
+<ul>
+<li><code>installation_id</code> and <code>profile</code>: <code>cctrace config policy status</code> on the client prints both. A client that links a key also reports them, with its current addresses, after each policy check of a logged-in profile. The reports are kept in the <code>client_policy_reports</code> table and have no dashboard page or API (<a href="../../reference/privacy/">Privacy</a>).</li>
+<li><code>from</code>: a set matches a profile only when its three values equal, as strings, what <code>cctrace config get server.sync_endpoint</code>, <code>cctrace config get server.endpoint</code> and <code>cctrace config get server.protocol</code> print on the client.</li>
+<li><code>to</code>: before it changes anything, the client asks <code>/api/health</code> and <code>/api/version</code> at the new <code>sync</code> address, and posts empty requests to <code>/v1/logs</code> and <code>/v1/metrics</code> at the new <code>otel</code> address with the profile's upload token, trusting the system roots and <code>ca_pem</code>. Any answer other than 200 stops the policy. So the new <code>otel</code> address is an OTLP/HTTP one, and the TLS listeners must be up before you publish. With the <a href="../install/#optional-https-with-caddy">HTTPS overlay</a>, the new <code>sync</code> address is on port 8443 and the new <code>otel</code> address on 5318.</li>
+<li><code>ca_pem</code>: the CA that issued the server's certificate, for example the CA file exported in <a href="../install/#certificates">Certificates</a>.</li>
+</ul>
+<h3 id="write-and-sign">Write and sign<a class="headerlink" href="#write-and-sign" title="Permanent link">&para;</a></h3>
+<p>jq builds the policy file and escapes the line breaks of the PEM. This example moves the default profile of one installation from the plaintext ports to the HTTPS overlay, on a server named cctrace.example.com whose internal CA was exported as cctrace-ca.crt:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>jq<span class="w"> </span>-n<span class="w"> </span>--rawfile<span class="w"> </span>ca<span class="w"> </span>cctrace-ca.crt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--arg<span class="w"> </span>sum<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>openssl<span class="w"> </span>dgst<span class="w"> </span>-sha256<span class="w"> </span>-r<span class="w"> </span>cctrace-ca.crt<span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d<span class="s1">' '</span><span class="w"> </span>-f1<span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="err">'</span><span class="o">{</span>
+<span class="go">  schema: 1,</span>
+<span class="go">  sequence: 1,</span>
+<span class="go">  server_host: "cctrace.example.com",</span>
+<span class="go">  not_before: "2026-11-02T00:00:00Z",</span>
+<span class="go">  expires_at: "2026-11-16T00:00:00Z",</span>
+<span class="go">  targets: [{installation_id: "&lt;installation ID&gt;", profile: ""}],</span>
+<span class="go">  from: [{sync: "http://cctrace.example.com:8080", otel: "http://cctrace.example.com:4317", protocol: "grpc"}],</span>
+<span class="go">  to: {sync: "https://cctrace.example.com:8443", otel: "https://cctrace.example.com:5318", protocol: "http/protobuf"},</span>
+<span class="go">  ca_pem: $ca,</span>
+<span class="go">  ca_sha256: $sum</span>
+<span class="go">}' &gt; policy.json</span>
+</code></pre></div>
+<p>Sign it with the policy private key. <code>-public-key</code> is the list your clients trust for policies:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>go<span class="w"> </span>run<span class="w"> </span>./scripts/sign-server-policy.go<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-private-key<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/policy-private-key"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-public-key<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/policy-public-key.txt"</span><span class="k">)</span><span class="s2">,</span><span class="k">$(</span>cat<span class="w"> </span><span class="s2">"</span><span class="nv">$KEYS</span><span class="s2">/update-public-key.txt"</span><span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-out<span class="w"> </span>server-policy.json<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>policy.json
+</code></pre></div>
+<ul>
+<li>The tool runs the same field checks a client runs and stops at the first problem, for example <code>sign policy: destination requires HTTPS and http/protobuf</code>.</li>
+<li>It checks that the signing key is in <code>-public-key</code>, not that your clients were built with that list.</li>
+<li>The signed file holds the policy and its signature, and no secret. The tool writes it with mode 0600; make it readable by the server, for example with <code>chmod 644</code>, before you put it in place.</li>
+</ul>
+<p>Copy the signed file to the server and put it in place in one step, as described in <a href="../operations/#server-policy">Operations</a>: copy it into the mounted directory under a temporary name, then rename it over the old one.</p>
+<h3 id="policy-numbers-and-validity">Policy numbers and validity<a class="headerlink" href="#policy-numbers-and-validity" title="Permanent link">&para;</a></h3>
+<p>A client keeps, per profile, the number of the last policy it applied, and compares each policy it receives with it:</p>
+<table>
+<thead>
+<tr>
+<th>Received number</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lower</td>
+<td>Refused: <code>policy sequence &lt;n&gt; is older than applied sequence &lt;m&gt;</code></td>
+</tr>
+<tr>
+<td>Equal, with the same content, and the profile still on <code>to</code></td>
+<td>Already applied. Nothing happens.</td>
+</tr>
+<tr>
+<td>Equal, with different content, or the profile no longer on <code>to</code></td>
+<td>Refused: <code>applied policy changed; require a higher policy sequence or explicit manual recovery</code></td>
+</tr>
+<tr>
+<td>Higher</td>
+<td>Checked against <code>targets</code> and <code>from</code>, then applied</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>The server does not check dates. A client refuses a policy before <code>not_before</code>, and from <code>expires_at</code> on, with <code>policy outside validity interval</code>. It records that as a failed check and repeats it at every check, about every five minutes for a running daemon, as long as the file stays in place.</li>
+<li>To extend a policy or change anything in it, sign it again with a higher number. New dates under the same number are new content, which clients that applied the policy refuse.</li>
+<li>A higher number also reaches profiles that applied an earlier policy, when <code>targets</code> names them or <code>all_targets</code> is set. Their current addresses are the earlier policy's <code>to</code>, so list that set in <code>from</code> next to the plaintext one, or they fail with <code>current endpoints are not authorized by policy</code>. They then apply the new policy: their addresses stay, and they write the new <code>ca_pem</code> to a new CA file.</li>
+<li>With <code>all_targets</code>, every profile that asks this server receives the policy, and each one whose current set is not in <code>from</code> fails with <code>current endpoints are not authorized by policy</code> at every check.</li>
+<li>To stop handing out a policy, clear <code>CCTRACE_SERVER_POLICY_FILE</code> and recreate the container; the server then answers 204. Deleting the file instead makes it answer 503. Stopping does not move anyone back: a profile that applied a policy keeps its new addresses.</li>
+</ul>
+<h2 id="tls">TLS<a class="headerlink" href="#tls" title="Permanent link">&para;</a></h2>
+<p>A policy can only move clients to HTTPS that is already running. Set it up first: <a href="../install/#optional-https-with-caddy">Optional: HTTPS with Caddy</a> and <a href="../install/#certificates">Certificates</a>.</p>
+<ul>
+<li>The internal CA lives in the <code>caddy_data</code> volume. Removing the volume creates a new CA, and every client that trusts only the old one stops connecting. That includes clients a policy moved, which trust the <code>ca_pem</code> of that policy.</li>
+<li>The overlay's first step binds the plaintext ports to loopback. Leave those bind settings out and the plaintext ports stay reachable beside the TLS ones. A move by policy needs that: a client on the plaintext addresses fetches the policy from them, and keeps sending there until it applies it. The cost is that everything on the plaintext ports crosses the network unencrypted: upload tokens, dashboard passwords and session tokens, and the conversation content that sync uploads. Bind them to loopback once every client has moved.</li>
+<li>A client that a policy moved remembers the plaintext sync address from that policy's <code>from</code>. When its HTTPS address cannot be reached, or its certificate is not trusted, it asks the plaintext address for a policy, without credentials. Closing the plaintext ports removes that way back for a client that missed a CA change.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../operations/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Operations">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Operations
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../client/install/" class="md-footer__link md-footer__link--next" aria-label="Next: Install">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Install
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

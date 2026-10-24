@@ -1,0 +1,92 @@
+[
+  {
+    "key": "GET /api/project-rules?agent=claude\u0026limit=200\u0026status=active",
+    "status": 200,
+    "body": "f5068589d2c3ff89b36abc57"
+  },
+  {
+    "key": "GET /api/project-rules?agent=claude\u0026limit=200\u0026status=all",
+    "status": 200,
+    "body": "f5068589d2c3ff89b36abc57"
+  },
+  {
+    "key": "GET /api/project-rules?agent=claude\u0026limit=200\u0026status=archived",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  },
+  {
+    "key": "GET /api/project-rules?agent=claude\u0026limit=200\u0026status=deleted",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  },
+  {
+    "key": "GET /api/project-rules?agent=claude\u0026limit=200\u0026status=missing",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  },
+  {
+    "key": "GET /api/project-rules?agent=claude\u0026limit=200\u0026status=unreadable",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  },
+  {
+    "key": "GET /api/project-rules?agent=codex\u0026limit=200\u0026status=active",
+    "status": 200,
+    "body": "289210f0dfc1d832f4c2267b"
+  },
+  {
+    "key": "GET /api/project-rules?agent=codex\u0026limit=200\u0026status=all",
+    "status": 200,
+    "body": "a543ce738ff753c92672bb9d"
+  },
+  {
+    "key": "GET /api/project-rules?agent=codex\u0026limit=200\u0026status=archived",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  },
+  {
+    "key": "GET /api/project-rules?agent=codex\u0026limit=200\u0026status=deleted",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  },
+  {
+    "key": "GET /api/project-rules?agent=codex\u0026limit=200\u0026status=missing",
+    "status": 200,
+    "body": "f3874c70fac4cf0b14008125"
+  },
+  {
+    "key": "GET /api/project-rules?agent=codex\u0026limit=200\u0026status=unreadable",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  },
+  {
+    "key": "GET /api/project-rules?limit=200\u0026status=active",
+    "status": 200,
+    "body": "94c8e8394416991d0cb04ebd"
+  },
+  {
+    "key": "GET /api/project-rules?limit=200\u0026status=all",
+    "status": 200,
+    "body": "7fcb4b931757d9ac8286aafd"
+  },
+  {
+    "key": "GET /api/project-rules?limit=200\u0026status=archived",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  },
+  {
+    "key": "GET /api/project-rules?limit=200\u0026status=deleted",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  },
+  {
+    "key": "GET /api/project-rules?limit=200\u0026status=missing",
+    "status": 200,
+    "body": "f3874c70fac4cf0b14008125"
+  },
+  {
+    "key": "GET /api/project-rules?limit=200\u0026status=unreadable",
+    "status": 200,
+    "body": "ad6a90d08b4184f7018a5a73"
+  }
+]

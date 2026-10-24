@@ -1,0 +1,42 @@
+[
+  {
+    "key": "GET /api/project-rules/1?",
+    "status": 200,
+    "body": "206d9fbf4ad40c41c2a11b26"
+  },
+  {
+    "key": "GET /api/project-rules/2?",
+    "status": 200,
+    "body": "837608f700873f97635edcd9"
+  },
+  {
+    "key": "GET /api/project-rules/3?",
+    "status": 200,
+    "body": "e2b40976d79f45f449258d7b"
+  },
+  {
+    "key": "GET /api/project-rules/4?",
+    "status": 200,
+    "body": "3e0086a9b5caf17c77180309"
+  },
+  {
+    "key": "GET /api/project-rules/5?",
+    "status": 200,
+    "body": "7a94008ce288cee8b3678520"
+  },
+  {
+    "key": "GET /api/project-rules/6?",
+    "status": 200,
+    "body": "5145c321afa684facb95515c"
+  },
+  {
+    "key": "GET /api/project-rules/7?",
+    "status": 200,
+    "body": "c7a7ab72b8a64062d19b3e8e"
+  },
+  {
+    "key": "GET /api/project-rules/8?",
+    "status": 200,
+    "body": "aca7b22b7feacede3dd47c2f"
+  }
+]

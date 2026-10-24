@@ -1,0 +1,2312 @@
+[
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "68172ddaead0c77b0d3f5ecd"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "8393e42c5d9c8f0435b455bd"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "d0a243a96d5e6ed7ae52192a"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "68172ddaead0c77b0d3f5ecd"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "8393e42c5d9c8f0435b455bd"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-16840m\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "d0a243a96d5e6ed7ae52192a"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "b2e5bacb8f83f803baee76cb"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "d209a8d882a3102a866e6028"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "ac10d8c284da12d585268f66"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "b2e5bacb8f83f803baee76cb"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "d209a8d882a3102a866e6028"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-26920m\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "ac10d8c284da12d585268f66"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "5f6e0c8cb52e9d94b8647c1e"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "a0f9b79dcbee3786e8e56bb6"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "2a0b8c20602c1a0762e070a0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "5f6e0c8cb52e9d94b8647c1e"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "a0f9b79dcbee3786e8e56bb6"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-37000m\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "2a0b8c20602c1a0762e070a0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "51d6a983ec11bb108b6c9961"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "79b2e2f59ce29f8453bcd390"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "fb2f83bc917a01c177561f0c"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "51d6a983ec11bb108b6c9961"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "79b2e2f59ce29f8453bcd390"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-47080m\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "fb2f83bc917a01c177561f0c"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "ac53e1eab047fc8f8a4e2028"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "ac53e1eab047fc8f8a4e2028"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "ac53e1eab047fc8f8a4e2028"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-57160m\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "ac53e1eab047fc8f8a4e2028"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "ee46d5af09020b4480ae75da"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "ee46d5af09020b4480ae75da"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "ee46d5af09020b4480ae75da"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=claude\u0026assembled=1\u0026from=@-6760m\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "ee46d5af09020b4480ae75da"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "dac20158bd81bf9d15b892e9"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "dac20158bd81bf9d15b892e9"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "dac20158bd81bf9d15b892e9"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-16840m\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "dac20158bd81bf9d15b892e9"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "863ea7a499086fe75da1bb1c"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "863ea7a499086fe75da1bb1c"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "863ea7a499086fe75da1bb1c"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-26920m\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "863ea7a499086fe75da1bb1c"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "4dff2131728015d3dca04d44"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "4dff2131728015d3dca04d44"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "4dff2131728015d3dca04d44"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-37000m\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "4dff2131728015d3dca04d44"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "7c00179a16983bb866862cb5"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "7c00179a16983bb866862cb5"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "7c00179a16983bb866862cb5"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-47080m\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "7c00179a16983bb866862cb5"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "993a90407fdf214dd54910e5"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "993a90407fdf214dd54910e5"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "993a90407fdf214dd54910e5"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-57160m\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "993a90407fdf214dd54910e5"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "504437088a4e4da242205a32"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "504437088a4e4da242205a32"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "504437088a4e4da242205a32"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=codex\u0026assembled=1\u0026from=@-6760m\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "504437088a4e4da242205a32"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-16840m\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-26920m\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-37000m\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-47080m\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-57160m\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?agent=other\u0026assembled=1\u0026from=@-6760m\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "b99da1b4aca263fef12fcc85"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "8393e42c5d9c8f0435b455bd"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "1f3beed3da8c6be47bff2a2b"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "c677b05c81ccd5394f7f2b98"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026source=all\u0026to=@-6760m",
+    "status": 200,
+    "body": "b99da1b4aca263fef12fcc85"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026source=headless\u0026to=@-6760m",
+    "status": 200,
+    "body": "8393e42c5d9c8f0435b455bd"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026source=interactive\u0026to=@-6760m",
+    "status": 200,
+    "body": "1f3beed3da8c6be47bff2a2b"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026source=interactive\u0026to=@-6760m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "1f3beed3da8c6be47bff2a2b"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026source=interactive\u0026to=@-6760m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "c957f114f3ff76544044ef1f"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026source=interactive\u0026to=@-6760m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "5d97d69ac48605c30d7f21a2"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026source=interactive\u0026to=@-6760m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "a788181d7a4c1a76a6c92e6e"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-16840m\u0026source=interactive\u0026to=@-6760m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "96b7f1f9298c850d9151265e"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "639aa9f707f4182874efe12b"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "d209a8d882a3102a866e6028"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "8ea2160ef07cfc1e8c938346"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "f47e822c419d262a5b7ffab7"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026source=all\u0026to=@-16840m",
+    "status": 200,
+    "body": "639aa9f707f4182874efe12b"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026source=headless\u0026to=@-16840m",
+    "status": 200,
+    "body": "d209a8d882a3102a866e6028"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026source=interactive\u0026to=@-16840m",
+    "status": 200,
+    "body": "8ea2160ef07cfc1e8c938346"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026source=interactive\u0026to=@-16840m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "8ea2160ef07cfc1e8c938346"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026source=interactive\u0026to=@-16840m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "a2386a5770bfcb2d2783c902"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026source=interactive\u0026to=@-16840m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "02ad5881815544618a2f98f1"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026source=interactive\u0026to=@-16840m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "bd4842542ec130540069ba9e"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-26920m\u0026source=interactive\u0026to=@-16840m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "6104900f589dc9b7156e15c3"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "2902012623a79f7b540a0e53"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "a0f9b79dcbee3786e8e56bb6"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fcf137cc60fe68e105f78dbd"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fa72e68ffb10d725b6bd82b0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026source=all\u0026to=@-26920m",
+    "status": 200,
+    "body": "2902012623a79f7b540a0e53"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026source=headless\u0026to=@-26920m",
+    "status": 200,
+    "body": "a0f9b79dcbee3786e8e56bb6"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026source=interactive\u0026to=@-26920m",
+    "status": 200,
+    "body": "fcf137cc60fe68e105f78dbd"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026source=interactive\u0026to=@-26920m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "fcf137cc60fe68e105f78dbd"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026source=interactive\u0026to=@-26920m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "05a364c0162182209a1b1875"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026source=interactive\u0026to=@-26920m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "2117fab95b4509fd730801f0"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026source=interactive\u0026to=@-26920m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "bd3f524f7feb0e9c20ae8031"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-37000m\u0026source=interactive\u0026to=@-26920m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "58644fc4b4a8bc6bb35530e5"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "7a181d01c693a0b11bcd2ac4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "79b2e2f59ce29f8453bcd390"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "7729afc8552bc383667c2711"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "f7df4f0907bed086f43b87b4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026source=all\u0026to=@-37000m",
+    "status": 200,
+    "body": "7a181d01c693a0b11bcd2ac4"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026source=headless\u0026to=@-37000m",
+    "status": 200,
+    "body": "79b2e2f59ce29f8453bcd390"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026source=interactive\u0026to=@-37000m",
+    "status": 200,
+    "body": "7729afc8552bc383667c2711"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026source=interactive\u0026to=@-37000m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "7729afc8552bc383667c2711"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026source=interactive\u0026to=@-37000m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "4d2e11de083d670c5e9d0519"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026source=interactive\u0026to=@-37000m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "c5a14059b748decc8fb7a44a"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026source=interactive\u0026to=@-37000m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "f0857e9c36d5ab0b33fb42eb"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-47080m\u0026source=interactive\u0026to=@-37000m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "481dd2dcb19e7b73952cf906"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c895471be33790dd72e02b01"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c895471be33790dd72e02b01"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026source=all\u0026to=@-47080m",
+    "status": 200,
+    "body": "c895471be33790dd72e02b01"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026source=headless\u0026to=@-47080m",
+    "status": 200,
+    "body": "c49d37a8ed546e0e4e0a4432"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026source=interactive\u0026to=@-47080m",
+    "status": 200,
+    "body": "c895471be33790dd72e02b01"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026source=interactive\u0026to=@-47080m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "c895471be33790dd72e02b01"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026source=interactive\u0026to=@-47080m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "5a48bf3ece2a022e4b6f69d2"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026source=interactive\u0026to=@-47080m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "9d80bf0ecb558e8727b8305e"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026source=interactive\u0026to=@-47080m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "b3b8c7e24051088b853f9250"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-57160m\u0026source=interactive\u0026to=@-47080m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "2d8fad7e65dda3967a8d96b9"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "4760ef67067f9b9b8728423c"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=ivy.nonrealton@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "4760ef67067f9b9b8728423c"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=marcus.fablewright@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=priya.notarealsen@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=tomas.ficticio@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026login_email=yuki.testonaga@example.com\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026source=all\u0026to=@3320m",
+    "status": 200,
+    "body": "4760ef67067f9b9b8728423c"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026source=headless\u0026to=@3320m",
+    "status": 200,
+    "body": "97a82707d647a6ee31bbc892"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026source=interactive\u0026to=@3320m",
+    "status": 200,
+    "body": "4760ef67067f9b9b8728423c"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026source=interactive\u0026to=@3320m\u0026user_id=ivynonrealton",
+    "status": 200,
+    "body": "4760ef67067f9b9b8728423c"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026source=interactive\u0026to=@3320m\u0026user_id=marcusfablewright",
+    "status": 200,
+    "body": "483d519028f98536bd390194"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026source=interactive\u0026to=@3320m\u0026user_id=priyanotarealsen",
+    "status": 200,
+    "body": "ecb59665adf9a82fc8c83d2f"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026source=interactive\u0026to=@3320m\u0026user_id=tomasficticio",
+    "status": 200,
+    "body": "6656d83b8fda89c5142c708b"
+  },
+  {
+    "key": "GET /api/session-calendar?assembled=1\u0026from=@-6760m\u0026source=interactive\u0026to=@3320m\u0026user_id=yukitestonaga",
+    "status": 200,
+    "body": "62e4af2649a0f9489c8861d1"
+  }
+]

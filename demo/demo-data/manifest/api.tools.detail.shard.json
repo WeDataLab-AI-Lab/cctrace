@@ -1,0 +1,542 @@
+[
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "8fa30060a37321e300017b39"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "e9e6b02b82839e4367458081"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "0445c5f75afa2bf58ae5d646"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026tool_name=Read",
+    "status": 200,
+    "body": "a83966da0e1420091807627b"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "5234e70f85678aefcc667d06"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "088f1b7971818a562fdf0609"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "4822e735498602333a17a1b6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026tool_name=shell",
+    "status": 200,
+    "body": "1ad334ee58309113cdf1f84f"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "e14486fed18ecb8d3d83837d"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "4e0cccef9c5470f1d484cff0"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "f68fd8b593a7b3ee7ba74df2"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "fd13b6390eb93f57f29d0af9"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026tool_name=Read",
+    "status": 200,
+    "body": "696fdee0eebdefccbc7e2217"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "3d391c4060efff85a21f3488"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "7f0d87ee64fb445c57c47d2f"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "7347f72ea6366ef30044a7c9"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026tool_name=shell",
+    "status": 200,
+    "body": "1cc630c54e6162bf169f489f"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "ce03d48fdeceae926c7deea0"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "ecc4f6e1c7faddf397fe6a9f"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "8e40ded2cf11acd3cccdd416"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "80ea7220c8f9812324ce8771"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026tool_name=Read",
+    "status": 200,
+    "body": "79c01b48171d2c5cf463eb2b"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "7d08d7d2c5390cae56580e61"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "4e949be9063559a5f4ba3c2c"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "c2f5eb95448fa77f10a515cd"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026tool_name=shell",
+    "status": 200,
+    "body": "228a52511314c08b2dc445c0"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "07be719be679377526c12416"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "8d658b5808f79c2cad1f7dd7"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "30781e9aa2c5e0ba08d4d746"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "e70b644bbe351fbdc5cabe5d"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026tool_name=Read",
+    "status": 200,
+    "body": "a90ae039c7a3713cd807b5aa"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "322e20124f45f1db45ef6268"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "6f2beea4a38269bc5526b31f"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "8151055c32e66223700121f4"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026tool_name=shell",
+    "status": 200,
+    "body": "2b993afdb14ce97d7b125a8d"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "435868cd080059b66c5db532"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "ae54be139fdaefda63b023d0"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "45dad67ce71610af512a5afa"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "535c3426aff6bf7d6d0ffb08"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026tool_name=Read",
+    "status": 200,
+    "body": "cc607e3bb9f15c0229f34b45"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "5c55df5e0c7a1baefb7f4f0c"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "b60f3eb5723f3fd7e35e83c8"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "dbe006dcdfd9588e045b5432"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026tool_name=shell",
+    "status": 200,
+    "body": "abafbd908c6a2b00fee0cb41"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "c245fd7d4ee69eeec629204f"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026since=@-43200m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "e05de5fa1d1bafb66654b162"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026since=@-43200m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "39c929623cca86f414adc600"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026since=@-43200m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "95432e03b111e4dca1c885a7"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026since=@-43200m\u0026tool_name=Read",
+    "status": 200,
+    "body": "55d1f0ba729cc001894d854b"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026since=@-43200m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "dec616ad0a0a9e8c958ae8b4"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026since=@-43200m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "6babae237a28da6c7cc8b3c3"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026since=@-43200m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "a7b01aae5a2005ef8fbcf81d"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026since=@-43200m\u0026tool_name=shell",
+    "status": 200,
+    "body": "c89b2877e1a3d39be6b342d7"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=day\u0026since=@-43200m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "3430cf8ee3cb004cb12d8833"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=ivy.nonrealton@example.com\u0026since=@-1440m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "3e6557db796a152deb1e0955"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=ivy.nonrealton@example.com\u0026since=@-1440m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "a063d8716bbd1e5e8f495914"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=ivy.nonrealton@example.com\u0026since=@-1440m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "7152b44da96be7a6d2c8e51b"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=ivy.nonrealton@example.com\u0026since=@-1440m\u0026tool_name=Read",
+    "status": 200,
+    "body": "fd0893b007f5d692512191e8"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=ivy.nonrealton@example.com\u0026since=@-1440m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "412c5f5260643aabe98cf1f7"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=ivy.nonrealton@example.com\u0026since=@-1440m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "8402b0aaae4e5ce0b49ed10a"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=ivy.nonrealton@example.com\u0026since=@-1440m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "e468f20a30b62a8830c551cf"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=ivy.nonrealton@example.com\u0026since=@-1440m\u0026tool_name=shell",
+    "status": 200,
+    "body": "1e0125209d0c0c6260aaa1ed"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=ivy.nonrealton@example.com\u0026since=@-1440m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "78a695d659c80ee27e1cc73a"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=marcus.fablewright@example.com\u0026since=@-1440m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "1f8ebe464c10260461ec7aa6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=marcus.fablewright@example.com\u0026since=@-1440m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "472661d119d86fe344020f96"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=marcus.fablewright@example.com\u0026since=@-1440m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "d1c599375af49b3eb664d6da"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=marcus.fablewright@example.com\u0026since=@-1440m\u0026tool_name=Read",
+    "status": 200,
+    "body": "b0445d98f8b171b25c8d373d"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=marcus.fablewright@example.com\u0026since=@-1440m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "ac5399dca738c6698d592a2c"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=marcus.fablewright@example.com\u0026since=@-1440m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "fcd7d1320352a8ef7a7933e6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=marcus.fablewright@example.com\u0026since=@-1440m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "cb447b87e9b681f5fa02005b"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=marcus.fablewright@example.com\u0026since=@-1440m\u0026tool_name=shell",
+    "status": 200,
+    "body": "3d597a3da925ff23400cc685"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=marcus.fablewright@example.com\u0026since=@-1440m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "fcd7d1320352a8ef7a7933e6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=priya.notarealsen@example.com\u0026since=@-1440m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "959c43bd26494d0cdb026f66"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=priya.notarealsen@example.com\u0026since=@-1440m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "1a55a74f0f1765b5b40bea96"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=priya.notarealsen@example.com\u0026since=@-1440m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "201bb3d0e9077c78507eccae"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=priya.notarealsen@example.com\u0026since=@-1440m\u0026tool_name=Read",
+    "status": 200,
+    "body": "647aa3ebddad1dc48d38c067"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=priya.notarealsen@example.com\u0026since=@-1440m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "55c1829b8b5611ca268965ec"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=priya.notarealsen@example.com\u0026since=@-1440m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "21238c067b0747e153f66885"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=priya.notarealsen@example.com\u0026since=@-1440m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "7d3e25d0eae0bf3c4c2e5643"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=priya.notarealsen@example.com\u0026since=@-1440m\u0026tool_name=shell",
+    "status": 200,
+    "body": "13121c891b95f079b102d94c"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=priya.notarealsen@example.com\u0026since=@-1440m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "fdf0a217319a6c312f1cf26e"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=tomas.ficticio@example.com\u0026since=@-1440m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "2d7252fcfb24bddf6a754a51"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=tomas.ficticio@example.com\u0026since=@-1440m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "cf52f6ca1d3bbcbe9b128790"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=tomas.ficticio@example.com\u0026since=@-1440m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "7fa0b6a98fd8c4fc41217873"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=tomas.ficticio@example.com\u0026since=@-1440m\u0026tool_name=Read",
+    "status": 200,
+    "body": "5fe29b50b9640df996baf27d"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=tomas.ficticio@example.com\u0026since=@-1440m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "edd2fecd59764f7ec4b3a7b9"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=tomas.ficticio@example.com\u0026since=@-1440m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "fcd7d1320352a8ef7a7933e6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=tomas.ficticio@example.com\u0026since=@-1440m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "fcd7d1320352a8ef7a7933e6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=tomas.ficticio@example.com\u0026since=@-1440m\u0026tool_name=shell",
+    "status": 200,
+    "body": "fcd7d1320352a8ef7a7933e6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=tomas.ficticio@example.com\u0026since=@-1440m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "fcd7d1320352a8ef7a7933e6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=yuki.testonaga@example.com\u0026since=@-1440m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "6d1741c80f92f5ad7d2f93fe"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=yuki.testonaga@example.com\u0026since=@-1440m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "bd3002644cc40cc7c0f681ff"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=yuki.testonaga@example.com\u0026since=@-1440m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "1fc60781d188f66f6b0c4a7b"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=yuki.testonaga@example.com\u0026since=@-1440m\u0026tool_name=Read",
+    "status": 200,
+    "body": "2a841083889a2c39df223513"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=yuki.testonaga@example.com\u0026since=@-1440m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "8de554253ef95a9ff03671a6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=yuki.testonaga@example.com\u0026since=@-1440m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "fcd7d1320352a8ef7a7933e6"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=yuki.testonaga@example.com\u0026since=@-1440m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "08eb8b97269e8650ebe0ba74"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=yuki.testonaga@example.com\u0026since=@-1440m\u0026tool_name=shell",
+    "status": 200,
+    "body": "c04fc89861df07079292c0a5"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026login_email=yuki.testonaga@example.com\u0026since=@-1440m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "ddf34d822dad3806c3dd7843"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026since=@-1440m\u0026tool_name=Bash",
+    "status": 200,
+    "body": "42ceb0061426e8d7143e292e"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026since=@-1440m\u0026tool_name=Edit",
+    "status": 200,
+    "body": "c4ad349c4e446ec71a88b69d"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026since=@-1440m\u0026tool_name=Grep",
+    "status": 200,
+    "body": "8b2835ff2df5d79054bdb67d"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026since=@-1440m\u0026tool_name=Read",
+    "status": 200,
+    "body": "8d8645e09c8d1aa5a5c185e7"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026since=@-1440m\u0026tool_name=Skill",
+    "status": 200,
+    "body": "f183f794c8338c316f5a465d"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026since=@-1440m\u0026tool_name=TodoWrite",
+    "status": 200,
+    "body": "3e331a40f589416abbb87479"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026since=@-1440m\u0026tool_name=apply_patch",
+    "status": 200,
+    "body": "b624610c206bd12677b3baa3"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026since=@-1440m\u0026tool_name=shell",
+    "status": 200,
+    "body": "f368a7aef39faca40808cc46"
+  },
+  {
+    "key": "GET /api/tools/detail?granularity=minute\u0026limit=50\u0026since=@-1440m\u0026tool_name=update_plan",
+    "status": 200,
+    "body": "9110fab45ed574edc2f3f5fb"
+  }
+]

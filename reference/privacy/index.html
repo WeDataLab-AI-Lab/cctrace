@@ -1,0 +1,1932 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/reference/privacy/">
+      
+      
+        <link rel="prev" href="../ports/">
+      
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../ko/reference/privacy/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Privacy - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#privacy" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+            
+  <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/">Try the demo dashboard</a>: a fictitious five-person team, nothing to install.
+  · <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/" lang="ko">데모 대시보드 보기</a>
+          </div>
+          
+        </aside>
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Privacy
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ko/reference/privacy/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Server
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Client
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Profiles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sync daemon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/local/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../client/uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reset and uninstall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC and OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Dashboard
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First admin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/pages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">Demo dashboard</span>
+    <span class="cctrace-demo-card__text">A fictitious five-person team, in your browser, nothing to install.</span>
+    <span class="cctrace-demo-card__cta">Open the demo →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-collected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is collected
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-it-is-stored" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where it is stored
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#who-can-see-what" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Who can see what
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Who can see what">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cctrace_userid_access_control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CCTRACE_USERID_ACCESS_CONTROL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#redact-on-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redact on the client
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Redact on the client">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#re-enrichment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-enrichment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delete-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retention
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">Demo dashboard</span>
+    <span class="cctrace-demo-card__text">A fictitious five-person team, in your browser, nothing to install.</span>
+    <span class="cctrace-demo-card__cta">Open the demo →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-collected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is collected
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-it-is-stored" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where it is stored
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#who-can-see-what" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Who can see what
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Who can see what">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cctrace_userid_access_control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CCTRACE_USERID_ACCESS_CONTROL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#redact-on-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redact on the client
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Redact on the client">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#re-enrichment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-enrichment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delete-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retention
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="privacy">Privacy<a class="headerlink" href="#privacy" title="Permanent link">&para;</a></h1>
+<p>What cctrace collects, where it keeps it, who can read it, and how long it stays.</p>
+<div class="admonition warning">
+<p class="admonition-title">The server stores conversation content</p>
+<p>Session logs include what people typed, the agent's replies, and tool commands and output. By default they are kept until an operator sets a retention period. Decide on retention and redaction before you connect other people.</p>
+</div>
+<h2 id="what-is-collected">What is collected<a class="headerlink" href="#what-is-collected" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Sent by</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OTEL telemetry</td>
+<td>The agent itself, to the OTLP ports</td>
+<td>Metrics and events: token counts, cost, model, tool activity. <code>cctrace init</code> labels them with the user ID, name, email, and team through <code>OTEL_RESOURCE_ATTRIBUTES</code>.</td>
+</tr>
+<tr>
+<td>Session logs</td>
+<td>The sync daemon, to <code>/api/sync</code></td>
+<td>Each line of the agent's session files as written on disk: prompts, replies, reasoning text, tool calls with their arguments and output. Each upload also carries project details: directory name, git remote URL, repository name, branch, and commit.</td>
+</tr>
+<tr>
+<td>Session snapshots and the collector heartbeat</td>
+<td>The sync daemon, to <code>/api/session-observations</code></td>
+<td>For each Claude Code session, from its metadata lines: the AI title, the custom title and the agent name; the cost total and the lines added and removed of each run; the model ids used; the PR links it recorded; and the ids of the sessions it continued in. Also counts of the files the session edited: how many there are, how many <code>git status</code> still reports as uncommitted, how many repositories they lie in, how many git could not place, when the counts last changed, and whether they miss edits the client never read; never the paths. Also verified git-call commit identities and optional subjects, with unresolved call reasons (described below). For each Codex session, from its rollout file, each turn's id and the id of the turn it belongs under, when it started and ended, whether it completed, was aborted (with the reason Codex gives) or ended in an error (with the error's kind, never its message), its duration and time to first token, the model context window, the collaboration mode, the model and the reasoning effort. With them, a heartbeat saying the collector is running.</td>
+</tr>
+<tr>
+<td>Live session status and session ends</td>
+<td>The sync daemon, to <code>/api/session-observations</code></td>
+<td>For each running Claude Code session process, read about once a minute from the state file Claude Code keeps for it (<code>~/.claude/sessions/&lt;pid&gt;.json</code>): the session's status (busy, idle, waiting, shell, or gone once the process has ended), what a waiting session waits for (input, permission, dialog, sandbox, worker, goal or other), the session's name and where the name came from, the process id and start time, when the status last changed, and the session's project. When a session ends, the reason the SessionEnd hook gives, such as <code>clear</code> or <code>logout</code>, and the session's project. The project is the session's project directory name, which spells out the path of its working directory. On Windows Claude Code writes no <code>procStart</code> to the state file, so no live status is sent from Windows.</td>
+</tr>
+<tr>
+<td>Rule files</td>
+<td>The sync daemon</td>
+<td>The CLAUDE.md and AGENTS.md files at the root of the git repositories your sessions run in</td>
+</tr>
+<tr>
+<td>Usage-limit readings</td>
+<td>The client</td>
+<td>The plan's rate-limit usage as read on your machine</td>
+</tr>
+<tr>
+<td>Policy request</td>
+<td>The client, to <code>/api/client-config-policy</code></td>
+<td>Asked by each policy check: the installation ID (a random UUID that <code>cctrace</code> creates under <code>~/.cctrace</code> the first time a policy command runs) and the profile name, as query parameters, with no token. The server answers from its policy file and stores nothing from the request. Its access log keeps the method, path, status, duration and the caller's address, not the query.</td>
+</tr>
+<tr>
+<td>Policy target report</td>
+<td>The client, to <code>/api/client-policy-report</code></td>
+<td>For a profile that is logged in, one record after each <code>cctrace config policy apply</code> run, whatever the run found: the installation ID and profile name (empty for the default profile), the email attached to the profile's uploaded records and the user ID, the server and OTLP addresses the profile uses and its OTLP protocol, the number of the last policy it applied, how the run ended (<code>ok</code>, <code>deferred</code> or <code>failed</code>), the number of the policy a failed or deferred run had reached, and the client's own error text. The error text can name local file paths and other profiles, and is cut to 500 characters; a path of a profile's explicit Codex home is replaced by <code>[explicit Codex home]</code>. An <code>ok</code> run can carry text too, until the next policy: when a policy leaves the default Codex configuration as it found it, the text names that file's absolute local path, and when it leaves an explicit Codex home's configuration as it found it, the text is <code>explicit Codex home kept</code>, with no path. The request headers add the client version, OS and architecture; the server stores only the version.</td>
+</tr>
+<tr>
+<td>Client version record</td>
+<td>The client, with each <code>/api/sync</code> upload</td>
+<td>For each account email: the user ID, the version, OS and architecture from the request headers, the time of the last sync and, for a client that reports it, its self-update state: the version it fails to reach, the number of consecutive failures, the times of the first and last failure, and the error text (it can name local file paths and is cut to 500 characters). Account exclusion and <code>options.collect_repository_prefixes</code> do not stop it.</td>
+</tr>
+</tbody>
+</table>
+<p><code>cctrace init</code> does not set <code>OTEL_LOG_USER_PROMPTS</code>, so Claude Code's own telemetry does not carry prompt text unless you set that variable yourself. Session logs carry the full conversation either way.</p>
+<p>A session snapshot is attributed to the billing account of the newest record the client has read from that session. If the account changes partway through a session, the whole snapshot goes under the newer account, and an account exclusion is judged by that account. A Codex session's snapshot goes under the account signed in to the Codex home its rollout file is in, as of the newest turn line the client has read, and is sent only by a sync that reads that Codex home.</p>
+<p>To count a session's uncommitted files, the client finds on your machine the repository each file the session edited with Edit, Write, MultiEdit or NotebookEdit lies in, by the nearest <code>.git</code> above it, checks with <code>git rev-parse</code> where git puts that repository's work tree, and runs <code>git status</code> there, asking about those files alone. It keeps those file paths in its sync state, counts again about once an hour while the session has been active in the last seven days, sends the counts when they change, and once those seven days have passed drops the paths and keeps the last counts. With <code>options.collect_repository_prefixes</code> set, it reads each such repository's origin to judge it, <code>git status</code> runs only in the repositories it collects, and a file in any other repository, or in none, is not counted. No git runs for a session whose account is excluded. Codex sessions get no such counts.</p>
+<p>A live status is attributed to the account signed in to that Claude home when the status is read, and a session end to the one signed in when the session ended. Neither is sent for an excluded account or for a repository outside <code>options.collect_repository_prefixes</code>. The SessionEnd hook's transcript path and working directory stay on your machine; only the project they belong to is sent. Until a sync sends it, a session end waits in a <code>pending</code> directory beside the profile's sync state (<code>~/.cctrace/pending/</code> for the default profile), for at most seven days.</p>
+<p>For Claude Code git calls, the client also reads up to 2,000 entries of the allowed work tree's HEAD reflog and its current branch. Only a creation candidate named by that call's output hash is attached to the snapshot: full hash, commit time, parent count, kind, repository, recent branch, call id, transcript identifier, proof, optional amend predecessor, and a subject of at most 200 bytes. Time or a matching subject alone is not proof. Unresolved calls carry only their id, transcript identifier, time and reason. Commit items and unresolved calls each have a 100-entry limit within the snapshot's 60 KiB limit; lost coverage is marked truncated. Commands, output text and unverified candidate subjects are not saved in the call state. Pending calls keep directories and hash evidence locally, and expire after seven days with an unresolved reason. Commit lookup uses at most 2.5 seconds of the same five-second flush budget used for uncommitted counts. Excluded accounts and repositories are not inspected for commit subjects.</p>
+<p>The policy request and the policy target report belong to signed server policies, which only a client that links an update public key or a policy public key can use. Builds from this repository without an update or policy public key link empty keys (see <a href="../../">Overview</a>). Such a client never starts the background policy check and never sends a policy request. <code>cctrace config policy apply</code> ends with an error that begins "policy public key is not configured" and, for a profile that is logged in, still sends one report of that failed run each time you run it. A client that does link a key runs the background check when a watch process starts, about every five minutes while it runs, and at the end of a one-shot <code>cctrace sync</code>; each run ends with a report from a profile that is logged in. A profile that is not logged in sends no report, and neither do <code>cctrace config policy status</code> and <code>cctrace config policy check</code>.</p>
+<h2 id="where-it-is-stored">Where it is stored<a class="headerlink" href="#where-it-is-stored" title="Permanent link">&para;</a></h2>
+<p>Collected data goes to the server you configured and into its TimescaleDB database. Other outbound requests:</p>
+<ul>
+<li>To read usage limits, the client queries Anthropic's usage API with the local Claude Code login.</li>
+<li>The server downloads OpenAI's public pricing and changelog pages to price Codex usage.</li>
+<li>A client that links an update public key or a policy public key tests a policy it received before applying it (<code>cctrace config policy check</code> and <code>apply</code>): small requests to the policy's new server and OTLP addresses, where the OTLP requests carry the profile's upload token.</li>
+</ul>
+<p>A policy target report is kept as one row per installation ID and profile: a new report replaces the row's values and keeps the time the row was first seen, and an empty version header does not erase the version stored before. A client version record is kept as one row per account email, updated by each sync. The server checks the form of a report, not whether it is true: a logged-in client can report any installation ID and profile. A report with a malformed or too long field is refused with HTTP 400 and the reason is logged (see <a href="../../server/operations/#logs">Operations</a>).</p>
+<p>The weekly AI report feature, when enabled, sends data to the AI provider it is configured with. It is under active development and is not documented here.</p>
+<p>Clients warn, but do not refuse, when an endpoint is plain <code>http://</code> to anything but the same machine (loopback), private addresses included. Put the server behind TLS before clients connect over a network you do not control; see <a href="../../server/install/#optional-https-with-caddy">Install the server</a>.</p>
+<h2 id="who-can-see-what">Who can see what<a class="headerlink" href="#who-can-see-what" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th><code>admin</code></th>
+<th><code>user</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session transcripts (<code>/sessions</code>)</td>
+<td>Every user's</td>
+<td>Their own</td>
+</tr>
+<tr>
+<td>Rule files (<code>/rules</code>)</td>
+<td>All repositories</td>
+<td>Repositories where they have sessions</td>
+</tr>
+<tr>
+<td>Aggregates: usage, cost, tools, plugins and skills, per-user lists</td>
+<td>Everyone's</td>
+<td>Everyone's</td>
+</tr>
+<tr>
+<td>Telemetry rows (<code>/logs</code>)</td>
+<td>Everyone's</td>
+<td>Everyone's</td>
+</tr>
+<tr>
+<td>User management, <code>/admin</code></td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Aggregates are shared on purpose, so the whole team's usage adds up in one place.</li>
+<li>Attributes that carry free text (prompts, tool arguments and output, command text, stdout and stderr) are removed from telemetry rows before any dashboard response, for administrators too. They may still be stored.</li>
+<li>A <code>user</code> account sees its own sessions through its cctrace user ID. An account without one sees no session data (with the default <code>CCTRACE_USERID_ACCESS_CONTROL</code>). See <a href="../../dashboard/users/#how-data-is-attributed-to-an-account">Users</a>.</li>
+<li>Client version records are shown to administrators only, on the <strong>Clients</strong> tab of <a href="../../dashboard/pages/#admin-admin"><code>/admin</code></a>.</li>
+<li>Policy target reports have no dashboard page and no API that reads them. They can be read only in the database.</li>
+</ul>
+<h3 id="cctrace_userid_access_control"><code>CCTRACE_USERID_ACCESS_CONTROL</code><a class="headerlink" href="#cctrace_userid_access_control" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>How a <code>user</code> account's sessions are matched</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>unset or anything but <code>false</code> (default)</td>
+<td>By the account's cctrace user ID</td>
+</tr>
+<tr>
+<td><code>false</code></td>
+<td>By the account's sign-in email against the email the client uploaded with</td>
+</tr>
+</tbody>
+</table>
+<p>The setting changes only how sessions are matched to their owner. It does not make aggregates private.</p>
+<h2 id="redact-on-the-client">Redact on the client<a class="headerlink" href="#redact-on-the-client" title="Permanent link">&para;</a></h2>
+<p>Two profile options remove content from session logs before they leave your machine. Both are off by default.</p>
+<div class="highlight"><pre><span></span><code>cctrace<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>options.redact_user_prompts<span class="w"> </span><span class="nb">true</span>
+cctrace<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>options.redact_tool_details<span class="w"> </span><span class="nb">true</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Replaces the values of these fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>redact_user_prompts</code></td>
+<td><code>content</code>, <code>text</code>, <code>thinking</code>, <code>summary</code>, <code>title</code></td>
+</tr>
+<tr>
+<td><code>redact_tool_details</code></td>
+<td><code>arguments</code>, <code>input</code>, <code>output</code>, <code>result</code>, <code>command</code>, <code>description</code>, <code>stdout</code>, <code>stderr</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Values are replaced with <code>[redacted by cctrace client]</code>, wherever the field appears in the record. A line that cannot be parsed is replaced as a whole.</li>
+<li>Token counts, cost, model, and timestamps are left alone, so dashboard figures do not change.</li>
+<li>Redaction covers session logs, the titles in session snapshots and the session names in live status. It does not touch OTEL telemetry, which the agent sends directly, rule files, policy target reports or client version records.</li>
+<li>It applies to uploads made after the change. Records already on the server keep what they hold; <a href="#re-enrichment">re-enrichment</a> can add fields to them.</li>
+<li>A running sync daemon keeps the options it started with. Restart it with <code>cctrace sync --stop</code> and then <code>cctrace sync --daemon</code>.</li>
+</ul>
+<p>Some content in Claude Code session lines sits under names that also mean something else, so it is found by line kind and position rather than by field name. Each kind of content in this table gets the same treatment in every place the table names:</p>
+<table>
+<thead>
+<tr>
+<th>Content</th>
+<th><code>redact_user_prompts</code></th>
+<th><code>redact_tool_details</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Questions and options asked through AskUserQuestion, and the plan ExitPlanMode presents (tool <code>input</code>)</td>
+<td>Hidden</td>
+<td>Hidden</td>
+</tr>
+<tr>
+<td>Answers to AskUserQuestion (the <code>answers</code> field of <code>toolUseResult</code>, and <code>annotations</code>)</td>
+<td>Hidden</td>
+<td>Hidden</td>
+</tr>
+<tr>
+<td>Tool output inside <code>tool_result</code> blocks (<code>content</code>)</td>
+<td>Hidden</td>
+<td>Hidden</td>
+</tr>
+<tr>
+<td>A prompt typed while the agent was busy (<code>queued_command</code> attachment, <code>prompt</code>)</td>
+<td>Hidden</td>
+<td>Kept</td>
+</tr>
+<tr>
+<td>A background task's result: queued (<code>queued_command</code> with <code>commandMode</code> <code>task-notification</code>) and as its own user line (an <code>origin</code> of kind <code>task-notification</code>, the <code>content</code> of <code>message</code>)</td>
+<td>Hidden</td>
+<td>Hidden</td>
+</tr>
+<tr>
+<td>Plan file text (<code>plan_file_reference</code>, <code>planContent</code>)</td>
+<td>Hidden</td>
+<td>Hidden</td>
+</tr>
+<tr>
+<td>Plan file paths (<code>plan_file_reference</code> and <code>plan_mode</code>, <code>planFilePath</code>)</td>
+<td>Kept</td>
+<td>Hidden</td>
+</tr>
+<tr>
+<td>Task subjects (<code>task_reminder</code> attachment, <code>content</code>)</td>
+<td>Hidden</td>
+<td>Hidden</td>
+</tr>
+<tr>
+<td>Claude Code's recap (<code>system</code> line with subtype <code>away_summary</code>, <code>content</code>)</td>
+<td>Hidden</td>
+<td>Hidden</td>
+</tr>
+<tr>
+<td>The summary a session continued after compaction opens with (user line with <code>isCompactSummary</code>, the <code>content</code> of <code>message</code>)</td>
+<td>Hidden</td>
+<td>Hidden</td>
+</tr>
+<tr>
+<td>Verified commit subjects in session snapshots</td>
+<td>Hidden; subjects read while either option is on stay hidden after it is turned off</td>
+<td>Hidden; also applied again when sending</td>
+</tr>
+<tr>
+<td>Session titles and agent names in session snapshots (<code>/api/session-observations</code>)</td>
+<td>Hidden; a title first read while the option was on stays hidden after it is turned off</td>
+<td>Kept</td>
+</tr>
+<tr>
+<td>Session names in live session status (<code>/api/session-observations</code>)</td>
+<td>Hidden; unlike a title, a name is read afresh every minute and goes as the option says when it is sent, so once the option is turned off a session's current name goes in plain text</td>
+<td>Kept</td>
+</tr>
+</tbody>
+</table>
+<p>Fields that record what happened rather than what was said, such as prompt ids, permission mode, turn durations and counts, task status, and the model in use, are not redacted. Neither option hides commit hashes, times, kinds, parent counts, repositories, branches, call identifiers or unresolved reasons, or the PR links, cost and line totals, model ids, continued-in session ids, edited and uncommitted file counts, or Codex turn times, endings and error kinds, models and efforts in session snapshots, nor a live session's status, what it waits for, its process id and start time, or the reason a session ended.</p>
+<p>With <code>redact_tool_details</code> alone, some tool output stays, because Claude Code writes it into a user line as conversation text rather than under a tool field. These gaps are older than the rules above; <code>redact_user_prompts</code> removes all of them:</p>
+<ul>
+<li>The tool results an SDK harness writes as text, such as <code>Tool result (Bash, id=…)</code></li>
+<li>The output of a <code>!</code> shell command (<code>&lt;bash-stdout&gt;</code>)</li>
+<li>The output of a local slash command (<code>&lt;local-command-stdout&gt;</code>)</li>
+</ul>
+<p>Add <code>--profile &lt;name&gt;</code> to act on a named profile. <code>cctrace status</code> lists the redaction that is on.</p>
+<h3 id="re-enrichment">Re-enrichment<a class="headerlink" href="#re-enrichment" title="Permanent link">&para;</a></h3>
+<p><code>cctrace sync reenrich</code> reads session files again from the start and adds the fields a newer client collects to records already on the server. It runs only when you type it.</p>
+<ul>
+<li>It sends only the fields it can add, never the conversation itself (<code>message</code>). By default those are the fields that record what happened. Answers, queued prompts and background task results, plan files and their paths, task subjects, and recaps stay on your machine.</li>
+<li><code>--include-content</code> sends and adds those too, under the redaction options in force when you run it. A record collected while redaction was on, before these fields were collected, gains them in plain text if redaction is now off. The command says so before it sends anything.</li>
+<li>A value a record already holds is never replaced, a <code>[redacted by cctrace client]</code> marker included. Conversation text is never added or changed.</li>
+<li>It leaves alone the part of a file that was already on disk when sync first ran, which sync never collected. For a file sync once found shrunk, it also leaves alone everything before the size the file had then. That part can include lines sync did collect, so those records are not re-enriched.</li>
+<li>Lines sync consumed without collecting them, because their repository was outside <code>options.collect_repository_prefixes</code>, are left alone too, together with everything before them; the session snapshot rebuild skips the same part. As a side effect, narrowing the allowlist and widening it again leaves out of re-enrichment the lines collected before it was narrowed.</li>
+<li>It also builds each session's snapshot (see <a href="#what-is-collected">What is collected</a>) from the same part of the file, and sends the snapshots before it exits. By default the snapshot leaves out the titles and the agent name; <code>--include-content</code> includes them, under the redaction options in force then. A snapshot without titles does not take the place of one this client has sent with titles.</li>
+<li>With Codex sync on, it builds each Codex session's turns the same way, from the part of its rollout file sync collected, and sends them in the same flush.</li>
+<li>
+<p>For a session active in the last seven days, it also reads from the same part the files the session edited, so its uncommitted count covers the whole session rather than what was read since this client. The paths stay on your machine.</p>
+</li>
+<li>
+<p>Git call backfill uses that same collected portion without a seven-day age cutoff. By default verified commits omit the subject key; <code>--include-content</code> permits subjects under both current redaction policies. A subject or redaction marker already present is not replaced by re-enrichment.</p>
+</li>
+</ul>
+<h2 id="local-analysis">Local analysis<a class="headerlink" href="#local-analysis" title="Permanent link">&para;</a></h2>
+<p><code>cctrace local serve</code>, and the local service that <code>cctrace local enable</code> turns on, read the Claude Code and Codex session files on your machine and show them in the dashboard without a sync. See <a href="../../client/local/">Local analysis</a>.</p>
+<ul>
+<li>The service listens only on a loopback address, refuses browser requests from any origin you did not name, and serves session data only to requests that carry its token.</li>
+<li>It makes no outbound request. The dashboard page reads it directly from your browser, without cookies, so this path sends nothing to the server.</li>
+<li><code>serve</code> makes a new token on each run and prints it once. <code>enable</code> prints the token once and keeps only its SHA-256 hash, in the profile's directory under <code>~/.cctrace</code>. <code>disable</code> discards the hash.</li>
+<li>If you choose "이 탭에 연결 저장" (remember the connection in this tab) when you connect, the browser keeps the service address and the token in <code>sessionStorage</code> until the tab closes. The dashboard page never writes the token to its address, to a server request or to a log.</li>
+</ul>
+<h2 id="delete-data">Delete data<a class="headerlink" href="#delete-data" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Who</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One session</td>
+<td>Its owner (while the owner-delete policy allows it) or an administrator</td>
+<td>Trash icon on <code>/sessions</code>. See <a href="../../dashboard/pages/#delete-a-session">Pages</a>.</td>
+</tr>
+<tr>
+<td>A project's sessions, and future collection of it</td>
+<td>Administrator</td>
+<td>Session delete dialog or the project picker on <code>/sessions</code></td>
+</tr>
+<tr>
+<td>Telemetry, session logs, live state, policy target reports, the client version record, the latest usage-limit reading and the settings that hide the account's sessions from AI session records (the overview, review items, work status and tags an AI model writes for each session), stored under one account's email (the rows named below the table stay)</td>
+<td>Administrator</td>
+<td><strong>Clear Collected Data</strong> on <code>/users</code>. See <a href="../../dashboard/users/#manage-accounts">Users</a>.</td>
+</tr>
+</tbody>
+</table>
+<p>A deleted session is refused if a client uploads it again.</p>
+<p>Merging accounts moves an account's policy target reports and its client version record to the account it is merged into. When both accounts have a client version record, the two are combined the way a sync updates one: the record synced last wins, but where it lacks the version, OS, architecture or self-update state, the other record's is kept. The settings that hide the account's sessions from AI session records move too, and the target account sees them as its own. Settings saved under a cctrace user ID stay where they are and keep applying through that ID. Where the target already has the same setting, the target's stays. A moved setting that covers the whole account hides the target account's own sessions as well. The account's latest usage-limit reading is deleted, not moved: the target's own reports keep its reading current.</p>
+<p><strong>Clear Collected Data</strong> also deletes the settings that hide the account's sessions from AI session records. Sessions collected for the account afterwards are therefore no longer hidden from them until the settings are set again through <code>/api/privacy</code>.</p>
+<p>Neither <strong>Clear Collected Data</strong> nor merging accounts removes rule file versions, which record the account's email as their author. Nor do they remove or move the history of the account's usage-limit readings (<code>quota_samples</code>) and the list of excluded addresses derived from it, or the hourly usage aggregates older than 48 hours that name it. Those rows can stay in the database until an operator deletes them there.</p>
+<p>A merge leaves one latest usage-limit reading for both profiles. If they were signed in to different Claude accounts, their later reports are stored under the target's address and replace each other in turn. The history of readings does not follow the merge: each reading keeps the name of the profile that reported it.</p>
+<h2 id="retention">Retention<a class="headerlink" href="#retention" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Contents</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>otel_events</code></td>
+<td>Telemetry events</td>
+<td>Dropped after 90 days, compressed after 30</td>
+</tr>
+<tr>
+<td><code>otel_metrics</code></td>
+<td>Telemetry metrics</td>
+<td>Dropped after 90 days, compressed after 30</td>
+</tr>
+<tr>
+<td><code>session_records</code></td>
+<td>Session logs (conversation content)</td>
+<td>No policy: kept until an operator sets one</td>
+</tr>
+<tr>
+<td><code>client_policy_reports</code></td>
+<td>Policy target reports</td>
+<td>Not covered by retention settings: kept until <strong>Clear Collected Data</strong> or an operator deletes the rows</td>
+</tr>
+<tr>
+<td><code>client_versions</code></td>
+<td>Client version records</td>
+<td>Not covered by retention settings: kept until <strong>Clear Collected Data</strong> or an operator deletes the rows</td>
+</tr>
+</tbody>
+</table>
+<p>While <code>session_records</code> has no policy, the server logs this at startup:</p>
+<div class="highlight"><pre><span></span><code>[cctraced] notice: session_records (conversation content) has no retention policy and is kept indefinitely, while otel_events/otel_metrics are dropped after 90 days. Set SESSION_RETENTION_DAYS (0 = keep forever) or choose an interval in Admin -&gt; Storage.
+</code></pre></div>
+<p>Set retention on the <strong>Storage</strong> tab of <code>/admin</code>. <code>cctraced</code> also reads <code>SESSION_RETENTION_DAYS</code> and <code>OTEL_RETENTION_DAYS</code>, but the shipped compose file does not pass them to the container (<a href="../../server/configuration/#variables-the-compose-file-does-not-pass">Configuration</a>). When one reaches the container, it wins and locks that setting in the dashboard. Shortening retention deletes existing data. Details: <a href="../../server/operations/#data-retention">Operations</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ports/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Ports">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Ports
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

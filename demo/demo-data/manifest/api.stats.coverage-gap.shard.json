@@ -1,0 +1,1657 @@
+[
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=day\u0026headline_since=@-43200m\u0026headline_until=@0m\u0026login_email=ivy.nonrealton@example.com\u0026since=@-43200m\u0026until=@0m",
+    "status": 200,
+    "body": "67c0e5cc3b6f83160d480630"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=day\u0026headline_since=@-43200m\u0026headline_until=@0m\u0026login_email=marcus.fablewright@example.com\u0026since=@-43200m\u0026until=@0m",
+    "status": 200,
+    "body": "29a3e4d79c32b0d923a65c0c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=day\u0026headline_since=@-43200m\u0026headline_until=@0m\u0026login_email=priya.notarealsen@example.com\u0026since=@-43200m\u0026until=@0m",
+    "status": 200,
+    "body": "b785fd28ec5e3039e37c7d5e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=day\u0026headline_since=@-43200m\u0026headline_until=@0m\u0026login_email=tomas.ficticio@example.com\u0026since=@-43200m\u0026until=@0m",
+    "status": 200,
+    "body": "6e89b9a86828289848d22614"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=day\u0026headline_since=@-43200m\u0026headline_until=@0m\u0026login_email=yuki.testonaga@example.com\u0026since=@-43200m\u0026until=@0m",
+    "status": 200,
+    "body": "3a61cd49d8fb2961b896f822"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=day\u0026headline_since=@-43200m\u0026headline_until=@0m\u0026since=@-43200m\u0026until=@0m",
+    "status": 200,
+    "body": "331b2ac940ab589e0d7bf75e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=day\u0026headline_since=@-86400m\u0026headline_until=@-43200m\u0026since=@-86400m\u0026until=@-43200m",
+    "status": 200,
+    "body": "94d72d48bd5b7742ed104102"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-12960m\u0026headline_until=@-8640m\u0026since=@-12960m\u0026until=@-8640m",
+    "status": 200,
+    "body": "4a774a698efa51ff0d0e09d4"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-17280m\u0026headline_until=@-12960m\u0026since=@-17280m\u0026until=@-12960m",
+    "status": 200,
+    "body": "01b069ad6ab137f893e5e16e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-21600m\u0026headline_until=@-17280m\u0026since=@-21600m\u0026until=@-17280m",
+    "status": 200,
+    "body": "e0cb8020c24f9a300c56e132"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-25920m\u0026headline_until=@-21600m\u0026since=@-25920m\u0026until=@-21600m",
+    "status": 200,
+    "body": "edbd644c71babe64aaf0a232"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-30240m\u0026headline_until=@-25920m\u0026since=@-30240m\u0026until=@-25920m",
+    "status": 200,
+    "body": "3a8ba163826264107d28ceab"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-34560m\u0026headline_until=@-30240m\u0026since=@-34560m\u0026until=@-30240m",
+    "status": 200,
+    "body": "080ad1673495d3c78f483082"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-38880m\u0026headline_until=@-34560m\u0026since=@-38880m\u0026until=@-34560m",
+    "status": 200,
+    "body": "3a5422c2ca3654668a570cc4"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-43200m\u0026headline_until=@-38880m\u0026since=@-43200m\u0026until=@-38880m",
+    "status": 200,
+    "body": "a45728c05ed2d32de637b2e6"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-4320m\u0026headline_until=@0m\u0026login_email=ivy.nonrealton@example.com\u0026since=@-4320m\u0026until=@0m",
+    "status": 200,
+    "body": "5025692d07f9f2f7ca2008cc"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-4320m\u0026headline_until=@0m\u0026login_email=marcus.fablewright@example.com\u0026since=@-4320m\u0026until=@0m",
+    "status": 200,
+    "body": "7d65a827ff92fde3d56c3ffd"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-4320m\u0026headline_until=@0m\u0026login_email=priya.notarealsen@example.com\u0026since=@-4320m\u0026until=@0m",
+    "status": 200,
+    "body": "082bd221f0b9639551a9f1a4"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-4320m\u0026headline_until=@0m\u0026login_email=tomas.ficticio@example.com\u0026since=@-4320m\u0026until=@0m",
+    "status": 200,
+    "body": "02629b3e117d65b4b1f8be72"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-4320m\u0026headline_until=@0m\u0026login_email=yuki.testonaga@example.com\u0026since=@-4320m\u0026until=@0m",
+    "status": 200,
+    "body": "e3ae6198349c0d7a0f9c73b7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-4320m\u0026headline_until=@0m\u0026since=@-4320m\u0026until=@0m",
+    "status": 200,
+    "body": "c4e3a56780697f8ada16a166"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-47520m\u0026headline_until=@-43200m\u0026since=@-47520m\u0026until=@-43200m",
+    "status": 200,
+    "body": "20c4c34d07bb14bcd8156433"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-51840m\u0026headline_until=@-47520m\u0026since=@-51840m\u0026until=@-47520m",
+    "status": 200,
+    "body": "a9180de7f7f3b14f1833031e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-56160m\u0026headline_until=@-51840m\u0026since=@-56160m\u0026until=@-51840m",
+    "status": 200,
+    "body": "99c3da88913c3d1014f4d984"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=hour\u0026headline_since=@-8640m\u0026headline_until=@-4320m\u0026since=@-8640m\u0026until=@-4320m",
+    "status": 200,
+    "body": "c7a2c7678e40d8915ad37be5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10080m\u0026headline_until=@0m\u0026login_email=ivy.nonrealton@example.com\u0026since=@-180m\u0026until=@0m",
+    "status": 200,
+    "body": "276d03542d0e78410d58d30e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10080m\u0026headline_until=@0m\u0026login_email=marcus.fablewright@example.com\u0026since=@-180m\u0026until=@0m",
+    "status": 200,
+    "body": "4e6b7a5ea67941b5b46894e2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10080m\u0026headline_until=@0m\u0026login_email=priya.notarealsen@example.com\u0026since=@-180m\u0026until=@0m",
+    "status": 200,
+    "body": "0950477c462226006be5c2b3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10080m\u0026headline_until=@0m\u0026login_email=tomas.ficticio@example.com\u0026since=@-180m\u0026until=@0m",
+    "status": 200,
+    "body": "3244c627a4896f8995350b45"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10080m\u0026headline_until=@0m\u0026login_email=yuki.testonaga@example.com\u0026since=@-180m\u0026until=@0m",
+    "status": 200,
+    "body": "a5febf35431b60952af44e41"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10080m\u0026headline_until=@0m\u0026since=@-180m\u0026until=@0m",
+    "status": 200,
+    "body": "3ec9fa8b549afad1d80e86bb"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10260m\u0026headline_until=@-180m\u0026since=@-360m\u0026until=@-180m",
+    "status": 200,
+    "body": "f57463552ceca43911f9eb98"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10440m\u0026headline_until=@-360m\u0026since=@-540m\u0026until=@-360m",
+    "status": 200,
+    "body": "7081471e960e1bee9a3fa816"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10620m\u0026headline_until=@-540m\u0026since=@-720m\u0026until=@-540m",
+    "status": 200,
+    "body": "a3253fef39d2e701235bacd8"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10800m\u0026headline_until=@-720m\u0026since=@-900m\u0026until=@-720m",
+    "status": 200,
+    "body": "a41d821781c175260402a4a5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-10980m\u0026headline_until=@-900m\u0026since=@-1080m\u0026until=@-900m",
+    "status": 200,
+    "body": "b4ec4bf468a9fd4c9bbd4725"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-11160m\u0026headline_until=@-1080m\u0026since=@-1260m\u0026until=@-1080m",
+    "status": 200,
+    "body": "085a86ebf006f79e93bfb523"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-11340m\u0026headline_until=@-1260m\u0026since=@-1440m\u0026until=@-1260m",
+    "status": 200,
+    "body": "f17c7160b10fe5fcc8833099"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-11520m\u0026headline_until=@-1440m\u0026since=@-1620m\u0026until=@-1440m",
+    "status": 200,
+    "body": "4a96ff37832dc305f67d99da"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-11700m\u0026headline_until=@-1620m\u0026since=@-1800m\u0026until=@-1620m",
+    "status": 200,
+    "body": "faa0a78cbeaa70b49fbd650e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-11880m\u0026headline_until=@-1800m\u0026since=@-1980m\u0026until=@-1800m",
+    "status": 200,
+    "body": "b5b84e62fe387870d3340749"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-12060m\u0026headline_until=@-1980m\u0026since=@-2160m\u0026until=@-1980m",
+    "status": 200,
+    "body": "587827dbbd0a6e260f841e18"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-12240m\u0026headline_until=@-2160m\u0026since=@-2340m\u0026until=@-2160m",
+    "status": 200,
+    "body": "08d9abd504705d49994e3bcb"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-12420m\u0026headline_until=@-2340m\u0026since=@-2520m\u0026until=@-2340m",
+    "status": 200,
+    "body": "0936e8911ca56d333fc5eeb7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-12600m\u0026headline_until=@-2520m\u0026since=@-2700m\u0026until=@-2520m",
+    "status": 200,
+    "body": "8769fdc7928832684c538756"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-12780m\u0026headline_until=@-2700m\u0026since=@-2880m\u0026until=@-2700m",
+    "status": 200,
+    "body": "e0547f2f886e841daa6b8ba4"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-12960m\u0026headline_until=@-2880m\u0026since=@-3060m\u0026until=@-2880m",
+    "status": 200,
+    "body": "e02f0f7eb5b661ea69d13fc6"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-13140m\u0026headline_until=@-3060m\u0026since=@-3240m\u0026until=@-3060m",
+    "status": 200,
+    "body": "4ce3532d3575809315ab46cc"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-13320m\u0026headline_until=@-3240m\u0026since=@-3420m\u0026until=@-3240m",
+    "status": 200,
+    "body": "db6c9bf6e623c3d96ee06a53"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-13500m\u0026headline_until=@-3420m\u0026since=@-3600m\u0026until=@-3420m",
+    "status": 200,
+    "body": "b9b0b7d55fd58440dcc0d115"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-13680m\u0026headline_until=@-3600m\u0026since=@-3780m\u0026until=@-3600m",
+    "status": 200,
+    "body": "3a624fe06f5b445b9e89da72"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-13860m\u0026headline_until=@-3780m\u0026since=@-3960m\u0026until=@-3780m",
+    "status": 200,
+    "body": "18fe28c3318b6f33e164f9dc"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-14040m\u0026headline_until=@-3960m\u0026since=@-4140m\u0026until=@-3960m",
+    "status": 200,
+    "body": "4900fe57ace358c3ac677fea"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-14220m\u0026headline_until=@-4140m\u0026since=@-4320m\u0026until=@-4140m",
+    "status": 200,
+    "body": "cad7e9a67877abbbc04170cc"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-14400m\u0026headline_until=@-4320m\u0026since=@-4500m\u0026until=@-4320m",
+    "status": 200,
+    "body": "72ce2c9a7e5daac3c75a901b"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-14580m\u0026headline_until=@-4500m\u0026since=@-4680m\u0026until=@-4500m",
+    "status": 200,
+    "body": "f6e133258f8be868b937b6be"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-14760m\u0026headline_until=@-4680m\u0026since=@-4860m\u0026until=@-4680m",
+    "status": 200,
+    "body": "bc919470db7751da6c049c33"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-14940m\u0026headline_until=@-4860m\u0026since=@-5040m\u0026until=@-4860m",
+    "status": 200,
+    "body": "e6965a15315efbd775845a0d"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-15120m\u0026headline_until=@-5040m\u0026since=@-5220m\u0026until=@-5040m",
+    "status": 200,
+    "body": "b2e66e6efe5c46c09e286dcd"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-15300m\u0026headline_until=@-5220m\u0026since=@-5400m\u0026until=@-5220m",
+    "status": 200,
+    "body": "8ba7f12a7a01eb99d7a8ffde"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-15480m\u0026headline_until=@-5400m\u0026since=@-5580m\u0026until=@-5400m",
+    "status": 200,
+    "body": "b970119a9533378055661054"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-15660m\u0026headline_until=@-5580m\u0026since=@-5760m\u0026until=@-5580m",
+    "status": 200,
+    "body": "95b0eca958eaa29656e2d4ca"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-15840m\u0026headline_until=@-5760m\u0026since=@-5940m\u0026until=@-5760m",
+    "status": 200,
+    "body": "54085b38ece341af09894a72"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-16020m\u0026headline_until=@-5940m\u0026since=@-6120m\u0026until=@-5940m",
+    "status": 200,
+    "body": "874538b520eca2a1826f49ae"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-16200m\u0026headline_until=@-6120m\u0026since=@-6300m\u0026until=@-6120m",
+    "status": 200,
+    "body": "7b7de96ab4acdfe4e03a8729"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-16380m\u0026headline_until=@-6300m\u0026since=@-6480m\u0026until=@-6300m",
+    "status": 200,
+    "body": "d0ba7ec2b5dfa1d889e96f27"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-16560m\u0026headline_until=@-6480m\u0026since=@-6660m\u0026until=@-6480m",
+    "status": 200,
+    "body": "e7b756aa7ec169e667931ed7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-16740m\u0026headline_until=@-6660m\u0026since=@-6840m\u0026until=@-6660m",
+    "status": 200,
+    "body": "ac4ee24ad35037348ea77d9c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-16920m\u0026headline_until=@-6840m\u0026since=@-7020m\u0026until=@-6840m",
+    "status": 200,
+    "body": "8ec96dd337d4c276a79b960e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-17100m\u0026headline_until=@-7020m\u0026since=@-7200m\u0026until=@-7020m",
+    "status": 200,
+    "body": "880e26244e4d413e49959054"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-17280m\u0026headline_until=@-7200m\u0026since=@-7380m\u0026until=@-7200m",
+    "status": 200,
+    "body": "ca6b4a702a46f629cf130985"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-17460m\u0026headline_until=@-7380m\u0026since=@-7560m\u0026until=@-7380m",
+    "status": 200,
+    "body": "64d52453ec042151e22bfea6"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-17640m\u0026headline_until=@-7560m\u0026since=@-7740m\u0026until=@-7560m",
+    "status": 200,
+    "body": "901feba8b42273d687e2b1c6"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-17820m\u0026headline_until=@-7740m\u0026since=@-7920m\u0026until=@-7740m",
+    "status": 200,
+    "body": "127b702be65682f403c6715c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-18000m\u0026headline_until=@-7920m\u0026since=@-8100m\u0026until=@-7920m",
+    "status": 200,
+    "body": "8bee0435b38f446dd6353228"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-18180m\u0026headline_until=@-8100m\u0026since=@-8280m\u0026until=@-8100m",
+    "status": 200,
+    "body": "a58f660d99f63d34a60ea210"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-18360m\u0026headline_until=@-8280m\u0026since=@-8460m\u0026until=@-8280m",
+    "status": 200,
+    "body": "bad69748b0c23cc1e3cd8ad8"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-18540m\u0026headline_until=@-8460m\u0026since=@-8640m\u0026until=@-8460m",
+    "status": 200,
+    "body": "386f3a92141a4844261b7010"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-18720m\u0026headline_until=@-8640m\u0026since=@-8820m\u0026until=@-8640m",
+    "status": 200,
+    "body": "0fa27771bcf9d8843eab4de7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-18900m\u0026headline_until=@-8820m\u0026since=@-9000m\u0026until=@-8820m",
+    "status": 200,
+    "body": "9ff37a1b807ef67bf86e6a38"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-19080m\u0026headline_until=@-9000m\u0026since=@-9180m\u0026until=@-9000m",
+    "status": 200,
+    "body": "59ecbf1a4986f1ae8cfe42dc"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-19260m\u0026headline_until=@-9180m\u0026since=@-9360m\u0026until=@-9180m",
+    "status": 200,
+    "body": "4e10e673125ede16c2636a61"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-19440m\u0026headline_until=@-9360m\u0026since=@-9540m\u0026until=@-9360m",
+    "status": 200,
+    "body": "0d10ca33ca28526fe78c3aff"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-19620m\u0026headline_until=@-9540m\u0026since=@-9720m\u0026until=@-9540m",
+    "status": 200,
+    "body": "7f9eae4d50251e05f05e3178"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-19800m\u0026headline_until=@-9720m\u0026since=@-9900m\u0026until=@-9720m",
+    "status": 200,
+    "body": "83762ff1c6d0da658e9e1b30"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-19980m\u0026headline_until=@-9900m\u0026since=@-10080m\u0026until=@-9900m",
+    "status": 200,
+    "body": "5710b02962a940e3a831042e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-20160m\u0026headline_until=@-10080m\u0026since=@-10260m\u0026until=@-10080m",
+    "status": 200,
+    "body": "8dd65bd52049ad8167876bd9"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-20340m\u0026headline_until=@-10260m\u0026since=@-10440m\u0026until=@-10260m",
+    "status": 200,
+    "body": "61e777cd1b268fc698453fc7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-20520m\u0026headline_until=@-10440m\u0026since=@-10620m\u0026until=@-10440m",
+    "status": 200,
+    "body": "35eefd5d0f471be6c3f392e7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-20700m\u0026headline_until=@-10620m\u0026since=@-10800m\u0026until=@-10620m",
+    "status": 200,
+    "body": "e7d482dc2dfdf52e1c1fdaab"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-20880m\u0026headline_until=@-10800m\u0026since=@-10980m\u0026until=@-10800m",
+    "status": 200,
+    "body": "60a9f931e422668985e21b74"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-21060m\u0026headline_until=@-10980m\u0026since=@-11160m\u0026until=@-10980m",
+    "status": 200,
+    "body": "4d7c34ad162a5665d2e69ac2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-21240m\u0026headline_until=@-11160m\u0026since=@-11340m\u0026until=@-11160m",
+    "status": 200,
+    "body": "6ea798576c1ad5efefedc56f"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-21420m\u0026headline_until=@-11340m\u0026since=@-11520m\u0026until=@-11340m",
+    "status": 200,
+    "body": "8f0b03be001e9a0e4653f5b0"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-21600m\u0026headline_until=@-11520m\u0026since=@-11700m\u0026until=@-11520m",
+    "status": 200,
+    "body": "eda9cec5c3d3c7c5a2b0ec24"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-21780m\u0026headline_until=@-11700m\u0026since=@-11880m\u0026until=@-11700m",
+    "status": 200,
+    "body": "8c8aaaf91b5d57a88172628e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-21960m\u0026headline_until=@-11880m\u0026since=@-12060m\u0026until=@-11880m",
+    "status": 200,
+    "body": "d0551479d702f0bf7cd0afc6"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-22140m\u0026headline_until=@-12060m\u0026since=@-12240m\u0026until=@-12060m",
+    "status": 200,
+    "body": "f4627ecb5935ba110ddcffb4"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-22320m\u0026headline_until=@-12240m\u0026since=@-12420m\u0026until=@-12240m",
+    "status": 200,
+    "body": "e4fbb33942c8a03be2c8ee6b"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-22500m\u0026headline_until=@-12420m\u0026since=@-12600m\u0026until=@-12420m",
+    "status": 200,
+    "body": "67ef6a74c19c8542d777f942"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-22680m\u0026headline_until=@-12600m\u0026since=@-12780m\u0026until=@-12600m",
+    "status": 200,
+    "body": "f7ea92914b9c12187f762c2e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-22860m\u0026headline_until=@-12780m\u0026since=@-12960m\u0026until=@-12780m",
+    "status": 200,
+    "body": "5a8bf5fb043e058dbe67f390"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-23040m\u0026headline_until=@-12960m\u0026since=@-13140m\u0026until=@-12960m",
+    "status": 200,
+    "body": "00f3f99393865e9a741fa98f"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-23220m\u0026headline_until=@-13140m\u0026since=@-13320m\u0026until=@-13140m",
+    "status": 200,
+    "body": "99749b1f6007799283f49fcd"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-23400m\u0026headline_until=@-13320m\u0026since=@-13500m\u0026until=@-13320m",
+    "status": 200,
+    "body": "caaaabfd0541ebab6f2c8c0e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-23580m\u0026headline_until=@-13500m\u0026since=@-13680m\u0026until=@-13500m",
+    "status": 200,
+    "body": "e3264e8047422fc6f8936690"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-23760m\u0026headline_until=@-13680m\u0026since=@-13860m\u0026until=@-13680m",
+    "status": 200,
+    "body": "b3caa35fbb6bbb1747f98ebc"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-23940m\u0026headline_until=@-13860m\u0026since=@-14040m\u0026until=@-13860m",
+    "status": 200,
+    "body": "f9e1e794925a0c221f579cbf"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-24120m\u0026headline_until=@-14040m\u0026since=@-14220m\u0026until=@-14040m",
+    "status": 200,
+    "body": "f14536e2447f7638ebbf6b9c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-24300m\u0026headline_until=@-14220m\u0026since=@-14400m\u0026until=@-14220m",
+    "status": 200,
+    "body": "b5164d55d9cd447316b0e427"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-24480m\u0026headline_until=@-14400m\u0026since=@-14580m\u0026until=@-14400m",
+    "status": 200,
+    "body": "174bbe427e3ebe9b4120fd02"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-24660m\u0026headline_until=@-14580m\u0026since=@-14760m\u0026until=@-14580m",
+    "status": 200,
+    "body": "2b1b9cd7b1da81eae20f0a7e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-24840m\u0026headline_until=@-14760m\u0026since=@-14940m\u0026until=@-14760m",
+    "status": 200,
+    "body": "3faf8933aa1ed76a6746c3b3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-25020m\u0026headline_until=@-14940m\u0026since=@-15120m\u0026until=@-14940m",
+    "status": 200,
+    "body": "037d5d0b0a2b6ecdd7474c84"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-25200m\u0026headline_until=@-15120m\u0026since=@-15300m\u0026until=@-15120m",
+    "status": 200,
+    "body": "45d4707a9a297501420494f2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-25380m\u0026headline_until=@-15300m\u0026since=@-15480m\u0026until=@-15300m",
+    "status": 200,
+    "body": "ac82a38bb53be886f9b88e69"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-25560m\u0026headline_until=@-15480m\u0026since=@-15660m\u0026until=@-15480m",
+    "status": 200,
+    "body": "c5db6dda0b4a936bbb03df24"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-25740m\u0026headline_until=@-15660m\u0026since=@-15840m\u0026until=@-15660m",
+    "status": 200,
+    "body": "6f1ec4c3320095d5b9ce8a1a"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-25920m\u0026headline_until=@-15840m\u0026since=@-16020m\u0026until=@-15840m",
+    "status": 200,
+    "body": "d56cbd42f46899eca14de8b2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-26100m\u0026headline_until=@-16020m\u0026since=@-16200m\u0026until=@-16020m",
+    "status": 200,
+    "body": "0e9c5d08cf0c2c1829ffb780"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-26280m\u0026headline_until=@-16200m\u0026since=@-16380m\u0026until=@-16200m",
+    "status": 200,
+    "body": "1aaf17a7e2a956edd6b3c6da"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-26460m\u0026headline_until=@-16380m\u0026since=@-16560m\u0026until=@-16380m",
+    "status": 200,
+    "body": "167bf9e42948764c449396ec"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-26640m\u0026headline_until=@-16560m\u0026since=@-16740m\u0026until=@-16560m",
+    "status": 200,
+    "body": "a92dbc7675a0b31017fd1366"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-26820m\u0026headline_until=@-16740m\u0026since=@-16920m\u0026until=@-16740m",
+    "status": 200,
+    "body": "b466bb6f5837c3dc6e65b118"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-27000m\u0026headline_until=@-16920m\u0026since=@-17100m\u0026until=@-16920m",
+    "status": 200,
+    "body": "360fcd0db3561d15bb6906c2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-27180m\u0026headline_until=@-17100m\u0026since=@-17280m\u0026until=@-17100m",
+    "status": 200,
+    "body": "4f1bc6ecc73cb02e3d5b4b92"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-27360m\u0026headline_until=@-17280m\u0026since=@-17460m\u0026until=@-17280m",
+    "status": 200,
+    "body": "6dc5bfafbb12d9609585ad34"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-27540m\u0026headline_until=@-17460m\u0026since=@-17640m\u0026until=@-17460m",
+    "status": 200,
+    "body": "9df5a091477f022c426e0a93"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-27720m\u0026headline_until=@-17640m\u0026since=@-17820m\u0026until=@-17640m",
+    "status": 200,
+    "body": "3b8babf1acecc607d53482ca"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-27900m\u0026headline_until=@-17820m\u0026since=@-18000m\u0026until=@-17820m",
+    "status": 200,
+    "body": "5bd33f7e6f51f8bcce657eec"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-28080m\u0026headline_until=@-18000m\u0026since=@-18180m\u0026until=@-18000m",
+    "status": 200,
+    "body": "d4406208026d09ea093f11c8"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-28260m\u0026headline_until=@-18180m\u0026since=@-18360m\u0026until=@-18180m",
+    "status": 200,
+    "body": "6f41cdc3692a423fe7984414"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-28440m\u0026headline_until=@-18360m\u0026since=@-18540m\u0026until=@-18360m",
+    "status": 200,
+    "body": "bc769bbc1558c801100e1642"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-28620m\u0026headline_until=@-18540m\u0026since=@-18720m\u0026until=@-18540m",
+    "status": 200,
+    "body": "326e5d3681fc3b90192289e9"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-28800m\u0026headline_until=@-18720m\u0026since=@-18900m\u0026until=@-18720m",
+    "status": 200,
+    "body": "30ee950a5309dbfc81219e97"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-28980m\u0026headline_until=@-18900m\u0026since=@-19080m\u0026until=@-18900m",
+    "status": 200,
+    "body": "49bfe402195ce4dc6ae75988"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-29160m\u0026headline_until=@-19080m\u0026since=@-19260m\u0026until=@-19080m",
+    "status": 200,
+    "body": "7cfd069381427dc6dece1922"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-29340m\u0026headline_until=@-19260m\u0026since=@-19440m\u0026until=@-19260m",
+    "status": 200,
+    "body": "7a003c3249fdaf8ac2a1af92"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-29520m\u0026headline_until=@-19440m\u0026since=@-19620m\u0026until=@-19440m",
+    "status": 200,
+    "body": "3b2f0b6fd43abfc952488a00"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-29700m\u0026headline_until=@-19620m\u0026since=@-19800m\u0026until=@-19620m",
+    "status": 200,
+    "body": "ffbe76ee30a3f1be703031ab"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-29880m\u0026headline_until=@-19800m\u0026since=@-19980m\u0026until=@-19800m",
+    "status": 200,
+    "body": "67919b6c98131cf7d40aec35"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-30060m\u0026headline_until=@-19980m\u0026since=@-20160m\u0026until=@-19980m",
+    "status": 200,
+    "body": "7c5f84e6eb563052e41986fe"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-30240m\u0026headline_until=@-20160m\u0026since=@-20340m\u0026until=@-20160m",
+    "status": 200,
+    "body": "0ef89a57083b9eb5d43bd2c5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-30420m\u0026headline_until=@-20340m\u0026since=@-20520m\u0026until=@-20340m",
+    "status": 200,
+    "body": "dbd871ad0e901d8a03d7e4e2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-30600m\u0026headline_until=@-20520m\u0026since=@-20700m\u0026until=@-20520m",
+    "status": 200,
+    "body": "373855cd42b2220d22b45b51"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-30780m\u0026headline_until=@-20700m\u0026since=@-20880m\u0026until=@-20700m",
+    "status": 200,
+    "body": "44467242dc7f0a9f29156f8a"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-30960m\u0026headline_until=@-20880m\u0026since=@-21060m\u0026until=@-20880m",
+    "status": 200,
+    "body": "c060d46c7768a4382e7f1aa3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-31140m\u0026headline_until=@-21060m\u0026since=@-21240m\u0026until=@-21060m",
+    "status": 200,
+    "body": "7b4dc2ad42fdf1a4182ee6c2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-31320m\u0026headline_until=@-21240m\u0026since=@-21420m\u0026until=@-21240m",
+    "status": 200,
+    "body": "9ed081188305a818770c88f3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-31500m\u0026headline_until=@-21420m\u0026since=@-21600m\u0026until=@-21420m",
+    "status": 200,
+    "body": "26342fcdb426647aa85530cd"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-31680m\u0026headline_until=@-21600m\u0026since=@-21780m\u0026until=@-21600m",
+    "status": 200,
+    "body": "39871a0af22f0d54e23db602"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-31860m\u0026headline_until=@-21780m\u0026since=@-21960m\u0026until=@-21780m",
+    "status": 200,
+    "body": "3c417e7e9bfe4aa49e0c7db7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-32040m\u0026headline_until=@-21960m\u0026since=@-22140m\u0026until=@-21960m",
+    "status": 200,
+    "body": "e5162ee5edf3cf47bacd152e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-32220m\u0026headline_until=@-22140m\u0026since=@-22320m\u0026until=@-22140m",
+    "status": 200,
+    "body": "43a3e54abf7b25038dddb989"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-32400m\u0026headline_until=@-22320m\u0026since=@-22500m\u0026until=@-22320m",
+    "status": 200,
+    "body": "4de44d78e8288ded03710570"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-32580m\u0026headline_until=@-22500m\u0026since=@-22680m\u0026until=@-22500m",
+    "status": 200,
+    "body": "7fcf662c3a1a4b92fb363ae3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-32760m\u0026headline_until=@-22680m\u0026since=@-22860m\u0026until=@-22680m",
+    "status": 200,
+    "body": "41d9221b4a00ac253cf9932d"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-32940m\u0026headline_until=@-22860m\u0026since=@-23040m\u0026until=@-22860m",
+    "status": 200,
+    "body": "8a475cb8278bb11418a88bba"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-33120m\u0026headline_until=@-23040m\u0026since=@-23220m\u0026until=@-23040m",
+    "status": 200,
+    "body": "d424f74030dacfd99799edb6"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-33300m\u0026headline_until=@-23220m\u0026since=@-23400m\u0026until=@-23220m",
+    "status": 200,
+    "body": "6600f298cf3b24cab7538c83"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-33480m\u0026headline_until=@-23400m\u0026since=@-23580m\u0026until=@-23400m",
+    "status": 200,
+    "body": "923c36d6616a0da4bf005ed3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-33660m\u0026headline_until=@-23580m\u0026since=@-23760m\u0026until=@-23580m",
+    "status": 200,
+    "body": "3dddd5b5c8a7d932883b6469"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-33840m\u0026headline_until=@-23760m\u0026since=@-23940m\u0026until=@-23760m",
+    "status": 200,
+    "body": "0d5f539265c9be483be512e0"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-34020m\u0026headline_until=@-23940m\u0026since=@-24120m\u0026until=@-23940m",
+    "status": 200,
+    "body": "ba50382ea2604d5d41a8c789"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-34200m\u0026headline_until=@-24120m\u0026since=@-24300m\u0026until=@-24120m",
+    "status": 200,
+    "body": "5697f97a5dbea08e6d925ac5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-34380m\u0026headline_until=@-24300m\u0026since=@-24480m\u0026until=@-24300m",
+    "status": 200,
+    "body": "080cb3e3484f74d4d474f0a1"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-34560m\u0026headline_until=@-24480m\u0026since=@-24660m\u0026until=@-24480m",
+    "status": 200,
+    "body": "3bf31e1f277078271c747cc9"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-34740m\u0026headline_until=@-24660m\u0026since=@-24840m\u0026until=@-24660m",
+    "status": 200,
+    "body": "0b3029c8c1eefcc138456eb8"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-34920m\u0026headline_until=@-24840m\u0026since=@-25020m\u0026until=@-24840m",
+    "status": 200,
+    "body": "823a3f7b75d96251df8d5cf7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-35100m\u0026headline_until=@-25020m\u0026since=@-25200m\u0026until=@-25020m",
+    "status": 200,
+    "body": "ef432d087120a9a54b95161d"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-35280m\u0026headline_until=@-25200m\u0026since=@-25380m\u0026until=@-25200m",
+    "status": 200,
+    "body": "b1ffa0d7f4fa8163029cb6a2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-35460m\u0026headline_until=@-25380m\u0026since=@-25560m\u0026until=@-25380m",
+    "status": 200,
+    "body": "f494ea53de6e6debe506dfad"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-35640m\u0026headline_until=@-25560m\u0026since=@-25740m\u0026until=@-25560m",
+    "status": 200,
+    "body": "5a20bebc353ba45bc447b10c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-35820m\u0026headline_until=@-25740m\u0026since=@-25920m\u0026until=@-25740m",
+    "status": 200,
+    "body": "3b4befe720832822985eebba"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-36000m\u0026headline_until=@-25920m\u0026since=@-26100m\u0026until=@-25920m",
+    "status": 200,
+    "body": "8275bb6d5f48a47f383d1bfa"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-36180m\u0026headline_until=@-26100m\u0026since=@-26280m\u0026until=@-26100m",
+    "status": 200,
+    "body": "4b87ff445ab47a7767cba74e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-36360m\u0026headline_until=@-26280m\u0026since=@-26460m\u0026until=@-26280m",
+    "status": 200,
+    "body": "c09101241784a3839dd4682c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-36540m\u0026headline_until=@-26460m\u0026since=@-26640m\u0026until=@-26460m",
+    "status": 200,
+    "body": "4953788151ad3f08ed20b40e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-36720m\u0026headline_until=@-26640m\u0026since=@-26820m\u0026until=@-26640m",
+    "status": 200,
+    "body": "38462cd98af9437a4f5529bd"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-36900m\u0026headline_until=@-26820m\u0026since=@-27000m\u0026until=@-26820m",
+    "status": 200,
+    "body": "703351dc272f0622a0798fbc"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-37080m\u0026headline_until=@-27000m\u0026since=@-27180m\u0026until=@-27000m",
+    "status": 200,
+    "body": "be2eb66f0c7a6119ab0565d1"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-37260m\u0026headline_until=@-27180m\u0026since=@-27360m\u0026until=@-27180m",
+    "status": 200,
+    "body": "cef440aca346df0faeb784b0"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-37440m\u0026headline_until=@-27360m\u0026since=@-27540m\u0026until=@-27360m",
+    "status": 200,
+    "body": "35332df79fc4b4c06911cba2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-37620m\u0026headline_until=@-27540m\u0026since=@-27720m\u0026until=@-27540m",
+    "status": 200,
+    "body": "a73553023dcd5865366eda02"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-37800m\u0026headline_until=@-27720m\u0026since=@-27900m\u0026until=@-27720m",
+    "status": 200,
+    "body": "4fa38628fd336b74fe114204"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-37980m\u0026headline_until=@-27900m\u0026since=@-28080m\u0026until=@-27900m",
+    "status": 200,
+    "body": "90127b10ab631785c53578d5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-38160m\u0026headline_until=@-28080m\u0026since=@-28260m\u0026until=@-28080m",
+    "status": 200,
+    "body": "3cbd8408383106389071bff3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-38340m\u0026headline_until=@-28260m\u0026since=@-28440m\u0026until=@-28260m",
+    "status": 200,
+    "body": "6482afcb54f48d4b2b29c37c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-38520m\u0026headline_until=@-28440m\u0026since=@-28620m\u0026until=@-28440m",
+    "status": 200,
+    "body": "902b625730ead50f89092aa3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-38700m\u0026headline_until=@-28620m\u0026since=@-28800m\u0026until=@-28620m",
+    "status": 200,
+    "body": "65b6933c66f0d0f7cc2af449"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-38880m\u0026headline_until=@-28800m\u0026since=@-28980m\u0026until=@-28800m",
+    "status": 200,
+    "body": "e40ef66887c06f36bc232479"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-39060m\u0026headline_until=@-28980m\u0026since=@-29160m\u0026until=@-28980m",
+    "status": 200,
+    "body": "98ce633503e7924eda1c1604"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-39240m\u0026headline_until=@-29160m\u0026since=@-29340m\u0026until=@-29160m",
+    "status": 200,
+    "body": "c60e20d323a083a883c19706"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-39420m\u0026headline_until=@-29340m\u0026since=@-29520m\u0026until=@-29340m",
+    "status": 200,
+    "body": "56ea74b3db9927bef7f8f7b8"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-39600m\u0026headline_until=@-29520m\u0026since=@-29700m\u0026until=@-29520m",
+    "status": 200,
+    "body": "76dc2abbb602e480149f9e95"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-39780m\u0026headline_until=@-29700m\u0026since=@-29880m\u0026until=@-29700m",
+    "status": 200,
+    "body": "0c1688005b7f6c93a466e9ff"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-39960m\u0026headline_until=@-29880m\u0026since=@-30060m\u0026until=@-29880m",
+    "status": 200,
+    "body": "b2d7d3956ffdb076476cf3f7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-40140m\u0026headline_until=@-30060m\u0026since=@-30240m\u0026until=@-30060m",
+    "status": 200,
+    "body": "b1b24f643972deb8ac15a13f"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-40320m\u0026headline_until=@-30240m\u0026since=@-30420m\u0026until=@-30240m",
+    "status": 200,
+    "body": "a2ad2c4840f5d39b920e97b5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-40500m\u0026headline_until=@-30420m\u0026since=@-30600m\u0026until=@-30420m",
+    "status": 200,
+    "body": "50409c802bca39c47e565fc9"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-40680m\u0026headline_until=@-30600m\u0026since=@-30780m\u0026until=@-30600m",
+    "status": 200,
+    "body": "58db456c8f4244d5ed95d8cd"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-40860m\u0026headline_until=@-30780m\u0026since=@-30960m\u0026until=@-30780m",
+    "status": 200,
+    "body": "013e4df81af7c6a86f0298bb"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-41040m\u0026headline_until=@-30960m\u0026since=@-31140m\u0026until=@-30960m",
+    "status": 200,
+    "body": "e6a2b17b308f79f63029f815"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-41220m\u0026headline_until=@-31140m\u0026since=@-31320m\u0026until=@-31140m",
+    "status": 200,
+    "body": "486bc0ecae04dd46a3f906ff"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-41400m\u0026headline_until=@-31320m\u0026since=@-31500m\u0026until=@-31320m",
+    "status": 200,
+    "body": "729dd67021d02f3f3d15b3c4"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-41580m\u0026headline_until=@-31500m\u0026since=@-31680m\u0026until=@-31500m",
+    "status": 200,
+    "body": "afd0aa7f01601ee272db1668"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-41760m\u0026headline_until=@-31680m\u0026since=@-31860m\u0026until=@-31680m",
+    "status": 200,
+    "body": "1459669ebfdff4312d826b41"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-41940m\u0026headline_until=@-31860m\u0026since=@-32040m\u0026until=@-31860m",
+    "status": 200,
+    "body": "45f251a96021feb7905f8085"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-42120m\u0026headline_until=@-32040m\u0026since=@-32220m\u0026until=@-32040m",
+    "status": 200,
+    "body": "434fdd9ef3e68ad13970263e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-42300m\u0026headline_until=@-32220m\u0026since=@-32400m\u0026until=@-32220m",
+    "status": 200,
+    "body": "ca87f63119efb7e4da9a04d6"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-42480m\u0026headline_until=@-32400m\u0026since=@-32580m\u0026until=@-32400m",
+    "status": 200,
+    "body": "3c5665b3ebee5552fcc737df"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-42660m\u0026headline_until=@-32580m\u0026since=@-32760m\u0026until=@-32580m",
+    "status": 200,
+    "body": "5b8d09f4c01e70860c93fb5c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-42840m\u0026headline_until=@-32760m\u0026since=@-32940m\u0026until=@-32760m",
+    "status": 200,
+    "body": "6cd1f2c675fe1e3643b79974"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-43020m\u0026headline_until=@-32940m\u0026since=@-33120m\u0026until=@-32940m",
+    "status": 200,
+    "body": "1add43971196e88a80661ad5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-43200m\u0026headline_until=@-33120m\u0026since=@-33300m\u0026until=@-33120m",
+    "status": 200,
+    "body": "0a892387414911c552ae6132"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-43380m\u0026headline_until=@-33300m\u0026since=@-33480m\u0026until=@-33300m",
+    "status": 200,
+    "body": "76182d946ae6601a4acf1300"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-43560m\u0026headline_until=@-33480m\u0026since=@-33660m\u0026until=@-33480m",
+    "status": 200,
+    "body": "215028e9b2cad6c02b4c875e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-43740m\u0026headline_until=@-33660m\u0026since=@-33840m\u0026until=@-33660m",
+    "status": 200,
+    "body": "bf71bf300a12de106668556d"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-43920m\u0026headline_until=@-33840m\u0026since=@-34020m\u0026until=@-33840m",
+    "status": 200,
+    "body": "98b91db0a13b064c50d23472"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-44100m\u0026headline_until=@-34020m\u0026since=@-34200m\u0026until=@-34020m",
+    "status": 200,
+    "body": "1e5a434ea3bf8bc4da2e7116"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-44280m\u0026headline_until=@-34200m\u0026since=@-34380m\u0026until=@-34200m",
+    "status": 200,
+    "body": "633800e93a4657ebb04c18d2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-44460m\u0026headline_until=@-34380m\u0026since=@-34560m\u0026until=@-34380m",
+    "status": 200,
+    "body": "b74196aee0551372efa4f0e5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-44640m\u0026headline_until=@-34560m\u0026since=@-34740m\u0026until=@-34560m",
+    "status": 200,
+    "body": "efe86f2dd0693ee89a6f12e5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-44820m\u0026headline_until=@-34740m\u0026since=@-34920m\u0026until=@-34740m",
+    "status": 200,
+    "body": "89d1b9b2adb383d15f4cd4b2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-45000m\u0026headline_until=@-34920m\u0026since=@-35100m\u0026until=@-34920m",
+    "status": 200,
+    "body": "bb2390e90895137af32a91b0"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-45180m\u0026headline_until=@-35100m\u0026since=@-35280m\u0026until=@-35100m",
+    "status": 200,
+    "body": "b3ca813eeeefa1276256b8fb"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-45360m\u0026headline_until=@-35280m\u0026since=@-35460m\u0026until=@-35280m",
+    "status": 200,
+    "body": "af61a4f3bf13aa103f959fca"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-45540m\u0026headline_until=@-35460m\u0026since=@-35640m\u0026until=@-35460m",
+    "status": 200,
+    "body": "9fe341e2cb3ec8266d34b863"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-45720m\u0026headline_until=@-35640m\u0026since=@-35820m\u0026until=@-35640m",
+    "status": 200,
+    "body": "8264e765d1e4f05311056b62"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-45900m\u0026headline_until=@-35820m\u0026since=@-36000m\u0026until=@-35820m",
+    "status": 200,
+    "body": "e73432575b4da100f2536dbb"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-46080m\u0026headline_until=@-36000m\u0026since=@-36180m\u0026until=@-36000m",
+    "status": 200,
+    "body": "77c0a70af720af0b1e99a5a3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-46260m\u0026headline_until=@-36180m\u0026since=@-36360m\u0026until=@-36180m",
+    "status": 200,
+    "body": "d60de2393964084a1de25932"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-46440m\u0026headline_until=@-36360m\u0026since=@-36540m\u0026until=@-36360m",
+    "status": 200,
+    "body": "a02bb2a153cf61e7eda42bd9"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-46620m\u0026headline_until=@-36540m\u0026since=@-36720m\u0026until=@-36540m",
+    "status": 200,
+    "body": "1db94396f6a8828c6385d698"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-46800m\u0026headline_until=@-36720m\u0026since=@-36900m\u0026until=@-36720m",
+    "status": 200,
+    "body": "aca690c8b83b3c88f0ca2a58"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-46980m\u0026headline_until=@-36900m\u0026since=@-37080m\u0026until=@-36900m",
+    "status": 200,
+    "body": "3d38968d6b00702ded176d77"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-47160m\u0026headline_until=@-37080m\u0026since=@-37260m\u0026until=@-37080m",
+    "status": 200,
+    "body": "0c4c49099d3b634f82627291"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-47340m\u0026headline_until=@-37260m\u0026since=@-37440m\u0026until=@-37260m",
+    "status": 200,
+    "body": "964bd322f4d10476bef21e82"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-47520m\u0026headline_until=@-37440m\u0026since=@-37620m\u0026until=@-37440m",
+    "status": 200,
+    "body": "266049d29a32f2cef184af41"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-47700m\u0026headline_until=@-37620m\u0026since=@-37800m\u0026until=@-37620m",
+    "status": 200,
+    "body": "03505e6559ef0ba35e3f783b"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-47880m\u0026headline_until=@-37800m\u0026since=@-37980m\u0026until=@-37800m",
+    "status": 200,
+    "body": "a96cf1b853da3d796334cf5c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-48060m\u0026headline_until=@-37980m\u0026since=@-38160m\u0026until=@-37980m",
+    "status": 200,
+    "body": "209f823d0ef293e3ec84d311"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-48240m\u0026headline_until=@-38160m\u0026since=@-38340m\u0026until=@-38160m",
+    "status": 200,
+    "body": "add17b25d18adc4fc722b4f4"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-48420m\u0026headline_until=@-38340m\u0026since=@-38520m\u0026until=@-38340m",
+    "status": 200,
+    "body": "e870f057a2512c48daff60a3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-48600m\u0026headline_until=@-38520m\u0026since=@-38700m\u0026until=@-38520m",
+    "status": 200,
+    "body": "05db22c33a2700bfce24feff"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-48780m\u0026headline_until=@-38700m\u0026since=@-38880m\u0026until=@-38700m",
+    "status": 200,
+    "body": "fa9ace3e1391cc9db7c3110d"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-48960m\u0026headline_until=@-38880m\u0026since=@-39060m\u0026until=@-38880m",
+    "status": 200,
+    "body": "e8e38449dde84ae870fcb066"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-49140m\u0026headline_until=@-39060m\u0026since=@-39240m\u0026until=@-39060m",
+    "status": 200,
+    "body": "6712bd2b74be4b704e3eadc7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-49320m\u0026headline_until=@-39240m\u0026since=@-39420m\u0026until=@-39240m",
+    "status": 200,
+    "body": "da19163190183481ca1dd44c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-49500m\u0026headline_until=@-39420m\u0026since=@-39600m\u0026until=@-39420m",
+    "status": 200,
+    "body": "acedcb17fd85f782e4114673"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-49680m\u0026headline_until=@-39600m\u0026since=@-39780m\u0026until=@-39600m",
+    "status": 200,
+    "body": "11a2f350078ba196d1d22fa3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-49860m\u0026headline_until=@-39780m\u0026since=@-39960m\u0026until=@-39780m",
+    "status": 200,
+    "body": "b2b870071a994cce047e7956"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-50040m\u0026headline_until=@-39960m\u0026since=@-40140m\u0026until=@-39960m",
+    "status": 200,
+    "body": "41acccfc7968c6a838def821"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-50220m\u0026headline_until=@-40140m\u0026since=@-40320m\u0026until=@-40140m",
+    "status": 200,
+    "body": "beb084fed443659308e721c3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-50400m\u0026headline_until=@-40320m\u0026since=@-40500m\u0026until=@-40320m",
+    "status": 200,
+    "body": "aae5ad06581a91d8ec854a85"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-50580m\u0026headline_until=@-40500m\u0026since=@-40680m\u0026until=@-40500m",
+    "status": 200,
+    "body": "68b48c8d7bfbe5f68e42f86d"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-50760m\u0026headline_until=@-40680m\u0026since=@-40860m\u0026until=@-40680m",
+    "status": 200,
+    "body": "78e39002b7d6916d70ed3ad4"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-50940m\u0026headline_until=@-40860m\u0026since=@-41040m\u0026until=@-40860m",
+    "status": 200,
+    "body": "1bcf4fd1549177451959f232"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-51120m\u0026headline_until=@-41040m\u0026since=@-41220m\u0026until=@-41040m",
+    "status": 200,
+    "body": "1bcf4fd1549177451959f232"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-51300m\u0026headline_until=@-41220m\u0026since=@-41400m\u0026until=@-41220m",
+    "status": 200,
+    "body": "4c9b27085ec44a363374c461"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-51480m\u0026headline_until=@-41400m\u0026since=@-41580m\u0026until=@-41400m",
+    "status": 200,
+    "body": "e601264e6663889ef4a603be"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-51660m\u0026headline_until=@-41580m\u0026since=@-41760m\u0026until=@-41580m",
+    "status": 200,
+    "body": "ea7846fa8974bec81ce5a38f"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-51840m\u0026headline_until=@-41760m\u0026since=@-41940m\u0026until=@-41760m",
+    "status": 200,
+    "body": "abe5890dd0a1ea1e8e0cdaed"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-52020m\u0026headline_until=@-41940m\u0026since=@-42120m\u0026until=@-41940m",
+    "status": 200,
+    "body": "2e2978a8d38e798e12546289"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-52200m\u0026headline_until=@-42120m\u0026since=@-42300m\u0026until=@-42120m",
+    "status": 200,
+    "body": "cccddaf25ebcf7678175d707"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-52380m\u0026headline_until=@-42300m\u0026since=@-42480m\u0026until=@-42300m",
+    "status": 200,
+    "body": "e4ab8165474c5ecd1f066304"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-52560m\u0026headline_until=@-42480m\u0026since=@-42660m\u0026until=@-42480m",
+    "status": 200,
+    "body": "e4ab8165474c5ecd1f066304"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-52740m\u0026headline_until=@-42660m\u0026since=@-42840m\u0026until=@-42660m",
+    "status": 200,
+    "body": "54122179cd8a24ae8fd1d0bf"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-52920m\u0026headline_until=@-42840m\u0026since=@-43020m\u0026until=@-42840m",
+    "status": 200,
+    "body": "697e4ca44eafad1b850b94b2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-53100m\u0026headline_until=@-43020m\u0026since=@-43200m\u0026until=@-43020m",
+    "status": 200,
+    "body": "d0cd346b8bb2c63b10f99710"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-53280m\u0026headline_until=@-43200m\u0026since=@-43380m\u0026until=@-43200m",
+    "status": 200,
+    "body": "5a77952f26ac96d0545d0bdf"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-53460m\u0026headline_until=@-43380m\u0026since=@-43560m\u0026until=@-43380m",
+    "status": 200,
+    "body": "2520ed5b91aa3ac04af5d423"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-53640m\u0026headline_until=@-43560m\u0026since=@-43740m\u0026until=@-43560m",
+    "status": 200,
+    "body": "3ab9a4c2a44178c46a748ffc"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-53820m\u0026headline_until=@-43740m\u0026since=@-43920m\u0026until=@-43740m",
+    "status": 200,
+    "body": "ae7ac4754661630df86c398e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-54000m\u0026headline_until=@-43920m\u0026since=@-44100m\u0026until=@-43920m",
+    "status": 200,
+    "body": "ae7ac4754661630df86c398e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-54180m\u0026headline_until=@-44100m\u0026since=@-44280m\u0026until=@-44100m",
+    "status": 200,
+    "body": "6dd044dc718a563149fdd308"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-54360m\u0026headline_until=@-44280m\u0026since=@-44460m\u0026until=@-44280m",
+    "status": 200,
+    "body": "79bc26c8665cc3a3d5fc67e1"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-54540m\u0026headline_until=@-44460m\u0026since=@-44640m\u0026until=@-44460m",
+    "status": 200,
+    "body": "6e9f745b297e171d09c579a2"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-54720m\u0026headline_until=@-44640m\u0026since=@-44820m\u0026until=@-44640m",
+    "status": 200,
+    "body": "b9d483f49dc9cee598864d7e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-54900m\u0026headline_until=@-44820m\u0026since=@-45000m\u0026until=@-44820m",
+    "status": 200,
+    "body": "d07a09ab7d666b525b556977"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-55080m\u0026headline_until=@-45000m\u0026since=@-45180m\u0026until=@-45000m",
+    "status": 200,
+    "body": "436887cf1b227a7fe1ace5c5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-55260m\u0026headline_until=@-45180m\u0026since=@-45360m\u0026until=@-45180m",
+    "status": 200,
+    "body": "d9f4306f5065d4624578336b"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-55440m\u0026headline_until=@-45360m\u0026since=@-45540m\u0026until=@-45360m",
+    "status": 200,
+    "body": "d9f4306f5065d4624578336b"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-55620m\u0026headline_until=@-45540m\u0026since=@-45720m\u0026until=@-45540m",
+    "status": 200,
+    "body": "d9f4306f5065d4624578336b"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-55800m\u0026headline_until=@-45720m\u0026since=@-45900m\u0026until=@-45720m",
+    "status": 200,
+    "body": "d9f4306f5065d4624578336b"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-55980m\u0026headline_until=@-45900m\u0026since=@-46080m\u0026until=@-45900m",
+    "status": 200,
+    "body": "8b35e9f9f2aecbc532a62f9f"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-56160m\u0026headline_until=@-46080m\u0026since=@-46260m\u0026until=@-46080m",
+    "status": 200,
+    "body": "365e89a784ef8c9e9cf2328d"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-56340m\u0026headline_until=@-46260m\u0026since=@-46440m\u0026until=@-46260m",
+    "status": 200,
+    "body": "7de4d0757732eea9903c530c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-56520m\u0026headline_until=@-46440m\u0026since=@-46620m\u0026until=@-46440m",
+    "status": 200,
+    "body": "496374b3791d4c48a769ec67"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-56700m\u0026headline_until=@-46620m\u0026since=@-46800m\u0026until=@-46620m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-56880m\u0026headline_until=@-46800m\u0026since=@-46980m\u0026until=@-46800m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-57060m\u0026headline_until=@-46980m\u0026since=@-47160m\u0026until=@-46980m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-57240m\u0026headline_until=@-47160m\u0026since=@-47340m\u0026until=@-47160m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-57420m\u0026headline_until=@-47340m\u0026since=@-47520m\u0026until=@-47340m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-57600m\u0026headline_until=@-47520m\u0026since=@-47700m\u0026until=@-47520m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-57780m\u0026headline_until=@-47700m\u0026since=@-47880m\u0026until=@-47700m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-57960m\u0026headline_until=@-47880m\u0026since=@-48060m\u0026until=@-47880m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-58140m\u0026headline_until=@-48060m\u0026since=@-48240m\u0026until=@-48060m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-58320m\u0026headline_until=@-48240m\u0026since=@-48420m\u0026until=@-48240m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-58500m\u0026headline_until=@-48420m\u0026since=@-48600m\u0026until=@-48420m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-58680m\u0026headline_until=@-48600m\u0026since=@-48780m\u0026until=@-48600m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-58860m\u0026headline_until=@-48780m\u0026since=@-48960m\u0026until=@-48780m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-59040m\u0026headline_until=@-48960m\u0026since=@-49140m\u0026until=@-48960m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-59220m\u0026headline_until=@-49140m\u0026since=@-49320m\u0026until=@-49140m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-59400m\u0026headline_until=@-49320m\u0026since=@-49500m\u0026until=@-49320m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-59580m\u0026headline_until=@-49500m\u0026since=@-49680m\u0026until=@-49500m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-59760m\u0026headline_until=@-49680m\u0026since=@-49860m\u0026until=@-49680m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-59940m\u0026headline_until=@-49860m\u0026since=@-50040m\u0026until=@-49860m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-60120m\u0026headline_until=@-50040m\u0026since=@-50220m\u0026until=@-50040m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-60300m\u0026headline_until=@-50220m\u0026since=@-50400m\u0026until=@-50220m",
+    "status": 200,
+    "body": "9f3fcbaebd478e25e3d0147e"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-60480m\u0026headline_until=@-50400m\u0026since=@-50580m\u0026until=@-50400m",
+    "status": 200,
+    "body": "cf8a8b90d07e28c0d1978519"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-60660m\u0026headline_until=@-50580m\u0026since=@-50760m\u0026until=@-50580m",
+    "status": 200,
+    "body": "e0adb96751c30c7b591f659b"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-60840m\u0026headline_until=@-50760m\u0026since=@-50940m\u0026until=@-50760m",
+    "status": 200,
+    "body": "cfcf53291656fd5a713d21de"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-61020m\u0026headline_until=@-50940m\u0026since=@-51120m\u0026until=@-50940m",
+    "status": 200,
+    "body": "982823f6d92fd4f0525e6233"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-61200m\u0026headline_until=@-51120m\u0026since=@-51300m\u0026until=@-51120m",
+    "status": 200,
+    "body": "982823f6d92fd4f0525e6233"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-61380m\u0026headline_until=@-51300m\u0026since=@-51480m\u0026until=@-51300m",
+    "status": 200,
+    "body": "982823f6d92fd4f0525e6233"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-61560m\u0026headline_until=@-51480m\u0026since=@-51660m\u0026until=@-51480m",
+    "status": 200,
+    "body": "982823f6d92fd4f0525e6233"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-61740m\u0026headline_until=@-51660m\u0026since=@-51840m\u0026until=@-51660m",
+    "status": 200,
+    "body": "982823f6d92fd4f0525e6233"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=minute\u0026headline_since=@-61920m\u0026headline_until=@-51840m\u0026since=@-52020m\u0026until=@-51840m",
+    "status": 200,
+    "body": "982823f6d92fd4f0525e6233"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=month\u0026headline_since=@-525600m\u0026headline_until=@0m\u0026login_email=ivy.nonrealton@example.com\u0026since=@-525600m\u0026until=@0m",
+    "status": 200,
+    "body": "07b6ff3657589a75ce1286d5"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=month\u0026headline_since=@-525600m\u0026headline_until=@0m\u0026login_email=marcus.fablewright@example.com\u0026since=@-525600m\u0026until=@0m",
+    "status": 200,
+    "body": "55ae07e109605dd09f55e51d"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=month\u0026headline_since=@-525600m\u0026headline_until=@0m\u0026login_email=priya.notarealsen@example.com\u0026since=@-525600m\u0026until=@0m",
+    "status": 200,
+    "body": "13416086d66f7e094ac07c83"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=month\u0026headline_since=@-525600m\u0026headline_until=@0m\u0026login_email=tomas.ficticio@example.com\u0026since=@-525600m\u0026until=@0m",
+    "status": 200,
+    "body": "ee1987f9acb402a371df7ff3"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=month\u0026headline_since=@-525600m\u0026headline_until=@0m\u0026login_email=yuki.testonaga@example.com\u0026since=@-525600m\u0026until=@0m",
+    "status": 200,
+    "body": "61f8d97966d555fdec98a8cb"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=month\u0026headline_since=@-525600m\u0026headline_until=@0m\u0026since=@-525600m\u0026until=@0m",
+    "status": 200,
+    "body": "dfbd7a155a68f939f78f493c"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=week\u0026headline_since=@-262080m\u0026headline_until=@0m\u0026login_email=ivy.nonrealton@example.com\u0026since=@-262080m\u0026until=@0m",
+    "status": 200,
+    "body": "8751c644371fb716d35dfec8"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=week\u0026headline_since=@-262080m\u0026headline_until=@0m\u0026login_email=marcus.fablewright@example.com\u0026since=@-262080m\u0026until=@0m",
+    "status": 200,
+    "body": "75a584884cbd158a76e292a7"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=week\u0026headline_since=@-262080m\u0026headline_until=@0m\u0026login_email=priya.notarealsen@example.com\u0026since=@-262080m\u0026until=@0m",
+    "status": 200,
+    "body": "d618b3c74fb676a3bab33767"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=week\u0026headline_since=@-262080m\u0026headline_until=@0m\u0026login_email=tomas.ficticio@example.com\u0026since=@-262080m\u0026until=@0m",
+    "status": 200,
+    "body": "2890d6a3ee207fca8d369863"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=week\u0026headline_since=@-262080m\u0026headline_until=@0m\u0026login_email=yuki.testonaga@example.com\u0026since=@-262080m\u0026until=@0m",
+    "status": 200,
+    "body": "e86a3348f19e69f7f8414115"
+  },
+  {
+    "key": "GET /api/stats/coverage-gap?granularity=week\u0026headline_since=@-262080m\u0026headline_until=@0m\u0026since=@-262080m\u0026until=@0m",
+    "status": 200,
+    "body": "8add2ac1d08906eb9e377f6a"
+  }
+]

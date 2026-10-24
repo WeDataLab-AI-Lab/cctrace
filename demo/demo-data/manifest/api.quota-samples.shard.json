@@ -1,0 +1,32 @@
+[
+  {
+    "key": "GET /api/quota-samples?from=@-180m",
+    "status": 200,
+    "body": "fe185ea4538b59d9808732df"
+  },
+  {
+    "key": "GET /api/quota-samples?from=@-262080m",
+    "status": 200,
+    "body": "2fa1c78db906e3f79df13a2e"
+  },
+  {
+    "key": "GET /api/quota-samples?from=@-29879020m",
+    "status": 200,
+    "body": "2fa1c78db906e3f79df13a2e"
+  },
+  {
+    "key": "GET /api/quota-samples?from=@-43200m",
+    "status": 200,
+    "body": "48ddff9ab6c4583888e87f87"
+  },
+  {
+    "key": "GET /api/quota-samples?from=@-4320m",
+    "status": 200,
+    "body": "4fa27eb0c50c16bfe368640c"
+  },
+  {
+    "key": "GET /api/quota-samples?from=@-525600m",
+    "status": 200,
+    "body": "2fa1c78db906e3f79df13a2e"
+  }
+]

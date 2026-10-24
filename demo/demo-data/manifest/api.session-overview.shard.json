@@ -1,0 +1,3677 @@
+[
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "54d86ead76639bec75a1fcc8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "cec68625d3d2671eac515cd3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "7519d55f3a31613f6c9fd012"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "6cfa3e2f53ba866e04891cb0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "d9e295176e8205c04ffd5e13"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "6cfa3e2f53ba866e04891cb0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "91966af6c7a3cf069c6e1d42"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "964286103effac8c8bdbc857"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "91966af6c7a3cf069c6e1d42"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "54d86ead76639bec75a1fcc8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "cec68625d3d2671eac515cd3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "7519d55f3a31613f6c9fd012"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "3d32f26e786a6e888d0a7950"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "2e4adf699d0e3361838c3dd2"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "131082514af3649a8057abcf"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "a3459efffa07bce99d592df7"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "35015080039ef649cf71f907"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "0c7c6d98a5bfbd5f16d07d99"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "3d32f26e786a6e888d0a7950"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "2e4adf699d0e3361838c3dd2"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "3f571c6ffc4451fc44ef1426"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "459c75b41fd2f9e509e10bc4"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "9c63ac1d402421a20903b183"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "1de2fd0cb95ce9280c2c99c7"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "1dde7355d89b22c788e7a6d7"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "2b4071a64638c5d0bfb61498"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "b1a710e71c05a5a5e62d63a1"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "b086e3e34146a2d52a06182d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "71f78f8a48f9a9579136d43a"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "3f571c6ffc4451fc44ef1426"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "459c75b41fd2f9e509e10bc4"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "9c63ac1d402421a20903b183"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "25be465fc4ff5c19dfd17861"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "a2671bc91e2693c0bb962d5d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "e26ab1b3e2ab3af11425bd75"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "425bd5a16448cf8bcf9b296f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "4352b7994d9e86b5f9393707"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "425bd5a16448cf8bcf9b296f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "b7a72c7f3a92728a08fcd5c1"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "419fffcc6e3715dcff95d4ff"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "b7a72c7f3a92728a08fcd5c1"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "25be465fc4ff5c19dfd17861"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "a2671bc91e2693c0bb962d5d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "e26ab1b3e2ab3af11425bd75"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37a448ad52a11ac32190b9e5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "8b4c727d89f660c38e90e106"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "9255cf3f99e696b3cf4b7ed5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "d20bc7257fdd22c485cc045c"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "03ad5d1965b22e1519ff6ca9"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "2df81c040422321589d0ba4d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37a448ad52a11ac32190b9e5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "8b4c727d89f660c38e90e106"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "08da41a5374e0d20a62c00c4"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "71fc76e4e7fe4bc00874672d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "6adde69ba2f21291870ecb9d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "90563e390b935c0f3e8c4b6f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "ce1e9204cc8380245524abbb"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "b88cf2ca8e9a77fbed057d0b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "f57da5fedfe8bbdcaa792df8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "ce1e9204cc8380245524abbb"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "72a5abebf23cec86f245cc11"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "08da41a5374e0d20a62c00c4"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "71fc76e4e7fe4bc00874672d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "6adde69ba2f21291870ecb9d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "bd255b1c330efef6633dcf46"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "0376f3f46d9bd38739d2fac0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "f31b3cd706c701f050c7a67c"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "e9353e92120620b99e21b9a5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "3bc594a3fc8dc6e83ca7436e"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "10e959e0e9a86e80c60bdd96"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "9c6395d4a3fd732bb217c426"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "ec8b61c65276b55a08c5087c"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "b625aaa33adfcb7e8e8f157d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "bd255b1c330efef6633dcf46"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "0376f3f46d9bd38739d2fac0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "f31b3cd706c701f050c7a67c"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "9ee41a543e54d906a11e9b26"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "22f0453eeaf17de52910115e"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "5cf2166d8b2e41ccc63d183a"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "9ee41a543e54d906a11e9b26"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "d1aefd95d29c4a011d05c48e"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "5a27410733c45f680a7a5d1a"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "63d5d48b2aedbb1ef822f959"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "f75ac6a93554d5c937fe5ef0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "c651f23d10b27d30d972ae2a"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "f75ac6a93554d5c937fe5ef0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "2a8ffd59d6a6d299f1a406ce"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "68cfee5e25f9da32f23cc28e"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "2a8ffd59d6a6d299f1a406ce"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "13c313c8eff8226f618c74bf"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "5a27410733c45f680a7a5d1a"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "731cb50a47f54ac51145b4de"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "592817474199f8fc86a2616f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "f1538ea2bc5ec3c4dd2e6f14"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "1704c19388ca82a863ed869f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "1704c19388ca82a863ed869f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "f68a6583bfc7bff2c91921e3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "f68a6583bfc7bff2c91921e3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "9ca0f60d93cd5aebaabdfef5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "003804db62d3808ee303cd59"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "8d084123831915918dff0f1e"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "d1e902debf91ea25e29d2ca2"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "c46c676afd112c054e10dbcd"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "c46c676afd112c054e10dbcd"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "141f4a82ba92ea994f60a2ea"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "141f4a82ba92ea994f60a2ea"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "3d1da919b5b986d8dd544602"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "f8be4bb5cacd876b991699c0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "d41c04102451074971054820"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "8ec2c9eae2c8602b81c1e028"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "5f97748af3a902a8e8557995"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "5f97748af3a902a8e8557995"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "e9fdb70d120922195f217a35"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "e9fdb70d120922195f217a35"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "cab1086ef54c2582b68e3631"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "668871c281b0460125e0a019"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "8fd74edbe615695429e2f92f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "ac6a770201cbec67afb069ae"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "89fd263cc67c6c2bc1e6b0f3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "89fd263cc67c6c2bc1e6b0f3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "fd8f027618f2e892cfe8ec15"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "fd8f027618f2e892cfe8ec15"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "4ef3c3192c42afad9fb5310a"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "3bdafdd7bc7ce690775c3efe"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "b950e4c09d955abadc44df40"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "da16a3a447d48e4d1b773bd8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "55d0303c10b897720ab1d2f4"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "0f0f86c34c772831dfe91a91"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "623daa9c79e90a5b0cbe34df"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "59a1a2c6a51f9254923bfff5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "dbcc28ad145c83b3703bdd19"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "8a665d41a81aaa06a3cab8ec"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "f645219b6c5b1f4f672eadf3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "e4e922014ca8438c66e5b36a"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "8f5a74e0ec3215eaacdedb3c"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "38c796d6a4f3a23f0c1a2e30"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "fc940ec3163a4aff5f3021bb"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "83e6c69387310cebefa24ad5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "5cda307a447352719c4d2fd6"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "b5ec8e92f98b4a28b2c5d5aa"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "f71b65476d4d9f480d669412"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "362a91a2ed0b0cbe54d9b851"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "d446c60eae367b26a8de3e83"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "66828a853a6e55ad1f789cd2"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "c904a671e317172c6e8a5e66"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "0059616112428c7242396eef"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "eff215bbc86b80b61314daf0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "d7b5c9d21734df73e419f4d1"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "7f00fb917c49097b14c56892"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "0f00eefab77588cc3cd57433"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "20eb7362336ba61938e7c456"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "03e1615f6a9acccdc67f8b99"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "5a02116c90d54c8e4daa5f2d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "ea125228ccfc8cddb50243a6"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "eaec30899d2c08d3e40dbab7"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "c78e8f972fb08af5197d2acd"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "8bd78cc7224c3d32bda1a0a9"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "9dbca15ec34b0f65552ab3d1"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "e9c51bda435a4663ed163441"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "a4d2a3b0f91d820c1b72ff0f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "b7a7cc283bf1582ced09a486"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=200\u0026source=all",
+    "status": 200,
+    "body": "4349ebbaa5ef605188892aea"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=200\u0026source=interactive",
+    "status": 200,
+    "body": "b445d6ff6375c14fea38ceb0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=300\u0026source=all",
+    "status": 200,
+    "body": "821b501074d782c5433f53e0"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=300\u0026source=interactive",
+    "status": 200,
+    "body": "c349ba5e65924bc2260102c3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=400\u0026source=all",
+    "status": 200,
+    "body": "e996f5ff84404857eb5b2262"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=400\u0026source=interactive",
+    "status": 200,
+    "body": "d97df74cefc1999dd8cdf8af"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=500\u0026source=all",
+    "status": 200,
+    "body": "d49b917e8cc9326dc9602a36"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=500\u0026source=interactive",
+    "status": 200,
+    "body": "b5fa9c4b73557f51a1d7d2df"
+  },
+  {
+    "key": "GET /api/session-overview?agent=claude\u0026assembled=1\u0026limit=100\u0026offset=600\u0026source=all",
+    "status": 200,
+    "body": "07adc81d1c9d98bee63e62c8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "72abfaadf13cd90bde6090ef"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "72abfaadf13cd90bde6090ef"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "a922d63e61656e1e0a9ac725"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "a922d63e61656e1e0a9ac725"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "87b535f7ea66fc95ba1188bf"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "87b535f7ea66fc95ba1188bf"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "72abfaadf13cd90bde6090ef"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "72abfaadf13cd90bde6090ef"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "cbb22751cc47a6176620c812"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "cbb22751cc47a6176620c812"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "412447c828c7e4fd693d70af"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "412447c828c7e4fd693d70af"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "4ef5cd416cf59a8d28499812"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "4ef5cd416cf59a8d28499812"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "cbb22751cc47a6176620c812"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "cbb22751cc47a6176620c812"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "06d1e258fbd58d8c9d3364ee"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "06d1e258fbd58d8c9d3364ee"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "39a250cbb5f05b00d57f5ad1"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "39a250cbb5f05b00d57f5ad1"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "2739cb7be5741bc63e3f8a25"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "2739cb7be5741bc63e3f8a25"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "06d1e258fbd58d8c9d3364ee"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "06d1e258fbd58d8c9d3364ee"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "3b4febc87e1593c0a83c7aa2"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "3b4febc87e1593c0a83c7aa2"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "e5dc51c1b946bee144ad6b0d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "e5dc51c1b946bee144ad6b0d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "34606ca130bfb84e79e0a7d8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "34606ca130bfb84e79e0a7d8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "3b4febc87e1593c0a83c7aa2"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "3b4febc87e1593c0a83c7aa2"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "0a0b94bcc178984516ae12e8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "0a0b94bcc178984516ae12e8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "eb8dca75697a2378f0f92910"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "eb8dca75697a2378f0f92910"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "17e7ff776799d3310b59c6fc"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "17e7ff776799d3310b59c6fc"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "0a0b94bcc178984516ae12e8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "0a0b94bcc178984516ae12e8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "f9830022334371ef1043aa1f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "f9830022334371ef1043aa1f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "78f965129d7dd6bad3ad355c"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "78f965129d7dd6bad3ad355c"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "a312f854750ed3ee70f178d3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "a312f854750ed3ee70f178d3"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "f9830022334371ef1043aa1f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "f9830022334371ef1043aa1f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "c433f6750aed8c5fe0b72d7f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "c433f6750aed8c5fe0b72d7f"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "4e1bb13f1a58fab5687a6d57"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "4e1bb13f1a58fab5687a6d57"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "6beba5c8c2d4baf97eaeac7c"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "6beba5c8c2d4baf97eaeac7c"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "438f503a5aa4a0eaa5dbaa2d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "438f503a5aa4a0eaa5dbaa2d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "c32b50edace0087032e54e98"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "c32b50edace0087032e54e98"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "b7eeddea02c72733d4056cc5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "b7eeddea02c72733d4056cc5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "10ad7d61ae24bdbb5a526d78"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "10ad7d61ae24bdbb5a526d78"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "62d4e2aa8f5d20d12f95f7b5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "62d4e2aa8f5d20d12f95f7b5"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "cd1c092dfb134f36f1ad2184"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "cd1c092dfb134f36f1ad2184"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "38ccb38ba17a2954a824cb73"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "38ccb38ba17a2954a824cb73"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "1f140f055ad2f1d9a3e341ab"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "1f140f055ad2f1d9a3e341ab"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "bb1f2e8c84f097bf04cc2f58"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "bb1f2e8c84f097bf04cc2f58"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "340712e6c8f6ce4ad81ac671"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "340712e6c8f6ce4ad81ac671"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "315e9510bfa8126224674fd8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "315e9510bfa8126224674fd8"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "2f39748ef6127a764ef8b104"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "2f39748ef6127a764ef8b104"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "43b59ef23539f201b860693b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "43b59ef23539f201b860693b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "b6d783896dabd552ab74b09d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "b6d783896dabd552ab74b09d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "84bd7f31a1cba3f186cb0269"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "84bd7f31a1cba3f186cb0269"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "00eab6e1d964fec9728d6a1e"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "00eab6e1d964fec9728d6a1e"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "be471f95345a7aa3fc83d2da"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "be471f95345a7aa3fc83d2da"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026offset=200\u0026source=all",
+    "status": 200,
+    "body": "9b305a46c97c23d26d5b0c7d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=codex\u0026assembled=1\u0026limit=100\u0026offset=200\u0026source=interactive",
+    "status": 200,
+    "body": "9b305a46c97c23d26d5b0c7d"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=other\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?agent=weekly\u0026assembled=1\u0026limit=100\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "37517e5f3dc66819f61f5a7b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "e168ef503a2596dffcefbef9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "cec68625d3d2671eac515cd3"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "46d44cc93138fb663e1d5603"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "44a74ce484185663bdeeefc8"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "d9e295176e8205c04ffd5e13"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "44a74ce484185663bdeeefc8"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "f5c1eaacd9c9c734a1bf7bf2"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "964286103effac8c8bdbc857"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "f5c1eaacd9c9c734a1bf7bf2"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "e168ef503a2596dffcefbef9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "cec68625d3d2671eac515cd3"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "46d44cc93138fb663e1d5603"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "3b733375a78cb186008a96a6"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "0877c21ea7d6d63019618760"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "941a9e1485f75535e8a20b39"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "046ba1c11da01d0499e92fbc"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "8810bed9182672e891e6a5c5"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "8810bed9182672e891e6a5c5"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "3b733375a78cb186008a96a6"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "0877c21ea7d6d63019618760"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "14853deb54d80cf99cb76da8"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "5587ab2f9ff00f685a801c8d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "06e94b57f98b48cb45d13afd"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "fa9091a19bfe2b5127c7d604"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "fbacd4d6b2f95cab84a9d9c8"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "fb1e3296ecdbd09a631754b4"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "14853deb54d80cf99cb76da8"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "5587ab2f9ff00f685a801c8d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "c5f41742912d610644bc8c4c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "459c75b41fd2f9e509e10bc4"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "42a96e127ab624c85c2f21b3"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "8183613bcb10ba11ee36c5d1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "1dde7355d89b22c788e7a6d7"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "8183613bcb10ba11ee36c5d1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "14214f665a2904e927f441ae"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "b086e3e34146a2d52a06182d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "14214f665a2904e927f441ae"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "c5f41742912d610644bc8c4c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "459c75b41fd2f9e509e10bc4"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "42a96e127ab624c85c2f21b3"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "64e7fae1aa877e66dd66ea2b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "689f8168c87c113494a15aae"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "be77bcc2e3982d2c3484057a"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "70dbe376cdffcb605bea20a0"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "e255d60f6dc3f829db56d7a0"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "d6ae611e0e2bb924ca019a25"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "64e7fae1aa877e66dd66ea2b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "689f8168c87c113494a15aae"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "c631e6e406458996b189c5c6"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "a2671bc91e2693c0bb962d5d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "3eb2f31e847cb39b8f3c0847"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "fdb5145ffa471f72920b0f29"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "4352b7994d9e86b5f9393707"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "fdb5145ffa471f72920b0f29"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "dd7f5c04f5c245e9f073418c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "419fffcc6e3715dcff95d4ff"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "dd7f5c04f5c245e9f073418c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "c631e6e406458996b189c5c6"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "a2671bc91e2693c0bb962d5d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "3eb2f31e847cb39b8f3c0847"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "1b4a3301e516c5d1f1a2dae2"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "0b33edd0959c51d7111f21e1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "d2dff7a8a37c35e04fdc7b66"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "216f82431a40037933b614cc"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "a4fa13963a5da1ef201cd818"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "bb8294e2745ac27a2d466c4e"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "1b4a3301e516c5d1f1a2dae2"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "0b33edd0959c51d7111f21e1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=200\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "b68a4f2713d157e0d65dd912"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=200\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "f02c1fc25e87094a31c1e3b0"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=200\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "14331fa364f8b6c5607bad5c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=200\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "b68a4f2713d157e0d65dd912"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "26b5fa514f831081af721355"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "71fc76e4e7fe4bc00874672d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "cad58b9ddd6cb3b459b458f9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "885482ca73d0282f2d82658b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "ce1e9204cc8380245524abbb"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "885482ca73d0282f2d82658b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "aa6b38591e3fba0942c3052b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "ce1e9204cc8380245524abbb"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "aa6b38591e3fba0942c3052b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "26b5fa514f831081af721355"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "71fc76e4e7fe4bc00874672d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "cad58b9ddd6cb3b459b458f9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "8e4cee7a743aa1c03d325f37"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "d0b96604d904ca977d69cc84"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "40e283abcbaed83d139213d9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "2471b58f1cea0edee2b4b619"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "c1e0dbf255f3a7e59131433c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "097c3a7e05e5b6df13a0de71"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "8e4cee7a743aa1c03d325f37"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "d0b96604d904ca977d69cc84"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "f80fda581b7b302fdb7d84ae"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "0376f3f46d9bd38739d2fac0"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "9faaae0e37dc3e6f91da957f"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "2f97ac3167bf5684694c2bf1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "3bc594a3fc8dc6e83ca7436e"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "2f97ac3167bf5684694c2bf1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "f8421663deb760f8d9262a8b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "ec8b61c65276b55a08c5087c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "f8421663deb760f8d9262a8b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "f80fda581b7b302fdb7d84ae"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "0376f3f46d9bd38739d2fac0"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "9faaae0e37dc3e6f91da957f"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "ce8f280dfc6437da038b26fe"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "37d8a429a2b34c998cdeaa78"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "1f394eaf74750708f72e57ca"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "20f1be95e862d063a925631d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "d2353a09866fed849f466492"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "a2a5a7910fbbd17c8b251250"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "ce8f280dfc6437da038b26fe"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "37d8a429a2b34c998cdeaa78"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "85e17d4ee84add9ebddc4f1f"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=headless",
+    "status": 200,
+    "body": "5a27410733c45f680a7a5d1a"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "57b6e4b4a50ca38a9254a66c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "02bd8429159caad82fa81292"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=headless",
+    "status": 200,
+    "body": "c651f23d10b27d30d972ae2a"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "02bd8429159caad82fa81292"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "db25fef847b6065973bde719"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=headless",
+    "status": 200,
+    "body": "68cfee5e25f9da32f23cc28e"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "db25fef847b6065973bde719"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "03b2220eac8f0eb85b157bf9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=headless",
+    "status": 200,
+    "body": "5a27410733c45f680a7a5d1a"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=0\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "b693037dec81777b14787eab"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "d4ef5d8c8ce69faedb237684"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "74f2510c0ec02205b2079f69"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "884e0c29e1284bb30190e3bb"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "884e0c29e1284bb30190e3bb"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "76edfbdd8b3ef0260bfdee09"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "76edfbdd8b3ef0260bfdee09"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "2ae2d3eccb96032c685a49af"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=100\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "61811ec20370d2f37f7c4d85"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "562535dfcf2983c71fd57398"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "7f6cdd7317866940e19175a9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "cd889b86998b56f480b02a5b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "cd889b86998b56f480b02a5b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "0d015f14dc8db3e54c6f906e"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "0d015f14dc8db3e54c6f906e"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "92ba9d76800d6806aba46daf"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=200\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "16121edb25276be01b04ac58"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "7358c2cfb77d91ac7e585135"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "cafaca0124d58889de7888c8"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "ad44aa578022f0af84a47ce7"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "ad44aa578022f0af84a47ce7"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "7cbd9d1415d13ea72f563932"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "7cbd9d1415d13ea72f563932"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "17adfcf8ed2e9ce68f66c582"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=300\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "3941ac014f6b09529257fdc2"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "f4229d9373131ee206e954e9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "dada0dba972747b45d72f511"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "f507d942159310463e0ecdea"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "f507d942159310463e0ecdea"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "7926d3d3ed952634ad685385"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "7926d3d3ed952634ad685385"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "9d5424c3c3e25320048ed7bb"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=400\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "30ba085a5072c6739e2dfb43"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "af5b5dd81fd07eb694125e28"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "382583db9de5602c297fbb0b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "31e56d013f694342f68cf4a1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "31e56d013f694342f68cf4a1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "0a24015d9d104000a5f72597"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "0a24015d9d104000a5f72597"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "7afd711e4a5b98919cbcf4c9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=500\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "565a72dfb5dc27ff89287a9c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "6c6d36785f09c3ae7404e90c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "d7d312c33df7aa7872848264"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "653a8c992eca13fc59f8ca29"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "653a8c992eca13fc59f8ca29"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "227a50fc8f9f8d62001b2304"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "227a50fc8f9f8d62001b2304"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "e643887e301e4f22f701870c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=600\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "4c5e59b14520a4ac1cdea3bd"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=700\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "cfdab8f0506ef31d8ed8f381"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=700\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "9f0decd6d868a83f8e0f2bc7"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=700\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "47d5c717666f0ed0919f488f"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=700\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "8e93bde1f9cfec31545ba68d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=700\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "faaddebd50fa88e805087990"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=700\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "faaddebd50fa88e805087990"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=700\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "267abae3fb38a4007ccea6c4"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=700\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "e427b16f46dd440396d94929"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=800\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "04d735f619ad61a2cee8837e"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=800\u0026sort=activity\u0026source=interactive",
+    "status": 200,
+    "body": "453286767f5bd381e496ce24"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=800\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "647634f11e3374e7b771b5e5"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=800\u0026sort=cost\u0026source=interactive",
+    "status": 200,
+    "body": "a3bd4083c517c80ee1bbfaed"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=800\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "99861dc45a2dadaa17e388c5"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=800\u0026sort=requests\u0026source=interactive",
+    "status": 200,
+    "body": "778569056a944cb369701633"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=800\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "5c44ad621b2116f2c27bc184"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=800\u0026sort=start\u0026source=interactive",
+    "status": 200,
+    "body": "a6aaf1d76dc1a8d3eeb7d072"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=900\u0026sort=activity\u0026source=all",
+    "status": 200,
+    "body": "d46aa6e33034bb3014d4cd48"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=900\u0026sort=cost\u0026source=all",
+    "status": 200,
+    "body": "f4e46fc3c4d8c27cdaa669d3"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=900\u0026sort=requests\u0026source=all",
+    "status": 200,
+    "body": "723a24e7f8f0fdfde07d0253"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026include=analysis\u0026limit=100\u0026offset=900\u0026sort=start\u0026source=all",
+    "status": 200,
+    "body": "dd6bd983dcd50b9ae9b99e70"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "ade2f9498ca90fcb1a6349fc"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "83e6c69387310cebefa24ad5"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "f4a670a0434cc9416a826965"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "cfc3fee5a0848c7eb3dbe40c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "75cfafc29698268bff899d4a"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026source=all",
+    "status": 200,
+    "body": "861127465e6197fff4bcbd93"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=ivy.nonrealton@example.com\u0026offset=200\u0026source=interactive",
+    "status": 200,
+    "body": "a6acffdc91837ab579a2c172"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "b831bd4bb48c3f632ff944c1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "d446c60eae367b26a8de3e83"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "70a00fe0ff03f4c4bcc4a758"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "8d125464b609a3ae25af0ba9"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=marcus.fablewright@example.com\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "56a25d5c09fdb8d66198cbec"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "3009ca204ba94ce909b2db78"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "0059616112428c7242396eef"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "5ffad826731609b8729ad561"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "cadec2dd3b45b3fd01fdcff3"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "b6075329f6ac456f9155ad6c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=priya.notarealsen@example.com\u0026offset=200\u0026source=all",
+    "status": 200,
+    "body": "4d202af4c68f035a2d47ab1e"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "f194cb6162916374e545b32d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "20eb7362336ba61938e7c456"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "5291c92932b6814b9bdf5c16"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "a42237cd4899e5e7267ecab0"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=tomas.ficticio@example.com\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "1917ef464d4412b5e973a806"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "0efc17ac1b307b310b0c0665"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "ea125228ccfc8cddb50243a6"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "c0909922b9cf06e027f1672b"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "51797f9ff5f3292270d2169f"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026login_email=yuki.testonaga@example.com\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "b8a342deecbe472a0666208d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=0\u0026source=all",
+    "status": 200,
+    "body": "e2a18d46d2dcd7b92b608f72"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=0\u0026source=headless",
+    "status": 200,
+    "body": "9dbca15ec34b0f65552ab3d1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=0\u0026source=interactive",
+    "status": 200,
+    "body": "9090a9d82c69b1a4cfa6c1a2"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=100\u0026source=all",
+    "status": 200,
+    "body": "23c0622e062d336b356c2f26"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=100\u0026source=interactive",
+    "status": 200,
+    "body": "376747b031010ba8f473002c"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=200\u0026source=all",
+    "status": 200,
+    "body": "00ddaaa25752d221b7251af0"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=200\u0026source=interactive",
+    "status": 200,
+    "body": "89d2ce8ab2ff35bae69efcc5"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=300\u0026source=all",
+    "status": 200,
+    "body": "abb01c81035606e9a8030c9d"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=300\u0026source=interactive",
+    "status": 200,
+    "body": "350f0f4bc89017f507f5e7a5"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=400\u0026source=all",
+    "status": 200,
+    "body": "623b5939a9b9fd98d3653698"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=400\u0026source=interactive",
+    "status": 200,
+    "body": "fe8485d959c6f17df070e9ad"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=500\u0026source=all",
+    "status": 200,
+    "body": "3e2e6ebd548c871b789df542"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=500\u0026source=interactive",
+    "status": 200,
+    "body": "7c13b74003e35b7f3f03e9bc"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=600\u0026source=all",
+    "status": 200,
+    "body": "a13858fbfba04fe5dc0d7cb1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=600\u0026source=interactive",
+    "status": 200,
+    "body": "00541adf491e6be0f153e0ff"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=700\u0026source=all",
+    "status": 200,
+    "body": "74ec9460aadda92b2a2c39f2"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=700\u0026source=interactive",
+    "status": 200,
+    "body": "51812b4267fcd8a745a55ca1"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=800\u0026source=all",
+    "status": 200,
+    "body": "280e5826f6963feb7a843f60"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=800\u0026source=interactive",
+    "status": 200,
+    "body": "98c1cea75908764a96967f70"
+  },
+  {
+    "key": "GET /api/session-overview?assembled=1\u0026limit=100\u0026offset=900\u0026source=all",
+    "status": 200,
+    "body": "79da93e8cd4877ae2b574b81"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=ivy.nonrealton@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "de66f7b12aed435be4a1ba5f"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=ivy.nonrealton@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "ebc14af45d5e79702e406ffd"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=ivy.nonrealton@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "ebc14af45d5e79702e406ffd"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=ivy.nonrealton@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "ebc14af45d5e79702e406ffd"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=ivy.nonrealton@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "ebc14af45d5e79702e406ffd"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=marcus.fablewright@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "f410f37eab5a0b102ea0d03d"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=marcus.fablewright@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "00b42955870210b3199c53e5"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=marcus.fablewright@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "a83f7e0d869cb98a0e680f71"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=marcus.fablewright@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "00b42955870210b3199c53e5"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=marcus.fablewright@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "00b42955870210b3199c53e5"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=priya.notarealsen@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "72332e6546e42e8c8fc8e871"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=priya.notarealsen@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "bfdd41c4754ebd2b3b13c3ae"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=priya.notarealsen@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "bfdd41c4754ebd2b3b13c3ae"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=priya.notarealsen@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "bfdd41c4754ebd2b3b13c3ae"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=priya.notarealsen@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "bfdd41c4754ebd2b3b13c3ae"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=tomas.ficticio@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "734adc676c2ef55c85525050"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=tomas.ficticio@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "642fc4b445f7ab692d0b2487"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=tomas.ficticio@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "642fc4b445f7ab692d0b2487"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=tomas.ficticio@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "642fc4b445f7ab692d0b2487"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=tomas.ficticio@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "642fc4b445f7ab692d0b2487"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=yuki.testonaga@example.com\u0026since=@-180m",
+    "status": 200,
+    "body": "95ea9d70c930f06307c2aeef"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=yuki.testonaga@example.com\u0026since=@-262080m",
+    "status": 200,
+    "body": "7d6bc116bb7702cbc699f20d"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=yuki.testonaga@example.com\u0026since=@-43200m",
+    "status": 200,
+    "body": "c3d10c1a9f1453326f0e90dc"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=yuki.testonaga@example.com\u0026since=@-4320m",
+    "status": 200,
+    "body": "c3d10c1a9f1453326f0e90dc"
+  },
+  {
+    "key": "GET /api/session-overview?limit=5\u0026offset=0\u0026profile_email=yuki.testonaga@example.com\u0026since=@-525600m",
+    "status": 200,
+    "body": "7d6bc116bb7702cbc699f20d"
+  }
+]

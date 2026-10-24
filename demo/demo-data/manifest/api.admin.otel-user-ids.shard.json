@@ -1,0 +1,7 @@
+[
+  {
+    "key": "GET /api/admin/otel-user-ids?",
+    "status": 200,
+    "body": "4e0f041aef99c2656581cce5"
+  }
+]

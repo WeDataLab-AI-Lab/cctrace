@@ -1,0 +1,1832 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/client/profiles/">
+      
+      
+        <link rel="prev" href="../setup/">
+      
+      
+        <link rel="next" href="../sync/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../ko/client/profiles/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Profiles - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#profiles" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+            
+  <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/">Try the demo dashboard</a>: a fictitious five-person team, nothing to install.
+  · <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/" lang="ko">데모 대시보드 보기</a>
+          </div>
+          
+        </aside>
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Profiles
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ko/client/profiles/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Server
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Client
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Profiles
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Profiles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">Demo dashboard</span>
+    <span class="cctrace-demo-card__text">A fictitious five-person team, in your browser, nothing to install.</span>
+    <span class="cctrace-demo-card__cta">Open the demo →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-profiles-map-to-accounts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How profiles map to accounts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automatic-detection-during-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic detection during init
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-a-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add a profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#list-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List profiles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remove-a-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remove a profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#select-a-profile-on-the-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Select a profile on the command line
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-folders-that-profiles-share" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source folders that profiles share
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Source folders that profiles share">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#see-what-is-held-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See what is held back
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#give-a-shared-source-to-another-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Give a shared source to another profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#server-policy-deferral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server policy deferral
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sync daemon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reset and uninstall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC and OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Dashboard
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First admin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/pages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">Demo dashboard</span>
+    <span class="cctrace-demo-card__text">A fictitious five-person team, in your browser, nothing to install.</span>
+    <span class="cctrace-demo-card__cta">Open the demo →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-profiles-map-to-accounts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How profiles map to accounts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automatic-detection-during-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic detection during init
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-a-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add a profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#list-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List profiles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remove-a-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remove a profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#select-a-profile-on-the-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Select a profile on the command line
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#source-folders-that-profiles-share" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source folders that profiles share
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Source folders that profiles share">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#see-what-is-held-back" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See what is held back
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#give-a-shared-source-to-another-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Give a shared source to another profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#server-policy-deferral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server policy deferral
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="profiles">Profiles<a class="headerlink" href="#profiles" title="Permanent link">&para;</a></h1>
+<p>Use one profile per Claude config directory when you run Claude Code with more than one account on the same machine.</p>
+<h2 id="how-profiles-map-to-accounts">How profiles map to accounts<a class="headerlink" href="#how-profiles-map-to-accounts" title="Permanent link">&para;</a></h2>
+<p>Claude Code keeps each login in its own config directory: <code>~/.claude</code> by default, or another directory selected with <code>CLAUDE_CONFIG_DIR</code>. cctrace follows the same split.</p>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Stored in</th>
+<th>Claude home</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Default</td>
+<td><code>~/.cctrace/profile.json</code></td>
+<td><code>~/.claude</code></td>
+</tr>
+<tr>
+<td>Named, for example <code>work</code></td>
+<td><code>~/.cctrace/profiles/work/profile.json</code></td>
+<td>The directory the profile names, for example <code>~/.claude-work</code></td>
+</tr>
+</tbody>
+</table>
+<p>Each profile carries its own server endpoints, cctrace user identity, upload token, and options, and writes its OTEL variables and hooks into the settings file of its own Claude home. The sync daemon, its lock, its log, and its sync state are also per profile. See <a href="../sync/">Sync daemon</a>.</p>
+<p>Which cctrace user a profile reports as depends on how it was created:</p>
+<ul>
+<li><code>cctrace init --profile &lt;name&gt;</code> authenticates on its own, so the profile can belong to a different cctrace user than the default one.</li>
+<li><code>cctrace profile add</code> and the directories <code>init</code> detects copy the default profile's user, server, and options. They report as the same cctrace user.</li>
+</ul>
+<p>Profile names must start with a letter or digit and may contain letters, digits, <code>-</code> and <code>_</code> (up to 63 characters). <code>default</code> is reserved.</p>
+<h2 id="automatic-detection-during-init">Automatic detection during init<a class="headerlink" href="#automatic-detection-during-init" title="Permanent link">&para;</a></h2>
+<p>At the end of <code>cctrace init</code> for the default profile, <code>init</code> looks for directories in your home directory whose name starts with <code>.claude-</code> and that contain a projects directory or a settings file (settings.json). <code>.claude-mem</code> is ignored, as is any directory another profile already uses.</p>
+<div class="highlight"><pre><span></span><code>  Detected 2 additional Claude home(s):
+    1. /Users/alice/.claude-work
+    2. /Users/alice/.claude-personal
+
+  Set up sync for which? (all/none/1,2,...) [all]:
+</code></pre></div>
+<p>For each directory you pick, <code>init</code> creates a named profile whose name is the directory name without the leading dot (<code>claude-work</code>), copies the default profile into it, and writes that directory's settings file.</p>
+<h2 id="add-a-profile">Add a profile<a class="headerlink" href="#add-a-profile" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cctrace<span class="w"> </span>profile<span class="w"> </span>add<span class="w"> </span>claude-4<span class="w"> </span>--home<span class="w"> </span>~/.claude-4
+</code></pre></div>
+<p><code>profile add</code> copies the default profile, points it at the directory given by <code>--home</code>, and writes the OTEL variables and hooks into that directory's settings file. <code>--home</code> is required. The default profile must exist first.</p>
+<p>It refuses a name that already exists and a Claude home that another named profile already uses. If the directory does not exist yet, it warns and creates the profile anyway.</p>
+<p>To set up a profile with its own login instead, run init with a name:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cctrace<span class="w"> </span>init<span class="w"> </span>--profile<span class="w"> </span>work
+</code></pre></div>
+<p>This runs the full setup and adds one prompt, <code>Claude config directory (Enter for default ~/.claude)</code>. <code>init</code> warns if another profile already uses the directory you enter.</p>
+<h2 id="list-profiles">List profiles<a class="headerlink" href="#list-profiles" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cctrace<span class="w"> </span>profile<span class="w"> </span>list
+</code></pre></div>
+<p>Prints the default profile (once it is set up) and each named profile with its Claude home. <code>cctrace status</code> shows both too.</p>
+<h2 id="remove-a-profile">Remove a profile<a class="headerlink" href="#remove-a-profile" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cctrace<span class="w"> </span>profile<span class="w"> </span>remove<span class="w"> </span>work
+</code></pre></div>
+<p>Deletes the directory under <code>~/.cctrace/profiles/</code> for that profile after asking for confirmation (<code>--force</code> skips it). It does not touch the profile's Claude settings file, so the OTEL variables and hooks stay there. To remove those as well, use <code>cctrace reset --profile work</code> instead. See <a href="../uninstall/">Reset and uninstall</a>.</p>
+<p>If the profile held a source that other profiles share, no profile collects that source afterwards until one claims it; see <a href="#source-folders-that-profiles-share">Source folders that profiles share</a>.</p>
+<h2 id="select-a-profile-on-the-command-line">Select a profile on the command line<a class="headerlink" href="#select-a-profile-on-the-command-line" title="Permanent link">&para;</a></h2>
+<p>Commands that act on one profile take <code>--profile &lt;name&gt;</code>: <code>status</code>, <code>config</code> (including <code>config policy</code>), <code>env apply</code>, <code>sync</code>, <code>kill</code>, <code>reset</code>, <code>local enable</code>, <code>local status</code>, and <code>local disable</code>. <code>sync</code>, <code>kill</code>, and <code>config policy</code> also read the <code>CCTRACE_PROFILE</code> environment variable when the flag is not given.</p>
+<p>The hooks written into a Claude home pass <code>--claude-dir</code> with that home and <code>--auto-profile</code>. <code>--auto-profile</code> picks the named profile whose Claude home matches the <code>--claude-dir</code> value (or, without that flag, <code>CLAUDE_CONFIG_DIR</code>). When no named profile matches, the default profile is used.</p>
+<h2 id="source-folders-that-profiles-share">Source folders that profiles share<a class="headerlink" href="#source-folders-that-profiles-share" title="Permanent link">&para;</a></h2>
+<p>Two profiles can end up reading the same source folder. The usual case is the default Codex home: every profile with Codex collection turned on scans it when it exists. The daemon treats a folder as shared when the profiles upload to the same destination, meaning the same sync endpoint, cctrace user, and email, and the folders their collectors read are the same, or one lies inside the other. Uploading such a folder from both profiles would count every session in it twice, so the daemon lets one profile collect it.</p>
+<ul>
+<li><strong>One profile collects it.</strong> That profile is the holder. The first profile the daemon gives a source to keeps it, whatever the other profiles do afterwards. On a first start the default profile goes first, then the named profiles in name order. A profile that is stopped or turned off is not given new sources, but keeps the ones it holds.</li>
+<li><strong>The other profile loses only that source.</strong> Everything else it collects keeps uploading: its Claude sessions and every folder it does not share. The profile is not paused as a whole, unless every one of its sources is shared. Then it collects nothing, and <code>cctrace status</code> says so.</li>
+<li><strong>The holder's filters apply.</strong> A shared source is sent as the holder's filters allow (repository allowlist, prompt and tool redaction, excluded accounts). The held-back profile sends nothing from it, so its own filters never widen what is sent.</li>
+<li><strong>The held-back period is not caught up on.</strong> A profile that starts with no saved progress at all skips the sessions already on disk and collects new ones. A profile that already has saved progress, such as one that read the source before, goes on from it, so it can send files of the held-back period too, some of which another profile has already sent; the server drops the duplicates. When a source changes hands, the new holder continues from the old holder's progress where the daemon can read it; otherwise it skips the sessions already on disk and collects new ones.</li>
+<li><strong>The holder changes only when you change it,</strong> with one exception. A holder that is stopped or turned off still holds its sources, and a profile you remove leaves its sources unread by every profile, so that a removal never hands them to a profile with other filters. If the holder takes a source out of its own settings, for example by turning that agent's collection off, it lets the source go, and the next profile whose filters are the same or stricter takes it over by itself. If none qualifies, nobody collects the source until you run <code>cctrace profile claim</code>. If a change on disk, such as replacing a folder with a link to another folder, makes two sources that different profiles hold into one, the hold made first stays and the other profile is held back from it, once it has stopped reading that source.</li>
+</ul>
+<p>When the shared folders are the same folder, nothing is lost: the holder reads every file in it. When one lies inside the other, the daemon still keeps just one profile on it, but some files may be collected by no profile at all, because a collector reads only certain depths of a folder. <code>cctrace status</code> marks such a row with a warning.</p>
+<h3 id="see-what-is-held-back">See what is held back<a class="headerlink" href="#see-what-is-held-back" title="Permanent link">&para;</a></h3>
+<p><code>cctrace status</code> prints a <code>수집 경로</code> line for a profile only when it is held back from a source. The output is in Korean:</p>
+<div class="highlight"><pre><span></span><code>    수집 경로:     [!] 이 프로필에서 수집하지 않는 경로 2개 -- 같은 서버·사용자로 수집하는 다른 프로필이 맡고 있습니다
+                   codex  기본 폴더        3fa91c2d  맡은 프로필: default (수집 중)
+                   codex  [명시 Codex 홈]  9b01d7e4  맡은 프로필: personal (중지됨)
+                   나머지 경로는 정상 수집합니다. 맡길 프로필을 바꾸려면: cctrace profile claim &lt;프로필&gt; --source &lt;id&gt;
+</code></pre></div>
+<p>Each row is the kind of source, where its folder came from, its id, and the holder with its state. The folder is never printed as a path.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Folder</td>
+<td><code>홈 폴더</code> (Claude home), <code>기본 폴더</code> (default Codex home), <code>CODEX_HOME</code>, <code>설정 폴더</code> (a folder in the profile's settings), <code>[명시 Codex 홈]</code> (the profile's explicit Codex home)</td>
+</tr>
+<tr>
+<td>Holder state</td>
+<td><code>수집 중</code> (collecting), <code>중지됨</code> (stopped), <code>꺼짐</code> (turned off), <code>막힘</code> (blocked), <code>이전 중</code> (handing the source over)</td>
+</tr>
+<tr>
+<td>Holder missing</td>
+<td><code>(삭제됨)</code> (removed profile), <code>(주인 없음)</code> (nobody holds it), <code>(알 수 없음)</code> (unknown)</td>
+</tr>
+</tbody>
+</table>
+<p>A row ends with <code>-- 일부 파일은 어느 프로필에도 수집되지 않을 수 있음</code> (some files may be collected by no profile) when the folders are nested. When every source of the profile is shared, the first line reads <code>[!] 이 프로필의 모든 경로가 다른 프로필과 겹쳐 수집이 멈춰 있습니다 (duplicate_route)</code>. When the profile began a folder only after it was let in, a last line reads <code>겹침으로 막혀 있던 기간의 세션은 수집되지 않았습니다 (수집을 시작한 시점부터 수집)</code> (the sessions of the held-back period were not collected; collection starts from when it began). <code>cctrace sync status</code> and the daemon log show the same facts for all profiles at once; see <a href="../sync/#sources-shared-between-profiles">Sync daemon</a>.</p>
+<h3 id="give-a-shared-source-to-another-profile">Give a shared source to another profile<a class="headerlink" href="#give-a-shared-source-to-another-profile" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cctrace<span class="w"> </span>profile<span class="w"> </span>claim<span class="w"> </span>work<span class="w"> </span>--source<span class="w"> </span>3fa91c2d
+<span class="gp">$ </span>cctrace<span class="w"> </span>profile<span class="w"> </span>claim<span class="w"> </span>work<span class="w"> </span>--all<span class="w"> </span>--force
+</code></pre></div>
+<p><code>profile claim &lt;profile&gt;</code> moves sources the profile is held back from to the profile. The holder lets go first, then <code>&lt;profile&gt;</code> starts reading from the holder's progress. The local daemon must be running (<code>cctrace sync --daemon</code>); the command says so and stops when it is not.</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--source &lt;id\|folder&gt;</code></td>
+<td>A source to claim: the id from <code>cctrace status</code>, or its folder in any spelling of the same folder. Repeatable.</td>
+</tr>
+<tr>
+<td><code>--all</code></td>
+<td>Every source the profile is held back from</td>
+</tr>
+<tr>
+<td><code>--force</code></td>
+<td>Skip the confirmation</td>
+</tr>
+</tbody>
+</table>
+<p>With neither <code>--source</code> nor <code>--all</code>, the command lists what the profile is held back from and stops. For each source it prints a plan and asks <code>Proceed? [y/N]</code>. Without a terminal, it refuses unless you pass <code>--force</code>.</p>
+<div class="highlight"><pre><span></span><code>Claim codex source 3fa91c2d (default folder) for profile "work"
+  current holder : default (active)
+  cursor         : continue from "default"
+  filters        : repository allowlist: default 2 entries, "work" none (collects every repository)
+                   prompt redaction: default off, "work" off
+                   tool redaction: default off, "work" off
+                   excluded accounts: default 0, "work" 0
+                   note: "work" would send more than "default" does
+  effect         : "default" stops reading this source; "work" starts after "default" has released it
+Proceed? [y/N]
+</code></pre></div>
+<p>Read the <code>filters</code> lines before you confirm. They compare how many entries each profile's filters hold and whether each is on, never their values, because a repository prefix is a path. The <code>note</code> line appears when the profile taking the source would send more than the holder does. Where the holder's progress cannot be read, <code>cursor</code> reads <code>holder state unavailable; existing sessions will be skipped, new ones collected</code>. For a source nobody holds because its holder took it out of its settings, the progress is that of the profile that read it last, and <code>cursor</code> reads <code>continue from</code> that profile.</p>
+<p>After the daemon accepts a claim, the command prints <code>Claim 3fa91c2d accepted: "default" lets go of it first, then "work" starts reading it.</code> The move finishes in the background. If the daemon refuses, for example because a hand-over of that source is still in progress, nothing changes and the message says what to do. A source whose holder is removed, or that nobody holds, is claimed at once. While the routes file cannot be used (the daemon logs <code>[routes] invalid</code>), the first claim has the daemon rebuild it, and <code>--all</code> or several <code>--source</code> flags still claim every source you name: before each further one, the command waits, up to ten seconds, for the daemon to publish the rebuilt file.</p>
+<h2 id="server-policy-deferral">Server policy deferral<a class="headerlink" href="#server-policy-deferral" title="Permanent link">&para;</a></h2>
+<p>A server operator can publish a signed policy that moves clients to new server addresses. Only a client built with an update public key or a policy public key applies one (see <a href="../sync/#server-policy">Sync daemon</a>). Nothing below applies to a client built from this repository without an update or policy public key.</p>
+<p>A policy rewrites files that two profiles can share: the Claude settings file in a profile's Claude home and the Codex configuration file in the default Codex home, in the directory <code>CODEX_HOME</code> names when it is set, and in each directory of <code>options.codex_dirs</code>. When another profile uses one of the same files, the client defers the policy instead of applying it, unless the file is a Codex configuration file and either every profile that uses it moves to the same server or it is the one in the default Codex home (see below). The run ends with an error that ends in <code>policy deferred</code>, the profile keeps its current addresses and keeps collecting, and every later check ends the same way until the file is no longer shared. <code>cctrace config policy status</code> prints the reason.</p>
+<p>The client checks every other profile, the default profile first and then the named profiles by name, and does not stop at the first conflict. The reason lists each conflict as a profile name and a kind of file, ordered by name, and Claude before Codex for the same profile:</p>
+<div class="highlight"><pre><span></span><code>shared settings with profiles "home" (claude), "work" (codex); policy deferred
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Entry</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"&lt;name&gt;" (claude)</code></td>
+<td>The other profile has the same Claude home. <code>&lt;name&gt;</code> is empty when the other profile is the default profile.</td>
+</tr>
+<tr>
+<td><code>"&lt;name&gt;" (codex)</code></td>
+<td>Both profiles scan a Codex directory in common other than the default Codex home, one named by <code>CODEX_HOME</code> or listed in <code>options.codex_dirs</code>, and Codex sync has not been turned off for either. Listed only when that profile does not move with this one. Earlier client versions list a profile that shares only the default Codex home too, which every profile scans when that folder exists.</td>
+</tr>
+</tbody>
+</table>
+<p>The reason holds at most 500 characters. When too many profiles conflict to name them all, the last entries are counted instead: <code>... and 31 more; policy deferred</code>. The number counts entries, not profiles, so a profile that conflicts on both counts twice. Earlier client versions stop at the first conflict and report it alone, as <code>shared Claude settings with profile "&lt;name&gt;"; policy deferred</code> or <code>shared Codex settings with profile "&lt;name&gt;"; policy deferred</code>.</p>
+<p>A profile that shares a Codex configuration file moves with this one, and is not listed, when it already uses the policy's new addresses, or when the policy names it with the addresses it uses now and its sync daemon is running in a state the policy can restart: started without <code>--local</code> or <code>--endpoint</code>, and reading its own Claude home. A different spelling of the same server, another port, or another protocol is not an address the policy names. A shared Claude home always defers the policy, even when the other profile moves too. Earlier client versions defer on every shared Codex configuration file.</p>
+<p>When profiles move together, the client writes the shared Codex configuration file after the policy is committed rather than with it, and keeps the write in its policy state until it is done: the file's path, digests of the old and new <code>[otel]</code> sections, the old OTEL address, and the old certificate path. The record holds no token. Each later run carries the write out before it asks the server for a policy. If a file outside the default Codex home holds an <code>[otel]</code> section that none of the moving profiles writes, the run is deferred with <code>shared Codex settings edited; policy deferred</code> until the file holds one of theirs again. If the write fails, the run ends with <code>shared settings write pending</code> and the next run tries again. A session of the other profile can put its old section back before that profile applies the policy; once it applies, the file uses the new server.</p>
+<p>The Codex configuration file in the default Codex home is the exception. Every profile with Codex sync turned on writes its own <code>[otel]</code> section there whenever its sync runs, and the profile that wrote last wins, whatever a policy does, so no policy can hold that file still for the others. A profile that shares only that file with others does not defer the policy, whether the others move or not. The profile moves, and the file is handled by what it holds:</p>
+<table>
+<thead>
+<tr>
+<th>The file holds</th>
+<th>The client</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This profile's old section</td>
+<td>Writes the new section after the policy is committed, as above.</td>
+</tr>
+<tr>
+<td>This profile's new section, or a section of a profile that moves with it</td>
+<td>Changes nothing.</td>
+</tr>
+<tr>
+<td>A section of a profile that does not move, a section edited by hand, or anything else</td>
+<td>Leaves the file as it is and still moves the profile.</td>
+</tr>
+</tbody>
+</table>
+<p>The token in the section never changes: a policy moves the server and keeps the credentials. When the file is left as it is, the policy still counts as applied and the run ends with the check result <code>ok</code>. The reason, in <code>cctrace config policy status</code> and in the report to the server, reads <code>default Codex config kept: &lt;path&gt;</code>. Until this profile's sync next starts and writes its own section, which carries the new address, that file keeps sending Codex metrics wherever its current section points, under that section's token. When several profiles use the default Codex home, Codex metrics go to the server of whichever of them wrote last, as before a policy; a policy does not change that. Earlier client versions defer on this file like any other.</p>
+<p>A profile's explicit Codex home (<code>codex_home</code>) is written by that profile alone, so it is not a shared file and never defers a policy. With Codex sync turned on for the profile, the client moves the home's <code>[otel]</code> section in the same transaction as the rest of the policy, and only when the section is what cctrace generates for the profile: on the address the profile uses now, or on an address the policy moves from on the same host, naming the profile's certificate, the certificate the user supplied before any policy, or none. The one difference is the token: the section keeps the token it carries, which may be one that belongs to no profile on this machine. The rest of the file is kept as it is. A home that is also the default Codex home, the directory <code>CODEX_HOME</code> names, or a directory in <code>options.codex_dirs</code> follows the rule of that directory above.</p>
+<table>
+<thead>
+<tr>
+<th>The explicit home's file holds</th>
+<th>The client</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This profile's section as described above</td>
+<td>Writes the new section with the policy.</td>
+</tr>
+<tr>
+<td>A section already on the policy's new address, a section with the token of another profile whose own policy run reaches this home (it scans the folder, or has it as its explicit home with Codex sync on), or no file</td>
+<td>Changes nothing and says nothing. The other profile moves its own section.</td>
+</tr>
+<tr>
+<td>No <code>[otel]</code> section, a section that sends elsewhere or was edited by hand, a section in an older form or a multi-line root <code>otel</code> key, a file that cannot be read, a Codex configuration file that is a symlink, a section with the token of a profile whose policy run does not reach this home, or a home whose lock the client cannot take</td>
+<td>Leaves the file as it is and still moves the profile.</td>
+</tr>
+</tbody>
+</table>
+<p>When the file is left as it is, the policy counts as applied and the run ends with the check result <code>ok</code>. The reason, in <code>cctrace config policy status</code> and in the report to the server, reads <code>explicit Codex home kept</code>, joined with <code>;</code> to the default Codex home's note when both apply. A path of an explicit Codex home in any reason a policy run records or reports is replaced by <code>[explicit Codex home]</code>. A lock that another process holds is waited for like any other, and ends the run when the wait runs out. If writing the file fails, the whole transaction is rolled back, the policy is not applied, and the next check tries again.</p>
+<p>To separate the Claude settings, give one of the two profiles its own Claude home:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cctrace<span class="w"> </span>profile<span class="w"> </span>edit<span class="w"> </span>work<span class="w"> </span>--home<span class="w"> </span>~/.claude-work
+<span class="gp">$ </span>cctrace<span class="w"> </span>env<span class="w"> </span>apply<span class="w"> </span>--profile<span class="w"> </span>work
+</code></pre></div>
+<p><code>profile edit</code> changes only the profile's folders, and <code>env apply</code> writes the OTEL variables and hooks into the new home. Alternatively, remove the profile and add it again with <code>--home</code>. Removing a profile also deletes a login it had of its own. The new profile copies the default profile's user, server, and options, and its sync state starts empty, so it skips content already on disk.</p>
+<p>To separate the Codex settings of a directory other than the default Codex home, turn Codex sync off for all but one of the profiles. Turning it off stops that profile's Codex collection:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cctrace<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>options.codex_sync_enabled<span class="w"> </span><span class="nb">false</span><span class="w"> </span>--profile<span class="w"> </span>work
+</code></pre></div>
+<p>Two more reasons also keep a policy deferred until the file's owner changes it: the certificate file the client wrote for an earlier policy no longer matches what it wrote, or <code>server.ca_cert_file</code> no longer points to it (<code>managed CA was edited; policy deferred</code> or <code>managed CA was changed; policy deferred</code>), and a Codex configuration file that no other profile uses has an <code>[otel]</code> section that differs from what cctrace generates for the profile (<code>unmanaged Codex OTEL settings differ from the profile; policy deferred</code>). With Codex sync turned off for the profile, the second no longer applies.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../setup/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Connect">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Connect
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../sync/" class="md-footer__link md-footer__link--next" aria-label="Next: Sync daemon">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Sync daemon
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

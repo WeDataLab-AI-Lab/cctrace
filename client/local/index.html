@@ -1,0 +1,1642 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/client/local/">
+      
+      
+        <link rel="prev" href="../sync/">
+      
+      
+        <link rel="next" href="../uninstall/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../ko/client/local/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Local analysis - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#local-analysis" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+            
+  <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/">Try the demo dashboard</a>: a fictitious five-person team, nothing to install.
+  · <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/" lang="ko">데모 대시보드 보기</a>
+          </div>
+          
+        </aside>
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Local analysis
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ko/client/local/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Server
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Client
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Profiles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sync daemon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local analysis
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">Demo dashboard</span>
+    <span class="cctrace-demo-card__text">A fictitious five-person team, in your browser, nothing to install.</span>
+    <span class="cctrace-demo-card__cta">Open the demo →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#two-ways-to-run-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two ways to run it
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run it once
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run it once">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#folders-it-reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Folders it reads
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-with-the-daemon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run it with the daemon
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connect-from-the-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connect from the dashboard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-api-allows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the API allows
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reset and uninstall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agents
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agents
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC and OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Dashboard
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First admin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/pages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">Demo dashboard</span>
+    <span class="cctrace-demo-card__text">A fictitious five-person team, in your browser, nothing to install.</span>
+    <span class="cctrace-demo-card__cta">Open the demo →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#two-ways-to-run-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two ways to run it
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run it once
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run it once">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#folders-it-reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Folders it reads
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-with-the-daemon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run it with the daemon
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connect-from-the-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connect from the dashboard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-api-allows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the API allows
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="local-analysis">Local analysis<a class="headerlink" href="#local-analysis" title="Permanent link">&para;</a></h1>
+<p>Local analysis shows the Claude Code and Codex CLI sessions stored on this machine in the dashboard, without needing a server. cctrace opens a small API on a loopback address that reads the session files, and a dashboard page in your browser connects to it with an address and a token.</p>
+<p>The API itself sends nothing to a server, and it needs neither a server login nor a database. It does not replace the <a href="../sync/">sync daemon</a>.</p>
+<h2 id="two-ways-to-run-it">Two ways to run it<a class="headerlink" href="#two-ways-to-run-it" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>cctrace local serve</code></th>
+<th><code>cctrace local enable</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Runs as</td>
+<td>A foreground command, until you press Ctrl-C</td>
+<td>Part of the profile's sync daemon</td>
+</tr>
+<tr>
+<td>Port</td>
+<td>Chosen by the operating system at each start, unless <code>--address</code> sets one</td>
+<td>Chosen when you run <code>enable</code>; the same on every daemon start</td>
+</tr>
+<tr>
+<td>Token</td>
+<td>New on every start, printed once</td>
+<td>New on every <code>enable</code>, printed once; only its hash is stored</td>
+</tr>
+<tr>
+<td>Pages allowed</td>
+<td>One or more <code>--origin</code> values</td>
+<td>The one <code>--origin</code> value</td>
+</tr>
+<tr>
+<td>Folders read</td>
+<td>The defaults below, or the ones you name</td>
+<td>The profile's Claude home and the Codex homes its daemon scans</td>
+</tr>
+<tr>
+<td>Needs a profile</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="run-it-once">Run it once<a class="headerlink" href="#run-it-once" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cctrace<span class="w"> </span><span class="nb">local</span><span class="w"> </span>serve<span class="w"> </span>--origin<span class="w"> </span>http://127.0.0.1:8080
+</code></pre></div>
+<p><code>--origin</code> is required. It is the exact origin of the dashboard page that will connect, written as the browser shows it: scheme, host, and the port when the page uses a non-default one, with no path and no trailing slash. For a dashboard behind a proxy, such as <code>https://cctrace.company.example</code>, give that address instead. Repeat <code>--origin</code> to allow more than one page. A wildcard, a path, a query string, or credentials in the origin are refused.</p>
+<p>The first line of output is a JSON object. A second line says the API is active and that the token must stay private.</p>
+<ul>
+<li><code>endpoint</code>: the loopback address and port the API listens on</li>
+<li><code>token</code>: the bearer token for this run</li>
+<li><code>profile_fingerprint</code>: an identifier for the set of folders being read</li>
+<li><code>origins</code>: the allowed origins</li>
+</ul>
+<p>The token is 32 random bytes, new on every start. Do not redirect the output to a file, put the token in a URL, or paste it into a report. Press Ctrl-C to stop the API; the token stops working with it.</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Default</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--origin &lt;origin&gt;</code></td>
+<td>none, required</td>
+<td>Origin of a dashboard page allowed to call the API. Repeatable.</td>
+</tr>
+<tr>
+<td><code>--address &lt;ip:port&gt;</code></td>
+<td><code>127.0.0.1:0</code></td>
+<td>Address to listen on. It must be a literal loopback IP address; a name such as <code>localhost</code> is refused. Port 0 lets the operating system choose.</td>
+</tr>
+<tr>
+<td><code>--claude-dir &lt;dir&gt;</code></td>
+<td>see below</td>
+<td>Claude config directory to read. Repeatable.</td>
+</tr>
+<tr>
+<td><code>--codex-dir &lt;dir&gt;</code></td>
+<td>see below</td>
+<td>Codex home to read. Repeatable.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="folders-it-reads">Folders it reads<a class="headerlink" href="#folders-it-reads" title="Permanent link">&para;</a></h3>
+<p>Without <code>--claude-dir</code> or <code>--codex-dir</code>, <code>serve</code> reads these folders:</p>
+<ul>
+<li>Claude Code: the folder <code>CLAUDE_CONFIG_DIR</code> names, or <code>~/.claude</code>, and the Claude home of each profile that sets one.</li>
+<li>Codex CLI: <code>CODEX_CONFIG_DIR</code>, or <code>~/.codex</code>; <code>CODEX_HOME</code> when it is set; and the Codex home of each profile that sets one. The profile option <code>options.codex_dirs</code> is not consulted.</li>
+</ul>
+<p>A folder that does not exist is skipped. Passing either flag switches off all of the above: <code>serve</code> then reads only the folders you name and adds no profile's folders. With <code>--claude-dir</code> alone no Codex session is read, and the reverse.</p>
+<p>Inside a Claude folder the API reads JSONL session files under <code>projects</code>; inside a Codex folder, the rollout files under <code>sessions</code> (the layout in <a href="../../agents/codex/">Codex CLI</a>). A file that resolves to a place outside its folder is ignored, and a symbolic link in place of the <code>projects</code> or <code>sessions</code> directory is not followed.</p>
+<h2 id="run-it-with-the-daemon">Run it with the daemon<a class="headerlink" href="#run-it-with-the-daemon" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cctrace<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="nb">enable</span><span class="w"> </span>--origin<span class="w"> </span>https://cctrace.company.example
+</code></pre></div>
+<p>Add <code>--profile &lt;name&gt;</code> to act on a named profile. <code>enable</code> prints a JSON object with <code>endpoint</code> and <code>token</code> once. It stores the origin, a free port on 127.0.0.1, and the SHA-256 hash of the token (not the token) in the profile directory: <code>~/.cctrace/local-api-policy.json</code> for the default profile, <code>~/.cctrace/profiles/&lt;name&gt;/local-api-policy.json</code> for a named one. It also turns on the profile option <code>options.local_analysis_enabled</code>.</p>
+<p>The API starts together with the profile's sync daemon, so restart a daemon that was already running (<code>cctrace sync --stop</code>, then <code>cctrace sync --daemon</code>). It reads that profile's Claude home and the Codex homes the daemon scans, listed in <a href="../../agents/codex/">Codex CLI</a>. If the stored port is taken when the daemon starts, the API does not start and <code>status</code> reports the error. <code>enable</code> does not change the profile's sync settings: the daemon keeps uploading as the profile's options say.</p>
+<div class="highlight"><pre><span></span><code>cctrace<span class="w"> </span><span class="nb">local</span><span class="w"> </span>status
+cctrace<span class="w"> </span><span class="nb">local</span><span class="w"> </span>disable
+</code></pre></div>
+<p><code>status</code> prints one JSON object: <code>enabled</code>, <code>running</code>, <code>origin</code>, <code>address</code>, <code>generation</code>, <code>started_at</code>, <code>ended_at</code>, and <code>error</code>. <code>disable</code> clears the stored token hash and turns the option off, and a running daemon stops the API when it notices.</p>
+<p>Running <code>enable</code> again issues a new token and a new port. The previous token stops working and the running daemon stops its API, so restart the daemon to start it with the new values.</p>
+<h2 id="connect-from-the-dashboard">Connect from the dashboard<a class="headerlink" href="#connect-from-the-dashboard" title="Permanent link">&para;</a></h2>
+<p>Two pages use the connection:</p>
+<ul>
+<li><code>/local-sessions</code> works without signing in to the dashboard.</li>
+<li>The <strong>내 기기와 서버</strong> view on the Sessions page needs a signed-in dashboard session, because it lists server sessions next to the local ones.</li>
+</ul>
+<p>Open the page at the origin you gave to <code>--origin</code>. Enter the <code>endpoint</code> value in <strong>로컬 서비스 주소</strong> and the token in <strong>접속 토큰</strong>, then press <strong>연결</strong>. The form accepts only <code>http://</code> followed by <code>localhost</code>, 127.0.0.1, or <code>[::1]</code> and a port, and it rewrites <code>localhost</code> to 127.0.0.1 before it connects. The API accepts only the exact address it listens on. Type the <code>endpoint</code> value as printed: an address with 127.0.0.1 in <code>endpoint</code> is refused if you write <code>[::1]</code> instead.</p>
+<p><strong>이 탭에 연결 저장</strong> keeps the address and token in the <code>sessionStorage</code> of that browser tab, so a reload reconnects without pasting them again. Closing the tab forgets them. Without the box checked, the token stays in the page's memory and a reload asks for it again. <strong>연결 끊기</strong> clears the saved pair.</p>
+<p>The session list has a search box and an agent filter (<strong>전체</strong>, <strong>Claude</strong>, <strong>Codex</strong>). Token counts, event counts and cost in the list show <strong>미집계</strong> (not tallied) instead of zero, because the list reads only the first and last 32 KiB of each file. Selecting a session opens three tabs: <strong>대화</strong>, <strong>개별 원문</strong>, and <strong>분석</strong>. The analysis tab reads the whole file and computes what the records support; a value they cannot support stays empty.</p>
+<p>In the <strong>내 기기와 서버</strong> view, a local session and a server session with the same session ID are listed apart. The page offers <strong>같은 세션으로 묶기</strong> to group them by hand, because the same ID alone does not show that both belong to the same person.</p>
+<h2 id="what-the-api-allows">What the API allows<a class="headerlink" href="#what-the-api-allows" title="Permanent link">&para;</a></h2>
+<ul>
+<li>It listens on a loopback address only. <code>serve</code> refuses any other <code>--address</code>, and <code>enable</code> always uses 127.0.0.1.</li>
+<li>Every request except a browser's CORS preflight needs the token. The <code>Host</code> header must equal the listen address, which refuses a request that reaches the API under another name, such as a DNS-rebinding page.</li>
+<li>A request that carries an <code>Origin</code> header outside the allowed list is refused.</li>
+<li>It reads session files and does not modify them. The one write is the choice of profile for the next Claude Code or Codex run, which a page can save through <code>serve</code>, stored in <code>~/.cctrace/next-profile.json</code>; the daemon's API has no profile choice.</li>
+<li>It does not check whether a local session also exists on the server, or who owns it.</li>
+<li>Responses are marked <code>no-store</code>.</li>
+</ul>
+<p>An HTTPS dashboard page may need the browser's local network permission before it can reach a loopback address. Allowing an origin in the CLI does not grant that permission, and does not show that every browser supports the connection.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../sync/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Sync daemon">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Sync daemon
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../uninstall/" class="md-footer__link md-footer__link--next" aria-label="Next: Reset and uninstall">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Reset and uninstall
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

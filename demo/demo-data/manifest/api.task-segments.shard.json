@@ -1,0 +1,297 @@
+[
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=debugging\u0026until=@-6760m",
+    "status": 200,
+    "body": "3cc1dccd6a54b8a6cfd7535f"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=documentation\u0026until=@-6760m",
+    "status": 200,
+    "body": "4f32321fb12bc0f2c58a770e"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=drafting\u0026until=@-6760m",
+    "status": 200,
+    "body": "ca36afcc5e8dcc43dfde0b96"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=implementation\u0026until=@-6760m",
+    "status": 200,
+    "body": "13b5101cb63d33f60c34e85d"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=operations\u0026until=@-6760m",
+    "status": 200,
+    "body": "ad0a99a7902f73571ed3e0c3"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=planning\u0026until=@-6760m",
+    "status": 200,
+    "body": "9439e727e281349fd13ae05d"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=question\u0026until=@-6760m",
+    "status": 200,
+    "body": "c0bfb69e282fec513b0505c9"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=review\u0026until=@-6760m",
+    "status": 200,
+    "body": "ab1d8f92afd5d43a7f8a3986"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=status\u0026until=@-6760m",
+    "status": 200,
+    "body": "ad737bcbda439698f85fd0f0"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-16840m\u0026task_type=testing\u0026until=@-6760m",
+    "status": 200,
+    "body": "c61bac1ae42077cc6d2d119c"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=debugging\u0026until=@-16840m",
+    "status": 200,
+    "body": "8b43bf88e96f27724e8db258"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=documentation\u0026until=@-16840m",
+    "status": 200,
+    "body": "a2fe92b39d3af3bec8c0632c"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=drafting\u0026until=@-16840m",
+    "status": 200,
+    "body": "34c9f6eecdd1feb39d963c53"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=implementation\u0026until=@-16840m",
+    "status": 200,
+    "body": "252fc1231c19ddb02cc3be25"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=operations\u0026until=@-16840m",
+    "status": 200,
+    "body": "d882198f251950e264852a37"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=planning\u0026until=@-16840m",
+    "status": 200,
+    "body": "6b55cef79769cd040dbcf258"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=question\u0026until=@-16840m",
+    "status": 200,
+    "body": "c4f781dfaf9fec87af7a3b8e"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=review\u0026until=@-16840m",
+    "status": 200,
+    "body": "b1b1274a57225bf3f60b6e43"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=status\u0026until=@-16840m",
+    "status": 200,
+    "body": "f6ab5bac4027d833e9ed969d"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-26920m\u0026task_type=testing\u0026until=@-16840m",
+    "status": 200,
+    "body": "ab4f6869fefe4c994c703e21"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=debugging\u0026until=@-26920m",
+    "status": 200,
+    "body": "88131afb1b21c7285892cf6a"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=documentation\u0026until=@-26920m",
+    "status": 200,
+    "body": "ab04e690169f79a11aed4dfd"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=drafting\u0026until=@-26920m",
+    "status": 200,
+    "body": "7e657690d6c1341a21f6eb7f"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=implementation\u0026until=@-26920m",
+    "status": 200,
+    "body": "32d01ee273a362c728857d82"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=operations\u0026until=@-26920m",
+    "status": 200,
+    "body": "6ce592c9753813a2413ff053"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=planning\u0026until=@-26920m",
+    "status": 200,
+    "body": "2eb91e24692893b9d3c5375e"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=question\u0026until=@-26920m",
+    "status": 200,
+    "body": "1b848c0bab50705095a444f8"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=review\u0026until=@-26920m",
+    "status": 200,
+    "body": "f1e339d754005d88edc23c7d"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=status\u0026until=@-26920m",
+    "status": 200,
+    "body": "8e6caa87ead920c23e6a1684"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-37000m\u0026task_type=testing\u0026until=@-26920m",
+    "status": 200,
+    "body": "737cb3f9fdeeede5753537f0"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=debugging\u0026until=@-37000m",
+    "status": 200,
+    "body": "5799a7c67424085da862cd7e"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=documentation\u0026until=@-37000m",
+    "status": 200,
+    "body": "3a64737567c5588d449a83a7"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=drafting\u0026until=@-37000m",
+    "status": 200,
+    "body": "6f2b9e0cfea841a97bf9420c"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=implementation\u0026until=@-37000m",
+    "status": 200,
+    "body": "602927516a55368aec5f22b9"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=operations\u0026until=@-37000m",
+    "status": 200,
+    "body": "c923daeb47cb6fca13f5f072"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=planning\u0026until=@-37000m",
+    "status": 200,
+    "body": "8a5432179cd2a00ce6db6736"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=question\u0026until=@-37000m",
+    "status": 200,
+    "body": "0191d73fffda6323fa0861ae"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=review\u0026until=@-37000m",
+    "status": 200,
+    "body": "76a602d5f5c7b0673ed20a43"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=status\u0026until=@-37000m",
+    "status": 200,
+    "body": "bf099c92b43fa7c0f97f0a18"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-47080m\u0026task_type=testing\u0026until=@-37000m",
+    "status": 200,
+    "body": "387808d5ac0e557652e89c9c"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-57160m\u0026task_type=debugging\u0026until=@-47080m",
+    "status": 200,
+    "body": "c32f6c35485bcbad563b993d"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-57160m\u0026task_type=documentation\u0026until=@-47080m",
+    "status": 200,
+    "body": "148c83cbb99bae74d6ddc33e"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-57160m\u0026task_type=drafting\u0026until=@-47080m",
+    "status": 200,
+    "body": "43131d492bee795bca8b9f3e"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-57160m\u0026task_type=implementation\u0026until=@-47080m",
+    "status": 200,
+    "body": "2e8b7ed2752eaf40767c4602"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-57160m\u0026task_type=operations\u0026until=@-47080m",
+    "status": 200,
+    "body": "a024f98f81adcdb587a74c7c"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-57160m\u0026task_type=planning\u0026until=@-47080m",
+    "status": 200,
+    "body": "91c7a755edb8b26c96a0ba28"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-57160m\u0026task_type=question\u0026until=@-47080m",
+    "status": 200,
+    "body": "932d6fd2c689041366f11fda"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-57160m\u0026task_type=review\u0026until=@-47080m",
+    "status": 200,
+    "body": "7233b17ca7519035d2f6b418"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-57160m\u0026task_type=testing\u0026until=@-47080m",
+    "status": 200,
+    "body": "9a42aa74492aba2828fc2449"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=debugging\u0026until=@3320m",
+    "status": 200,
+    "body": "85351d76a1a0ae0264ada3ca"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=documentation\u0026until=@3320m",
+    "status": 200,
+    "body": "0d2cf1553d18d1cb377d0484"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=drafting\u0026until=@3320m",
+    "status": 200,
+    "body": "d802efd270320136954169e9"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=implementation\u0026until=@3320m",
+    "status": 200,
+    "body": "06a9aad79ad9413c1380e2de"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=operations\u0026until=@3320m",
+    "status": 200,
+    "body": "25eb7d66453e831c9363c1ff"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=planning\u0026until=@3320m",
+    "status": 200,
+    "body": "e85ef4e0ec961ecaa6055f4f"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=question\u0026until=@3320m",
+    "status": 200,
+    "body": "7961eabca06165498ef46e11"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=review\u0026until=@3320m",
+    "status": 200,
+    "body": "cc33ac70e58f17d8227ab679"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=status\u0026until=@3320m",
+    "status": 200,
+    "body": "c9738e5c44c0cf6b97dac5b7"
+  },
+  {
+    "key": "GET /api/task-segments?since=@-6760m\u0026task_type=testing\u0026until=@3320m",
+    "status": 200,
+    "body": "6a72ef27838b7d08a509c85a"
+  }
+]

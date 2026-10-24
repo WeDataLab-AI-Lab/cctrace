@@ -1,0 +1,70 @@
+<svg viewBox="28 36 910 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="server-deployment-ko-title server-deployment-ko-desc">
+  <title id="server-deployment-ko-title">서버 배포: 공개 포트와 서비스</title>
+  <desc id="server-deployment-ko-desc">서버 호스트에서 docker compose가 cctraced와 TimescaleDB를 실행한다. cctraced는 기본값으로 OTLP gRPC 4317과 OTLP HTTP 4318을 모든 인터페이스(0.0.0.0)에, HTTP 8080을 루프백(127.0.0.1)에 공개하고, TimescaleDB는 5432를 루프백에만 공개한다. Claude Code는 OTLP gRPC를 4317로, Codex는 OTLP HTTP를 4318로 보내고, cctrace 클라이언트의 세션 업로드와 브라우저의 대시보드 접속은 HTTP 8080을 쓰며, 다른 머신의 클라이언트는 HTTP_BIND를 바꾸거나 TLS 프록시를 거쳐야 접근할 수 있다. 선택 TLS 오버레이는 8443, 5317, 5318을 공개하는 Caddy 서비스를 추가하고, Caddy는 compose 네트워크를 통해 cctraced로 프록시한다.</desc>
+  <defs>
+    <marker id="server-deployment-ko-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" style="fill: var(--ink-3)"/></marker>
+  </defs>
+
+  <!-- Boundaries -->
+  <rect x="40" y="48" width="170" height="356" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="56" y="72" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">클라이언트 머신</text>
+  <rect x="234" y="48" width="692" height="356" rx="12" style="fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4"/>
+  <text x="250" y="72" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">서버 호스트</text>
+  <rect x="430" y="84" width="480" height="308" rx="10" style="fill: none; stroke: var(--border-strong)"/>
+  <text x="446" y="106" font-size="12" font-weight="500" font-family="'Inter', 'Noto Sans KR', sans-serif" style="fill: var(--ink-3)">Docker Compose</text>
+
+  <!-- Connectors (drawn before nodes) -->
+  <path d="M 194,140 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 194,208 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 194,292 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 194,364 H 258" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 398,140 H 466" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 398,208 H 466" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 398,328 H 466" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 606,162 H 724" style="fill: none; stroke: var(--ink-3); stroke-width: 1.4" marker-end="url(#server-deployment-ko-arrow)"/>
+  <path d="M 724,334 H 606" style="fill: none; stroke: var(--ink-3); stroke-width: 1.2; stroke-dasharray: 4 3" marker-end="url(#server-deployment-ko-arrow)"/>
+
+  <!-- Arrow label: mask sits 8px clear of its line -->
+  <rect x="640" y="306" width="50" height="20" rx="3" style="fill: var(--surface-2)"/>
+  <text x="665" y="320" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">프록시</text>
+
+  <!-- Clients -->
+  <rect x="56" y="112" width="138" height="56" rx="8" style="fill: var(--agent-claude-soft); stroke: var(--agent-claude)"/>
+  <text x="125" y="137" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Claude Code</text>
+  <text x="125" y="155" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">에이전트</text>
+  <rect x="56" y="180" width="138" height="56" rx="8" style="fill: var(--agent-codex-soft); stroke: var(--agent-codex)"/>
+  <text x="125" y="205" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Codex CLI</text>
+  <text x="125" y="223" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">에이전트</text>
+  <rect x="56" y="264" width="138" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="125" y="289" font-size="17" font-weight="600" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink)">cctrace</text>
+  <text x="125" y="307" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">세션 동기화</text>
+  <rect x="56" y="336" width="138" height="56" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="125" y="361" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">브라우저</text>
+  <text x="125" y="379" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">대시보드</text>
+
+  <!-- Published ports (default bind addresses) -->
+  <rect x="258" y="112" width="140" height="56" rx="8" style="fill: var(--canvas); stroke: var(--border-strong)"/>
+  <text x="328" y="137" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">OTLP gRPC</text>
+  <text x="328" y="155" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:4317 · 0.0.0.0</text>
+  <rect x="258" y="180" width="140" height="56" rx="8" style="fill: var(--canvas); stroke: var(--border-strong)"/>
+  <text x="328" y="205" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">OTLP HTTP</text>
+  <text x="328" y="223" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:4318 · 0.0.0.0</text>
+  <rect x="258" y="268" width="140" height="120" rx="8" style="fill: var(--canvas); stroke: var(--border-strong)"/>
+  <text x="328" y="302" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">HTTP</text>
+  <text x="328" y="324" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:8080</text>
+  <text x="328" y="346" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">127.0.0.1</text>
+  <text x="328" y="366" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">HTTP_BIND로 변경</text>
+
+  <!-- Compose services -->
+  <rect x="466" y="128" width="140" height="248" rx="8" style="fill: var(--surface); stroke: var(--ink); stroke-width: 1.5"/>
+  <text x="536" y="246" font-size="17" font-weight="600" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink)">cctraced</text>
+  <text x="536" y="264" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">서버</text>
+  <rect x="724" y="128" width="162" height="68" rx="8" style="fill: var(--surface); stroke: var(--border-strong)"/>
+  <text x="805" y="153" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">TimescaleDB</text>
+  <text x="805" y="171" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">저장소</text>
+  <text x="805" y="189" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">127.0.0.1:5432</text>
+  <rect x="724" y="300" width="162" height="76" rx="8" style="fill: var(--surface); stroke: var(--border-strong); stroke-dasharray: 4 3"/>
+  <text x="805" y="325" font-size="17" font-weight="600" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink)">Caddy</text>
+  <text x="805" y="343" font-size="13" font-family="'Inter', 'Noto Sans KR', sans-serif" text-anchor="middle" style="fill: var(--ink-2)">선택 TLS</text>
+  <text x="805" y="363" font-size="13" font-family="'JetBrains Mono', monospace" text-anchor="middle" style="fill: var(--ink-2)">:8443 :5317 :5318</text>
+</svg>

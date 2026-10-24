@@ -1,0 +1,1642 @@
+
+<!doctype html>
+<html lang="ko" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Self-hosted telemetry for Claude Code and Codex CLI sessions.">
+      
+      
+      
+        <link rel="canonical" href="https://wedatalab-ai-lab.github.io/cctrace/ko/client/local/">
+      
+      
+        <link rel="prev" href="../sync/">
+      
+      
+        <link rel="next" href="../uninstall/">
+      
+      
+        
+          <link rel="alternate" href="../../../client/local/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>로컬 분석 - cctrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/tokens.css">
+    
+      <link rel="stylesheet" href="../../../assets/cctrace.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          콘텐츠로 이동
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+            
+  <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/">Try the demo dashboard</a>: a fictitious five-person team, nothing to install.
+  · <a href="https://wedatalab-ai-lab.github.io/cctrace/demo/" lang="ko">데모 대시보드 보기</a>
+          </div>
+          
+        </aside>
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="상단/헤더">
+    <a href="../../" title="cctrace" class="md-header__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cctrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              로컬 분석
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="언어설정">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../client/local/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="검색" placeholder="검색" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="검색">
+        
+        <button type="reset" class="md-search__icon md-icon" title="지우기" aria-label="지우기" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            검색 초기화
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="네비게이션" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="cctrace" class="md-nav__button md-logo" aria-label="cctrace" data-md-component="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+  <path fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"
+        d="M 106,256 C 150,166 200,136 256,136 C 312,136 362,166 406,256 C 362,346 312,376 256,376 C 200,376 150,346 106,256 Z"/>
+  <circle fill="none" stroke="var(--ink)" stroke-width="34" cx="256" cy="256" r="80"/>
+  <circle fill="var(--ink)" cx="256" cy="256" r="30"/>
+</svg>
+    </a>
+    cctrace
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    개요
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    시작하기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    서버
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    서버
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설치
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설정
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    운영
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../server/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    보안
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    클라이언트
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    클라이언트
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    설치
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    연결
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profiles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로필
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    동기화 데몬
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    로컬 분석
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    로컬 분석
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">데모 대시보드</span>
+    <span class="cctrace-demo-card__text">가상의 5인 팀으로 채운 대시보드를 설치 없이 브라우저에서 봅니다.</span>
+    <span class="cctrace-demo-card__cta">데모 열기 →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#two-ways-to-run-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        실행 방식
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        한 번 실행
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="한 번 실행">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#folders-it-reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        읽는 폴더
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-with-the-daemon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        데몬과 함께 실행
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connect-from-the-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        대시보드에서 연결
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-api-allows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API가 허용하는 것
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../uninstall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    초기화와 제거
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    에이전트
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    에이전트
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/claude-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Claude Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/codex/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codex CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/gjc-omo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GJC와 OMO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    대시보드
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    대시보드
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/first-admin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    첫 관리자
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/users/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    사용자
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dashboard/pages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    페이지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    레퍼런스
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    레퍼런스
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/server-env/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    서버 환경변수
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    포트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    개인정보
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+  
+  
+  <a class="cctrace-demo-card" href="https://wedatalab-ai-lab.github.io/cctrace/demo/">
+    <img src="../../../assets/screenshots/40-overview.png" alt="" loading="lazy">
+    <span class="cctrace-demo-card__title">데모 대시보드</span>
+    <span class="cctrace-demo-card__text">가상의 5인 팀으로 채운 대시보드를 설치 없이 브라우저에서 봅니다.</span>
+    <span class="cctrace-demo-card__cta">데모 열기 →</span>
+  </a>
+
+
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#two-ways-to-run-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        실행 방식
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        한 번 실행
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="한 번 실행">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#folders-it-reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        읽는 폴더
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-with-the-daemon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        데몬과 함께 실행
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connect-from-the-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        대시보드에서 연결
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-api-allows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API가 허용하는 것
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="_1">로컬 분석<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>로컬 분석은 이 머신에 저장된 Claude Code·Codex CLI 세션을 서버 없이 대시보드에서 보여 준다. cctrace가 세션 파일을 읽는 작은 API를 루프백 주소에 열고, 브라우저의 대시보드 페이지가 주소와 토큰으로 여기에 연결한다.</p>
+<p>API 자체는 서버로 아무것도 보내지 않으며 서버 로그인도 데이터베이스도 필요 없다. <a href="../sync/">동기화 데몬</a>을 대체하지는 않는다.</p>
+<h2 id="two-ways-to-run-it">실행 방식<a class="headerlink" href="#two-ways-to-run-it" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>cctrace local serve</code></th>
+<th><code>cctrace local enable</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>실행 형태</td>
+<td>포그라운드 명령, Ctrl-C로 종료</td>
+<td>프로필 동기화 데몬의 일부</td>
+</tr>
+<tr>
+<td>포트</td>
+<td>시작할 때마다 운영체제가 선택, <code>--address</code>로 지정 가능</td>
+<td><code>enable</code> 실행 시 선택, 데몬을 시작할 때마다 동일</td>
+</tr>
+<tr>
+<td>토큰</td>
+<td>시작할 때마다 새로 발급, 한 번만 출력</td>
+<td><code>enable</code>마다 새로 발급, 한 번만 출력, 해시만 저장</td>
+</tr>
+<tr>
+<td>허용 페이지</td>
+<td><code>--origin</code> 값 하나 이상</td>
+<td><code>--origin</code> 값 하나</td>
+</tr>
+<tr>
+<td>읽는 폴더</td>
+<td>아래 기본값 또는 지정한 폴더</td>
+<td>프로필의 Claude 홈과 그 데몬이 스캔하는 Codex 홈</td>
+</tr>
+<tr>
+<td>프로필 필요</td>
+<td>아니요</td>
+<td>예</td>
+</tr>
+</tbody>
+</table>
+<h2 id="run-it-once">한 번 실행<a class="headerlink" href="#run-it-once" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cctrace<span class="w"> </span><span class="nb">local</span><span class="w"> </span>serve<span class="w"> </span>--origin<span class="w"> </span>http://127.0.0.1:8080
+</code></pre></div>
+<p><code>--origin</code>은 필수다. 연결할 대시보드 페이지의 정확한 origin으로, 브라우저가 보여 주는 대로 스킴, 호스트, 기본값이 아닌 포트를 쓰고 경로와 끝 슬래시는 붙이지 않는다. 프록시 뒤의 대시보드라면 <code>https://cctrace.company.example</code> 같은 그 주소를 쓴다. 페이지가 둘 이상이면 <code>--origin</code>을 반복한다. 와일드카드, 경로, 쿼리 문자열, origin에 든 자격 증명은 거부된다.</p>
+<p>출력 첫 줄은 JSON 객체다. 둘째 줄은 API가 켜졌다는 알림과 토큰을 비공개로 유지하라는 안내다.</p>
+<ul>
+<li><code>endpoint</code>: API가 듣는 루프백 주소와 포트</li>
+<li><code>token</code>: 이번 실행의 Bearer 토큰</li>
+<li><code>profile_fingerprint</code>: 읽는 폴더 집합의 식별자</li>
+<li><code>origins</code>: 허용된 origin</li>
+</ul>
+<p>토큰은 무작위 32바이트이고 시작할 때마다 새로 만들어진다. 출력을 파일로 리디렉션하거나 토큰을 URL에 넣거나 보고서에 붙여 넣지 않는다. Ctrl-C로 API를 멈추면 토큰도 함께 무효가 된다.</p>
+<table>
+<thead>
+<tr>
+<th>플래그</th>
+<th>기본값</th>
+<th>효과</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--origin &lt;origin&gt;</code></td>
+<td>없음, 필수</td>
+<td>API 호출을 허용할 대시보드 페이지의 origin. 반복 가능</td>
+</tr>
+<tr>
+<td><code>--address &lt;ip:port&gt;</code></td>
+<td><code>127.0.0.1:0</code></td>
+<td>듣는 주소. 리터럴 루프백 IP 주소여야 하며 <code>localhost</code> 같은 이름은 거부. 포트 0은 운영체제가 선택</td>
+</tr>
+<tr>
+<td><code>--claude-dir &lt;dir&gt;</code></td>
+<td>아래 참고</td>
+<td>읽을 Claude 설정 디렉터리. 반복 가능</td>
+</tr>
+<tr>
+<td><code>--codex-dir &lt;dir&gt;</code></td>
+<td>아래 참고</td>
+<td>읽을 Codex 홈. 반복 가능</td>
+</tr>
+</tbody>
+</table>
+<h3 id="folders-it-reads">읽는 폴더<a class="headerlink" href="#folders-it-reads" title="Permanent link">&para;</a></h3>
+<p><code>--claude-dir</code>와 <code>--codex-dir</code>가 모두 없으면 <code>serve</code>는 다음 폴더를 읽는다.</p>
+<ul>
+<li>Claude Code: <code>CLAUDE_CONFIG_DIR</code>이 가리키는 폴더 또는 <code>~/.claude</code>, 그리고 Claude 홈을 지정한 각 프로필의 Claude 홈</li>
+<li>Codex CLI: <code>CODEX_CONFIG_DIR</code> 또는 <code>~/.codex</code>, 설정된 경우 <code>CODEX_HOME</code>, 그리고 Codex 홈을 지정한 각 프로필의 Codex 홈. 프로필 옵션 <code>options.codex_dirs</code>는 보지 않는다.</li>
+</ul>
+<p>없는 폴더는 건너뛴다. 두 플래그 중 하나라도 주면 위의 모든 기본값이 꺼진다. 그러면 <code>serve</code>는 지정한 폴더만 읽고 프로필의 폴더는 더하지 않는다. <code>--claude-dir</code>만 주면 Codex 세션은 읽지 않고, 반대도 마찬가지다.</p>
+<p>Claude 폴더에서는 <code>projects</code> 아래의 JSONL 세션 파일을, Codex 폴더에서는 <code>sessions</code> 아래의 rollout 파일을 읽는다(<a href="../../agents/codex/">Codex CLI</a>의 배치 참고). 폴더 밖을 가리키는 파일은 무시하고, <code>projects</code>나 <code>sessions</code> 디렉터리 자리의 심볼릭 링크는 따라가지 않는다.</p>
+<h2 id="run-it-with-the-daemon">데몬과 함께 실행<a class="headerlink" href="#run-it-with-the-daemon" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cctrace<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="nb">enable</span><span class="w"> </span>--origin<span class="w"> </span>https://cctrace.company.example
+</code></pre></div>
+<p>이름 있는 프로필에는 <code>--profile &lt;name&gt;</code>을 덧붙인다. <code>enable</code>은 <code>endpoint</code>와 <code>token</code>이 든 JSON 객체를 한 번 출력한다. origin, 127.0.0.1의 빈 포트, 토큰의 SHA-256 해시(토큰 자체가 아님)를 프로필 디렉터리에 저장한다. 기본 프로필은 <code>~/.cctrace/local-api-policy.json</code>, 이름 있는 프로필은 <code>~/.cctrace/profiles/&lt;name&gt;/local-api-policy.json</code>이다. 프로필 옵션 <code>options.local_analysis_enabled</code>도 켠다.</p>
+<p>API는 프로필의 동기화 데몬과 함께 시작되므로 이미 실행 중이던 데몬은 다시 시작해야 한다(<code>cctrace sync --stop</code> 후 <code>cctrace sync --daemon</code>). 그 프로필의 Claude 홈과 데몬이 스캔하는 Codex 홈(<a href="../../agents/codex/">Codex CLI</a>에 목록)을 읽는다. 저장된 포트가 데몬 시작 때 이미 사용 중이면 API가 시작되지 않고 <code>status</code>가 오류를 보여 준다. <code>enable</code>은 프로필의 동기화 설정을 바꾸지 않으므로 데몬은 프로필 옵션대로 계속 업로드한다.</p>
+<div class="highlight"><pre><span></span><code>cctrace<span class="w"> </span><span class="nb">local</span><span class="w"> </span>status
+cctrace<span class="w"> </span><span class="nb">local</span><span class="w"> </span>disable
+</code></pre></div>
+<p><code>status</code>는 JSON 객체 하나를 출력한다: <code>enabled</code>, <code>running</code>, <code>origin</code>, <code>address</code>, <code>generation</code>, <code>started_at</code>, <code>ended_at</code>, <code>error</code>. <code>disable</code>은 저장된 토큰 해시를 지우고 옵션을 끄며, 실행 중인 데몬은 이를 알아채면 API를 멈춘다.</p>
+<p><code>enable</code>을 다시 실행하면 새 토큰과 새 포트가 발급된다. 이전 토큰은 무효가 되고 실행 중인 데몬은 API를 멈추므로, 데몬을 다시 시작해야 새 값으로 시작된다.</p>
+<h2 id="connect-from-the-dashboard">대시보드에서 연결<a class="headerlink" href="#connect-from-the-dashboard" title="Permanent link">&para;</a></h2>
+<p>이 연결을 쓰는 페이지는 둘이다.</p>
+<ul>
+<li><code>/local-sessions</code>: 대시보드에 로그인하지 않고 쓸 수 있다.</li>
+<li>세션 페이지의 <strong>내 기기와 서버</strong> 보기: 서버 세션을 로컬 세션 옆에 나열하므로 대시보드에 로그인해야 한다.</li>
+</ul>
+<p><code>--origin</code>에 준 origin의 페이지를 연다. <strong>로컬 서비스 주소</strong>에 <code>endpoint</code> 값을, <strong>접속 토큰</strong>에 토큰을 입력하고 <strong>연결</strong>을 누른다. 폼은 <code>http://</code> 뒤에 <code>localhost</code>, 127.0.0.1, <code>[::1]</code> 중 하나와 포트가 오는 주소만 받고, <code>localhost</code>는 연결하기 전에 127.0.0.1로 바꿔 쓴다. API는 자신이 듣는 정확한 주소만 받는다. <code>endpoint</code> 값을 출력된 그대로 입력한다. <code>endpoint</code>가 127.0.0.1이면 <code>[::1]</code>로 바꿔 쓴 주소는 거부된다.</p>
+<p><strong>이 탭에 연결 저장</strong>을 켜면 주소와 토큰을 그 브라우저 탭의 <code>sessionStorage</code>에 보관하므로, 새로 고쳐도 다시 붙여 넣지 않고 재연결된다. 탭을 닫으면 사라진다. 켜지 않으면 토큰은 페이지 메모리에만 있고 새로 고칠 때 다시 묻는다. <strong>연결 끊기</strong>는 저장된 쌍을 지운다.</p>
+<p>세션 목록에는 검색창과 에이전트 필터(<strong>전체</strong>, <strong>Claude</strong>, <strong>Codex</strong>)가 있다. 목록은 각 파일의 앞과 뒤 32 KiB만 읽으므로 목록의 토큰 수, 이벤트 수, 비용은 0 대신 <strong>미집계</strong>로 표시된다. 세션을 선택하면 <strong>대화</strong>, <strong>개별 원문</strong>, <strong>분석</strong> 세 탭이 열린다. 분석 탭은 파일 전체를 읽어 기록이 뒷받침하는 값만 계산하며, 뒷받침하지 못하는 값은 비워 둔다.</p>
+<p><strong>내 기기와 서버</strong> 보기에서 세션 ID가 같은 로컬 세션과 서버 세션은 따로 나열된다. ID만으로는 둘이 같은 사람의 것인지 알 수 없으므로 페이지가 <strong>같은 세션으로 묶기</strong>를 제공해 직접 묶게 한다.</p>
+<h2 id="what-the-api-allows">API가 허용하는 것<a class="headerlink" href="#what-the-api-allows" title="Permanent link">&para;</a></h2>
+<ul>
+<li>루프백 주소에서만 듣는다. <code>serve</code>는 다른 <code>--address</code>를 거부하고 <code>enable</code>은 항상 127.0.0.1을 쓴다.</li>
+<li>브라우저의 CORS 사전 요청을 제외한 모든 요청에 토큰이 필요하다. <code>Host</code> 헤더는 듣는 주소와 같아야 하므로 다른 이름으로 API에 닿는 요청(예: DNS 리바인딩 페이지)은 거부된다.</li>
+<li>허용 목록 밖의 <code>Origin</code> 헤더가 붙은 요청은 거부된다.</li>
+<li>세션 파일을 읽기만 하고 수정하지 않는다. 쓰기는 하나뿐이며, <code>serve</code>에서 페이지가 저장할 수 있는 다음 Claude Code·Codex 실행의 프로필 선택이고 <code>~/.cctrace/next-profile.json</code>에 저장된다. 데몬의 API에는 프로필 선택이 없다.</li>
+<li>로컬 세션이 서버에도 있는지, 누구의 것인지는 확인하지 않는다.</li>
+<li>응답에는 <code>no-store</code>가 붙는다.</li>
+</ul>
+<p>HTTPS 대시보드 페이지는 루프백 주소에 닿기 전에 브라우저의 로컬 네트워크 권한이 필요할 수 있다. CLI에서 origin을 허용해도 그 권한이 주어지지 않으며 모든 브라우저가 이 연결을 지원한다는 뜻도 아니다.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  맨위로
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="하단/푸터" >
+        
+          
+          <a href="../sync/" class="md-footer__link md-footer__link--prev" aria-label="이전: 동기화 데몬">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                이전
+              </span>
+              <div class="md-ellipsis">
+                동기화 데몬
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../uninstall/" class="md-footer__link md-footer__link--next" aria-label="다음: 초기화와 제거">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                다음
+              </span>
+              <div class="md-ellipsis">
+                초기화와 제거
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.footer", "navigation.top", "toc.follow", "search.highlight", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub428", "clipboard.copy": "\ud074\ub9bd\ubcf4\ub4dc\ub85c \ubcf5\uc0ac", "search.result.more.one": "\uc774 \ubb38\uc11c\uc5d0\uc11c 1\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.more.other": "\uc774 \ubb38\uc11c\uc5d0\uc11c #\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.none": "\uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubb38\uc11c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4", "search.result.one": "1\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.other": "#\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.placeholder": "\uac80\uc0c9\uc5b4\ub97c \uc785\ub825\ud558\uc138\uc694", "search.result.term.missing": "\ud3ec\ud568\ub418\uc9c0 \uc54a\uc740 \uac80\uc0c9\uc5b4", "select.version": "\ubc84\uc804 \uc120\ud0dd"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
