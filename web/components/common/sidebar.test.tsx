@@ -1,13 +1,16 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Sidebar } from './sidebar';
 
 const authMock = vi.hoisted(() => ({ mustChangePassword: false }));
+const locationMock = vi.hoisted(() => ({ pathname: '/settings' }));
 
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/settings',
+  usePathname: () => locationMock.pathname,
 }));
+
+beforeEach(() => { locationMock.pathname = '/settings'; });
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: 'v0.7.44' }),
@@ -69,4 +72,15 @@ it('retains accessible icon navigation and tooltips in the collapsed rail', () =
   expect(markup).toContain('aria-label="Sessions"');
   expect(markup).toContain('title="Sessions"');
   expect(markup).toContain('sr-only');
+});
+
+it('renders the full mobile navigation and Open API anchors without collapsing desktop state', () => {
+  locationMock.pathname = '/open-api';
+  const markup = renderToStaticMarkup(createElement(Sidebar, { mobile: true }));
+  expect(markup).toContain('id="app-menu-mobile"');
+  expect(markup).toContain('href="/open-api"');
+  expect(markup).toContain('href="#getting-started"');
+  expect(markup).toContain('href="#authentication"');
+  expect(markup).toContain('href="/settings"');
+  expect(markup).not.toContain('data-collapsed="true"');
 });

@@ -317,7 +317,7 @@ const UsageChart = ({
         type="button"
         onClick={handleToggleExpanded}
         className={cn(
-          'flex w-full items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5',
+          'flex min-h-11 w-full items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5',
           'text-left text-sm font-medium text-muted-foreground transition-colors hover:text-fg',
         )}
       >
@@ -341,12 +341,12 @@ const UsageChart = ({
 
   return (
     <section className="rounded-lg border border-border bg-surface p-6">
-      <header className="flex items-center justify-between gap-4 mb-3">
-        <div className="flex items-baseline gap-3">
+      <header className="mb-3 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-3">
           <button
             type="button"
             onClick={handleToggleExpanded}
-            className="flex items-center gap-2 text-sm font-medium text-fg transition-colors hover:text-muted-foreground"
+            className="flex min-h-11 items-center gap-2 text-sm font-medium text-fg transition-colors hover:text-muted-foreground lg:min-h-0"
           >
             <ChevronDown size={14} aria-hidden />
             Subscription burn
@@ -761,7 +761,7 @@ const UncollectedPairNotice = ({
       <DialogOverlay className="bg-black/30" />
       <DialogContent
         showCloseButton={false}
-        className="block w-[360px] max-w-[360px] gap-0 space-y-3 rounded-xl border border-border bg-surface p-5 shadow-2xl"
+        className="block w-[360px] max-w-[calc(100vw-2rem)] gap-0 space-y-3 rounded-xl border border-border bg-surface p-5 shadow-2xl"
       >
         <DialogTitle className="text-[14px] font-semibold text-fg">Not collected</DialogTitle>
         <p className="text-[13px] text-muted-foreground">
@@ -813,8 +813,8 @@ const UsageControls = ({
   // look on or the control cannot show which pair is in force.
 
   return (
-    <div className="flex items-center gap-1.5">
-      <div role="group" aria-label="Quota window" className="flex items-center gap-1.5">
+    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+      <div role="group" aria-label="Quota window" className="flex flex-wrap items-center gap-1.5">
         {windowOptions.map((window) => (
           <ToggleChip
             key={window.minutes}
@@ -827,7 +827,7 @@ const UsageControls = ({
       {windowOptions.length > 0 && providerOptions.length > 0 && (
         <span className="mx-1 h-4 w-px bg-border" aria-hidden />
       )}
-      <div role="group" aria-label="Billing provider" className="flex items-center gap-1.5">
+      <div role="group" aria-label="Billing provider" className="flex flex-wrap items-center gap-1.5">
         {providerOptions.map((provider) => (
           <ToggleChip
             key={provider.id}
@@ -844,7 +844,7 @@ const UsageControls = ({
       {soloWeightedAvailable && (
         <>
           <span className="mx-1 h-4 w-px bg-border" aria-hidden />
-          <div role="group" aria-label="Series" className="flex items-center gap-1.5">
+          <div role="group" aria-label="Series" className="flex flex-wrap items-center gap-1.5">
             <ToggleChip selected={series.includes('accounts')} onClick={onToggleSeries('accounts')} label="Accounts" />
             <ToggleChip selected={series.includes('weighted')} onClick={onToggleSeries('weighted')} label="Weighted" />
           </div>
@@ -861,7 +861,7 @@ const ToggleChip = ({ selected, onClick, label }: { selected: boolean; onClick: 
     onClick={onClick}
     aria-pressed={selected}
     className={cn(
-      'rounded border px-2 py-0.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30',
+      'min-h-11 rounded border px-2 py-0.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 lg:min-h-0',
       selected ? 'border-brand bg-brand text-brand-ink' : 'border-border bg-surface text-ink-2 hover:text-fg',
     )}
   >

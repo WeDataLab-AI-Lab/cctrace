@@ -164,7 +164,7 @@ export default function OverviewPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="@container space-y-6">
       <SummaryCards
         viewMode={viewMode}
         totalCost={totalCost}
@@ -194,7 +194,7 @@ export default function OverviewPage() {
         nameMap={nameMap}
       />
 
-      <section className="bg-surface rounded-lg border border-border p-6 mt-2">
+      <section className="min-w-0 bg-surface rounded-lg border border-border p-4 sm:p-6 mt-2">
         <TrendChart
           showViewToggle={false}
           viewMode={viewMode}
@@ -236,7 +236,7 @@ export default function OverviewPage() {
         agent={selectedAgent}
       />
 
-      <div className="grid grid-cols-2 gap-4 items-stretch">
+      <div className="grid min-w-0 grid-cols-1 @min-[900px]:grid-cols-2 gap-4 items-stretch">
         <ModelPieChart viewMode={viewMode} data={modelPieData} otherNames={otherNames} isLoading={isModelDataPending} />
         <UserStackChart viewMode={viewMode} data={userStackData} stackKeys={stackKeys} isLoading={isCostDataPending} />
       </div>

@@ -17,7 +17,7 @@ const ToolsSummaryCards = ({
   overallRate,
   loading,
 }: ToolsSummaryCardsProps) => (
-  <div className="grid grid-cols-4 gap-4">
+  <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
     <SummaryCard title="Total Uses" value={totalUse.toLocaleString()} count={totalUse} loading={loading} subtitle="This month" />
     <SummaryCard title="Success" value={totalSuccess.toLocaleString()} count={totalSuccess} loading={loading} />
     <SummaryCard title="Failures" value={totalFail.toLocaleString()} count={totalFail} loading={loading} />

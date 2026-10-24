@@ -38,7 +38,7 @@ const ResetPasswordDialog = ({ user, onClose, onSuccess }: ResetPasswordDialogPr
       <DialogOverlay className="bg-black/30" />
       <DialogContent
         showCloseButton={false}
-        className="block w-[360px] max-w-[360px] gap-0 space-y-4 rounded-xl border border-border bg-surface p-6 shadow-2xl"
+        className="block w-[min(360px,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] overflow-y-auto gap-0 space-y-4 rounded-xl border border-border bg-surface p-6 shadow-2xl"
       >
         <DialogTitle className="text-[15px] font-semibold text-ink">Reset Password</DialogTitle>
         <p className="text-xs text-ink-3">{user.email}</p>

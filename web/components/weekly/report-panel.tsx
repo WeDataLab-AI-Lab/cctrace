@@ -303,7 +303,7 @@ const RegenerateConfirmDialog = ({ onConfirm, onCancel }: RegenerateConfirmDialo
 
   return (
     <Dialog open onOpenChange={handleOpenChange}>
-      <DialogContent showCloseButton={false} className="block max-w-[420px] space-y-4 border-border bg-surface">
+      <DialogContent showCloseButton={false} className="block w-[min(420px,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] space-y-4 overflow-y-auto border-border bg-surface">
         <DialogTitle className="text-[15px] font-semibold text-ink">리포트 다시 생성</DialogTitle>
         <p className="text-[13px] text-ink-2">현재 리포트가 대체됩니다</p>
         <footer className="flex justify-end gap-2">

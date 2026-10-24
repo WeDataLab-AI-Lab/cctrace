@@ -100,14 +100,14 @@ const SessionsCalendarPanel = ({
     <div className="flex min-h-0 min-w-0 shrink grow-[3] basis-[480px] flex-col border-r border-border">
       <div className="shrink-0 space-y-1 border-b border-border-subtle px-3 py-2 text-[11px] text-ink-3">
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1">시간대
-            <select aria-label="캘린더 시간대" value={timeZone} onChange={(event) => onTimeZoneChange(event.target.value)} className="rounded border border-border bg-surface px-1 text-ink">
+          <label className="flex min-w-0 flex-wrap items-center gap-1">시간대
+            <select aria-label="캘린더 시간대" value={timeZone} onChange={(event) => onTimeZoneChange(event.target.value)} className="min-h-11 max-w-full rounded border border-border bg-surface px-1 text-ink">
               {zones.map((zone) => <option key={zone} value={zone}>{zone === browserTimeZone ? `${zone} (브라우저)` : zone}</option>)}
             </select>
           </label>
           {isAdmin && (
-            <label className="flex items-center gap-1">사용자
-              <select aria-label="캘린더 사용자" value={selectedUser} disabled={!userScope} onChange={(event) => onSelectedUserChange(event.target.value)} className="rounded border border-border bg-surface px-1 text-ink disabled:opacity-50">
+            <label className="flex min-w-0 flex-wrap items-center gap-1">사용자
+              <select aria-label="캘린더 사용자" value={selectedUser} disabled={!userScope} onChange={(event) => onSelectedUserChange(event.target.value)} className="min-h-11 max-w-full rounded border border-border bg-surface px-1 text-ink disabled:opacity-50">
                 <option value="">본인 (기본)</option>
                 {userOptions.map(({ key, user }) => key
                   ? <option key={key} value={key}>{user.profile_email || user.user_id}</option>
@@ -125,7 +125,7 @@ const SessionsCalendarPanel = ({
         {classification && (
           <div className="flex flex-wrap items-center gap-2">
             <p role="status">{CLASSIFICATION_LABEL[classification]}{data && !error && !reloading && sessions.length === 0 ? ' 분류에 해당하는 세션이 이 주에는 없습니다.' : ' 분류만 표시 중입니다.'}</p>
-            {onClearClassification && <button type="button" onClick={onClearClassification} className="rounded border border-border px-2 py-1 text-ink-2 hover:bg-surface-sunk">전체 분류 보기</button>}
+            {onClearClassification && <button type="button" onClick={onClearClassification} className="min-h-11 rounded border border-border px-2 py-1 text-ink-2 hover:bg-surface-sunk">전체 분류 보기</button>}
           </div>
         )}
         {summaryScopeNote && <p>{summaryScopeNote}</p>}
@@ -142,7 +142,7 @@ const SessionsCalendarPanel = ({
       ) : error ? (
         <div role="alert" className="flex flex-col items-center gap-2 px-4 py-6 text-center text-xs text-danger">
           <p>{errorText(error)}</p>
-          <button type="button" onClick={onReload} disabled={reloading} className="rounded border border-border px-2 py-0.5 text-ink-2 disabled:opacity-50">다시 읽기</button>
+          <button type="button" onClick={onReload} disabled={reloading} className="min-h-11 rounded border border-border px-2 py-0.5 text-ink-2 disabled:opacity-50">다시 읽기</button>
         </div>
       ) : (
         <SessionCalendar

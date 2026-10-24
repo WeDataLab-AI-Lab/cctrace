@@ -61,7 +61,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <section className="mx-auto max-w-3xl pt-4">
+    <section className="mx-auto min-w-0 max-w-3xl pt-4">
       {user?.must_change_password && (
         <div className="mb-5 flex items-start gap-3 p-4 bg-warning-soft border border-warning/40 rounded-lg">
           <Shield size={16} className="text-warning-strong mt-0.5 shrink-0" />
@@ -84,7 +84,7 @@ export default function SettingsPage() {
 
       <QuotaAccountBindings />
 
-      <div className="bg-surface rounded-lg border border-border p-8">
+      <div className="rounded-lg border border-border bg-surface p-4 sm:p-8">
         <div className="flex items-center gap-2.5 mb-1">
           <KeyRound size={18} className="text-brand" />
           <h2 className="text-[16px] font-semibold text-ink">Change Password</h2>

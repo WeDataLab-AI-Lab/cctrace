@@ -199,8 +199,8 @@ export default function CostPage() {
         queriesEnabled={queriesEnabled}
       />
 
-      <div className="bg-surface rounded-lg border border-border overflow-hidden">
-        <Table className="text-sm">
+      <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface">
+        <Table className="min-w-[760px] text-sm">
           <TableHeader className="bg-canvas text-ink-3 text-xs uppercase">
             <TableRow className="hover:bg-transparent border-0">
               <TableHead className="px-4 py-3 text-left text-ink-3">User</TableHead>

@@ -55,8 +55,8 @@ const organizationProjectView = (
 const OrganizationProjectRow = ({ project, registry }: OrganizationProjectRowProps) => {
   const view = organizationProjectView(project, registry);
   return (
-    <div className="flex justify-between gap-4 border-b border-border px-4 py-3 text-[13px] last:border-0">
-      <span className="truncate font-mono text-ink">{view.label}</span>
+    <div className="flex min-w-0 flex-wrap justify-between gap-2 border-b border-border px-4 py-3 text-[13px] last:border-0">
+      <span className="min-w-0 break-all font-mono text-ink">{view.label}</span>
       <span className="shrink-0 tabular-nums text-ink-2">{formatTokens(view.total_tokens)} tokens</span>
     </div>
   );

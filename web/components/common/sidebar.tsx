@@ -58,9 +58,9 @@ const navItems = [
   { href: '/settings', label: 'Settings', icon: Settings, group: 'SYSTEM' },
 ];
 
-interface SidebarProps { collapsed?: boolean }
+interface SidebarProps { collapsed?: boolean; mobile?: boolean; onNavigate?: () => void }
 
-const Sidebar = ({ collapsed = false }: SidebarProps) => {
+const Sidebar = ({ collapsed = false, mobile = false, onNavigate }: SidebarProps) => {
   const pathname = usePathname();
   const normalized = pathname.replace(/\/+$/, '') || '/';
   const { showLogoMark } = useAppearance();
@@ -81,7 +81,7 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
   // The logo is the one explicit "start over". Auto-refresh now preserves what the user is
   // looking at, so there has to be a deliberate way to drop the filters — and this is it.
   // Appearance and login are untouched: those are user settings, not a view of the data.
-  const handleLogoClick = () => resetFilters();
+  const handleLogoClick = () => { resetFilters(); onNavigate?.(); };
 
   /** 현재 해시와 Open API 하위 문서 링크의 활성 상태를 동기화한다. */
   useEffect(() => {
@@ -92,7 +92,7 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
   }, [pathname]);
 
   return (
-    <aside id="app-menu" aria-label="앱 메뉴" data-collapsed={collapsed} className={cn('hidden min-h-screen bg-surface border-r border-border flex-col md:flex', collapsed ? 'w-16 min-w-16' : 'w-[248px] min-w-[248px]')}>
+    <aside id={mobile ? 'app-menu-mobile' : 'app-menu'} aria-label="앱 메뉴" data-collapsed={collapsed} className={cn('bg-surface border-r border-border flex-col', mobile ? 'flex h-full w-full overflow-y-auto' : 'hidden min-h-screen lg:flex', !mobile && (collapsed ? 'w-16 min-w-16' : 'w-[248px] min-w-[248px]'))}>
       <Link
         href="/"
         aria-label="cctrace · 필터 초기화"
@@ -187,6 +187,7 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
               ) : (
                 <Link
                   href={href}
+                  onClick={onNavigate}
                   aria-label={collapsed ? label : undefined}
                   title={collapsed ? label : undefined}
                   className={cn(
@@ -212,9 +213,10 @@ const Sidebar = ({ collapsed = false }: SidebarProps) => {
                       <a
                         key={child.href}
                         href={child.href}
+                        onClick={onNavigate}
                         aria-current={childActive ? 'location' : undefined}
                         className={cn(
-                          'relative block rounded-md px-3 py-1.5 text-[12px] transition-colors',
+                          'relative flex min-h-11 items-center rounded-md px-3 py-1.5 text-[12px] transition-colors lg:min-h-0',
                           childActive
                             ? 'bg-brand-soft font-medium text-brand'
                             : 'text-ink-3 hover:bg-surface-sunk hover:text-ink-2',

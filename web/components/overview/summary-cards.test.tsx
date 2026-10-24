@@ -31,6 +31,15 @@ it.each(['cost', 'token'] as const)('keeps %s metrics visible while moving suppl
   expect(container.textContent).not.toContain(note);
 });
 
+it('lays out four metrics as one, two, then four columns without clipping large amounts', () => {
+  const { container } = render(<SummaryCards {...props} totalCost={16484.02} viewMode="cost" />);
+  const grid = container.firstElementChild as HTMLElement;
+  expect(grid.className).toContain('grid-cols-1');
+  expect(grid.className).toContain('@min-[640px]:grid-cols-2');
+  expect(grid.className).toContain('@min-[900px]:grid-cols-4');
+  expect(screen.getByText('$16,484.02').className).toContain('break-');
+});
+
 it('shows each card explanation on keyboard focus and dismisses it with Escape', async () => {
   render(<SummaryCards {...props} viewMode="cost" />);
   const user = userEvent.setup();

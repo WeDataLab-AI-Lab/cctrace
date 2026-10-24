@@ -23,7 +23,7 @@ const metricKeys = (metrics: OtelMetric[]): string[] => {
 const MetricsTable = ({ metrics }: MetricsTableProps) => {
   const keys = metricKeys(metrics);
   return (
-  <table className="w-full">
+  <table className="w-full min-w-[780px]">
     <thead className="sticky top-0 bg-surface z-10">
       <tr className="border-b border-border">
         <th className="py-2 px-3 text-left text-[11px] font-medium text-ink-3">Time</th>

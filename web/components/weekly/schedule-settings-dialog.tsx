@@ -131,7 +131,7 @@ const ScheduleSettingsDialog = ({ schedule, timeZone, onClose, onSaved }: Schedu
 
   return (
     <Dialog open onOpenChange={handleOpenChange}>
-      <DialogContent showCloseButton={false} className="block max-w-[420px] space-y-4 border-border bg-surface">
+      <DialogContent showCloseButton={false} className="block w-[min(420px,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] space-y-4 overflow-y-auto border-border bg-surface">
         <DialogTitle className="text-[15px] font-semibold text-ink">주간 리포트 실행 설정</DialogTitle>
         <ScheduleFields {...draft} whenSource={schedule.when_source} onChange={setDraft} />
         {save.error && <p className="text-[12.5px] text-danger">저장하지 못했습니다. 다시 시도해 주세요.</p>}

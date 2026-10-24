@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { groupSameIdRows, localSessionSelectionKey, mergeLocalSessionOverviews, sameIdGroupingCandidates } from '@/lib/local-session-merge';
 import type { LocalSessionOverview, SignedInOwnerScope } from '@/lib/local-session-types';
 import type { LocalSessionAnalysis } from '@/lib/local-analysis-types';
@@ -64,6 +66,7 @@ export function LocalSessionsPanel({ embedded = false, serverSessions = [], owne
   const [search, setSearch] = useState('');
   const [agent, setAgent] = useState<'all' | 'claude' | 'codex'>('all');
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [grouping, setGrouping] = useState<{ owner?: string; source: LocalConnection | null; keys: ReadonlySet<string> }>(() => ({
     owner: ownerScope?.user_id, source: null, keys: new Set(),
   }));
@@ -87,11 +90,13 @@ export function LocalSessionsPanel({ embedded = false, serverSessions = [], owne
 
   const selected = list.find((row) => localSessionSelectionKey(row) === selectedKey);
   const selectLocal = (key: string) => {
+    setMobileDetailOpen(true);
     if (selectionRef.current === key) return;
     selectionRef.current = key;
     detailRequest.current += 1;
     setSelectedKey(key);
   };
+  const showLocalList = () => setMobileDetailOpen(false);
   const localId = selected?.local_id;
   const revision = selected?.revision;
   const selectionMissing = !!selectedKey && !selected && !!connection;
@@ -400,29 +405,29 @@ export function LocalSessionsPanel({ embedded = false, serverSessions = [], owne
       .some((value) => value.toLowerCase().includes(search.toLowerCase()))));
   const groups = groupSameIdRows(filtered, candidates, grouped);
 
-  return <main className={`${embedded ? 'min-h-full' : 'min-h-screen'} flex flex-col gap-4 bg-canvas p-4 text-ink sm:p-6`}>
+  return <main className={cn('flex min-w-0 flex-col gap-4 bg-canvas p-4 text-ink sm:p-6', embedded ? 'min-h-full' : 'min-h-screen')}>
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div><h1 className="text-xl font-semibold">내 기기 세션</h1><p className="text-xs text-ink-3">로컬 서비스에서 직접 읽습니다. 서버 로그인이나 동기화가 필요하지 않습니다.</p></div>
       <Link className="text-xs text-brand hover:underline" href="/sessions">서버 세션으로 이동</Link>
     </header>
     <form onSubmit={handleConnect} className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-surface p-4">
-      <label className="flex flex-1 flex-col gap-1 text-xs">로컬 서비스 주소
-        <input required type="url" value={origin} onChange={(event) => setOrigin(event.target.value)} placeholder="http://127.0.0.1:..." className="rounded border border-border bg-canvas px-3 py-2 text-sm" />
+      <label className="flex min-w-0 basis-full flex-col gap-1 text-xs sm:basis-0 sm:flex-1">로컬 서비스 주소
+        <input required type="url" value={origin} onChange={(event) => setOrigin(event.target.value)} placeholder="http://127.0.0.1:..." className="min-h-11 min-w-0 rounded border border-border bg-canvas px-3 py-2 text-sm" />
       </label>
-      <label className="flex flex-1 flex-col gap-1 text-xs">접속 토큰
-        <input required type="password" autoComplete="off" value={token} onChange={(event) => setToken(event.target.value)} className="rounded border border-border bg-canvas px-3 py-2 text-sm" />
+      <label className="flex min-w-0 basis-full flex-col gap-1 text-xs sm:basis-0 sm:flex-1">접속 토큰
+        <input required type="password" autoComplete="off" value={token} onChange={(event) => setToken(event.target.value)} className="min-h-11 min-w-0 rounded border border-border bg-canvas px-3 py-2 text-sm" />
       </label>
       <label className="flex items-center gap-1.5 text-xs text-ink-2">
         <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="h-3.5 w-3.5 rounded border-border" />
         이 탭에 연결 저장
       </label>
-      <button type="submit" disabled={connecting} className="rounded bg-brand px-4 py-2 text-sm text-brand-ink disabled:opacity-50">{connecting ? '연결 중' : '연결'}</button>
-      {connection && <button type="button" onClick={handleDisconnect} className="rounded border border-border px-4 py-2 text-sm text-ink-2 hover:border-danger hover:text-danger">연결 끊기</button>}
+      <button type="submit" disabled={connecting} className="min-h-11 rounded bg-brand px-4 py-2 text-sm text-brand-ink disabled:opacity-50">{connecting ? '연결 중' : '연결'}</button>
+      {connection && <button type="button" onClick={handleDisconnect} className="min-h-11 rounded border border-border px-4 py-2 text-sm text-ink-2 hover:border-danger hover:text-danger">연결 끊기</button>}
     </form>
     {listError && <p role="alert" className="rounded border border-danger bg-surface p-3 text-sm text-danger">{listError}</p>}
     {embedded && !ownerScope && <p role="alert" className="text-sm text-ink-3">서버 행은 별도 출처로 표시하며, 소유자 범위를 확인할 수 없어 중복을 자동으로 합치지 않습니다.</p>}
-    {(connection || embedded) && <div className="flex min-h-[440px] flex-1 flex-col overflow-hidden rounded-lg border border-border bg-surface md:flex-row">
-      <aside className="flex min-h-48 shrink-0 flex-col border-b border-border md:w-[320px] md:border-b-0 md:border-r">
+    {(connection || embedded) && <div data-mobile-view={mobileDetailOpen && selected ? 'detail' : 'list'} className="flex min-h-[440px] min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-surface lg:flex-row">
+      <aside className={cn('min-h-48 shrink-0 flex-col border-b border-border lg:flex lg:w-[320px] lg:border-b-0 lg:border-r', mobileDetailOpen && selected ? 'hidden' : 'flex')}>
         <div className="flex gap-2 border-b border-border p-3">
           <input aria-label="로컬 세션 검색" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="제목 또는 프로젝트 검색" className="min-w-0 flex-1 rounded border border-border bg-canvas px-2 py-1.5 text-xs" />
           <select aria-label="에이전트 필터" value={agent} onChange={(event) => setAgent(event.target.value as typeof agent)} className="rounded border border-border bg-canvas px-1 text-xs"><option value="all">전체</option><option value="claude">Claude</option><option value="codex">Codex</option></select>
@@ -460,6 +465,8 @@ export function LocalSessionsPanel({ embedded = false, serverSessions = [], owne
           {listCursor && <button type="button" disabled={listLoadingMore} onClick={() => { void loadMoreSessions(); }} className="w-full border-b border-border p-3 text-left text-xs text-brand disabled:opacity-50">{listLoadingMore ? '목록을 더 불러오는 중' : '세션 더 보기'}</button>}
         </div>
       </aside>
+      <div className={cn('min-h-0 min-w-0 flex-1 flex-col', mobileDetailOpen && selected ? 'flex' : 'hidden lg:flex')}>
+      {selected && <button type="button" onClick={showLocalList} className="flex min-h-11 shrink-0 items-center gap-2 border-b border-border px-3 text-left text-sm text-ink-2 lg:hidden"><ArrowLeft size={16} aria-hidden="true" />로컬 세션 목록으로</button>}
       {selected ? <LocalSessionDetail key={selectedKey} localId={selected.local_id} title={sessionTitle(selected)} revision={selected.revision}
         records={recordsKey === selectedKey && recordsRevision === selected.revision ? records : []}
         recordsRevision={recordsKey === selectedKey ? recordsRevision : ''}
@@ -469,6 +476,7 @@ export function LocalSessionsPanel({ embedded = false, serverSessions = [], owne
         analysis={analysisKey === selectedKey ? analysis : undefined}
         analysisLoading={analysisLoading} analysisError={!!analysisError && analysisKey === selectedKey} />
         : <p className="flex flex-1 items-center justify-center p-6 text-sm text-ink-3">{selectionMissing ? '선택한 로컬 세션이 최신 목록에서 사라졌습니다.' : '목록에서 세션을 선택해 주세요.'}</p>}
+      </div>
     </div>}
   </main>;
 }

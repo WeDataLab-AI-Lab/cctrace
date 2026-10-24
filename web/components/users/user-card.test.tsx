@@ -46,9 +46,10 @@ describe('UserCard 이메일 줄', () => {
     expect(getByText(longLogin).getAttribute('title')).toBe(longLogin);
   });
 
-  it('짧은 이메일도 기존 클래스(truncate 유지, 180px 열 불변)다', () => {
+  it('짧은 이메일도 전체 주소를 유지하며 모바일 카드의 이름 열이 줄어들 수 있다', () => {
     const { getByText, container } = renderCard(base({}));
     expect(getByText('a@example.com').className).toBe('text-[11px] text-ink-2 truncate');
-    expect(container.querySelector('.w-\\[180px\\].shrink-0')).not.toBeNull();
+    expect(container.querySelector('.min-w-0.flex-1')).not.toBeNull();
+    expect(container.querySelector('.w-\\[180px\\].shrink-0')).toBeNull();
   });
 });

@@ -110,7 +110,7 @@ export default function PluginsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[16px] font-semibold text-ink">Plugins & Skills</h2>
         <PeriodFilter periods={PERIODS} period={period} onSelect={handlePeriodSelect} />
       </header>

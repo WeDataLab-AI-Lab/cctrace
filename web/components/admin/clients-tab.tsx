@@ -89,12 +89,13 @@ const ClientsTab = () => {
 
   return (
     <div className="space-y-4">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-[16px] font-semibold text-ink">Clients</h2>
         <span className="text-[13px] text-ink-2">{summary.text}</span>
       </header>
 
-      <div className="bg-surface border border-border rounded-lg overflow-visible">
+      <div className="min-w-0 overflow-x-auto rounded-lg border border-border bg-surface">
+        <div className="min-w-[1050px]">
         <header className={cn(GRID_CLASS, 'px-4 py-2.5 border-b border-surface-sunk bg-canvas')}>
           <span className="text-[11px] font-medium text-ink-3">Profile Email</span>
           <span className="text-[11px] font-medium text-ink-3">Name</span>
@@ -161,6 +162,7 @@ const ClientsTab = () => {
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );

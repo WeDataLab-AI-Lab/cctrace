@@ -50,6 +50,21 @@ afterEach(() => {
 });
 
 describe('LocalSessionsPanel', () => {
+  it('returns from a mobile detail to the existing list without losing the selected record', async () => {
+    const { container } = render(<LocalSessionsPanel />);
+    connect();
+    await waitFor(() => expect(screen.getByRole('button', { name: /내 작업/ })).toBeTruthy());
+    const panels = container.querySelector('[data-mobile-view]');
+    expect(panels?.getAttribute('data-mobile-view')).toBe('list');
+    fireEvent.click(screen.getByRole('button', { name: /내 작업/ }));
+    await waitFor(() => expect(screen.getByText('첫 입력')).toBeTruthy());
+    expect(panels?.getAttribute('data-mobile-view')).toBe('detail');
+    fireEvent.click(screen.getByRole('button', { name: '로컬 세션 목록으로' }));
+    expect(panels?.getAttribute('data-mobile-view')).toBe('list');
+    expect(screen.getByRole('button', { name: /내 작업/ }).getAttribute('aria-current')).toBe('true');
+    expect(api.listRecords).toHaveBeenCalledTimes(1);
+  });
+
   it('connects only on click, keeps the token out of storage, then shows local records', async () => {
     const storage = vi.spyOn(Storage.prototype, 'setItem');
     render(<LocalSessionsPanel />);

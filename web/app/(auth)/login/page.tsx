@@ -44,7 +44,7 @@ export default function LoginPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-dvh items-center justify-center">
         <CollectingLoader />
       </div>
     );
@@ -55,8 +55,8 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="w-full max-w-md mx-auto p-6">
-      <div className="bg-surface rounded-lg border border-border p-8">
+    <section className="mx-auto w-full max-w-md p-3 sm:p-6">
+      <div className="rounded-lg border border-border bg-surface p-4 sm:p-8">
         <div className="flex items-center gap-2 mb-6">
           <CctraceIcon size={24} />
           <h1 className="text-xl font-semibold text-ink">cctrace</h1>
@@ -71,9 +71,11 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={handleEmailChange}
               required
+              className="min-h-11 text-base sm:text-sm"
               placeholder="you@company.com"
             />
           </div>
@@ -84,15 +86,17 @@ export default function LoginPage() {
             <Input
               id="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={handlePasswordChange}
               required
+              className="min-h-11 text-base sm:text-sm"
             />
           </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
 
-          <Button type="submit" disabled={submitting} className="w-full">
+          <Button type="submit" disabled={submitting} className="min-h-11 w-full">
             {submitting ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>

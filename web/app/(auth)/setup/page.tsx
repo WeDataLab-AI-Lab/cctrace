@@ -66,15 +66,15 @@ export default function SetupPage() {
 
   if (isLoading || !needsSetup) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-dvh items-center justify-center">
         <CollectingLoader />
       </div>
     );
   }
 
   return (
-    <section className="w-full max-w-md mx-auto p-6">
-      <div className="bg-surface rounded-lg border border-border p-8">
+    <section className="mx-auto w-full max-w-md p-3 sm:p-6">
+      <div className="rounded-lg border border-border bg-surface p-4 sm:p-8">
         <div className="flex items-center gap-2 mb-6">
           <CctraceIcon size={24} />
           <h1 className="text-xl font-semibold text-ink">cctrace Setup</h1>
@@ -95,6 +95,7 @@ export default function SetupPage() {
               onChange={handleSetupTokenChange}
               autoComplete="off"
               required
+              className="min-h-11 text-base sm:text-sm"
             />
             <p className="text-xs text-ink-2">
               Use the token from the server logs or CCTRACE_SETUP_TOKEN.
@@ -108,9 +109,11 @@ export default function SetupPage() {
             <Input
               id="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={handleEmailChange}
               required
+              className="min-h-11 text-base sm:text-sm"
               placeholder="admin@company.com"
             />
           </div>
@@ -121,9 +124,11 @@ export default function SetupPage() {
             <Input
               id="name"
               type="text"
+              autoComplete="name"
               value={name}
               onChange={handleNameChange}
               required
+              className="min-h-11 text-base sm:text-sm"
               placeholder="Admin"
             />
           </div>
@@ -134,9 +139,11 @@ export default function SetupPage() {
             <Input
               id="password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={handlePasswordChange}
               required
+              className="min-h-11 text-base sm:text-sm"
               minLength={8}
               placeholder="Min 8 characters"
             />
@@ -148,15 +155,17 @@ export default function SetupPage() {
             <Input
               id="confirm-password"
               type="password"
+              autoComplete="new-password"
               value={confirmPassword}
               onChange={handleConfirmPasswordChange}
               required
+              className="min-h-11 text-base sm:text-sm"
             />
           </div>
 
           {error && <p className="text-sm text-danger">{error}</p>}
 
-          <Button type="submit" disabled={submitting} className="w-full">
+          <Button type="submit" disabled={submitting} className="min-h-11 w-full">
             {submitting ? 'Creating...' : 'Create Admin Account'}
           </Button>
         </form>

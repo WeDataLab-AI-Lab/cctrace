@@ -106,9 +106,9 @@ const UserDetail = ({ email, avatarColor, displayName, viewMode, filterAccount, 
     .slice(0, 5);
 
   return (
-    <div className="bg-surface rounded-lg border border-border p-6 space-y-5">
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <div className="min-w-0 space-y-5 rounded-lg border border-border bg-surface p-4 sm:p-6">
+      <header className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-3">
           <span
             className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[13px] font-semibold [background-color:var(--avatar-color)]"
             // CSS variable drives the runtime avatar color (Tailwind cannot express dynamic values)
@@ -116,7 +116,7 @@ const UserDetail = ({ email, avatarColor, displayName, viewMode, filterAccount, 
           >
             {displayName[0]?.toUpperCase()}
           </span>
-          <span className="text-[15px] font-semibold text-ink">{displayName} — Detail View</span>
+          <span className="min-w-0 break-words text-[15px] font-semibold text-ink">{displayName} — Detail View</span>
         </div>
         <span className="text-[12px] text-ink-3">{subtitleFromSince(activeSince, now)}</span>
       </header>
@@ -174,15 +174,15 @@ const UserDetail = ({ email, avatarColor, displayName, viewMode, filterAccount, 
         ) : uniqueSessions.length === 0 ? (
           <p className="text-sm text-ink-3">No sessions</p>
         ) : (
-          <div>
-            <div className="flex items-center py-1.5 border-b border-surface-sunk">
+          <div className="min-w-0 overflow-x-auto">
+            <div className="flex min-w-[420px] items-center border-b border-surface-sunk py-1.5">
               <span className="flex-1 text-[11px] font-medium text-ink-3">Session ID</span>
               <span className="w-[120px] text-[11px] font-medium text-ink-3">Model</span>
               <span className="w-[80px] text-[11px] font-medium text-ink-3 text-right">Tokens</span>
               <span className="w-[80px] text-[11px] font-medium text-ink-3 text-right">Time</span>
             </div>
             {uniqueSessions.map((s, index) => (
-              <div key={s.session_id ?? index} className="flex items-center py-2 border-b border-surface-sunk last:border-b-0">
+              <div key={s.session_id ?? index} className="flex min-w-[420px] items-center border-b border-surface-sunk py-2 last:border-b-0">
                 <span className="flex-1 text-[12px] text-ink font-mono truncate">{s.session_id?.slice(0, 11) ?? '-'}</span>
                 <span className="w-[120px] text-[12px] text-ink-2">{s.model?.replace('claude-', '') || '-'}</span>
                 <span className="w-[80px] text-[12px] text-ink text-right">{fmt((s.input_tokens || 0) + (s.output_tokens || 0))}</span>

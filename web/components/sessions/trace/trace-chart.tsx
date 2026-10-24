@@ -193,14 +193,14 @@ const TurnSelection = ({ turns, selectedKey, onSelect }: TurnSelectionProps) => 
   const next = () => { if (index + 1 < turns.length) onSelect(turns[index + 1]); };
   return <nav aria-label="턴 선택" className="my-2 flex flex-wrap items-center gap-2 border-t border-border-subtle pt-2 text-[11px] text-ink-2">
     <label className="flex min-w-0 flex-1 items-center gap-2">턴
-      <select aria-label="턴 선택" value={selectedKey ?? ''} onChange={select} className="min-w-0 flex-1 rounded border border-border bg-surface px-2 py-1">
+      <select aria-label="턴 선택" value={selectedKey ?? ''} onChange={select} className="min-h-11 min-w-0 flex-1 rounded border border-border bg-surface px-2 py-1">
         {!turn && <option value={selectedKey ?? ''}>{selectedKey ? '선택 턴 메타데이터 준비 중' : '턴을 선택하세요'}</option>}
         {turns.map(turn => <option key={turn.key} value={turn.key}>{`#${turn.no} · ${turn.request_no !== null ? `요청 ${turn.request_no}` : '자동 입력'} · ${previewView(turn.preview).text}`}</option>)}
       </select>
     </label>
     {turn && <span>{TURN_STATUS_LABEL[turn.status]}{turn.branch === 'abandoned' ? ' · 버려진 분기' : ''}</span>}
-    <button type="button" onClick={previous} disabled={index <= 0} className="disabled:opacity-40">이전 턴</button>
-    <button type="button" onClick={next} disabled={index < 0 || index + 1 >= turns.length} className="disabled:opacity-40">다음 턴</button>
+    <button type="button" onClick={previous} disabled={index <= 0} className="min-h-11 rounded px-2 disabled:opacity-40">이전 턴</button>
+    <button type="button" onClick={next} disabled={index < 0 || index + 1 >= turns.length} className="min-h-11 rounded px-2 disabled:opacity-40">다음 턴</button>
   </nav>;
 };
 interface TraceChartProps {

@@ -94,7 +94,7 @@ const UserCard = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={cn(
-        'rounded-lg border transition-all duration-150 relative',
+        'group relative rounded-lg border transition-all duration-150',
         isSelected
           ? 'bg-surface-sunk border-brand border-[1.5px]'
           : isDropTarget
@@ -105,7 +105,7 @@ const UserCard = ({
     >
       <button
         onClick={onToggleSelect}
-        className="w-full px-5 py-4 flex items-center gap-4 hover:bg-canvas/50 transition-colors"
+        className="flex w-full flex-wrap items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-canvas/50 sm:flex-nowrap sm:gap-4 sm:px-5"
       >
         <span
           className="w-10 h-10 rounded-full flex items-center justify-center text-white text-[16px] font-semibold shrink-0 [background-color:var(--avatar-color)]"
@@ -115,7 +115,7 @@ const UserCard = ({
           {(shortName[0] || '?').toUpperCase()}
         </span>
 
-        <div className="w-[180px] shrink-0 text-left">
+        <div className="min-w-0 flex-1 text-left sm:w-[180px] sm:flex-none">
           <div className="text-[14px] font-semibold text-ink truncate">
             {dashName ? (
               <>
@@ -136,7 +136,7 @@ const UserCard = ({
           )}
         </div>
 
-        <div className="flex-1 flex items-center gap-6">
+        <div className="order-3 grid w-full grid-cols-3 gap-2 sm:order-none sm:flex sm:w-auto sm:flex-1 sm:items-center sm:gap-6">
           <div className="flex flex-col items-center gap-0.5">
             <span className="text-[16px] font-semibold text-ink">
               {viewMode === 'token' ? fmt(stats.total_input_tokens) : fmt(stats.total_input_tokens + stats.total_output_tokens)}
@@ -157,14 +157,15 @@ const UserCard = ({
           </div>
         </div>
 
-        <ChevronRight size={18} className="text-ink-3 shrink-0" />
+        <ChevronRight size={18} className={cn('ml-auto shrink-0 text-ink-3 sm:ml-0', isAdmin && !isSelected && 'mr-10 sm:mr-0')} />
       </button>
 
-      {isAdmin && isHovered && !isSelected && (
+      {isAdmin && !isSelected && (
         <button
           onClick={handleDelete}
-          title="삭제"
-          className="absolute right-10 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-ink-3 hover:bg-danger-soft hover:text-danger transition-colors text-xs font-bold"
+          type="button"
+          aria-label={`${shortName} 삭제`}
+          className={cn('absolute right-1 top-1 flex size-11 items-center justify-center rounded-full text-ink-3 transition-colors hover:bg-danger-soft hover:text-danger focus-visible:ring-2 focus-visible:ring-accent sm:right-10 sm:top-1/2 sm:size-8 sm:-translate-y-1/2', !isHovered && 'sm:opacity-0 sm:group-focus-within:opacity-100')}
         >
           x
         </button>

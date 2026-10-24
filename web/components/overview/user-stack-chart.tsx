@@ -57,7 +57,7 @@ const UserStackTooltip = ({ active, payload, viewMode }: UserStackTooltipProps) 
   if (items.length === 0) return null;
 
   return (
-    <div className="rounded-[4px] border border-border bg-surface px-2 py-1 text-[11px] shadow-[var(--sh-pop)]">
+    <div className="max-h-[60vh] max-w-[calc(100vw-2rem)] overflow-auto rounded-[4px] border border-border bg-surface px-2 py-1 text-[11px] [overflow-wrap:anywhere] shadow-[var(--sh-pop)]">
       {items.map((item) => {
         const fable = isFable(item.name);
         const astra = isAstra(item.name);
@@ -171,7 +171,7 @@ const UserStackChart = ({ viewMode, data, stackKeys, isLoading = false }: UserSt
 
 
   return (
-    <article className="min-w-0 bg-surface rounded-xl border border-border shadow-[var(--sh-sm)] p-6">
+    <article className="min-w-0 rounded-xl border border-border bg-surface p-4 shadow-[var(--sh-sm)] sm:p-6">
       <h3 className="text-[14px] font-semibold text-ink mb-4">{title}</h3>
       {isLoading ? (
         <ChartSkeleton variant="bar" className="h-[280px]" />
@@ -179,7 +179,9 @@ const UserStackChart = ({ viewMode, data, stackKeys, isLoading = false }: UserSt
         <p className="text-sm text-ink-3 text-center py-8">No data</p>
       ) : (
         <>
-          <ResponsiveContainer width="100%" height={Math.max(200, data.length * 40)}>
+          <div className="min-w-0 overflow-x-auto">
+            <div className="min-w-[320px]">
+              <ResponsiveContainer width="100%" height={Math.max(200, data.length * 40)}>
             <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
               {/* Flagship gradients share CSS stop tokens so palette tweaks stay in sync. */}
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
@@ -202,7 +204,9 @@ const UserStackChart = ({ viewMode, data, stackKeys, isLoading = false }: UserSt
                 ))}
               </BarStack>
             </BarChart>
-          </ResponsiveContainer>
+              </ResponsiveContainer>
+            </div>
+          </div>
           <UserStackLegend stackKeys={stackKeys} />
         </>
       )}

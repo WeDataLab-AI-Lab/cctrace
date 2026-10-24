@@ -110,11 +110,11 @@ const ToolDetailPanel = ({ toolName, loginEmail }: ToolDetailPanelProps) => {
   }
 
   return (
-    <div className="px-6 pb-5 space-y-5">
+    <div className="min-w-0 space-y-5 px-3 pb-5 sm:px-6">
       <div className="h-px bg-surface-sunk" />
 
       {/* Summary Stats: Daily / Weekly / Monthly */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {stats.map(({ label, stat }) => (
           <ToolStatTile key={label} label={label} stat={stat} />
         ))}

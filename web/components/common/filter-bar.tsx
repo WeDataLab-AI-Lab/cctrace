@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { ChevronDown, RefreshCw, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -30,69 +30,26 @@ interface DropdownProps {
 }
 
 const Dropdown = ({ value, onChange, options, placeholder, mono }: DropdownProps) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
   const selected = options.find((o) => o.value === value);
-
-  const handleToggle = () => setOpen((v) => !v);
-  const handleSelect = (next: string) => {
-    onChange(next);
-    setOpen(false);
-  };
-
-  /**
-   * 드롭다운 외부 클릭 시 닫는다. mousedown 단계에서 ref 바깥을 감지한다.
-   */
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={handleToggle}
-        className={cn(
-          'px-3 h-[34px] text-[13px] rounded-lg border bg-surface text-ink-2 transition-colors flex items-center gap-1.5',
-          open ? 'border-brand' : 'border-border',
-          mono && 'font-mono'
-        )}
-      >
-        {selected?.label ?? (value || placeholder)}
-        <svg
-          width="10"
-          height="6"
-          viewBox="0 0 10 6"
-          fill="none"
-          className={cn('transition-transform', open && 'rotate-180')}
-        >
-          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      {open && (
-        <div className="absolute top-[calc(100%+4px)] left-0 min-w-full bg-surface border border-border rounded-lg shadow-[var(--sh-pop)] z-50 py-1 max-h-60 overflow-y-auto">
-          {options
-            .filter((o) => o.value !== value)
-            .map((o) => (
-              <button
-                key={o.value}
-                onClick={() => handleSelect(o.value)}
-                className={cn(
-                  'w-full text-left px-3 py-1.5 text-[13px] hover:bg-surface-sunk transition-colors text-ink-2',
-                  mono && 'font-mono'
-                )}
-              >
-                {o.label}
-              </button>
-            ))}
-        </div>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button type="button" className={cn('flex h-[34px] max-w-[calc(100vw-2rem)] items-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-[13px] text-ink-2 transition-colors data-[state=open]:border-brand', mono && 'font-mono')}>
+          <span className="min-w-0 truncate">{selected?.label ?? (value || placeholder)}</span>
+          <ChevronDown size={12} className="shrink-0" aria-hidden />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="max-h-60 min-w-[var(--radix-dropdown-menu-trigger-width)] max-w-[calc(100vw-2rem)] overflow-y-auto">
+        {options.filter((option) => option.value !== value).map((option) =>
+          <DropdownChoice key={option.value} option={option} onChange={onChange} mono={mono} />)}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
+};
+
+const DropdownChoice = ({ option, onChange, mono }: { option: DropdownOption; onChange: (value: string) => void; mono?: boolean }) => {
+  const handleSelect = () => onChange(option.value);
+  return <DropdownMenuItem onSelect={handleSelect} className={cn('min-h-11 max-w-full text-[13px] [overflow-wrap:anywhere] lg:min-h-0', mono && 'font-mono')}>{option.label}</DropdownMenuItem>;
 };
 
 export interface FilterBarProps {
@@ -240,7 +197,7 @@ const FilterBar = ({
     // also scrolling -- two nested scroll areas, the inner one useless at that size
     // and the outer one left with nothing to move. The caller owns the scrolling; this
     // just refuses to wrap and lets its children shrink.
-    <div className={cn('flex min-w-0 flex-1 items-center gap-3',
+    <div className={cn('flex min-w-0 flex-1 items-center gap-3 max-lg:[&_button]:min-h-11',
       nowrap ? 'flex-nowrap' : 'flex-wrap')}>
       {showViewToggle && onViewModeChange && (
         <div className={toggleGroup}>
@@ -358,7 +315,7 @@ const FilterBar = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="start"
-            className="max-h-[60vh] w-[var(--radix-dropdown-menu-trigger-width)] min-w-[320px] overflow-y-auto"
+            className="max-h-[60vh] w-[calc(100vw-2rem)] min-w-0 max-w-[calc(100vw-2rem)] overflow-y-auto sm:w-[var(--radix-dropdown-menu-trigger-width)]"
           >
             <DropdownMenuItem onSelect={() => onProjectChange('')}>
               <span className="truncate">All Projects</span>
@@ -387,7 +344,7 @@ const FilterBar = ({
                     aria-label={`${p.project_name || p.project_hash} 삭제`}
                     title="프로젝트 삭제"
                     onClick={() => onProjectDelete(p)}
-                    className="shrink-0 rounded p-1 text-ink-3 opacity-0 transition-opacity hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
+                    className="min-h-11 min-w-11 shrink-0 rounded p-1 text-ink-3 opacity-0 transition-opacity hover:text-danger focus-visible:opacity-100 group-hover:opacity-100 lg:min-h-0 lg:min-w-0"
                   >
                     <Trash2 size={13} />
                   </button>
@@ -407,7 +364,7 @@ const FilterBar = ({
           // Shrinks instead of wrapping: basis is the width it wants, min-w is half of
           // that, and flex-shrink does the rest. A wrapped toolbar costs a whole row of
           // vertical space for a control that only needed to be narrower.
-          className="h-auto w-56 min-w-28 flex-1 shrink basis-56 rounded-md border-border px-3 py-1.5 text-[13px] shadow-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30"
+          className="h-auto min-h-11 w-56 min-w-28 flex-1 shrink basis-56 rounded-md border-border px-3 py-1.5 text-[13px] shadow-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30 lg:min-h-0"
         />
       )}
 

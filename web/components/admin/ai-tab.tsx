@@ -60,7 +60,7 @@ const CATALOG_STALE_MS = 10 * 60_000;
 
 const PANEL_CLASS = 'bg-surface border border-border rounded-lg px-4 py-4 space-y-3';
 const SELECT_TRIGGER_CLASS =
-  'w-full h-auto rounded-lg border-border bg-surface px-3 py-2 text-sm shadow-none focus-visible:ring-0 focus-visible:border-brand';
+  'min-h-11 w-full rounded-lg border-border bg-surface px-3 py-2 text-sm shadow-none focus-visible:ring-0 focus-visible:border-brand';
 
 const CODEX_RUNTIME = 'codex-app-server';
 const LITELLM_RUNTIME = 'litellm-api';
@@ -95,12 +95,12 @@ const RuntimeOption = ({ runtime, checked, disabled, onSelect }: RuntimeOptionPr
     <li>
       <label
         className={cn(
-          'flex items-baseline justify-between gap-3 rounded-lg border px-3 py-2 text-[13px]',
+          'flex min-h-11 min-w-0 flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2 text-[13px]',
           checked ? 'border-brand' : 'border-border',
           disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-canvas',
         )}
       >
-        <span className={cn('flex items-center gap-2 shrink-0', runtime.configured ? 'text-ink' : 'text-ink-3')}>
+        <span className={cn('flex min-w-0 flex-wrap items-center gap-2', runtime.configured ? 'text-ink' : 'text-ink-3')}>
           <input
             type="radio"
             name="ai-runtime"
@@ -113,9 +113,9 @@ const RuntimeOption = ({ runtime, checked, disabled, onSelect }: RuntimeOptionPr
           {RUNTIME_LABEL[runtime.key] ?? runtime.key}
           {checked && <span className="text-[11px] font-medium text-brand">사용 중</span>}
         </span>
-        <span className="flex items-center gap-2 min-w-0 text-[12px] text-ink-2">
+        <span className="flex min-w-0 items-center gap-2 break-all text-[12px] text-ink-2">
           <span className={cn('size-2 shrink-0 rounded-full', state.ok ? 'bg-success' : 'bg-border-strong')} />
-          <span className="truncate">{[state.text, ...details].join(' · ')}</span>
+          <span>{[state.text, ...details].join(' · ')}</span>
         </span>
       </label>
     </li>
@@ -575,7 +575,7 @@ const SettingsPanel = ({ runtime, settings, models, catalogLoading, catalogError
             onChange={handleBaseUrlChange}
             disabled={mutation.isPending}
             placeholder="https://litellm.example.com"
-            className="h-9 rounded-lg border border-border bg-canvas px-3 text-[13px] text-ink placeholder:text-ink-3 disabled:opacity-50"
+            className="min-h-11 min-w-0 rounded-lg border border-border bg-canvas px-3 text-[13px] text-ink placeholder:text-ink-3 disabled:opacity-50"
           />
           <span className="text-[11px] text-ink-3">
             {settings.source.base_url === 'env' && settings.env_base_url
@@ -587,7 +587,7 @@ const SettingsPanel = ({ runtime, settings, models, catalogLoading, catalogError
 
       {saveError && <p className="text-xs text-danger">{saveError}</p>}
 
-      <footer className="flex justify-end gap-2">
+      <footer className="flex flex-wrap justify-end gap-2">
         <Button
           variant="outline"
           onClick={handleReset}

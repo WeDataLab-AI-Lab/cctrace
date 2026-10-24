@@ -87,13 +87,13 @@ export default function LogsPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-56px-64px)] flex flex-col gap-4">
-      <div className="flex items-center justify-between shrink-0">
+    <div className="flex h-full min-h-[20rem] min-w-0 flex-col gap-4">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <h2 className="text-[16px] font-semibold text-ink">Logs</h2>
         <TabSwitcher tab={tab} onTabChange={handleTabChange} />
       </div>
 
-      <div className="flex-1 min-h-0 bg-surface rounded-lg border border-border flex flex-col overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-surface">
         {renderTable()}
       </div>
 

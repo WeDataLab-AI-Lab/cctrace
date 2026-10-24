@@ -203,9 +203,9 @@ const SessionViewer = ({ session, searchTarget, onNavigate, onClassificationSave
   }, [activeSessionId, activeTab]);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       {(session || searchTarget) && <>
-      <div className="flex-shrink-0 flex items-center gap-3 px-5 py-2 border-b border-border">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-3 py-2 sm:gap-3 sm:px-5">
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-semibold text-ink" title={session?.first_line || activeSessionId || ''}>{session?.first_line || session?.analysis?.title?.text || activeSessionId?.slice(0, 8)}</h2>
           {session && <p className="truncate text-[11px] text-ink-3">{projectLabel(session)} · {agentLabel(session.agent || 'claude')} · {new Date(session.start_time).toLocaleString('ko-KR')}</p>}
@@ -244,7 +244,7 @@ const SessionViewer = ({ session, searchTarget, onNavigate, onClassificationSave
               aria-label="세션 삭제"
               title="세션 삭제"
               onClick={handleShowDelete}
-              className="rounded p-1 text-ink-3 hover:bg-surface-sunk hover:text-danger"
+              className="flex size-11 items-center justify-center rounded text-ink-3 hover:bg-surface-sunk hover:text-danger"
             >
               <Trash2 className="size-3.5" />
             </button>
@@ -255,7 +255,7 @@ const SessionViewer = ({ session, searchTarget, onNavigate, onClassificationSave
               aria-label="세션 수집 설정"
               title="세션 수집 설정"
               onClick={handleShowSettings}
-              className="rounded p-1 text-ink-3 hover:bg-surface-sunk hover:text-ink"
+              className="flex size-11 items-center justify-center rounded text-ink-3 hover:bg-surface-sunk hover:text-ink"
             >
               <Settings className="size-3.5" />
             </button>
@@ -267,19 +267,19 @@ const SessionViewer = ({ session, searchTarget, onNavigate, onClassificationSave
       )}
       </>}
       {user && <SessionPersonalEditor key={user.id} sessionId={activeSessionId} userId={user.id} onClassificationSaved={onClassificationSaved} />}
-      <div className="flex shrink-0 items-center border-b border-border px-4">
-          {(session || searchTarget) && <div role="tablist" aria-label="세션 보기" onKeyDown={handleTabKeyDown} className="flex gap-1">
-            <button type="button" role="tab" id="viewer-conversation-tab" aria-controls="viewer-conversation-panel" aria-selected={showConversation} tabIndex={showConversation ? 0 : -1} onClick={handleConversation} className="px-3 py-2 text-xs aria-selected:border-b-2 aria-selected:border-brand aria-selected:text-brand">대화</button>
-            <button type="button" role="tab" id="viewer-trace-tab" aria-controls="viewer-trace-panel" aria-selected={traceActive} tabIndex={traceActive ? 0 : -1} onClick={handleTrace} title="요청·응답·도구 실행을 선택해 입력·결과와 원자료를 살펴봅니다" className="px-3 py-2 text-xs aria-selected:border-b-2 aria-selected:border-brand aria-selected:text-brand">트레이스</button>
+      <div className="flex min-w-0 shrink-0 items-center border-b border-border px-2 sm:px-4">
+          {(session || searchTarget) && <div role="tablist" aria-label="세션 보기" onKeyDown={handleTabKeyDown} className="flex min-w-0 gap-1 overflow-x-auto">
+            <button type="button" role="tab" id="viewer-conversation-tab" aria-controls="viewer-conversation-panel" aria-selected={showConversation} tabIndex={showConversation ? 0 : -1} onClick={handleConversation} className="min-h-11 shrink-0 px-3 py-2 text-xs aria-selected:border-b-2 aria-selected:border-brand aria-selected:text-brand">대화</button>
+            <button type="button" role="tab" id="viewer-trace-tab" aria-controls="viewer-trace-panel" aria-selected={traceActive} tabIndex={traceActive ? 0 : -1} onClick={handleTrace} title="요청·응답·도구 실행을 선택해 입력·결과와 원자료를 살펴봅니다" className="min-h-11 shrink-0 px-3 py-2 text-xs aria-selected:border-b-2 aria-selected:border-brand aria-selected:text-brand">트레이스</button>
           </div>}
-          <div className="ml-auto flex items-center gap-1">
-            {onToggleList && !expanded && <button type="button" aria-label={listCollapsed ? '세션 목록 펼치기' : '세션 목록 접기'} aria-expanded={!listCollapsed} aria-controls="session-navigation" onClick={onToggleList} className="rounded p-1.5 text-ink-3 hover:bg-surface-sunk hover:text-ink">
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            {onToggleList && !expanded && <button type="button" aria-label={listCollapsed ? '세션 목록 펼치기' : '세션 목록 접기'} aria-expanded={!listCollapsed} aria-controls="session-navigation" onClick={onToggleList} className="flex size-11 items-center justify-center rounded text-ink-3 hover:bg-surface-sunk hover:text-ink">
               {listCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
             </button>}
-            <button type="button" aria-label={expanded ? '상세 영역 복원' : '상세 영역 확대'} aria-pressed={expanded} onClick={onToggleExpanded} className="rounded p-1.5 text-ink-3 hover:bg-surface-sunk hover:text-ink">
+            <button type="button" aria-label={expanded ? '상세 영역 복원' : '상세 영역 확대'} aria-pressed={expanded} onClick={onToggleExpanded} className="flex size-11 items-center justify-center rounded text-ink-3 hover:bg-surface-sunk hover:text-ink">
               {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
             </button>
-            {onClose && <button type="button" aria-label="대화창 닫기" title="대화창 닫기" onClick={onClose} className="rounded p-1.5 text-ink-3 hover:bg-surface-sunk hover:text-ink">
+            {onClose && <button type="button" aria-label="대화창 닫기" title="대화창 닫기" onClick={onClose} className="flex size-11 items-center justify-center rounded text-ink-3 hover:bg-surface-sunk hover:text-ink">
               <X className="size-4" />
             </button>}
           </div>

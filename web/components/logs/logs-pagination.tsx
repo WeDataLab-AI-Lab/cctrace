@@ -10,7 +10,7 @@ interface LogsPaginationProps {
 }
 
 const PAGER_CLASS =
-  'h-auto px-3 py-1 text-[12px] rounded-md shadow-none border-border text-ink-2 disabled:opacity-30 hover:bg-surface-sunk hover:text-ink-2';
+  'min-h-11 px-3 py-1 text-[12px] rounded-md shadow-none border-border text-ink-2 disabled:opacity-30 hover:bg-surface-sunk hover:text-ink-2';
 
 const LogsPagination = ({ page, rowCount, hasMore, onPageChange }: LogsPaginationProps) => {
   const handlePrev = () => onPageChange(Math.max(0, page - 1));

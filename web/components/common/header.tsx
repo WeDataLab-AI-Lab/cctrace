@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { LogOut, User, PanelLeftClose, PanelLeftOpen, Square, SquareCheck } from 'lucide-react';
+import { LogOut, User, PanelLeftClose, PanelLeftOpen, Square, SquareCheck, Menu, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Dialog as DialogPrimitive } from 'radix-ui';
 import { fetchAccounts } from '@/lib/api';
 import { withBasePath } from '@/lib/base-path';
 import { cn } from '@/lib/utils';
@@ -11,6 +12,7 @@ import { WEEKLY_USAGE_HINT } from '@/lib/weekly-usage';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollFadeRow } from '@/components/common/scroll-fade-row';
 import { QuotaHeaderMeters } from '@/components/common/quota-header-meters';
+import { Sidebar } from '@/components/common/sidebar';
 import { SessionSearchBox } from '@/components/sessions/frame/session-search';
 import type { SessionRecordSearchMatch, SessionRecordSearchResult } from '@/lib/session-analysis-types';
 import { useAccount } from './account-context';
@@ -70,7 +72,7 @@ const agentOptions: { value: AgentScope; label: string; dot?: string; hint?: str
 
 const pillClass = (active: boolean) =>
   cn(
-    'shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors',
+    'shrink-0 inline-flex min-h-11 items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors lg:min-h-0',
     active
       ? 'bg-brand text-brand-ink'
       : 'bg-surface text-ink-2 hover:bg-surface-sunk border border-border',
@@ -89,8 +91,15 @@ const Header = () => {
   const { menuCollapsed, toggleMenu } = useSessionLayout();
   // The server pins a role=user session list to the caller's own scope (#811), so chips there do nothing.
   const pinnedToOwnAccount = user?.role === 'user' && pathname === '/sessions';
+  const mobileAccountSummary = pinnedToOwnAccount
+    ? '본인 계정 전체'
+    : selectedAccount.split('@')[0] || 'All accounts';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [focusMobileSearch, setFocusMobileSearch] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
   // The chips list every member's accounts because the screens below are shared. A role=user
   // viewer may trim them to their own; the server ignores that request for an admin.
   const canTrimToOwn = user?.role === 'user';
@@ -116,6 +125,9 @@ const Header = () => {
     if (next) setSelectedAccount('');
   };
   const handleProfileToggle = () => setShowProfileMenu((v) => !v);
+  const handleMobileFiltersToggle = () => setMobileFiltersOpen((open) => !open);
+  const handleMobileSearchOpen = () => { setMobileFiltersOpen(true); setFocusMobileSearch(true); };
+  const handleMobileNavigate = () => setMobileMenuOpen(false);
   const handleLogout = async () => {
     await logout();
     window.location.href = withBasePath('/login');
@@ -140,20 +152,69 @@ const Header = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  /** 경로가 바뀌면 모바일 탐색을 닫고 새 화면의 키보드 탐색을 허용한다. */
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  /** 검색 단축 버튼은 필터 영역의 기존 검색 입력으로 포커스를 옮긴다. */
+  useEffect(() => {
+    if (!focusMobileSearch || !mobileFiltersOpen) return;
+    filtersRef.current?.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFocusMobileSearch(false);
+  }, [focusMobileSearch, mobileFiltersOpen]);
+
+  /** 넓은 화면으로 전환되면 modal focus trap을 해제하고 데스크톱 메뉴를 사용한다. */
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const closeOnDesktop = () => { if (desktop.matches) setMobileMenuOpen(false); };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => desktop.removeEventListener('change', closeOnDesktop);
+  }, []);
+
   return (
-    // gap-3 is enough when the filters sit on their own line. Once the account row
-    // takes flex-1 it starts immediately beside the title, so the two run together
-    // on a single line -- the wider gap is only needed where that happens.
-    <header className="flex min-h-14 flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3 md:gap-6 md:px-6 md:py-0">
-      <div className="flex shrink-0 items-center gap-2">
-        <button type="button" aria-label={menuCollapsed ? '앱 메뉴 펼치기' : '앱 메뉴 접기'} aria-expanded={!menuCollapsed} aria-controls="app-menu" onClick={toggleMenu} className="hidden rounded p-1.5 text-ink-3 hover:bg-surface-sunk hover:text-ink md:inline-flex">
+    <DialogPrimitive.Root open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+    <header className="flex min-w-0 flex-col gap-2 border-b border-border bg-surface px-4 py-2 lg:px-6">
+      <div className="flex min-w-0 items-center gap-2">
+        <DialogPrimitive.Trigger asChild>
+          <button type="button" aria-label="앱 메뉴 열기" aria-controls="app-menu-mobile" className="inline-flex size-11 shrink-0 items-center justify-center rounded text-ink-3 hover:bg-surface-sunk lg:hidden"><Menu className="size-5" /></button>
+        </DialogPrimitive.Trigger>
+        <button type="button" aria-label={menuCollapsed ? '앱 메뉴 펼치기' : '앱 메뉴 접기'} aria-expanded={!menuCollapsed} aria-controls="app-menu" onClick={toggleMenu} className="hidden size-11 items-center justify-center rounded text-ink-3 hover:bg-surface-sunk hover:text-ink lg:inline-flex">
           {menuCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
         </button>
-        <h1 className="shrink-0 text-[16px] font-semibold text-ink">{title}</h1>
+        <h1 className="min-w-0 flex-1 truncate text-[16px] font-semibold text-ink">{title}</h1>
+        {user && <button type="button" aria-label="전체 검색 열기" onClick={handleMobileSearchOpen} className="inline-flex size-11 shrink-0 items-center justify-center rounded text-ink-2 hover:bg-surface-sunk lg:hidden"><Search className="size-5" /></button>}
+        {user && (
+          <div className="relative shrink-0" ref={menuRef}>
+            <button type="button" aria-label="프로필 메뉴" aria-expanded={showProfileMenu} onClick={handleProfileToggle} className="flex min-h-11 items-center gap-2 rounded-md px-2 text-sm text-ink-2 transition-colors hover:bg-surface-sunk">
+              <User size={18} />
+              <span className="hidden text-xs lg:inline">{user.name || user.email.split('@')[0]}</span>
+            </button>
+            {showProfileMenu && (
+              <div className="absolute right-0 top-full z-50 mt-1 min-w-[160px] max-w-[calc(100vw-2rem)] rounded-md border border-border bg-surface py-1 shadow-[var(--sh-pop)]">
+                <div className="border-b border-border px-3 py-2">
+                  <p className="text-xs font-medium text-ink">{user.name}</p>
+                  <p className="break-all text-[11px] text-ink-3">{user.email}</p>
+                  <p className="mt-0.5 text-[10px] text-brand">{user.role}</p>
+                </div>
+                <button onClick={handleLogout} className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-xs text-ink-2 transition-colors hover:bg-surface-sunk lg:min-h-0"><LogOut size={14} />Sign out</button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-start gap-2 md:justify-end md:gap-4">
+      <div className="flex min-w-0 items-center gap-2 lg:hidden">
+        <span className="min-w-0 flex-1 truncate rounded-lg bg-surface-sunk px-3 py-2.5 text-xs text-ink-2">
+          {mobileAccountSummary} · {selectedAgent ? agentOptions.find((option) => option.value === selectedAgent)?.label : 'All agents'}
+        </span>
+        <button type="button" aria-label={mobileFiltersOpen ? '필터 닫기' : '필터 열기'} aria-expanded={mobileFiltersOpen} aria-controls="mobile-filters" onClick={handleMobileFiltersToggle} className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg bg-surface-sunk text-ink-2"><SlidersHorizontal className="size-5" /></button>
+      </div>
+      <div id="mobile-filters" ref={filtersRef} className={cn('min-w-0 flex-wrap items-center justify-start gap-2 lg:flex lg:gap-4', mobileFiltersOpen ? 'flex' : 'hidden')}>
+        {user && <div className="w-full lg:w-auto max-lg:[&>div]:w-full max-lg:[&_input]:h-11 max-lg:[&_input]:w-full max-lg:[&_[role=region]]:left-0 max-lg:[&_[role=region]]:right-auto"><SessionSearchBox key={sessionSearchScope} scopeKey={sessionSearchScope} onSelect={handleSessionSearchSelect} /></div>}
         <QuotaHeaderMeters enabled={!!user} />
-        {user && <SessionSearchBox key={sessionSearchScope} scopeKey={sessionSearchScope} onSelect={handleSessionSearchSelect} />}
         {showScopeFilters && (
         <>
         {accounts && accounts.length > 1 && pinnedToOwnAccount && (
@@ -167,16 +228,11 @@ const Header = () => {
           </div>
         )}
         {showAccountChips && (
-          // flex-1 so the group claims the width of the line it wrapped onto, and
-          // min-w-0 so it is allowed to be narrower than its pills. Without both the
-          // row sizes itself to its contents and runs off the edge instead of
-          // scrolling -- twelve accounts was enough to show that. With the own-accounts
-          // toggle (shrink-0) beside the pills, min-w-0 let the pills shrink to nothing
-          // and the toggle spill over the Agent label on a one-line header, so that row
-          // keeps enough width to wrap onto its own line instead.
-          <div className={cn('flex min-w-0 flex-1 items-center gap-2', canTrimToOwn && 'min-w-56')}>
+          // The narrow filter panel wraps all account choices; the desktop row scrolls
+          // so a long shared account list never pushes the next scope off screen.
+          <div className={cn('flex min-w-0 flex-1 flex-wrap items-center gap-2 lg:flex-nowrap', canTrimToOwn && 'lg:min-w-56')}>
             <span className="shrink-0 text-[11px] font-medium text-ink-3">Account</span>
-            <ScrollFadeRow>
+            <ScrollFadeRow className="max-lg:flex-wrap max-lg:overflow-visible">
               <button onClick={handleSelectAllAccounts} className={pillClass(selectedAccount === '')}>
                 All
               </button>
@@ -201,10 +257,10 @@ const Header = () => {
         )}
 
         {/* Agent scope toggle */}
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <span className="shrink-0 text-[11px] font-medium text-ink-3">Agent</span>
           <TooltipProvider delayDuration={300}>
-          <div className="flex gap-1 overflow-x-auto pb-1 md:pb-0">
+          <div className="flex flex-wrap gap-1 pb-1 lg:overflow-x-auto lg:pb-0">
             {agentOptions.map((opt) => {
               const active = selectedAgent === opt.value;
               const pill = (
@@ -237,38 +293,22 @@ const Header = () => {
         </>
         )}
 
-        {/* Profile dropdown */}
-        {user && (
-          <div className="relative shrink-0" ref={menuRef}>
-            <button
-              onClick={handleProfileToggle}
-              className="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-ink-2 hover:bg-surface-sunk transition-colors"
-            >
-              <User size={16} />
-              <span className="text-xs">{user.name || user.email.split('@')[0]}</span>
-            </button>
-            {showProfileMenu && (
-              <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-md shadow-[var(--sh-pop)] py-1 min-w-[160px] z-50">
-                <div className="px-3 py-2 border-b border-border">
-                  <p className="text-xs font-medium text-ink">{user.name}</p>
-                  <p className="text-[11px] text-ink-3">{user.email}</p>
-                  <p className="text-[10px] text-brand mt-0.5">{user.role}</p>
-                </div>
-                <div className="border-t border-border">
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-ink-2 hover:bg-surface-sunk transition-colors"
-                  >
-                    <LogOut size={14} />
-                    Sign out
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </header>
+    <DialogPrimitive.Portal>
+      <DialogPrimitive.Overlay data-testid="mobile-menu-backdrop" className="fixed inset-0 z-50 bg-black/40 lg:hidden" />
+      <DialogPrimitive.Content className="fixed inset-y-0 left-0 z-50 w-80 max-w-[calc(100vw-3rem)] bg-surface outline-none lg:hidden">
+        <DialogPrimitive.Title className="sr-only">앱 메뉴</DialogPrimitive.Title>
+        <div className="flex h-full flex-col">
+          <div className="flex shrink-0 items-center justify-between px-4 py-2 text-sm text-ink-2">
+            <span>Menu</span>
+            <DialogPrimitive.Close className="inline-flex size-11 items-center justify-center rounded hover:bg-surface-sunk" aria-label="앱 메뉴 닫기"><X className="size-5" /></DialogPrimitive.Close>
+          </div>
+          <Sidebar mobile onNavigate={handleMobileNavigate} />
+        </div>
+      </DialogPrimitive.Content>
+    </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 };
 

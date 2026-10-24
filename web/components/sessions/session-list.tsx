@@ -165,7 +165,7 @@ const SessionList = ({ sessions, isLoading, selectedId, onSelect, hasMore, isLoa
     // the list is guaranteed, 360 is as wide as it may get, and everything past the
     // two floors is split by grow -- twice as much to the pane, which is what the page
     // is for. Below 220 the list's own rows wrap into noise, hence min-w.
-    <div className="relative flex min-h-0 w-auto min-w-[220px] max-w-[288px] shrink grow basis-[220px] flex-col border-r border-border">
+    <div className="relative flex min-h-0 min-w-0 w-full shrink grow basis-[220px] flex-col border-r border-border lg:w-auto lg:min-w-[220px] lg:max-w-[288px]">
       {pendingCount > 0 && (
         <div className="flex shrink-0 items-center justify-end border-b border-border-subtle bg-surface px-4 py-1.5">
           <button

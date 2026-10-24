@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, type MouseEvent } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TableLoadingRows, rowIn } from '@/components/common/loading-rows';
@@ -58,10 +58,15 @@ const SkillsTable = ({
           const rowCalls = totalCalls(row);
           const users = bySkillUser.get(row.name) ?? [];
           const isExpanded = expandedSkill === row.name;
+          const handleToggle = () => onToggle(row.name);
+          const handleButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
+            event.stopPropagation();
+            handleToggle();
+          };
           return (
             <Fragment key={row.name}>
               <TableRow
-                onClick={() => onToggle(row.name)}
+                onClick={handleToggle}
                 className={cn(
                   'cursor-pointer transition-colors',
                   isExpanded ? 'bg-surface-sunk' : 'hover:bg-canvas',
@@ -69,10 +74,10 @@ const SkillsTable = ({
                 )}
               >
                 <TableCell className="pl-4 py-3 text-ink-3">
-                  {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  {isExpanded ? <ChevronDown size={14} aria-hidden="true" /> : <ChevronRight size={14} aria-hidden="true" />}
                 </TableCell>
-                <TableCell className="px-4 py-3 font-mono text-[12px] text-ink">
-                  {row.name}
+                <TableCell className="px-4 py-1 font-mono text-[12px] text-ink">
+                  <button type="button" aria-expanded={isExpanded} onClick={handleButtonClick} className="flex min-h-11 w-full items-center text-left hover:underline focus-visible:ring-2 focus-visible:ring-accent">{row.name}</button>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-right text-ink-2">
                   {row.pluginCalls.toLocaleString()}

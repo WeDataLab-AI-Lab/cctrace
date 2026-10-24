@@ -37,7 +37,7 @@ const AccountRow = ({ account, disabled, onExclude, onInclude }: AccountRowProps
     <li className="flex flex-wrap items-center justify-between gap-3 py-3">
       <div className="min-w-0">
         <p className="text-[12px] text-ink-3">{account.billing_provider}</p>
-        <code className="block truncate font-mono text-[13px] text-ink">{account.account_id}</code>
+        <code className="block break-all font-mono text-[13px] text-ink">{account.account_id}</code>
         <p className="mt-0.5 text-[11px] text-ink-3">{STATUS_TEXT[state]}</p>
       </div>
       {state === 'collecting' && (
@@ -98,7 +98,7 @@ const BillingSelfExclusion = () => {
   const accounts = accountsQuery.data?.accounts ?? [];
 
   return (
-    <section className="mb-5 rounded-lg border border-border bg-surface p-8">
+    <section className="mb-5 min-w-0 rounded-lg border border-border bg-surface p-4 sm:p-8">
       <header className="mb-4">
         <div className="mb-1 flex items-center gap-2.5">
           <EyeOff size={18} className="text-brand" />
@@ -115,12 +115,12 @@ const BillingSelfExclusion = () => {
       <CatchingUpNote pending={accountsQuery.data?.usage_rebuild_pending} message={USAGE_REBUILD_NOTE} className="mb-4" />
       {confirming && (
         <div className="mb-4 rounded-lg border border-warning/40 bg-warning-soft p-4" role="alert">
-          <p className="text-[13px] font-medium text-warning-strong">Exclude “{confirming.account_id}”?</p>
+          <p className="break-all text-[13px] font-medium text-warning-strong">Exclude “{confirming.account_id}”?</p>
           <p className="mt-1 text-[12px] leading-5 text-warning-strong/80">
             Its data is hidden from everyone on the dashboard, and session logs synced from it are discarded until you
             include it again.
           </p>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             <Button type="button" size="sm" onClick={handleConfirmExclude} disabled={pending}>
               {excludeMutation.isPending ? 'Excluding…' : 'Confirm exclusion'}
             </Button>

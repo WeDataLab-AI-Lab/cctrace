@@ -39,15 +39,15 @@ const SummaryValue = ({ value, count, format = fmtCount, loading = false }: Pick
 
 const SummaryCard = ({ title, value, count, format, loading, subtitle, note, compact = false, className }: SummaryCardProps) => {
   return (
-    <div className={cn('bg-surface rounded-xl border border-border shadow-[var(--sh-sm)]', compact ? 'h-full px-4 py-3' : 'py-5 px-6 group', className)}>
+    <div className={cn('min-w-0 bg-surface rounded-xl border border-border shadow-[var(--sh-sm)]', compact ? 'h-full px-4 py-3 max-md:flex max-md:items-center max-md:justify-between max-md:gap-3' : 'py-5 px-6 group', className)}>
       {compact ? (
-        <div className="mb-1 flex items-center justify-between gap-2">
+        <div className="mb-1 flex items-center justify-between gap-2 max-md:mb-0">
           <p className="text-[13px] text-ink-3">{title}</p>
           {(subtitle || note) && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button type="button" aria-label={`${title} 설명`} className="inline-flex size-6 shrink-0 items-center justify-center rounded-sm text-ink-3 hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30">
+                  <button type="button" aria-label={`${title} 설명`} className="inline-flex size-11 shrink-0 items-center justify-center rounded-sm text-ink-3 hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 lg:size-6">
                     <Info className="size-3.5" aria-hidden="true" />
                   </button>
                 </TooltipTrigger>
@@ -60,7 +60,7 @@ const SummaryCard = ({ title, value, count, format, loading, subtitle, note, com
           )}
         </div>
       ) : <p className="text-[13px] text-ink-3 mb-2">{title}</p>}
-      <p className={cn('text-[28px] font-semibold text-ink tabular-nums', compact && 'leading-tight')}>
+      <p className={cn('min-w-0 text-[28px] font-semibold text-ink tabular-nums break-all', compact && 'leading-tight max-md:text-right max-md:text-[24px]')}>
         <SummaryValue value={value} count={count} format={format} loading={loading} />
       </p>
       {!compact && subtitle && <p className="text-[12px] text-ink-3 mt-1">{subtitle}</p>}

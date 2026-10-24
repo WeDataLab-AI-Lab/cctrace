@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SummaryCard } from '@/components/common/summary-card';
 import { useAgent } from '@/components/common/agent-context';
@@ -29,6 +31,7 @@ export default function RulesPage() {
   const [selectedRuleKey, setSelectedRuleKey] = useState<string | null>(null);
   const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
   const [commentBody, setCommentBody] = useState('');
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const { selectedAgent } = useAgent();
   const ruleAgent = selectedAgent === 'claude' || selectedAgent === 'codex' ? selectedAgent : '';
   const hasActiveFilter = searchInput.trim() !== '' || statusFilter !== 'all' || repositoryFilter !== '';
@@ -115,6 +118,7 @@ export default function RulesPage() {
   const resetSelection = () => {
     setSelectedRuleKey(null);
     setSelectedVersionId(null);
+    setMobileDetailOpen(false);
   };
 
   const handleSearchChange = (value: string) => {
@@ -136,7 +140,9 @@ export default function RulesPage() {
     setSelectedRuleKey(key);
     setSelectedVersionId(null);
     setCommentBody('');
+    setMobileDetailOpen(true);
   };
+  const handleBackToRules = () => setMobileDetailOpen(false);
 
   const repositories = new Set(rows.map(({ rule }) => rule.repository_key));
   const groupedDetails: RuleGroup[] = (() => {
@@ -160,7 +166,7 @@ export default function RulesPage() {
       : 'No project rules yet';
 
   return (
-    <div className="h-[calc(100vh-56px-64px)] flex flex-col gap-5">
+    <div data-mobile-view={mobileDetailOpen ? 'detail' : 'list'} className="flex min-h-0 min-w-0 flex-col gap-5 xl:h-[calc(100dvh-56px-64px)]">
       <div className="flex flex-col gap-4 shrink-0">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="text-[16px] font-semibold text-ink">Project Rules</h2>
@@ -181,13 +187,14 @@ export default function RulesPage() {
         </div>
       </div>
 
-      <div className="grid flex-1 min-h-0 grid-cols-1 gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
-        <div className="min-h-0 overflow-hidden rounded-lg border border-border bg-surface">
+      {mobileDetailOpen && <button type="button" onClick={handleBackToRules} className="inline-flex min-h-11 items-center gap-2 self-start rounded-md border border-border bg-surface px-3 text-sm text-ink-2 xl:hidden"><ArrowLeft size={16} aria-hidden="true" />Back to rules</button>}
+      <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
+        <div className={cn('min-h-0 min-w-0 overflow-hidden rounded-lg border border-border bg-surface', mobileDetailOpen ? 'hidden xl:block' : 'block')}>
           <div className="flex h-full min-h-0 flex-col">
             <div className="border-b border-border px-4 py-3">
               <div className="text-[12px] font-medium uppercase text-ink-3">Repositories</div>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="max-h-[65dvh] min-h-0 flex-1 overflow-y-auto xl:max-h-none">
               <RuleList
                 groups={groupedDetails}
                 selectedKey={selectedRow?.key ?? null}
@@ -199,7 +206,7 @@ export default function RulesPage() {
           </div>
         </div>
 
-        <div className="min-h-0 overflow-hidden rounded-lg border border-border bg-surface">
+        <div className={cn('min-h-[60dvh] min-w-0 overflow-hidden rounded-lg border border-border bg-surface xl:min-h-0', mobileDetailOpen ? 'block' : 'hidden xl:block')}>
           <RuleDetail
             hasSelection={!!selectedRow}
             isLoading={isLoadingDetail}

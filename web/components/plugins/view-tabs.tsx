@@ -17,13 +17,13 @@ const tabLabel = (tab: PluginView) => {
 };
 
 const ViewTabs = ({ view, onSelect }: ViewTabsProps) => (
-  <nav className="flex gap-0 border-b border-border">
+  <nav aria-label="Plugin usage views" className="flex min-w-0 gap-0 overflow-x-auto border-b border-border">
     {TABS.map((tab) => (
       <button
         key={tab}
         onClick={() => onSelect(tab)}
         className={cn(
-          'px-4 py-2 text-[13px] font-medium border-b-2 -mb-px transition-colors',
+          'min-h-11 shrink-0 px-4 py-2 text-[13px] font-medium border-b-2 -mb-px transition-colors',
           view === tab
             ? 'border-ink text-ink'
             : 'border-transparent text-ink-3 hover:text-ink-2'

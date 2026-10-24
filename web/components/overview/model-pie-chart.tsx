@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { useState } from 'react';
 import {
   PieChart,
   Pie,
@@ -35,7 +36,7 @@ const ModelPieTooltip = ({ active, payload, viewMode, otherNames }: ModelPieTool
   const astra = isAstra(name);
 
   return (
-    <div className="rounded-[4px] border border-border bg-surface px-2 py-1 text-[11px] shadow-[var(--sh-pop)]">
+    <div className="max-h-[60vh] max-w-[calc(100vw-2rem)] overflow-auto rounded-[4px] border border-border bg-surface px-2 py-1 text-[11px] [overflow-wrap:anywhere] shadow-[var(--sh-pop)]">
       <p className="m-0 flex items-center gap-1.5">
         <span
           aria-hidden
@@ -69,6 +70,8 @@ interface ModelPieChartProps {
 
 const ModelPieChart = ({ viewMode, data, otherNames, isLoading = false }: ModelPieChartProps) => {
   const title = viewMode === 'token' ? 'Tokens by Model' : 'Cost by Model';
+  const [otherNamesOpen, setOtherNamesOpen] = useState(false);
+  const handleOtherNamesToggle = () => setOtherNamesOpen((open) => !open);
 
 
   const renderLegend = () => (
@@ -80,13 +83,14 @@ const ModelPieChart = ({ viewMode, data, otherNames, isLoading = false }: ModelP
         return (
         <span
           key={d.name}
-          className="relative inline-flex items-center gap-1 group"
+          className="group relative inline-flex min-w-0 max-w-full items-center gap-1"
         >
           <svg width={10} height={10} aria-hidden className="inline-block shrink-0">
             <rect width={10} height={10} fill={modelColor(d.name)} />
           </svg>
           <span
             className={cn(
+              'min-w-0 [overflow-wrap:anywhere]',
               fable
                 ? 'text-model-fable'
                 : astra
@@ -99,12 +103,13 @@ const ModelPieChart = ({ viewMode, data, otherNames, isLoading = false }: ModelP
             {d.name}
           </span>
           {d.name === 'Others' && otherNames.length > 0 && (
-            <span className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-0.5 z-10">
-              <span className="block px-2 py-1 text-[11px] text-ink-3 border border-border bg-surface rounded whitespace-nowrap shadow-[var(--sh-pop)]">
+            <><button type="button" aria-label="Others 상세" aria-expanded={otherNamesOpen} onClick={handleOtherNamesToggle} className="min-h-11 rounded px-1 underline-offset-2 hover:underline lg:min-h-0">상세</button>
+            <span className={cn('absolute bottom-full left-0 z-10 mb-0.5 max-w-[calc(100vw-2rem)] lg:left-1/2 lg:-translate-x-1/2', otherNamesOpen ? 'block' : 'hidden group-hover:block')}>
+              <span className="block max-h-40 overflow-y-auto rounded border border-border bg-surface px-2 py-1 text-[11px] text-ink-3 [overflow-wrap:anywhere] shadow-[var(--sh-pop)]">
                 {otherNames.join(', ')}
               </span>
-              <span className="block w-px h-2 bg-border mx-auto" />
-            </span>
+              <span className="mx-auto block h-2 w-px bg-border" />
+            </span></>
           )}
         </span>
         );
@@ -113,7 +118,7 @@ const ModelPieChart = ({ viewMode, data, otherNames, isLoading = false }: ModelP
   );
 
   return (
-    <article className="bg-surface rounded-xl border border-border shadow-[var(--sh-sm)] p-6 flex flex-col">
+    <article className="flex min-w-0 flex-col rounded-xl border border-border bg-surface p-4 shadow-[var(--sh-sm)] sm:p-6">
       <h3 className="text-[14px] font-semibold text-ink mb-4">{title}</h3>
       {isLoading ? (
         <ChartSkeleton variant="pie" className="h-[240px]" />

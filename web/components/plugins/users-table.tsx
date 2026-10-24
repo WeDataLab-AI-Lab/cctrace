@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, type MouseEvent } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TableLoadingRows, rowIn } from '@/components/common/loading-rows';
@@ -49,10 +49,15 @@ const UsersTable = ({ byUser, expandedUser, onToggle, isLoading }: UsersTablePro
         byUser.map((userRow, i) => {
           const isExpanded = expandedUser === userRow.user;
           const userCalls = userRow.pluginCalls + userRow.skillCalls;
+          const handleToggle = () => onToggle(userRow.user);
+          const handleButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
+            event.stopPropagation();
+            handleToggle();
+          };
           return (
             <Fragment key={userRow.user}>
               <TableRow
-                onClick={() => onToggle(userRow.user)}
+                onClick={handleToggle}
                 className={cn(
                   'cursor-pointer transition-colors',
                   isExpanded ? 'bg-surface-sunk' : 'hover:bg-canvas',
@@ -60,10 +65,10 @@ const UsersTable = ({ byUser, expandedUser, onToggle, isLoading }: UsersTablePro
                 )}
               >
                 <TableCell className="pl-4 py-3 text-ink-3">
-                  {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  {isExpanded ? <ChevronDown size={14} aria-hidden="true" /> : <ChevronRight size={14} aria-hidden="true" />}
                 </TableCell>
-                <TableCell className="px-4 py-3 font-medium text-ink">
-                  {userRow.user}
+                <TableCell className="px-4 py-1 font-medium text-ink">
+                  <button type="button" aria-expanded={isExpanded} onClick={handleButtonClick} className="flex min-h-11 w-full items-center text-left hover:underline focus-visible:ring-2 focus-visible:ring-accent">{userRow.user}</button>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-right text-ink-2">
                   {userRow.pluginCalls.toLocaleString()}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, type MouseEvent } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TableLoadingRows, rowIn } from '@/components/common/loading-rows';
@@ -31,8 +31,8 @@ const ToolUsageTable = ({
   onToggleTool,
   loginEmail,
 }: ToolUsageTableProps) => (
-  <div className="bg-surface rounded-lg border border-border overflow-hidden">
-    <Table className="text-sm">
+  <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface">
+    <Table className="min-w-[680px] text-sm">
       <TableHeader className="bg-canvas text-ink-3 text-xs uppercase">
         <TableRow className="hover:bg-transparent">
           <TableHead className="px-4 py-3 text-left w-8 text-ink-3" />
@@ -57,6 +57,10 @@ const ToolUsageTable = ({
             const rate = t.use_count > 0 ? (t.success_count / t.use_count) * 100 : 0;
             const isExpanded = expandedTool === t.tool_name;
             const handleToggle = () => onToggleTool(isExpanded ? null : t.tool_name);
+            const handleButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
+              event.stopPropagation();
+              handleToggle();
+            };
 
             return (
               <Fragment key={t.tool_name}>
@@ -68,10 +72,14 @@ const ToolUsageTable = ({
                     rowIn(i),
                   )}
                 >
-                  <TableCell className="pl-4 py-3 text-ink-3">
-                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  <TableCell className="pl-4 py-1 text-ink-3">
+                    {isExpanded ? <ChevronDown size={14} aria-hidden="true" /> : <ChevronRight size={14} aria-hidden="true" />}
                   </TableCell>
-                  <TableCell className="px-4 py-3 font-medium text-ink">{t.tool_name}</TableCell>
+                  <TableCell className="px-4 py-1 font-medium text-ink">
+                    <button type="button" aria-expanded={isExpanded} onClick={handleButtonClick} className="flex min-h-11 w-full items-center text-left hover:underline focus-visible:ring-2 focus-visible:ring-accent">
+                      {t.tool_name}
+                    </button>
+                  </TableCell>
                   <TableCell className="px-4 py-3 text-right text-ink-2">
                     {t.use_count.toLocaleString()}
                   </TableCell>

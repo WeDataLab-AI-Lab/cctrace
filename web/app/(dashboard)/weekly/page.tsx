@@ -158,7 +158,7 @@ const FiguresHeader = () => (
   </header>
 );
 
-const navButtonClass = 'inline-flex size-7 items-center justify-center rounded-[var(--r-sm)] border border-border bg-surface text-ink-2';
+const navButtonClass = 'inline-flex size-11 shrink-0 items-center justify-center rounded-[var(--r-sm)] border border-border bg-surface text-ink-2';
 
 interface WeekNavProps {
   weekId: string;
@@ -167,11 +167,11 @@ interface WeekNavProps {
 }
 
 const WeekNav = ({ weekId, timeZone, navigation }: WeekNavProps) => (
-  <nav aria-label="주 이동" className="flex items-center gap-2 text-[12.5px] text-ink-2">
+  <nav aria-label="주 이동" className="flex max-w-full flex-wrap items-center gap-2 text-[12.5px] text-ink-2">
     <Link href={weekHref(navigation.prev)} aria-label="이전 주" className={cn(navButtonClass, 'hover:bg-surface-2')}>
       <ChevronLeft size={14} />
     </Link>
-    <span className="tabular-nums">
+    <span className="min-w-0 tabular-nums">
       {weekId} · {formatWeekLabel(weekId, timeZone)}
     </span>
     {navigation.next ? (
@@ -230,7 +230,7 @@ const WeeklyReport = ({ weekParam }: WeeklyReportProps) => {
   }, [redirect, router]);
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-[16px] font-semibold text-ink">Weekly report</h2>
@@ -257,7 +257,7 @@ const WeeklyReport = ({ weekParam }: WeeklyReportProps) => {
           cards' weight (spec §3.0). */}
       <section className="border-b border-border pb-6">
         <FiguresHeader />
-        <div className="grid gap-8 md:grid-cols-2">
+        <div className="grid min-w-0 gap-8 xl:grid-cols-2">
           <ProjectShareDonut
             projects={data?.projects ?? []}
             registry={projectRegistry}

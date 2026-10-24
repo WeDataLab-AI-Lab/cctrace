@@ -82,7 +82,7 @@ const DeleteSessionDialog = ({
       <DialogOverlay className="bg-black/30" />
       <DialogContent
         showCloseButton={false}
-        className="block w-[420px] max-w-[420px] gap-0 space-y-3.5 rounded-xl border border-border bg-surface p-6 shadow-2xl"
+        className="block w-[min(420px,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] overflow-y-auto gap-0 space-y-3.5 rounded-xl border border-border bg-surface p-6 shadow-2xl"
       >
         <header>
           <DialogTitle className="text-[14px] font-semibold text-ink">{title}</DialogTitle>

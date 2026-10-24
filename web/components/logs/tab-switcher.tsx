@@ -18,7 +18,7 @@ const TabSwitcher = ({ tab, onTabChange }: TabSwitcherProps) => (
         key={t}
         onClick={() => onTabChange(t)}
         className={cn(
-          'h-auto px-3 py-1 text-[12px] rounded-md font-medium transition-colors capitalize shadow-none',
+          'min-h-11 px-3 py-1 text-[12px] rounded-md font-medium transition-colors capitalize shadow-none',
           tab === t
             ? 'bg-brand text-brand-ink hover:bg-brand'
             : 'bg-surface-sunk text-ink-2 hover:bg-canvas hover:text-ink-2'

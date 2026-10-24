@@ -136,7 +136,7 @@ const SessionRecordControls = ({ ownerView }: SessionRecordControlsProps) => {
       {deleteNotice !== null && <p role="status" className="mt-1 text-[10.5px] text-ink-2">내 파생 세션 기록 {deleteNotice}건을 삭제했습니다. 동의 상태는 그대로입니다.</p>}
 
       <Dialog open={dialog !== null} onOpenChange={handleDialogOpenChange}>
-        <DialogContent showCloseButton={false} aria-describedby="session-record-dialog-description" className="block max-h-[85vh] max-w-[560px] space-y-4 overflow-y-auto border-border bg-surface">
+        <DialogContent showCloseButton={false} aria-describedby="session-record-dialog-description" className="block w-[min(560px,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] space-y-4 overflow-y-auto border-border bg-surface">
           {dialog === 'consent' && (
             <>
               <DialogTitle className="text-[15px] font-semibold text-ink">세션 대화 일부를 AI 공급자에게 보냅니다</DialogTitle>

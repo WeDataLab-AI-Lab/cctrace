@@ -12,7 +12,7 @@ interface SummaryCardsProps {
   loading?: boolean;
 }
 
-const fmtCost = (n: number) => `$${n.toFixed(2)}`;
+const fmtCost = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtFrame = (n: number) => fmt(Math.round(n));
 // These two land on the raw number (no separators), so their frames match it.
 const fmtPlain = (n: number) => String(Math.round(n));
@@ -28,7 +28,7 @@ const SummaryCards = ({
 }: SummaryCardsProps) => {
   const isToken = viewMode === 'token';
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid min-w-0 grid-cols-1 gap-4 @min-[640px]:grid-cols-2 @min-[900px]:grid-cols-4">
       {/* Keyed by metric: switching cost/token view swaps what the card measures, and
           counting from dollars to tokens would pass through nonsense in between. */}
       <SummaryCard

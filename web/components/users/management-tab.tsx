@@ -59,7 +59,8 @@ const ManagementTab = () => {
         </Button>
       </div>
 
-      <div className="bg-surface border border-border rounded-lg overflow-visible">
+      <div className="min-w-0 overflow-x-auto rounded-lg border border-border bg-surface">
+        <div className="min-w-[920px]">
         <header className={cn(GRID_CLASS, 'px-4 py-2.5 border-b border-surface-sunk bg-canvas')}>
           <span className="text-[11px] font-medium text-ink-3">Email</span>
           <span className="text-[11px] font-medium text-ink-3">Name</span>
@@ -118,6 +119,7 @@ const ManagementTab = () => {
             />
           </div>
         ))}
+        </div>
       </div>
 
       {addOpen && <AddUserDialog onClose={handleAddClose} onSuccess={refresh} />}

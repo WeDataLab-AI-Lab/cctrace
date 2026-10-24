@@ -1029,14 +1029,14 @@ export default function SessionsPage() {
         <p aria-label="현재 세션 조회 조건" title={filterSummary} className="min-w-0 flex-1 truncate text-xs text-ink-3">{filterSummary}</p>
         <button type="button" onClick={toggleFilters} aria-expanded={filtersOpen}
           aria-controls="session-source-controls session-filter-controls"
-          className="flex shrink-0 items-center gap-1 rounded border border-border px-2 py-1.5 text-xs text-ink-2 hover:bg-surface-sunk">
+          className="flex min-h-11 shrink-0 items-center gap-1 rounded border border-border px-2 py-1.5 text-xs text-ink-2 hover:bg-surface-sunk">
           추가 필터 {filtersOpen ? '접기' : '펼치기'}
           <ChevronDown aria-hidden="true" size={14} className={cn('transition-transform motion-reduce:transition-none', filtersOpen && 'rotate-180')} />
         </button>
       </div>
       <div id="session-source-controls" hidden={expanded || !filtersOpen} className={cn('mb-3 shrink-0 items-center gap-2', expanded || !filtersOpen ? 'hidden' : 'flex')}>
-        <button type="button" aria-pressed={!showLocal} onClick={() => setShowLocal(false)} className="rounded border border-border px-3 py-1.5 text-xs aria-pressed:border-brand aria-pressed:text-brand">서버 세션</button>
-        <button type="button" aria-pressed={showLocal} onClick={() => setShowLocal(true)} className="rounded border border-border px-3 py-1.5 text-xs aria-pressed:border-brand aria-pressed:text-brand">내 기기와 서버</button>
+        <button type="button" aria-pressed={!showLocal} onClick={() => setShowLocal(false)} className="min-h-11 rounded border border-border px-3 py-1.5 text-xs aria-pressed:border-brand aria-pressed:text-brand">서버 세션</button>
+        <button type="button" aria-pressed={showLocal} onClick={() => setShowLocal(true)} className="min-h-11 rounded border border-border px-3 py-1.5 text-xs aria-pressed:border-brand aria-pressed:text-brand">내 기기와 서버</button>
       </div>
       {showLocal && <div className="min-h-0 flex-1 overflow-auto"><LocalSessionsPanel embedded serverSessions={filtered}
         ownerScope={user?.cctrace_user_id ? { user_id: user.cctrace_user_id } : undefined}
@@ -1148,7 +1148,7 @@ export default function SessionsPage() {
         {/* Left panel - session list or calendar. The viewer below keeps its position, so
             switching views never remounts it. */}
         <div id="session-navigation" hidden={hideSessionNavigation} className={cn('min-h-0 min-w-0 flex-col', hideSessionNavigation ? 'hidden' : 'flex', calendarView ? 'shrink grow-[3] basis-[480px]' : narrow ? 'flex-1' : 'max-w-[288px] shrink grow basis-[220px]')}>
-        {narrow && narrowListOpen && effectiveId && <button type="button" onClick={handleReturnToReading} className="shrink-0 border-b border-border px-3 py-2 text-left text-xs text-ink-2">읽던 대화로 돌아가기</button>}
+        {narrow && narrowListOpen && effectiveId && <button type="button" onClick={handleReturnToReading} className="min-h-11 shrink-0 border-b border-border px-3 text-left text-xs text-ink-2">읽던 대화로 돌아가기</button>}
         {calendarView ? (
           <SessionsCalendarPanel
             timeZone={calendarZone}
@@ -1220,7 +1220,7 @@ export default function SessionsPage() {
         {/* A floor of its own, then twice the list's share of whatever is left. The
             floor matters more than the ratio: with basis 0 this pane was the only thing
             that could give, so it was the only thing that did. */}
-        <div id="session-detail" hidden={!showSessionDetail} className={cn("relative min-h-0 min-w-[280px] shrink grow-[2] basis-[280px] flex-col", showSessionDetail ? "flex" : "hidden")}>
+        <div id="session-detail" hidden={!showSessionDetail} className={cn("relative min-h-0 min-w-0 shrink grow-[2] basis-[280px] flex-col lg:min-w-[280px]", showSessionDetail ? "flex" : "hidden")}>
           {personalNavNotice && (
             <div role="alert" className="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2 text-[11px] text-ink shadow-sm">
               <span>세션 <span className="font-mono text-ink-2">{personalNavNotice.slice(0, 8)}</span>의 상세 정보를 읽지 못했습니다. 삭제되었거나 접근 권한이 없는 세션일 수 있습니다.</span>

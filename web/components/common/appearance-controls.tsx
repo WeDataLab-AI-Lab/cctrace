@@ -21,7 +21,7 @@ interface SegmentedProps<T extends string> {
 }
 
 const Segmented = <T extends string>({ value, onChange, options }: SegmentedProps<T>) => (
-  <div className="flex rounded-lg overflow-hidden border border-border">
+  <div className="flex max-w-full overflow-x-auto rounded-lg border border-border">
     {options.map((opt) => {
       const active = value === opt.value;
       return (
@@ -31,7 +31,7 @@ const Segmented = <T extends string>({ value, onChange, options }: SegmentedProp
           aria-pressed={active}
           onClick={() => onChange(opt.value)}
           className={cn(
-            'inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium transition-colors',
+            'inline-flex min-h-11 shrink-0 items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium transition-colors',
             active ? 'bg-brand text-brand-ink' : 'bg-surface text-ink-2 hover:bg-surface-sunk',
           )}
         >
@@ -53,8 +53,8 @@ const Segmented = <T extends string>({ value, onChange, options }: SegmentedProp
 );
 
 const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="flex items-center justify-between gap-4">
-    <span className="text-[13px] text-ink-2">{label}</span>
+  <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+    <span className="shrink-0 text-[13px] text-ink-2">{label}</span>
     {children}
   </div>
 );
@@ -77,7 +77,7 @@ const AppearanceControls = () => {
   } = useAppearance();
 
   return (
-    <div className="bg-surface rounded-lg border border-border p-8 mb-5">
+    <div className="mb-5 rounded-lg border border-border bg-surface p-4 sm:p-8">
       <div className="flex items-center gap-2.5 mb-1">
         <Palette size={18} className="text-brand" />
         <h2 className="text-[16px] font-semibold text-ink">Appearance</h2>
@@ -96,17 +96,19 @@ const AppearanceControls = () => {
             aria-label="Logo mark"
             aria-checked={showLogoMark}
             onClick={() => setShowLogoMark(!showLogoMark)}
-            className={cn(
-              'relative h-6 w-11 shrink-0 rounded-full border border-border transition-colors',
-              showLogoMark ? 'bg-brand' : 'bg-surface-sunk',
-            )}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-brand"
           >
             <span
               className={cn(
+                'relative h-6 w-11 rounded-full border border-border transition-colors',
+                showLogoMark ? 'bg-brand' : 'bg-surface-sunk',
+              )}
+            >
+              <span className={cn(
                 'absolute left-px top-px h-5 w-5 rounded-full bg-surface shadow-[var(--sh-sm)] transition-transform',
                 showLogoMark ? 'translate-x-5' : 'translate-x-0',
-              )}
-            />
+              )} />
+            </span>
           </button>
         </Row>
       </div>

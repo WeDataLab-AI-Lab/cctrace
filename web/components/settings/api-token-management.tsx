@@ -307,7 +307,7 @@ const APITokenManagement = () => {
   };
 
   return (
-    <section className="mb-5 rounded-lg border border-border bg-surface p-8">
+    <section className="mb-5 min-w-0 rounded-lg border border-border bg-surface p-4 sm:p-8">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="mb-1 flex items-center gap-2.5">
@@ -349,13 +349,13 @@ const APITokenManagement = () => {
               maxLength={64}
               required
               autoFocus
-              className="min-w-[220px] flex-1 bg-surface"
+              className="min-h-11 min-w-0 basis-full bg-surface sm:basis-0 sm:flex-1"
             />
             <select
               aria-label="Token expiration"
               value={createExpirationMode}
               onChange={handleCreateExpirationModeChange}
-              className="h-8 rounded-md border border-border bg-surface px-3 text-[12px] text-ink outline-none focus:border-brand"
+              className="min-h-11 max-w-full rounded-md border border-border bg-surface px-3 text-[12px] text-ink outline-none focus:border-brand"
             >
               <option value="unlimited">Unlimited</option>
               <option value="custom">Custom expiration</option>
@@ -368,7 +368,7 @@ const APITokenManagement = () => {
                 onChange={handleCreateExpiresAtChange}
                 min={minimumExpiration}
                 required
-                className="w-auto bg-surface"
+                className="min-h-11 min-w-0 max-w-full bg-surface"
               />
             )}
             <Button type="submit" size="sm" disabled={isPending || !tokenName.trim() || (createExpirationMode === 'custom' && !createExpiresAt)}>Create</Button>
@@ -385,7 +385,7 @@ const APITokenManagement = () => {
               aria-label="Edit token expiration"
               value={editExpirationMode}
               onChange={handleEditExpirationModeChange}
-              className="h-8 rounded-md border border-border bg-surface px-3 text-[12px] text-ink outline-none focus:border-brand"
+              className="min-h-11 max-w-full rounded-md border border-border bg-surface px-3 text-[12px] text-ink outline-none focus:border-brand"
             >
               <option value="unlimited">Unlimited</option>
               <option value="custom">Custom expiration</option>
@@ -398,7 +398,7 @@ const APITokenManagement = () => {
                 onChange={handleEditExpiresAtChange}
                 min={minimumExpiration}
                 required
-                className="w-auto bg-surface"
+                className="min-h-11 min-w-0 max-w-full bg-surface"
               />
             )}
             <Button type="submit" size="sm" disabled={isPending || (editExpirationMode === 'custom' && !editExpiresAt)}>Save</Button>

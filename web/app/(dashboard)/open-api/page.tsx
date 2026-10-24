@@ -280,7 +280,7 @@ const LanguageButton = ({ locale, active, label, onSelect }: LanguageButtonProps
       type="button"
       onClick={handleClick}
       className={cn(
-        'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
+        'min-h-11 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
         active ? 'bg-brand text-brand-ink' : 'text-ink-2 hover:bg-surface-sunk',
       )}
     >
@@ -382,10 +382,10 @@ export default function OpenAPIPage() {
   const handleLanguageSelect = (nextLocale: OpenAPILocale) => setLocale(nextLocale);
 
   return (
-    <main className="mx-auto max-w-[1120px] space-y-8 pb-16">
-      <section className="rounded-lg border border-border bg-surface p-6 shadow-[var(--sh-sm)] md:p-8">
+    <main className="mx-auto min-w-0 max-w-[1120px] space-y-8 pb-16">
+      <section className="min-w-0 rounded-lg border border-border bg-surface p-4 shadow-[var(--sh-sm)] sm:p-6 md:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-3xl">
+          <div className="min-w-0 max-w-3xl">
             <div className="mb-3 flex items-center gap-2 text-brand">
               <BookOpen size={18} />
               <span className="text-[11px] font-semibold uppercase tracking-[0.06em]">{text.version}</span>
@@ -413,7 +413,7 @@ export default function OpenAPIPage() {
             <div className="rounded-lg border border-border bg-surface p-5">
               <h3 className="text-[14px] font-semibold text-ink">{text.baseUrl}</h3>
               <p className="mt-1 text-[13px] leading-5 text-ink-2">{text.baseUrlBody}</p>
-              <code className="mt-3 block rounded-md bg-surface-sunk px-3 py-2 font-mono text-[12px] text-ink">https://cctrace.example.com</code>
+              <code className="mt-3 block overflow-x-auto rounded-md bg-surface-sunk px-3 py-2 font-mono text-[12px] text-ink">https://cctrace.example.com</code>
             </div>
             <div>
               <h3 className="mb-3 text-[15px] font-semibold text-ink">{text.prerequisites}</h3>

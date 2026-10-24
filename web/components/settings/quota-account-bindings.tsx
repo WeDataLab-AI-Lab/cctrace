@@ -86,14 +86,14 @@ const QuotaAccountBindings = () => {
   };
 
   return (
-    <section className="space-y-5 rounded-lg border border-border bg-surface p-6" aria-labelledby="quota-binding-title">
+    <section className="min-w-0 space-y-5 rounded-lg border border-border bg-surface p-4 sm:p-6" aria-labelledby="quota-binding-title">
       <div>
         <h2 id="quota-binding-title" className="text-base font-semibold text-ink">개인 사용량 계정 확인</h2>
         <p className="mt-1 text-xs text-ink-3">계정 ID를 등록하면 관리자가 provider console에서 독립 확인한 뒤 사용량 연결을 승인합니다. 승인 전에는 미측정으로 표시됩니다.</p>
         <p className="mt-1 text-xs text-ink-3">사용량은 cctrace 클라이언트 보고값이며 provider가 인증한 측정값이 아닙니다. 이메일·비밀번호·토큰·스크린샷은 입력하거나 보내지 마세요.</p>
       </div>
 
-      <form onSubmit={(event) => { void request(event); }} className="grid gap-3 sm:grid-cols-[180px_1fr_auto] sm:items-end">
+      <form onSubmit={(event) => { void request(event); }} className="grid min-w-0 gap-3 sm:grid-cols-[180px_minmax(0,1fr)_auto] sm:items-end">
         <div className="space-y-1">
           <Label htmlFor="quota-provider" className="text-xs text-ink-2">Provider</Label>
           <select id="quota-provider" value={provider} onChange={(event) => setProvider(event.target.value as QuotaBillingProvider)} className="h-9 w-full rounded-md border border-border bg-surface px-2 text-sm text-ink">
@@ -114,7 +114,7 @@ const QuotaAccountBindings = () => {
           <h3 className="text-xs font-semibold text-ink">내 요청</h3>
           {bindings.data.map((binding) => (
             <div key={binding.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-xs">
-              <span className="text-ink">{providerName(binding.billing_provider)} · …{binding.account_id.slice(-8)}</span>
+              <span className="min-w-0 break-all text-ink">{providerName(binding.billing_provider)} · …{binding.account_id.slice(-8)}</span>
               <span className="text-ink-3">{binding.status === 'approved' ? '승인됨' : binding.status === 'revoked' ? '회수됨' : '확인 대기'}</span>
             </div>
           ))}
@@ -130,7 +130,7 @@ const QuotaAccountBindings = () => {
           {admin.isError && <p role="status" className="text-xs text-danger">확인 대기 목록을 불러오지 못했습니다.</p>}
           {admin.data?.map((binding) => (
             <div key={binding.id} className="space-y-3 rounded-md border border-border p-3">
-              <p className="text-xs text-ink">{binding.owner_email} · {providerName(binding.billing_provider)} · …{binding.account_id.slice(-8)}</p>
+              <p className="break-all text-xs text-ink">{binding.owner_email} · {providerName(binding.billing_provider)} · …{binding.account_id.slice(-8)}</p>
               <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
                 <div className="space-y-1">
                   <Label htmlFor={`verify-reference-${binding.id}`} className="text-xs text-ink-2">확인 참조값</Label>
@@ -150,7 +150,7 @@ const QuotaAccountBindings = () => {
             {approved.isError && <p role="status" className="text-xs text-danger">승인 계정 목록을 불러오지 못했습니다.</p>}
             {approved.data?.map((binding) => (
               <div key={binding.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-xs">
-                <span className="text-ink">{binding.owner_email} · {providerName(binding.billing_provider)} · …{binding.account_id.slice(-8)}</span>
+                <span className="min-w-0 break-all text-ink">{binding.owner_email} · {providerName(binding.billing_provider)} · …{binding.account_id.slice(-8)}</span>
                 <Button type="button" size="sm" variant="outline" disabled={busy !== null} onClick={() => { void revoke(binding.id); }}>승인 회수</Button>
               </div>
             ))}

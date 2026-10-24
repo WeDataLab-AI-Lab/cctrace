@@ -74,7 +74,7 @@ const ConsentDialog = ({ userId, onCancel, onAgreed }: ConsentDialogProps) => {
 
   return (
     <Dialog open onOpenChange={handleOpenChange}>
-      <DialogContent showCloseButton={false} className="block max-w-[520px] space-y-4 border-border bg-surface">
+      <DialogContent showCloseButton={false} className="block w-[min(520px,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] space-y-4 overflow-y-auto border-border bg-surface">
         <DialogTitle className="text-[15px] font-semibold text-ink">분석 데이터가 외부로 전송됩니다</DialogTitle>
         {isLoading && <p className="text-[13px] text-ink-3">불러오는 중</p>}
         {isError && <p className="text-[13px] text-danger">전송 항목을 불러오지 못했습니다</p>}

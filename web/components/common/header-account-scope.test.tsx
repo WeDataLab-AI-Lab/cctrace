@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ role: 'admin', path: '/sessions', quotaUsage: { accounts: [] as unknown[] }, routerPush: vi.fn(), sessionSearch: vi.fn(),
-  selectedAccount: '', setSelectedAccount: vi.fn(), ownAccountsOnly: false }));
+  selectedAccount: '', setSelectedAccount: vi.fn(), selectedAgent: '', setSelectedAgent: vi.fn(), ownAccountsOnly: false }));
 
 vi.mock('next/navigation', () => ({ usePathname: () => mocks.path, useRouter: () => ({ push: mocks.routerPush }) }));
 vi.mock('./auth-context', () => ({
@@ -23,7 +23,9 @@ vi.mock('./account-context', async () => {
     },
   };
 });
-vi.mock('./agent-context', () => ({ useAgent: () => ({ selectedAgent: '', setSelectedAgent: () => {} }) }));
+vi.mock('./agent-context', () => ({ useAgent: () => ({ selectedAgent: mocks.selectedAgent, setSelectedAgent: mocks.setSelectedAgent }) }));
+vi.mock('./sidebar', () => ({ Sidebar: ({ mobile, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) =>
+  <nav aria-label="앱 메뉴" data-mobile={mobile}><a href="/users" onClick={(event) => { event.preventDefault(); onNavigate?.(); }}>Users</a><a href="/open-api" onClick={(event) => { event.preventDefault(); onNavigate?.(); }}>Open API</a></nav> }));
 // jsdom 에는 ResizeObserver 가 없다. 스크롤 페이드 동작은 이 테스트의 관심사가 아니다.
 vi.mock('@/components/common/scroll-fade-row', () => ({
   ScrollFadeRow: ({ children }: { children: unknown }) => createElement('div', null, children as never),
@@ -50,13 +52,84 @@ afterEach(() => {
   mocks.sessionSearch.mockReset();
   mocks.selectedAccount = '';
   mocks.setSelectedAccount.mockReset();
+  mocks.selectedAgent = '';
+  mocks.setSelectedAgent.mockReset();
   mocks.ownAccountsOnly = false;
+});
+
+it('opens a mobile drawer, traps focus, closes on Escape and returns focus to the trigger', async () => {
+  renderHeader('admin', '/');
+  const user = userEvent.setup();
+  const trigger = screen.getByRole('button', { name: '앱 메뉴 열기' });
+  trigger.focus();
+  await user.click(trigger);
+  const drawer = screen.getByRole('dialog', { name: '앱 메뉴' });
+  expect(drawer.querySelector('a[href="/open-api"]')).toBeTruthy();
+  await user.tab();
+  expect(drawer.contains(document.activeElement)).toBe(true);
+  await user.keyboard('{Escape}');
+  expect(screen.queryByRole('dialog', { name: '앱 메뉴' })).toBeNull();
+  expect(document.activeElement).toBe(trigger);
+});
+
+it('closes mobile navigation on a menu link and keeps desktop collapse separate', async () => {
+  renderHeader('admin', '/');
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: '앱 메뉴 열기' }));
+  await user.click(screen.getByRole('link', { name: 'Users' }));
+  expect(screen.queryByRole('dialog', { name: '앱 메뉴' })).toBeNull();
+  expect(screen.getByRole('button', { name: '앱 메뉴 접기' })).toBeTruthy();
+});
+
+it('opens mobile filters and search while retaining shared account and agent selectors', async () => {
+  renderHeader('admin', '/');
+  const user = userEvent.setup();
+  expect(screen.getByText('All accounts · All agents')).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: '필터 열기' }));
+  expect(screen.getByRole('searchbox', { name: '전체 검색' })).toBeTruthy();
+  await user.click(await screen.findByRole('button', { name: 'b' }));
+  expect(mocks.setSelectedAccount).toHaveBeenCalledWith('b@example.com');
+  await user.click(screen.getByRole('button', { name: 'Codex' }));
+  expect(mocks.setSelectedAgent).toHaveBeenCalledWith('codex');
+});
+
+it('opens search from the compact header and focuses the existing search field', async () => {
+  renderHeader('admin', '/');
+  await userEvent.setup().click(screen.getByRole('button', { name: '전체 검색 열기' }));
+  expect(screen.getByRole('button', { name: '필터 닫기' })).toBeTruthy();
+  expect(document.activeElement).toBe(screen.getByRole('searchbox', { name: '전체 검색' }));
+});
+
+it('closes the mobile drawer after tapping its backdrop', async () => {
+  renderHeader('admin', '/');
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('button', { name: '앱 메뉴 열기' }));
+  await user.click(screen.getByTestId('mobile-menu-backdrop'));
+  expect(screen.queryByRole('dialog', { name: '앱 메뉴' })).toBeNull();
 });
 
 // 서버가 role=user 요청의 login_email 을 버리는 곳은 세션 목록 경로뿐이다(#811).
 // 비용·도구·이벤트·통계 핸들러는 login_email 을 그대로 적용하므로 그 화면에서는 칩을 지키고,
 // 눌러도 효과 없는 세션 화면에서만 그 사실을 문안으로 밝힌다.
 describe('Header Account scope', () => {
+  it.each([
+    ['user', '/sessions', '', '', '본인 계정 전체 · All agents'],
+    ['user', '/sessions', 'b@example.com', 'codex', '본인 계정 전체 · Codex'],
+    ['admin', '/sessions', '', '', 'All accounts · All agents'],
+    ['admin', '/sessions', '', 'codex', 'All accounts · Codex'],
+    ['admin', '/sessions', 'b@example.com', 'codex', 'b · Codex'],
+    ['user', '/', '', '', 'All accounts · All agents'],
+    ['user', '/', 'b@example.com', 'codex', 'b · Codex'],
+    ['user', '/cost', 'b@example.com', 'codex', 'b · Codex'],
+    ['user', '/cost', '', 'codex', 'All accounts · Codex'],
+  ])('mobile summary matches the actual scope for %s on %s with account %s and agent %s', (role, path, account, agent, summary) => {
+    mocks.selectedAccount = account;
+    mocks.selectedAgent = agent;
+    renderHeader(role, path);
+
+    expect(screen.getByText(summary)).toBeTruthy();
+  });
+
   it('role=user 에게는 Account 칩 대신 세션 목록 범위 안내를 보인다', async () => {
     renderHeader('user');
 

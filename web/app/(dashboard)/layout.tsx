@@ -25,7 +25,7 @@ const DashboardChrome = ({ children, compatibilityRoute, pending }: { children: 
       <div hidden={hideChrome} className={hideChrome ? 'hidden' : 'contents'}><Header /></div>
       {process.env.NEXT_PUBLIC_DEMO === '1' && !hideChrome && <DemoBanner className="mx-4 mt-4 md:mx-8" />}
       {!hideChrome && <CatchingUpNote pending={pending} message={TOKEN_RULE_NOTE} className="mx-4 mt-4 md:mx-8" />}
-      <main className={cn('min-h-0 min-w-0 flex-1', hideChrome ? 'overflow-hidden' : 'overflow-auto p-4 md:p-8')}>
+      <main className={cn('min-h-0 min-w-0 flex-1', hideChrome ? 'overflow-hidden' : 'mx-auto w-full max-w-[1600px] overflow-auto p-4 md:p-8')}>
         {children}
       </main>
     </div>

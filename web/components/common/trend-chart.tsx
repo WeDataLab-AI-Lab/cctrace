@@ -5,7 +5,7 @@ import { useState, useEffect, useId } from 'react';
 import type { CSSProperties } from 'react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend, ReferenceArea,
+  ResponsiveContainer, ReferenceArea,
   ReferenceLine,
 } from 'recharts';
 import type { TooltipContentProps } from 'recharts';
@@ -288,17 +288,8 @@ const WeeklyHint = ({ children }: UnknownHintProps) => (
   </HintProvider>
 );
 
-// recharts 의 `content` 는 함수를 받으면 그 함수를 **컴포넌트 타입**으로 쓴다
-// (`React.createElement(props.content, ...)`). 컴포넌트 본문에서 만든 화살표 함수는
-// 렌더마다 새 참조라 타입이 매번 달라지고, React 는 타입이 바뀌면 서브트리를
-// 언마운트하고 새로 마운트한다 -- 범례 DOM 이 리렌더마다 통째로 교체된다.
-//
-// 그러면 포인터가 올라가 있던 <li> 가 제거되므로 브라우저가 떠남 이벤트를 내지 않고,
-// hoveredLegend 가 풀리지 않아 차트가 흐린 채로 남는다 (#552). 그래서 두 컴포넌트를
-// 모듈 최상위에 두어 타입을 고정하고, 아래에서는 엘리먼트로 넘긴다 -- 엘리먼트는
-// recharts 가 cloneElement 로 갱신하므로 재마운트가 없다.
-//
-// useCallback 은 해법이 아니다: 의존성이 하나라도 바뀌면 다시 새 타입이 된다.
+// Keep the legend outside ResponsiveContainer so long names take their own
+// height instead of shrinking the plot. Its identity stays stable while polling.
 
 interface ChartLegendProps {
   legendKeys: string[];
@@ -325,7 +316,7 @@ const ChartLegend = ({ legendKeys, unknownActive, colorMap, formatLabel, onItemE
           aria-hidden={reserved || undefined}
           // 설명이 붙는 weekly 항목은 키보드로도 힌트를 열 수 있게 포커스를 받는다.
           tabIndex={isWeeklyUsageKey(k) ? 0 : undefined}
-          className={cn('flex items-center gap-1', reserved && 'invisible')}
+          className={cn('flex min-w-0 max-w-full items-center gap-1 [overflow-wrap:anywhere]', reserved && 'invisible')}
           onMouseEnter={onItemEnter}
           onMouseLeave={onItemLeave}
         >
@@ -362,7 +353,7 @@ const TrendTooltip = ({ active, payload, label, groupBy, nameMap, granularity, f
     key === UNKNOWN_KEY ? UNKNOWN_LABEL
       : (groupBy === 'user' && nameMap?.[key]) ? `${nameMap[key]} (${key})` : key;
   return (
-    <div className="bg-surface border border-border rounded-[4px] px-2 py-1 text-[11px] shadow-[var(--sh-pop)]">
+    <div className="max-h-[60vh] max-w-[calc(100vw-2rem)] overflow-auto rounded-[4px] border border-border bg-surface px-2 py-1 text-[11px] [overflow-wrap:anywhere] shadow-[var(--sh-pop)]">
       <p className="m-0 font-semibold">{formatTrendTick(granularity, String(label))}</p>
       {items.map((p) => {
         const itemColor = p.name === UNKNOWN_KEY
@@ -609,18 +600,21 @@ const TrendChart = ({
       onRangeSelect?.(start.toISOString(), end.toISOString());
     } else if (dragStart) {
       const date = String(event.activeLabel ?? dragStart);
-      const start = bucketDate(date);
-      if (!Number.isNaN(start.getTime())) {
-        const end = new Date(start);
-        advanceBucket(end, effectiveGranularity);
-        const point = { date, since: start.toISOString(), until: end.toISOString() };
-        if (selectedPoint === undefined) setInternalSelectedPoint(point);
-        onPointSelect?.(point);
-      }
+      selectPoint(date);
     }
     setDragStart(null);
     setDragEnd(null);
   };
+  const selectPoint = (date: string) => {
+    const start = bucketDate(date);
+    if (Number.isNaN(start.getTime())) return;
+    const end = new Date(start);
+    advanceBucket(end, effectiveGranularity);
+    const point = { date, since: start.toISOString(), until: end.toISOString() };
+    if (selectedPoint === undefined) setInternalSelectedPoint(point);
+    onPointSelect?.(point);
+  };
+  const handleMobilePointSelect = (event: React.ChangeEvent<HTMLSelectElement>) => selectPoint(event.target.value);
   const clearPointSelection = () => {
     if (selectedPoint === undefined) setInternalSelectedPoint(null);
     onPointClear?.();
@@ -722,14 +716,9 @@ const TrendChart = ({
   const handleLegendItemEnter = (e: React.MouseEvent<HTMLLIElement>) => setHoveredLegend(e.currentTarget.dataset.seriesKey ?? null);
   const handleLegendLeave = () => setHoveredLegend(null);
 
-  // recharts v3는 범례 항목 순서를 자기가 정하고 payload 주입도 막아두었다. 그래서
-  // 범례를 직접 그린다 — 모델별 보기에서는 계열 → 티어 → 버전 순으로 고정해, 기간을
-  // 바꿔도 같은 모델이 같은 자리에 남는다. 스택은 계속 금액 큰 순(activeKeys)으로 쌓인다.
-  // Unknown 자리는 값이 오기 전부터 잡아 둔다. 범례는 flex-wrap 이라 항목이 하나
-  // 늘면 줄이 늘 수 있고, recharts 는 고정 높이를 범례와 플롯으로 나눠 쓰므로 그때
-  // 플롯이 눌린다 — 사용자가 본 3단계 중 마지막 흔들림이 이것이다. 자리를 고정
-  // 높이로 잘라 막으면 계열이 많은 범위에서 범례가 잘리므로, 폭이 같은 빈 항목을
-  // 미리 두어 줄바꿈 자체가 변하지 않게 한다.
+  // Model order stays stable across time windows; the plotted stack remains
+  // sorted by spend. Reserve Unknown's slot before its data arrives so a new
+  // legend label does not unexpectedly wrap the row during polling.
   const legendKeys = [
     ...(effectiveGroupBy === 'model' ? [...activeKeys].sort(compareModelLabels) : activeKeys),
     ...(unknownActive || unknownSlotReserved ? [UNKNOWN_KEY] : []),
@@ -771,6 +760,7 @@ const TrendChart = ({
   const handleViewCost = () => setViewMode('cost');
   const handleViewToken = () => setViewMode('token');
   const handleGranularitySelect = (value: Granularity) => { setGranularity(value); setAutoGranularity(null); };
+  const handleMobileGranularityChange = (event: React.ChangeEvent<HTMLSelectElement>) => handleGranularitySelect(event.target.value as Granularity);
   const handleZoomReset = () => {
     setZoomRange(null);
     clearPointSelection();
@@ -857,7 +847,7 @@ const TrendChart = ({
 
   return (
     <div className={className}>
-      <div className={cn('flex items-center justify-between gap-2', !collapsed && 'mb-3')}>
+      <div className={cn('flex flex-wrap items-center justify-between gap-2', !collapsed && 'mb-3')}>
         <div className="flex min-w-0 items-center gap-1.5">
           <h4 className="truncate text-[13px] font-semibold text-ink">{title}</h4>
           {!collapsed && (
@@ -867,27 +857,27 @@ const TrendChart = ({
               disabled={!zoomRange}
               title="Reset trend zoom"
               aria-label="Reset trend zoom"
-              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-ink-3 transition-colors hover:bg-surface-sunk hover:text-ink-2 disabled:cursor-not-allowed disabled:opacity-35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-sm text-ink-3 transition-colors hover:bg-surface-sunk hover:text-ink-2 disabled:cursor-not-allowed disabled:opacity-35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] lg:size-6"
             >
               <RotateCcw size={14} aria-hidden />
             </button>
           )}
         </div>
-        <div className="flex items-center gap-1.5 flex-wrap justify-end">
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-1.5 max-lg:[&_button]:min-h-11 max-lg:[&_input]:min-h-11">
           {!collapsed && <>
           {/* Arrow navigation */}
-          <button onClick={goBack} className="px-2.5 py-0.5 text-[11px] rounded border border-border bg-surface text-ink-2 hover:bg-surface-sunk transition-colors">←</button>
-          <button onClick={goForward} disabled={isAtPresent} className="px-2.5 py-0.5 text-[11px] rounded border border-border bg-surface text-ink-2 hover:bg-surface-sunk disabled:opacity-30 transition-colors">→</button>
-          <span className="text-[11px] text-ink-3 shrink-0">{formatTrendTick(effectiveGranularity, sinceTs)} – {formatTrendTick(effectiveGranularity, untilTs ?? new Date(nowAnchor).toISOString())}</span>
+          <button onClick={goBack} aria-label="이전 기간" className="min-h-11 min-w-11 px-2.5 py-0.5 text-[11px] rounded border border-border bg-surface text-ink-2 hover:bg-surface-sunk transition-colors lg:min-h-0 lg:min-w-0">←</button>
+          <button onClick={goForward} aria-label="다음 기간" disabled={isAtPresent} className="min-h-11 min-w-11 px-2.5 py-0.5 text-[11px] rounded border border-border bg-surface text-ink-2 hover:bg-surface-sunk disabled:opacity-30 transition-colors lg:min-h-0 lg:min-w-0">→</button>
+          <span className="min-w-0 text-[11px] text-ink-3">{formatTrendTick(effectiveGranularity, sinceTs)} – {formatTrendTick(effectiveGranularity, untilTs ?? new Date(nowAnchor).toISOString())}</span>
           <button onClick={toggleDatePicker} className={cn('px-2.5 py-0.5 text-[11px] rounded border font-medium transition-colors', showDatePicker ? 'border-brand bg-brand-soft text-brand' : 'border-border bg-surface text-ink-2 hover:bg-surface-sunk')}>Date</button>
           {!isAtPresent && <>
             <button onClick={goToPresent} className="px-2.5 py-0.5 text-[11px] rounded font-medium bg-brand text-brand-ink hover:bg-brand-hover transition-colors">Now</button>
             <button onClick={handleDoubleClick} className="px-2.5 py-0.5 text-[11px] rounded border border-border bg-surface text-ink-2 hover:bg-surface-sunk transition-colors">Reset</button>
           </>}
           {showDatePicker && <>
-            <input type="datetime-local" value={customSince} onChange={handleCustomSinceChange} className="text-[11px] border border-border rounded px-1.5 py-0.5 outline-none focus:border-brand" />
+            <input type="datetime-local" aria-label="기간 시작" value={customSince} onChange={handleCustomSinceChange} className="min-w-0 max-w-full text-[11px] border border-border rounded px-1.5 py-0.5 outline-none focus:border-brand" />
             <span className="text-[11px] text-ink-3">–</span>
-            <input type="datetime-local" value={customUntil} onChange={handleCustomUntilChange} className="text-[11px] border border-border rounded px-1.5 py-0.5 outline-none focus:border-brand" />
+            <input type="datetime-local" aria-label="기간 종료" value={customUntil} onChange={handleCustomUntilChange} className="min-w-0 max-w-full text-[11px] border border-border rounded px-1.5 py-0.5 outline-none focus:border-brand" />
             <button onClick={applyCustomRange} className="px-2.5 py-0.5 text-[11px] rounded font-medium bg-brand text-brand-ink hover:bg-brand-hover transition-colors">Apply</button>
           </>}
           {/* Separator */}
@@ -910,7 +900,10 @@ const TrendChart = ({
               <button onClick={handleViewToken} className={cn('px-2.5 py-0.5 text-[11px] font-medium transition-colors', viewMode === 'token' ? 'bg-brand text-brand-ink' : 'bg-surface text-ink-2')}>Token</button>
             </div>
           )}
-          <div className="flex gap-1">
+          <select aria-label="차트 간격" value={effectiveGranularity} onChange={handleMobileGranularityChange} className="min-h-11 rounded border border-border bg-surface px-2 text-xs text-ink lg:hidden">
+            {GRANULARITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+          <div className="hidden flex-wrap gap-1 lg:flex">
             {GRANULARITY_OPTIONS.map(opt => (
               <button key={opt.value} onClick={() => handleGranularitySelect(opt.value)} className={cn('px-2.5 py-0.5 text-[11px] rounded font-medium transition-colors', effectiveGranularity === opt.value ? 'bg-brand text-brand-ink' : 'bg-surface-sunk text-ink-2 hover:bg-border')}>
                 {opt.label}
@@ -925,7 +918,7 @@ const TrendChart = ({
               title={collapseLabel}
               aria-label={collapseLabel}
               aria-expanded={!collapsed}
-              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-ink-3 transition-colors hover:bg-surface-sunk hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)]"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-sm text-ink-3 transition-colors hover:bg-surface-sunk hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-ring)] lg:size-6"
             >
               {collapsed ? <ChevronRight size={14} aria-hidden /> : <ChevronDown size={14} aria-hidden />}
             </button>
@@ -951,7 +944,6 @@ const TrendChart = ({
               <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v) => formatTrendTick(effectiveGranularity, v)} interval={tickInterval} />
               <YAxis tick={{ fontSize: 10 }} tickFormatter={yAxisFmt} />
               <Tooltip content={<TrendTooltip groupBy={effectiveGroupBy} nameMap={nameMap} granularity={effectiveGranularity} formatValue={tooltipFmt} />} isAnimationActive={false} />
-              <Legend content={<ChartLegend legendKeys={legendKeys} unknownActive={unknownActive} colorMap={colorMap} formatLabel={legendFormatter} onItemEnter={handleLegendItemEnter} onItemLeave={handleLegendLeave} />} />
               {noData && <Area type="monotone" dataKey="_anchor" stroke="transparent" fill="transparent" isAnimationActive={false} />}
               {renderKeys.map(m => (
                 <Area key={seriesKey(m)} type="monotone" dataKey={m} stackId="1" stroke="none" fill={m === UNKNOWN_KEY ? UNKNOWN_FILL : colorMap[m]} fillOpacity={unknownOpacity(m, focusedKey, 0.85, 0.95)} dot={false} activeDot={false} isAnimationActive={false} />
@@ -984,7 +976,6 @@ const TrendChart = ({
               <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(v) => formatTrendTick(effectiveGranularity, v)} interval={tickInterval} />
               <YAxis tick={{ fontSize: 10 }} tickFormatter={yAxisFmt} />
               <Tooltip content={<TrendTooltip groupBy={effectiveGroupBy} nameMap={nameMap} granularity={effectiveGranularity} formatValue={tooltipFmt} />} isAnimationActive={false} />
-              <Legend content={<ChartLegend legendKeys={legendKeys} unknownActive={unknownActive} colorMap={colorMap} formatLabel={legendFormatter} onItemEnter={handleLegendItemEnter} onItemLeave={handleLegendLeave} />} />
               {noData && <Bar dataKey="_anchor" fill="transparent" isAnimationActive={false} />}
               {renderKeys.map((m, i) => (
                 <Bar key={seriesKey(m)} dataKey={m} stackId="a" fill={m === UNKNOWN_KEY ? UNKNOWN_FILL : colorMap[m]} fillOpacity={unknownOpacity(m, focusedKey, 1, 1)} radius={i === renderKeys.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]} isAnimationActive={false} />
@@ -1002,6 +993,14 @@ const TrendChart = ({
             </BarChart>
           </ResponsiveContainer>
         )}
+        <div className="mt-3"><ChartLegend legendKeys={legendKeys} unknownActive={unknownActive} colorMap={colorMap} formatLabel={legendFormatter} onItemEnter={handleLegendItemEnter} onItemLeave={handleLegendLeave} /></div>
+        {!noData && displayData.length > 0 && <label className="mt-3 flex min-w-0 items-center gap-2 text-xs text-ink-2 lg:hidden">
+          <span className="shrink-0">시점 선택</span>
+          <select aria-label="차트 시점 선택" value={activeSelectedPoint?.date ?? ''} onChange={handleMobilePointSelect} className="min-h-11 min-w-0 flex-1 rounded border border-border bg-surface px-2 text-ink">
+            <option value="">시점을 선택하세요</option>
+            {displayData.map((row) => <option key={String(row.date)} value={String(row.date)}>{formatTrendTick(effectiveGranularity, String(row.date))}</option>)}
+          </select>
+        </label>}
         <CoverageLine gap={coverageShown} trailingWeek={coverageRange.trailingWeek} pending={coverageWanted} />
       </div>}
     </div>

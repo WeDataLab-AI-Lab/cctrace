@@ -127,10 +127,10 @@ const ConversationBubble = ({ item, onInspect, openTools }: BubbleProps) => {
           ? 'border-border-strong bg-surface font-medium text-ink shadow-[var(--sh-xs)]'
           : 'border-transparent bg-transparent text-ink',
       )} data-conversation-role={isUser ? 'user' : 'agent'}>
-        <div className="mb-1 flex min-w-0 items-center gap-2">
+        <div className="mb-1 flex min-w-0 flex-wrap items-center gap-2">
           {at && <time dateTime={at.iso} className="shrink-0 font-mono text-[10px] tabular-nums text-ink-3">{at.label}</time>}
           <span className="min-w-0 flex-1" />
-          {onInspect && <button type="button" onClick={inspect} aria-label="이 메시지 상세 트레이스" title="이 메시지의 원본 기록과 실행 근거를 엽니다" className="shrink-0 whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] text-ink-3 hover:bg-surface-sunk hover:text-ink">상세 트레이스</button>}
+          {onInspect && <button type="button" onClick={inspect} aria-label="이 메시지 상세 트레이스" title="이 메시지의 원본 기록과 실행 근거를 엽니다" className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] text-ink-3 hover:bg-surface-sunk hover:text-ink lg:min-h-0">상세 트레이스</button>}
         </div>
         {item.agentTask && (
           <div className="mb-1 font-mono text-[10px] tracking-wide text-brand">상위 에이전트 지시</div>

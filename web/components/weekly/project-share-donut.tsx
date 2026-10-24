@@ -191,7 +191,7 @@ const ProjectShareBody = ({ projects, registry, loading, registryError }: Projec
   // Ring and legend side by side: stacked, the ring floated alone in a half-page
   // column and pushed the legend below the fold of the figures area.
   return (
-    <div className="flex items-start gap-5">
+    <div className="flex min-w-0 flex-col items-start gap-5 sm:flex-row">
       <div className="size-[128px] shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
