@@ -155,8 +155,9 @@ describe('DashboardLayout token rule note', () => {
     const { view } = renderLayout();
 
     const note = (await screen.findByText(TOKEN_RULE_NOTE)).closest('[role="status"]');
-    expect(note?.previousSibling?.textContent).toBe('site header');
-    expect(note?.nextSibling).toBe(view.container.querySelector('main'));
+    const main = view.container.querySelector('main');
+    expect(main?.previousElementSibling?.textContent).toBe('site header');
+    expect(main?.firstElementChild).toBe(note);
   });
 
   it('shows no note when the token rule is not pending', async () => {
