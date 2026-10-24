@@ -129,12 +129,30 @@ const answer = async (source: ReplaySource, method: string, url: URL): Promise<R
   }
   const page = index ? await conversationPage(source, index, unscoped ?? url) : null;
   if (page) return { kind: 'computed', body: page };
+  const latest = index ? latestWindow(source, index, unscoped ?? url) : null;
+  if (latest) return { kind: 'recorded', entry: latest };
   return { kind: 'missing', key: key.key };
 };
 
 // The parameters that place a conversation window at a request, a turn or a
 // time rather than at an offset. Those windows are not recorded.
 const PLACED = ['start', 'anchor', 'anchor_ts', 'turn_key', 'direction', 'source_file'];
+
+// latestWindow opens a conversation placed at a message, a turn or a time (a
+// reader reopening the session where it last read, or a link into it) at the
+// session's latest request, which is recorded. Without it the whole
+// conversation turns into "the selected message was not found". Stepping to an
+// adjacent request (direction) is left unanswered: the reader keeps its window.
+const latestWindow = (source: ReplaySource, index: ShardIndex, url: URL): RecordedEntry | null => {
+  const params = url.searchParams;
+  if (url.pathname !== '/api/sessions' || params.get('view') !== 'conversation' || params.get('direction')) return null;
+  if (!['anchor', 'anchor_ts', 'turn_key'].some((name) => params.get(name))) return null;
+  const latest = new URL(url);
+  for (const name of PLACED) latest.searchParams.delete(name);
+  latest.searchParams.set('start', 'latest-request');
+  latest.searchParams.set('offset', '0');
+  return lookup(index, replayKey('GET', latest.pathname, latest.searchParams, source.now));
+};
 
 // conversationPage answers an unrecorded offset of a conversation the way the
 // server pages it, from the recorded first page when that holds the whole

@@ -19,6 +19,7 @@ const shards: Record<string, RecordedEntry[]> = {
   'api.sessions._.trace.index.shard.json': [{ key: 'GET /api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/trace/index?', status: 200, body: 'trace' }],
   'api.sessions.shard.json': [
     { key: 'GET /api/sessions?limit=1000&lineage=1&offset=0&order=asc&raw=0&session_id=whole&view=conversation', status: 200, body: 'whole' },
+    { key: 'GET /api/sessions?limit=1000&lineage=1&offset=0&order=asc&raw=0&session_id=whole&start=latest-request&view=conversation', status: 200, body: 'latest', headers: { 'X-Session-Start-Offset': '2' } },
     { key: 'GET /api/sessions?limit=2&lineage=1&offset=0&order=asc&raw=0&session_id=full&view=conversation', status: 200, body: 'full' },
   ],
 };
@@ -87,7 +88,20 @@ describe('answer', () => {
     expect(await answer(source, 'GET', page('whole', 2))).toEqual({ kind: 'computed', body: [{ id: 3 }] });
     expect(await answer(source, 'GET', page('whole', 1000))).toEqual({ kind: 'computed', body: [] });
     expect(await answer(source, 'GET', page('full', 2, 2))).toMatchObject({ kind: 'missing' });
-    expect(await answer(source, 'GET', at('/api/sessions?session_id=whole&limit=1000&offset=0&order=asc&lineage=1&raw=0&view=conversation&anchor=r-2'))).toMatchObject({ kind: 'missing' });
+  });
+
+  // A reader reopens a session at the message it last read (anchor), a turn or
+  // a time. Those windows are not recorded; the session opens at its latest
+  // request instead of an error. Stepping to the previous or next request is
+  // left unanswered: the reader keeps its window and says it cannot step.
+  it('opens an unrecorded placed window at the latest request', async () => {
+    const window = (placement: string) =>
+      at(`/api/sessions?session_id=whole&limit=1000&offset=0&order=asc&lineage=1&raw=0&view=conversation&${placement}`);
+    const latest = { kind: 'recorded', entry: { body: 'latest', headers: { 'X-Session-Start-Offset': '2' } } };
+    expect(await answer(source, 'GET', window('anchor=r-2'))).toMatchObject(latest);
+    expect(await answer(source, 'GET', window('turn_key=t-1'))).toMatchObject(latest);
+    expect(await answer(source, 'GET', window(`anchor_ts=${encodeURIComponent(iso(-60))}`))).toMatchObject(latest);
+    expect(await answer(source, 'GET', window('anchor=r-2&direction=previous-request'))).toMatchObject({ kind: 'missing' });
   });
 
   it('refuses writes but keeps the session signed in', async () => {
