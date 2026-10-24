@@ -33,6 +33,8 @@ interface ReplaySource {
   shard(name: string): Promise<ShardIndex | null>;
   facts(): Promise<Facts>;
   quota(): Promise<QuotaSample[]>;
+  // body returns a recorded response body by its content hash.
+  body(hash: string): Promise<string>;
 }
 
 type ReplayAnswer =
@@ -125,7 +127,32 @@ const answer = async (source: ReplaySource, method: string, url: URL): Promise<R
     const plain = lookup(index, replayKey(verb, unscoped.pathname, unscoped.searchParams, source.now));
     if (plain) return { kind: 'recorded', entry: plain };
   }
+  const page = index ? await conversationPage(source, index, unscoped ?? url) : null;
+  if (page) return { kind: 'computed', body: page };
   return { kind: 'missing', key: key.key };
+};
+
+// The parameters that place a conversation window at a request, a turn or a
+// time rather than at an offset. Those windows are not recorded.
+const PLACED = ['start', 'anchor', 'anchor_ts', 'turn_key', 'direction', 'source_file'];
+
+// conversationPage answers an unrecorded offset of a conversation the way the
+// server pages it, from the recorded first page when that holds the whole
+// conversation (it is shorter than its limit). A recently active session polls
+// its pages, and the poll can ask for one past the end, which is empty.
+const conversationPage = async (source: ReplaySource, index: ShardIndex, url: URL): Promise<unknown[] | null> => {
+  const params = url.searchParams;
+  if (url.pathname !== '/api/sessions' || params.get('view') !== 'conversation' || PLACED.some((name) => params.get(name))) return null;
+  const offset = Number(params.get('offset') ?? 0);
+  const limit = Number(params.get('limit') ?? 1000);
+  if (!Number.isInteger(offset) || offset <= 0 || !Number.isInteger(limit) || limit <= 0) return null;
+  const first = new URL(url);
+  first.searchParams.set('offset', '0');
+  const entry = lookup(index, replayKey('GET', first.pathname, first.searchParams, source.now));
+  if (!entry || entry.status !== 200) return null;
+  const records: unknown = JSON.parse(await source.body(entry.body));
+  if (!Array.isArray(records) || records.length >= limit) return null;
+  return records.slice(offset, offset + limit);
 };
 
 // An admin who picked an account opens a session with that account as scope

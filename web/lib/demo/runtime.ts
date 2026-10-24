@@ -70,7 +70,7 @@ const once = <T>(load: () => Promise<T>): (() => Promise<T>) => {
 // fetchSource reads the recordings next to the page: manifest.json lists one
 // file per endpoint under manifest/, each fetched the first time it is needed,
 // and the usage facts behind the computed answers.
-const fetchSource = (realFetch: typeof fetch, dataRoot: string, now: number): ReplaySource & { body(hash: string): Promise<string> } => {
+const fetchSource = (realFetch: typeof fetch, dataRoot: string, now: number): ReplaySource => {
   const getJSON = <T>(path: string) => realFetch(`${dataRoot}/${path}`).then((res) => res.json() as Promise<T>);
   // Response bodies and the facts are published gzipped (a sixth of the size);
   // Pages serves them as plain files, so the page inflates them itself.

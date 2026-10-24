@@ -17,6 +17,15 @@ const shards: Record<string, RecordedEntry[]> = {
   'api.weekly-insights.shard.json': [{ key: 'GET /api/weekly-insights?since=@-16840m&until=@-6760m', status: 200, body: 'week' }],
   'api.sessions._.personal.shard.json': [{ key: 'GET /api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/personal?', status: 404, body: 'none' }],
   'api.sessions._.trace.index.shard.json': [{ key: 'GET /api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/trace/index?', status: 200, body: 'trace' }],
+  'api.sessions.shard.json': [
+    { key: 'GET /api/sessions?limit=1000&lineage=1&offset=0&order=asc&raw=0&session_id=whole&view=conversation', status: 200, body: 'whole' },
+    { key: 'GET /api/sessions?limit=2&lineage=1&offset=0&order=asc&raw=0&session_id=full&view=conversation', status: 200, body: 'full' },
+  ],
+};
+
+const bodies: Record<string, string> = {
+  whole: JSON.stringify([{ id: 1 }, { id: 2 }, { id: 3 }]),
+  full: JSON.stringify([{ id: 1 }, { id: 2 }]),
 };
 
 const emptyFacts: Facts = {
@@ -29,6 +38,7 @@ const source: ReplaySource = {
   shard: async (name) => (shards[name] ? indexEntries(shards[name]) : null),
   facts: async () => emptyFacts,
   quota: async () => [],
+  body: async (hash) => bodies[hash],
 };
 const at = (path: string) => new URL(path, 'https://example.com');
 
@@ -66,6 +76,18 @@ describe('answer', () => {
     const url = at('/api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/trace/index?login_email=marcus.fablewright@example.com');
     expect(await answer(source, 'GET', url)).toMatchObject({ kind: 'recorded', entry: { body: 'trace' } });
     expect(await answer(source, 'GET', at('/api/accounts?login_email=marcus.fablewright@example.com'))).toMatchObject({ kind: 'missing' });
+  });
+
+  // A recently active session polls its pages, and the poll can ask for a page
+  // past the end. The server answers that from the whole conversation, which
+  // the first page holds when it is shorter than its limit.
+  it('cuts a conversation page from a whole recorded conversation', async () => {
+    const page = (session: string, offset: number, limit = 1000) =>
+      at(`/api/sessions?session_id=${session}&limit=${limit}&offset=${offset}&order=asc&lineage=1&raw=0&view=conversation`);
+    expect(await answer(source, 'GET', page('whole', 2))).toEqual({ kind: 'computed', body: [{ id: 3 }] });
+    expect(await answer(source, 'GET', page('whole', 1000))).toEqual({ kind: 'computed', body: [] });
+    expect(await answer(source, 'GET', page('full', 2, 2))).toMatchObject({ kind: 'missing' });
+    expect(await answer(source, 'GET', at('/api/sessions?session_id=whole&limit=1000&offset=0&order=asc&lineage=1&raw=0&view=conversation&anchor=r-2'))).toMatchObject({ kind: 'missing' });
   });
 
   it('refuses writes but keeps the session signed in', async () => {
