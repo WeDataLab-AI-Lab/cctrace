@@ -1,4 +1,4 @@
-import { answer, indexEntries, routeOf } from './replayer';
+import { answer, indexEntries, routeOf, shardOf } from './replayer';
 import type { RecordedEntry, ReplaySource, ShardIndex } from './replayer';
 import type { Facts, QuotaSample } from './compute';
 
@@ -111,7 +111,7 @@ const fetchSource = (realFetch: typeof fetch, dataRoot: string, now: number): Re
     // Every reading: the recording with the earliest "from" and no "to".
     quota: once(async () => {
       const fromOf = (key: string) => Number(/[?&]from=@(-?\d+)m/.exec(key)?.[1] ?? Infinity);
-      const [whole] = (await entries('api.quota-samples.json'))
+      const [whole] = (await entries(shardOf('/api/quota-samples')))
         .filter((e) => !/[?&]to=/.test(e.key))
         .sort((a, b) => fromOf(a.key) - fromOf(b.key));
       return whole ? (JSON.parse(await body(whole.body)) as QuotaSample[]) : [];

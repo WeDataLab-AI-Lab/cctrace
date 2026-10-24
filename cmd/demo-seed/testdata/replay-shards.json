@@ -1,8 +1,10 @@
 [
-  { "path": "/api/accounts", "shard": "api.accounts.json" },
-  { "path": "/api/sessions", "shard": "api.sessions.json" },
-  { "path": "/api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/trace/nodes", "shard": "api.sessions._.trace.nodes.json" },
-  { "path": "/api/project-rules/12", "shard": "api.project-rules._.json" },
-  { "path": "/api/stats/timeseries-by-user", "shard": "api.stats.timeseries-by-user.json" },
-  { "path": "/api/ai-reports/runs/7/events", "shard": "api.ai-reports.runs._.events.json" }
+  { "path": "/api/accounts", "shard": "api.accounts.shard.json" },
+  { "path": "/api/sessions", "shard": "api.sessions.shard.json" },
+  { "path": "/api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/trace/nodes", "shard": "api.sessions._.trace.nodes.shard.json" },
+  { "path": "/api/project-rules/12", "shard": "api.project-rules._.shard.json" },
+  { "path": "/api/stats/timeseries-by-user", "shard": "api.stats.timeseries-by-user.shard.json" },
+  { "path": "/api/ai-reports/runs/7/events", "shard": "api.ai-reports.runs._.events.shard.json" },
+  { "path": "/api/auth/me", "shard": "api.auth.me.shard.json" },
+  { "path": "/api/admin/ai", "shard": "api.admin.ai.shard.json" }
 ]

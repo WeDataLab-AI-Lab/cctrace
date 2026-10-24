@@ -60,6 +60,10 @@ var idSegment = regexp.MustCompile(`^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
 // every id segment (a UUID or a number) replaced by "_", so each endpoint is one
 // file the replay loads the first time it is asked for.
 // web/lib/demo/replay-key.ts must spell it the same way (testdata/replay-shards.json).
+//
+// The name ends in ".shard.json", never in a two-letter segment: the docs site
+// builds the demo through mkdocs-static-i18n, which reads "x.me.json" or
+// "x.ai.json" as a page for the locale "me" or "ai" and leaves it out.
 func shardOf(path string) string {
 	segs := strings.Split(strings.Trim(path, "/"), "/")
 	for i, s := range segs {
@@ -67,7 +71,7 @@ func shardOf(path string) string {
 			segs[i] = "_"
 		}
 	}
-	return strings.Join(segs, ".") + ".json"
+	return strings.Join(segs, ".") + ".shard.json"
 }
 
 type entry struct {

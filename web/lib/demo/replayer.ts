@@ -145,9 +145,10 @@ const withoutSessionScope = (url: URL): URL | null => {
 const ID_SEGMENT = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9]+)$/;
 
 // shardOf names the manifest file holding a path's recordings; it must equal
-// shardOf in cmd/demo-seed/record.go (testdata/replay-shards.json).
+// shardOf in cmd/demo-seed/record.go (testdata/replay-shards.json), which says
+// why the name ends in ".shard.json".
 const shardOf = (path: string): string =>
-  `${path.replace(/^\/+|\/+$/g, '').split('/').map((seg) => (ID_SEGMENT.test(seg) ? '_' : seg)).join('.')}.json`;
+  `${path.replace(/^\/+|\/+$/g, '').split('/').map((seg) => (ID_SEGMENT.test(seg) ? '_' : seg)).join('.')}.shard.json`;
 
 export { answer, indexEntries, routeOf, shardOf };
 export type { RecordedEntry, ReplayAnswer, ReplaySource, ShardIndex };

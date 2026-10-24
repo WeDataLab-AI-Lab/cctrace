@@ -10,13 +10,13 @@ const now = Date.parse(RECORDED_AT);
 const iso = (minutesFromNow: number) => new Date(now + minutesFromNow * 60000).toISOString();
 
 const shards: Record<string, RecordedEntry[]> = {
-  'api.accounts.json': [{ key: 'GET /api/accounts?', status: 200, body: 'accounts' }],
-  'api.stats.timeseries-by-model.json': [
+  'api.accounts.shard.json': [{ key: 'GET /api/accounts?', status: 200, body: 'accounts' }],
+  'api.stats.timeseries-by-model.shard.json': [
     { key: 'GET /api/stats/timeseries-by-model?granularity=minute&since=@-180m', status: 200, body: 'minute' },
   ],
-  'api.weekly-insights.json': [{ key: 'GET /api/weekly-insights?since=@-16840m&until=@-6760m', status: 200, body: 'week' }],
-  'api.sessions._.personal.json': [{ key: 'GET /api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/personal?', status: 404, body: 'none' }],
-  'api.sessions._.trace.index.json': [{ key: 'GET /api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/trace/index?', status: 200, body: 'trace' }],
+  'api.weekly-insights.shard.json': [{ key: 'GET /api/weekly-insights?since=@-16840m&until=@-6760m', status: 200, body: 'week' }],
+  'api.sessions._.personal.shard.json': [{ key: 'GET /api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/personal?', status: 404, body: 'none' }],
+  'api.sessions._.trace.index.shard.json': [{ key: 'GET /api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/trace/index?', status: 200, body: 'trace' }],
 };
 
 const emptyFacts: Facts = {
@@ -34,7 +34,7 @@ const at = (path: string) => new URL(path, 'https://example.com');
 
 describe('answer', () => {
   it('replays an exact recording, status included', async () => {
-    expect(await answer(source, 'GET', at('/api/accounts'))).toEqual({ kind: 'recorded', entry: shards['api.accounts.json'][0] });
+    expect(await answer(source, 'GET', at('/api/accounts'))).toEqual({ kind: 'recorded', entry: shards['api.accounts.shard.json'][0] });
     expect(await answer(source, 'GET', at('/api/sessions/0059ea86-0e27-4572-bcfd-40c46414051e/personal'))).toMatchObject({
       kind: 'recorded', entry: { status: 404 },
     });

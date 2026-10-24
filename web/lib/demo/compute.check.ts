@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { compute, computable } from './compute';
 import type { Facts, QuotaSample } from './compute';
+import { shardOf } from './replayer';
 import type { RecordedEntry } from './replayer';
 
 // Every recorded response the demo could also compute must equal the computed
@@ -11,9 +12,9 @@ import type { RecordedEntry } from './replayer';
 
 const DATA = process.env.DEMO_DATA ?? join(__dirname, '../../public/demo-data');
 const COMPUTED_SHARDS = [
-  'api.stats.timeseries-by-user.json', 'api.stats.timeseries-by-model.json', 'api.cost.by-user.json',
-  'api.cost.by-model.json', 'api.stats.latest-activity.json', 'api.quota-samples.json',
-];
+  '/api/stats/timeseries-by-user', '/api/stats/timeseries-by-model', '/api/cost/by-user',
+  '/api/cost/by-model', '/api/stats/latest-activity', '/api/quota-samples',
+].map(shardOf);
 
 const read = <T>(path: string): T => JSON.parse(readFileSync(join(DATA, path), 'utf8')) as T;
 
@@ -58,7 +59,7 @@ describe('computed answers match the recordings', () => {
   if (!manifest) return;
   const recordedAt = Date.parse(manifest.recorded_at);
   const facts = read<Facts>('facts.json');
-  const quotaEntries = read<RecordedEntry[]>('manifest/api.quota-samples.json');
+  const quotaEntries = read<RecordedEntry[]>(`manifest/${shardOf('/api/quota-samples')}`);
   const fromOf = (key: string) => Number(/[?&]from=@(-?\d+)m/.exec(key)?.[1] ?? Infinity);
   const [whole] = quotaEntries.filter((e) => !/[?&]to=/.test(e.key)).sort((a, b) => fromOf(a.key) - fromOf(b.key));
   const quota = read<QuotaSample[]>(`bodies/${whole.body}.json`);
